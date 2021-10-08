@@ -24,11 +24,24 @@ other -- 拒绝
 - [Keel控制台及Keel的最小化k8s环境安装](https://github.com/tkeel-io/cli/blob/master/README_zh.md)
 - [Helm安装](https://helm.sh/)
 
-## Install demo-echo plugin by Keel CLI
+
+## Install demo-echo plugin by Helm
+
+通过**Helm**安装**demo-echo**插件
+
+```bash
+cd deploy/chart/demo-echo
+helm install -n keel-system demo-echo .
+```
+
+
+## Register demo-echo plugin
+
+### Register demo-echo plugin by Keel CLI
 
 1. 注册**demo-echo**插件
 ```bash
-tkeel plugin registry echo-demo
+tkeel plugin register echo-demo
 ```
 2. 检查状态
 ```bash
@@ -45,16 +58,10 @@ keel       keel-system  True     Running   ACTIVE        1         0.0.1    37m 
 echo-demo  keel-system  True    Running   ACTIVE        1         0.0.1    2m   2021-10-05 11:25.19  
 ```
 
-## Install demo-echo by Helm
-
-通过**Helm**安装**demo-echo**插件
+### Register demo-echo plugin by curl
 
 1. 安装chart
 
-```bash
-cd deploy/chart/demo-echo
-helm install -n keel-system demo-echo .
-```
 
 2. 注册插件
 
@@ -70,7 +77,7 @@ curl http://${KEELADDR}/plugins/register -d '{"id":"demo-echo","secret":"changem
 3. 检查是否注册成功
 
 ```bash
-curl http://192.168.123.2:30777/plugins/get?id=demo-echo
+curl http://${KEELADDR}/plugins/get?id=demo-echo
 ```
 
 输出应如下：
