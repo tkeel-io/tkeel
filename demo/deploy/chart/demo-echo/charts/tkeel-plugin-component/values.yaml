@@ -1,0 +1,10 @@
+plugins:
+  - name: plugins    
+  - name: keel
+  - name: auth
+
+global:
+  pluginPort: 8080
+  pluginSecret: changeme
+
+platformName: tkeel

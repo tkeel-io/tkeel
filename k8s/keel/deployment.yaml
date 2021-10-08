@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keel
+  namespace: keel-system
+  labels:
+    app: keel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keel
+  template:
+    metadata:
+      labels:
+        app: keel
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "keel"
+        dapr.io/app-port: "8080"
+        dapr.io/config: keel
+    spec:
+      imagePullSecrets:
+      - name: hub-qingcloud
+      containers:
+      - name: keel
+        image: dockerhub.qingcloud.com/iotpaas/keel:0.0.1
+        imagePullPolicy: Always
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP

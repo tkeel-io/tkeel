@@ -1,0 +1,13 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: keel
+  namespace: keel-system
+spec:
+  accessControl:
+    defaultAction: allow
+    trustDomain: "keel"
+  httpPipeline:
+    handlers:
+    - name: keel-oauth2-client
+      type: middleware.http.oauth2clientcredentials

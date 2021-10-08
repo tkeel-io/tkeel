@@ -1,0 +1,6 @@
+plugin:
+  name: plugins
+  version: 1.0
+  port: 9091
+  secret: 
+    key: zhu88jie11

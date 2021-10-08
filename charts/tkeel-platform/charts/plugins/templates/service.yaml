@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "plugins.name" . }}
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  selector:
+    app: {{ include "plugins.name" . }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.global.pluginPort }}
+      targetPort: {{ .Values.global.pluginPort }}
+      nodePort: {{ .Values.nodePort }}
+  type: NodePort

@@ -1,0 +1,17 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: keel-public-store
+  namespace: keel-system
+spec:
+  type: state.redis
+  version: v1
+  metadata:
+  - name: keyPrefix
+    value: none
+  - name: redisHost
+    value: redis-master:6379
+  - name: redisPassword
+    secretKeyRef:
+      key: redis-password
+      name: redis

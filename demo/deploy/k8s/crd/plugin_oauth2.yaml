@@ -1,0 +1,20 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: demo-echo-oauth2-client
+spec:
+  type: middleware.http.oauth2clientcredentials
+  version: v1
+  metadata:
+  - name: clientId
+    value: "demo-echo"
+  - name: clientSecret
+    value: "changeme"
+  - name: scopes
+    value: "http://demo-echo.com"
+  - name: tokenURL
+    value: "http://plugins:8080/oauth2/token"
+  - name: headerName
+    value: "x-plugin-jwt"
+  - name: authStyle
+    value: 1

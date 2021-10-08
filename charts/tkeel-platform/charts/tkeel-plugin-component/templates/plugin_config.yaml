@@ -1,0 +1,29 @@
+{{- range .Values.plugins }}
+---
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace | quote }}
+spec:
+  accessControl:
+    trustDomain: "keel"
+    {{- if (eq .name "keel") }}
+    defaultAction: allow
+    {{- else }}
+    defaultAction: deny
+    policies:
+    - appId: plugins
+      defaultAction: allow
+      trustDomain: 'keel'
+      namespace: {{ $.Release.Namespace | quote }}
+    - appId: keel
+      defaultAction: allow
+      trustDomain: 'keel'
+      namespace: {{ $.Release.Namespace | quote }}
+    {{- end }}
+  httpPipeline:
+    handlers:
+    - name: {{ .name }}-oauth2-client
+      type: middleware.http.oauth2clientcredentials
+{{- end}}

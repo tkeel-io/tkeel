@@ -1,0 +1,30 @@
+/dist
+.idea
+**/.DS_Store
+
+github.com/
+
+.vscode
+
+# Visual Studio 2015/2017/2019 cache/options directory
+.vs/
+/vendor
+**/*.log
+**/.project
+**/.factorypath
+google
+
+test_report_e2e.json
+test_report_unit.json
+
+*/test*
+*/tip*
+
+# Compiled product
+docker/auth/auth
+docker/keel/keel
+docker/plugins/plugins
+
+cmd/auth/auth
+cmd/keel/keel
+cmd/plugins/plugins

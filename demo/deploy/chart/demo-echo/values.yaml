@@ -1,0 +1,17 @@
+global:
+  replicaCount: 1
+  pluginPort: 8080
+  pluginSecret: changeme
+
+daprConfig: demo-echo
+
+imagePullSecrets: ""
+
+image:
+  repository: tkeelio/echo-demo
+  tag: 0.0.1
+  pullPolicy: Always
+
+plugin-components:
+  plugins:
+  - name: demo-echo
