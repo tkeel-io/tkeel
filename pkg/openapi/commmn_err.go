@@ -5,4 +5,5 @@ const (
 	ErrInternal        = "InternalErr"
 	ErrParamsInvalid   = "ParamsInvalid"
 	ErrUnauthorized    = "UnauthorizedAccess"
+	ErrInvalidGrant    = "InvalidGrant"
 )

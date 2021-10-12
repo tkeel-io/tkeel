@@ -16,8 +16,6 @@ import (
 // user.tenantID
 const UserPrefix = "user.%s"
 
-var gUserStore = make(UserStoreOnTenant)
-
 // UserName：User
 type UserStoreOnTenant map[string]*User
 
@@ -48,6 +46,7 @@ func UserInit() {
 }
 
 func (r *User) Create(ctx context.Context) error {
+	var UserStore = make(UserStoreOnTenant)
 	if r.ID == "" {
 		r.ID = uuid.New().String()
 	}
@@ -57,46 +56,45 @@ func (r *User) Create(ctx context.Context) error {
 		dblog.Error("[PluginAuth] User Create ", err)
 		return err
 	}
+
 	if items != nil {
-		json.Unmarshal(items, &gUserStore)
+		json.Unmarshal(items, &UserStore)
 	}
-	_, ok := gUserStore[r.Name]
+	_, ok := UserStore[r.Name]
 	if ok {
 		return errors.New(openapi.ErrResourceExisted)
 	}
 	r.CreateTime = time.Now().Unix()
-	gUserStore[r.Name] = r
-	saveData, _ := json.Marshal(gUserStore)
+	UserStore[r.Name] = r
+	saveData, _ := json.Marshal(UserStore)
 	user, _ := json.Marshal(r)
+	getDB().Insert(ctx, r.ID, user)
 	getDB().Insert(ctx, r.Name, user)
 	return getDB().Insert(ctx, genUserStateKey(r.TenantID), saveData)
 }
 
-// search by userName
+// search by tenantID userName
 func (r *User) List(ctx context.Context) []*User {
-	if gUserStore == nil {
+	UserStore := make(UserStoreOnTenant)
+	items, err := getDB().Select(ctx, genUserStateKey(r.TenantID))
+	if err != nil {
+		dblog.Error("[PluginAuth] User List ", err)
 		return nil
+	}
+	if items != nil {
+		json.Unmarshal(items, &UserStore)
 	}
 	users := make([]*User, 0)
 	if r.Name != "" {
-		user, ok := gUserStore[r.Name]
+		user, ok := UserStore[r.Name]
 		if !ok {
 			return nil
 		}
 		users = append(users, user)
 		return users
 	}
-	items, err := getDB().Select(ctx, genUserStateKey(r.TenantID))
-	if err != nil {
-		dblog.Error("user list empty,tenantID:", r.TenantID)
-		return nil
-	}
-	userMap := make(UserStoreOnTenant)
-	if err := json.Unmarshal(items, &userMap); err != nil {
-		dblog.Error("user list unmarshal err", err)
-		return nil
-	}
-	for _, v := range userMap {
+
+	for _, v := range UserStore {
 		users = append(users, v)
 	}
 
@@ -107,6 +105,24 @@ func QueryUserByName(ctx context.Context, name string) *User {
 		return nil
 	}
 	data, err := getDB().Select(ctx, name)
+	if err != nil {
+		dblog.Error(err)
+		return nil
+	}
+	user := &User{}
+	err = json.Unmarshal(data, user)
+	if err != nil {
+		dblog.Error(err)
+		return nil
+	}
+	return user
+}
+
+func QueryUserByID(ctx context.Context, id string) *User {
+	if id == "" {
+		return nil
+	}
+	data, err := getDB().Select(ctx, id)
 	if err != nil {
 		dblog.Error(err)
 		return nil
