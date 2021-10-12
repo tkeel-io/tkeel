@@ -21,6 +21,7 @@ fullnameOverride: ""
 
 redis:
   architecture: standalone
+  fullnameOverride: "tkeel-redis"
 
 redisPrivate:
   name: tkeel-redis-private-store

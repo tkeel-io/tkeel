@@ -76,4 +76,6 @@ mysql:
            PRIMARY KEY ( id )
         )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 redis:
+  nameOverride: "core-redis"
   fullnameOverride: "core-redis"
+  architecture: standalone
