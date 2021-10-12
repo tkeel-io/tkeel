@@ -1,0 +1,27 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: {{ include "core.fullname" . }}
+  labels:
+    {{- include "core.labels" . | nindent 4 }}
+spec:
+  accessControl:
+    defaultAction: allow
+    trustDomain: "keel"
+    policies:
+      - appId: plugins
+        defaultAction: allow
+        trustDomain: 'keel'
+        namespace: "keel-system"
+      - appId: keel
+        defaultAction: allow
+        trustDomain: 'keel'
+        namespace: "keel-system"
+      - appId: client
+        defaultAction: deny
+        trustDomain: 'keel'
+        namespace: "keel-system"
+  httpPipeline:
+    handlers:
+      - name: {{ include "core.fullname" . }}-oauth2-client
+        type: middleware.http.oauth2clientcredentials

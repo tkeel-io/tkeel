@@ -1,0 +1,22 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: {{ include "core.fullname" . }}-oauth2-client
+  labels:
+    {{- include "core.labels" . | nindent 4 }}
+spec:
+  type: middleware.http.oauth2clientcredentials
+  version: v1
+  metadata:
+    - name: clientId
+      value: "core"
+    - name: clientSecret
+      value: "zhu88jie"
+    - name: scopes
+      value: "http://iothub.com"
+    - name: tokenURL
+      value: "http://plugins:8080/oauth2/token"
+    - name: headerName
+      value: "x-plugin-jwt"
+    - name: authStyle
+      value: 0

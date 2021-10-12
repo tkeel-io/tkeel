@@ -1,0 +1,16 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: entity
+  labels:
+    {{- include "core.labels" . | nindent 4 }}
+spec:
+  type: bindings.mysql
+  version: v1
+  metadata:
+    - name: url # Required, define DB connection in DSN format
+      value: photoprism:photoprism@tcp(core-mysql)/core?allowNativePasswords=true
+    - name: maxIdleConns
+      value: 2
+    - name: maxOpenConns
+      value: 5
