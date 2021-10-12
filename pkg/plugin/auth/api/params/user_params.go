@@ -26,7 +26,16 @@ type UserLoginReq struct {
 	Password string `json:"password"`
 }
 type UserLoginResp struct {
-	Token string
+	Token string `json:"token"`
+}
+type UserTokenReviewReq struct {
+	Token string `json:"token"`
+}
+type UserTokenReviewResp struct {
+	UserID   string `json:"user_id"`
+	TenantID string `json:"tenant_id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
 }
 
 type TenantCreateReq struct {
