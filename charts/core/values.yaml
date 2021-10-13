@@ -11,21 +11,10 @@ image:
   tag: "0.0.1"
 
 
-nameOverride: ""
-fullnameOverride: "core"
-
-podAnnotations:
-  dapr.io/enabled: "true"
-  dapr.io/app-id: "core"
-  dapr.io/app-port: "6789"
-  dapr.io/app-protocol: "http"
-  dapr.io/log-level: "debug"
-  dapr.io/config: "core"
-
-service:
-  type: ClusterIP
-  port: 6789
-
+daprConfig: core
+appPort: 6789
+middleware:
+  name: tkeel-middleware
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

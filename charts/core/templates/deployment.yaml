@@ -13,10 +13,13 @@ spec:
       {{- include "core.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        dapr.io/enabled: "true"
+        dapr.io/app-id: {{ include "core.name" . }}
+        dapr.io/app-port: {{ .Values.appPort | quote }}
+        dapr.io/config: {{ .Values.daprConfig }}
+        dapr.io/app-protocol: "http"
+        dapr.io/log-level: "debug"
       labels:
         {{- include "core.selectorLabels" . | nindent 8 }}
     spec:
@@ -32,8 +35,13 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 6789
+              containerPort: {{.Values.appPort}}
               protocol: TCP
+          env:
+            - name: KEEL_PRIVATE_STORE
+              value: {{ printf "%s-redis-private-store" .Values.middleware.name }}
+            - name: KEEL_PUBLIC_STORE
+              value: {{ printf "%s-redis-public-store" .Values.middleware.name }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
