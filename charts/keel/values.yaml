@@ -1,0 +1,16 @@
+# > tkeel platform values
+# default plugin id
+daprConfig: keel
+# < tkeel platform values
+
+
+# plugin custom values
+middleware:
+  name: tkeel-middleware
+replicaCount: 1
+appPort: 8080
+nodePort: 30707
+image:
+  repository: tkeelio/keel
+  tag: 0.0.1
+  pullPolicy: Always
