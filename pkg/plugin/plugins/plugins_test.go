@@ -15,13 +15,14 @@ func TestMain(m *testing.M) {
 	os.Setenv("PLUGIN_ID", "keel-manager")
 	pp, _ = plugin.FromFlags()
 	m.Run()
+	os.Exit(0)
 }
 
 func TestNewManager(t *testing.T) {
 	t.Run("test load default configuration", func(t *testing.T) {
-		// act
+		// act.
 		_, err := New(pp)
-		// assert
+		// assert.
 		assert.NoError(t, err)
 	})
 }

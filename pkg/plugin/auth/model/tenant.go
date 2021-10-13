@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	// tenant.tenantName
+	// tenant.tenantName.
 	TenantPrefix = "tenant.%s"
-	// SysAdmin tenant
+	// SysAdmin tenant.
 	SysTenant = "sys.tenant"
 )
 
@@ -23,7 +23,7 @@ var (
 	gTenantStore = make(TenantStoreOnSys)
 )
 
-// 租户
+// 租户.
 type Tenant struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`
@@ -35,7 +35,7 @@ type Tenant struct {
 	CreatedTime int64  `json:"created_time"`
 }
 
-// tenantTitle:Tenant
+// tenantTitle:Tenant.
 type TenantStoreOnSys map[string]*Tenant
 
 func (r *Tenant) Create(ctx context.Context) error {
@@ -46,7 +46,7 @@ func (r *Tenant) Create(ctx context.Context) error {
 	items, err := getDB().Select(ctx, SysTenant)
 	if err != nil {
 		dblog.Error("[PluginAuth] Tenant Create ", err)
-		return err
+		return fmt.Errorf("error tenant create: %w", err)
 	}
 	if items != nil {
 		json.Unmarshal(items, &gTenantStore)
@@ -61,7 +61,10 @@ func (r *Tenant) Create(ctx context.Context) error {
 	gTenantStore[r.Title] = r
 	saveData, _ := json.Marshal(gTenantStore)
 
-	return getDB().Insert(ctx, SysTenant, saveData)
+	if err := getDB().Insert(ctx, SysTenant, saveData); err != nil {
+		return fmt.Errorf("error insert: %w", err)
+	}
+	return nil
 }
 
 func (r *Tenant) Query(ctx context.Context) []*Tenant {
@@ -84,6 +87,7 @@ func (r *Tenant) Query(ctx context.Context) []*Tenant {
 	}
 	return tenants
 }
-func genTenantStateKey(tenantName string) string {
-	return fmt.Sprintf(TenantPrefix, tenantName)
-}
+
+// func genTenantStateKey(tenantName string) string {
+// 	return fmt.Sprintf(TenantPrefix, tenantName)
+// }.

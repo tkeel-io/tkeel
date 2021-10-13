@@ -12,13 +12,12 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/version"
 )
 
-//PLUGIN_ID=auth dapr run --app-id auth --app-protocol http  --app-port 8080 --dapr-http-port 3500  --dapr-grpc-port 3600 --log-level debug go run ./cmd/auth/main.go
 var (
 	log = logger.NewLogger("tKeel.auth")
 )
 
 func main() {
-	logger.PluginVersion = version.Version()
+	logger.SetPluginVersion(version.Version())
 	log.Infof("starting tKeel auth -- version %s -- commit %s", version.Version(), version.Commit())
 	plugin, err := plugin2.FromFlags()
 	if err != nil {

@@ -31,19 +31,19 @@ func TestOpratorAddOpenAPI(t *testing.T) {
 		o.AddOpenAPI(&API{
 			Endpoint: "/echo",
 			H: func(a *APIEvent) {
-				switch a.HttpReq.Method {
+				switch a.HTTPReq.Method {
 				case http.MethodGet:
-					req := utils.GetURLValue(a.HttpReq.URL, "data")
+					req := utils.GetURLValue(a.HTTPReq.URL, "data")
 					a.Write([]byte(req))
 				case http.MethodPost:
 					resp := &struct {
 						Data string `json:"data"`
 					}{}
-					err := utils.ReadBody2Json(a.HttpReq.Body, resp)
+					err := utils.ReadBody2Json(a.HTTPReq.Body, resp)
 					assert.NoError(t, err)
 				default:
 					http.Error(a, "method not allow", http.StatusMethodNotAllowed)
-					assert.NotEqualValues(t, a.HttpReq.Method, http.MethodGet, http.MethodPost)
+					assert.NotEqualValues(t, a.HTTPReq.Method, http.MethodGet, http.MethodPost)
 				}
 			},
 		})
@@ -97,8 +97,11 @@ func TestDefaultOpratorHttpMethod(t *testing.T) {
 		}()
 		time.Sleep(2 * time.Second)
 
-		// test default identify
+		// test default identify.
 		resp, err := http.DefaultClient.Get("http://127.0.0.1:8080/v1/identify")
+		defer func() {
+			assert.NoError(t, resp.Body.Close())
+		}()
 		assert.NoError(t, err)
 		iresp := &IdentifyResp{}
 		assert.NoError(t, utils.ReadBody2Json(resp.Body, iresp))
@@ -110,8 +113,11 @@ func TestDefaultOpratorHttpMethod(t *testing.T) {
 		assert.Nil(t, iresp.AddonsPoints)
 		assert.Nil(t, iresp.MainPlugins)
 
-		// test default status
+		// test default status.
 		resp, err = http.DefaultClient.Get("http://127.0.0.1:8080/v1/status")
+		defer func() {
+			assert.NoError(t, resp.Body.Close())
+		}()
 		assert.NoError(t, err)
 		sresp := &StatusResp{}
 		assert.NoError(t, utils.ReadBody2Json(resp.Body, sresp))
@@ -120,8 +126,11 @@ func TestDefaultOpratorHttpMethod(t *testing.T) {
 		assert.Equal(t, sresp.Msg, "ok")
 		assert.Equal(t, sresp.Status, "ACTIVE")
 
-		// test default tenant bind
+		// test default tenant bind.
 		resp, err = http.DefaultClient.Get("http://127.0.0.1:8080/v1/tenant/bind")
+		defer func() {
+			assert.NoError(t, resp.Body.Close())
+		}()
 		assert.NoError(t, err)
 		tresp := &TenantBindResp{}
 		assert.NoError(t, utils.ReadBody2Json(resp.Body, tresp))
@@ -129,8 +138,11 @@ func TestDefaultOpratorHttpMethod(t *testing.T) {
 		assert.Equal(t, tresp.Ret, 0)
 		assert.Equal(t, tresp.Msg, "ok")
 
-		// test default addons identify
+		// test default addons identify.
 		resp, err = http.DefaultClient.Get("http://127.0.0.1:8080/v1/addons/identify")
+		defer func() {
+			assert.NoError(t, resp.Body.Close())
+		}()
 		assert.NoError(t, err)
 		aresp := &AddonsIdentifyResp{}
 		assert.NoError(t, utils.ReadBody2Json(resp.Body, aresp))

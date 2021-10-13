@@ -7,15 +7,19 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// pluginLogger is the implemention for logrus
+// pluginLogger is the implemention for logrus.
 type pluginLogger struct {
-	// name is the name of logger that is published to log as a scope
+	// name is the name of logger that is published to log as a scope.
 	name string
-	// loger is the instance of logrus logger
+	// loger is the instance of logrus logger.
 	logger *logrus.Entry
 }
 
-var PluginVersion string = "unknown"
+var pluginVersion = "unknown"
+
+func SetPluginVersion(v string) {
+	pluginVersion = v
+}
 
 func newPluginLogger(name string) *pluginLogger {
 	newLogger := logrus.New()
@@ -35,7 +39,7 @@ func newPluginLogger(name string) *pluginLogger {
 	return dl
 }
 
-// EnableJSONOutput enables JSON formatted output log
+// EnableJSONOutput enables JSON formatted output log.
 func (l *pluginLogger) EnableJSONOutput(enabled bool) {
 	var formatter logrus.Formatter
 
@@ -52,7 +56,7 @@ func (l *pluginLogger) EnableJSONOutput(enabled bool) {
 		logFieldScope:    l.logger.Data[logFieldScope],
 		logFieldType:     LogTypeLog,
 		logFieldInstance: hostname,
-		logFieldVer:      PluginVersion,
+		logFieldVer:      pluginVersion,
 	}
 
 	if enabled {
@@ -70,28 +74,28 @@ func (l *pluginLogger) EnableJSONOutput(enabled bool) {
 	l.logger.Logger.SetFormatter(formatter)
 }
 
-// SetID sets plugin_id field in the log. Default value is empty string
+// SetID sets plugin_id field in the log. Default value is empty string.
 func (l *pluginLogger) SetID(id string) {
 	l.logger = l.logger.WithField(logFieldID, id)
 }
 
-// SetPluginName sets plugin_name field in the log. Default value is empty string
+// SetPluginName sets plugin_name field in the log. Default value is empty string.
 func (l *pluginLogger) SetPluginName(id string) {
 	l.logger = l.logger.WithField(logFieldPluginName, id)
 }
 
 func toLogrusLevel(lvl LogLevel) logrus.Level {
-	// ignore error because it will never happens
+	// ignore error because it will never happens.
 	l, _ := logrus.ParseLevel(string(lvl))
 	return l
 }
 
-// SetOutputLevel sets log output level
+// SetOutputLevel sets log output level.
 func (l *pluginLogger) SetOutputLevel(outputLevel LogLevel) {
 	l.logger.Logger.SetLevel(toLogrusLevel(outputLevel))
 }
 
-// WithLogType specify the log_type field in log. Default value is LogTypeLog
+// WithLogType specify the log_type field in log. Default value is LogTypeLog.
 func (l *pluginLogger) WithLogType(logType string) Logger {
 	return &pluginLogger{
 		name:   l.name,

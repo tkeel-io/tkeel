@@ -16,22 +16,22 @@ func TestNewLogger(t *testing.T) {
 	t.Run("create new logger instance", func(t *testing.T) {
 		clearLoggers()
 
-		// act
+		// act.
 		NewLogger(testLoggerName)
 		_, ok := globalLoggers[testLoggerName]
 
-		// assert
+		// assert.
 		assert.True(t, ok)
 	})
 
 	t.Run("return the existing logger instance", func(t *testing.T) {
 		clearLoggers()
 
-		// act
+		// act.
 		oldLogger := NewLogger(testLoggerName)
 		newLogger := NewLogger(testLoggerName)
 
-		// assert
+		// assert.
 		assert.Equal(t, oldLogger, newLogger)
 	})
 }

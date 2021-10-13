@@ -3,6 +3,7 @@ package token
 import (
 	"crypto/rsa"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"time"
 
@@ -14,7 +15,7 @@ var (
 	ErrUnauthorizedAccess = errors.New("missing or invalid credentials provided")
 )
 
-func InitIdProvider(secret []byte, rsaPriPath, rsaPubPath string) IdProvider {
+func InitIDProvider(secret []byte, rsaPriPath, rsaPubPath string) IDProvider {
 	return NewBasicJWTIdentityProvider(secret, loadRSAPrivateKeyFromDisk(rsaPriPath), loadRSAPublicKeyFromDisk(rsaPubPath))
 }
 
@@ -58,25 +59,25 @@ func NewBasicJWTIdentityProvider(secret []byte, priKey *rsa.PrivateKey, pubKey *
 	return &BasicJWTIdentityProvider{secret, priKey, pubKey}
 }
 
-func (idp *BasicJWTIdentityProvider) Token(sub, jti string, d time.Duration, m *map[string]interface{}) (string, error) {
+func (idp *BasicJWTIdentityProvider) Token(sub, jti string, d time.Duration, m map[string]interface{}) (string, error) {
 	now := time.Now().UTC()
 	exp := now.Add(d)
 	if jti == "" {
 		jti = uuid.New().String()
 	}
-	(*m)["sub"] = sub
-	(*m)["iss"] = "manager"
-	(*m)["nbf"] = now
-	(*m)["aud"] = "keel"
-	(*m)["iat"] = now
-	(*m)["exp"] = exp
-	(*m)["jti"] = jti
+	m["sub"] = sub
+	m["iss"] = "manager"
+	m["nbf"] = now
+	m["aud"] = "keel"
+	m["iat"] = now
+	m["exp"] = exp
+	m["jti"] = jti
 
 	if idp.rsapri != nil {
-		return idp.rsaGen(*m)
+		return idp.rsaGen(m)
 	}
 
-	return idp.hsGen(*m)
+	return idp.hsGen(m)
 }
 
 func (idp *BasicJWTIdentityProvider) Validate(tokenStr string) (map[string]interface{}, error) {
@@ -87,7 +88,7 @@ func (idp *BasicJWTIdentityProvider) Validate(tokenStr string) (map[string]inter
 		return idp.secret, nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error jwt parsh with claims: %w", err)
 	}
 	if claims, ok := token.Claims.(*jwt.MapClaims); ok && token.Valid {
 		return *claims, nil
@@ -97,10 +98,18 @@ func (idp *BasicJWTIdentityProvider) Validate(tokenStr string) (map[string]inter
 
 func (idp *BasicJWTIdentityProvider) hsGen(claims jwt.MapClaims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(idp.secret)
+	t, err := token.SignedString(idp.secret)
+	if err != nil {
+		return "", fmt.Errorf("error signed string: %w", err)
+	}
+	return t, nil
 }
 
 func (idp *BasicJWTIdentityProvider) rsaGen(claims jwt.MapClaims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	return token.SignedString(idp.rsapri)
+	t, err := token.SignedString(idp.rsapri)
+	if err != nil {
+		return "", fmt.Errorf("error signed string: %w", err)
+	}
+	return t, nil
 }

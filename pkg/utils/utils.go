@@ -1,14 +1,14 @@
 package utils
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math/rand"
+	"math/big"
 	"net/url"
 	"os"
-	"time"
 )
 
 func GetEnv(key string, defaultValue string) string {
@@ -20,10 +20,13 @@ func GetEnv(key string, defaultValue string) string {
 }
 
 func RandomStr() string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	bytes := make([]byte, 16)
 	for i := 0; i < 16; i++ {
-		b := r.Intn(26) + 65
+		n, err := rand.Int(rand.Reader, big.NewInt(26))
+		if err != nil {
+			n = big.NewInt(10)
+		}
+		b := n.Uint64() + 65
 		bytes[i] = byte(b)
 	}
 	return string(bytes)
@@ -34,16 +37,13 @@ func GetURLValue(u *url.URL, name string) string {
 }
 
 func ReadBody2Json(b io.ReadCloser, a interface{}) error {
-	defer b.Close()
 	body, err := ioutil.ReadAll(b)
 	if err != nil {
-		err := fmt.Errorf("error read body: %s", err)
-		return err
+		return fmt.Errorf("error read body: %w", err)
 	}
 	err = json.Unmarshal(body, a)
 	if err != nil {
-		err := fmt.Errorf("error json Unmarshal(%s): %s", string(body), err)
-		return err
+		return fmt.Errorf("error json Unmarshal(%s): %w", string(body), err)
 	}
 	return nil
 }

@@ -2,8 +2,9 @@ package plugins
 
 import (
 	"context"
+	"crypto/rand"
 	"flag"
-	"math/rand"
+	"math/big"
 	"time"
 
 	"github.com/tkeel-io/tkeel/pkg/keel"
@@ -19,7 +20,7 @@ var (
 	pluginsScrapeInterval = flag.String("plugins-scrape-interval", "30m",
 		"The interval for the plugins to scrape the status of the registered plugin")
 	pluginTokenSecret = flag.String("plugins-token-secret", utils.GetEnv("PLUGIN_TOKEN_SECRET", "changeme"), "gen token")
-	idProvider        token.IdProvider
+	idProvider        token.IDProvider
 )
 
 type Plugins struct {
@@ -41,7 +42,7 @@ func (ps *Plugins) Run() {
 		log.Fatalf("error plugin id: %s should be plugins", pID)
 	}
 
-	idProvider = token.InitIdProvider([]byte(*pluginTokenSecret), "", "")
+	idProvider = token.InitIDProvider([]byte(*pluginTokenSecret), "", "")
 
 	go func() {
 		scrapeInterval, err := time.ParseDuration(*pluginsScrapeInterval)
@@ -52,19 +53,23 @@ func (ps *Plugins) Run() {
 		tick := time.NewTicker(interval)
 		for range tick.C {
 			scrapePluginStatus(context.TODO(), scrapeInterval)
-			interval = time.Duration(rand.Intn(30))*time.Second + scrapeInterval
+			n, err := rand.Int(rand.Reader, big.NewInt(30))
+			if err != nil {
+				n = big.NewInt(30)
+			}
+			interval = time.Duration(n.Uint64())*time.Second + scrapeInterval
 			tick.Reset(interval)
 		}
 	}()
 
 	go func() {
 		err := ps.p.Run([]*openapi.API{
-			{"/get", ps.GetPlugins},
-			{"/list", ps.ListPlugins},
-			{"/delete", ps.DeletePlugins},
-			{"/register", ps.RegisterPlugins},
-			{"/tenant-bind", ps.TenantBind},
-			{"/oauth2/token", ps.Oauth2},
+			{Endpoint: "/get", H: ps.GetPlugins},
+			{Endpoint: "/list", H: ps.ListPlugins},
+			{Endpoint: "/delete", H: ps.DeletePlugins},
+			{Endpoint: "/register", H: ps.RegisterPlugins},
+			{Endpoint: "/tenant-bind", H: ps.TenantBind},
+			{Endpoint: "/oauth2/token", H: ps.Oauth2},
 		}...)
 		if err != nil {
 			log.Fatalf("error plugin run: %s", err)

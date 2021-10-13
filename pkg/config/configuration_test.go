@@ -9,9 +9,9 @@ import (
 
 func TestLoadDefaultConfiguration(t *testing.T) {
 	t.Run("test load default configuration", func(t *testing.T) {
-		// act
+		// act.
 		conf := LoadDefaultConfiguration()
-		// assert
+		// assert.
 		assert.Equal(t, conf.Plugin.Port, DefaultHTTPPort)
 		assert.Equal(t, conf.Plugin.ID, "")
 		assert.Equal(t, conf.Plugin.Version, "")

@@ -22,7 +22,7 @@ type UserCreateResp struct {
 }
 
 type UserLoginReq struct {
-	UserName string `json:"username"`
+	UserName string `json:"user_name"`
 	Password string `json:"password"`
 }
 type UserLoginResp struct {

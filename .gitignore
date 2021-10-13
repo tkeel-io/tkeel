@@ -20,6 +20,8 @@ test_report_unit.json
 */test*
 */tip*
 
+golint
+
 # Compiled product
 docker/auth/auth
 docker/keel/keel

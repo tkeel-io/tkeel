@@ -2,6 +2,7 @@ package keel
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -11,12 +12,12 @@ import (
 func ParsePluginID(payload string) (string, error) {
 	b, err := jwt.DecodeSegment(payload)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error jwt decode: %w", err)
 	}
 	pmap := make(map[string]interface{})
 	err = json.Unmarshal(b, &pmap)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error json unmarshal: %w", err)
 	}
 	pID, ok := pmap["client_id"]
 	if !ok {
@@ -37,7 +38,7 @@ func GetPluginIDFromRequest(req *http.Request) (string, error) {
 	}
 	pid, err := ParsePluginID(jwtList[1])
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error parse plugin id: %w", err)
 	}
 	return pid, nil
 }

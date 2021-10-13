@@ -2,7 +2,8 @@ package keel
 
 import (
 	"context"
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 	"net/http"
 
 	"github.com/tkeel-io/tkeel/pkg/keel"
@@ -26,8 +27,8 @@ func New(p *plugin.Plugin) (*Keel, error) {
 	}, nil
 }
 
-func (m *Keel) Run() {
-	pID := m.p.Conf().Plugin.ID
+func (k *Keel) Run() {
+	pID := k.p.Conf().Plugin.ID
 	if pID == "" {
 		log.Fatal("error plugin id: \"\"")
 	}
@@ -36,102 +37,106 @@ func (m *Keel) Run() {
 	}
 
 	go func() {
-		m.p.SetRequiredFunc(openapi.RequiredFunc{
-			Identify: func() (*openapi.IdentifyResp, error) {
-				return &openapi.IdentifyResp{
-					CommonResult: openapi.SuccessResult(),
-					PluginID:     m.p.GetIdentifyResp().PluginID,
-					Version:      m.p.GetIdentifyResp().Version,
-					AddonsPoints: []*openapi.AddonsPoint{
-						{
-							AddonsPoint: "externalPreRouteCheck",
-							Desc: `
-							callback before external flow routing
-							input request header and path
-							output http statecode
-							200   -- allow
-							other -- deny
-							`,
-						},
-					},
-				}, nil
-			},
+		k.p.SetRequiredFunc(openapi.RequiredFunc{
+			Identify: k.identify,
 		})
-		m.p.SetOptionalFunc(openapi.OptionalFunc{
-			AddonsIdentify: func(air *openapi.AddonsIdentifyReq) (*openapi.AddonsIdentifyResp, error) {
-				for _, v := range air.Endpoint {
-					xKeel := rand.Int() % 2
-					xKeelStr := "False"
-					if xKeel == 1 {
-						xKeelStr = "True"
-					}
-					resp, err := keel.CallKeel(context.TODO(), air.Plugin.ID, v.Endpoint,
-						http.MethodGet, &keel.CallReq{
-							Header: http.Header{
-								"x-keel-check": []string{xKeelStr},
-							},
-							Body: []byte(`Check whether the endpoint correctly implements this callback:
-						For example, when the request header contains the "x-keel-check" field, 
-						the HTTP request header 200 is returned. When the field value is "True", 
-						the body is 
-						{	
-							"msg":"ok",
-							"ret":0
-						}, 
-						When it is False, the body is 
-						{
-							"msg":"faild",
-							"ret":-1
-						}. 
-						If it is not included, it will judge whether the request is valid.`),
-						})
-					if err != nil {
-						return &openapi.AddonsIdentifyResp{
-							CommonResult: openapi.BadRequestResult(resp.Status),
-						}, nil
-					}
-					result := &openapi.CommonResult{}
-					if err := utils.ReadBody2Json(resp.Body, result); err != nil {
-						log.Errorf("error read addons identify(%s/%s/%s) resp: %s",
-							air.Plugin.ID, v.Endpoint, v.AddonsPoint, err.Error())
-						return &openapi.AddonsIdentifyResp{
-							CommonResult: openapi.BadRequestResult(err.Error()),
-						}, nil
-					}
-					if xKeel == 1 {
-						if result.Ret != 0 || result.Msg != "ok" {
-							log.Errorf("error identify(%s/%s/%s) resp: %v",
-								air.Plugin.ID, v.Endpoint, v.AddonsPoint, result)
-							return &openapi.AddonsIdentifyResp{
-								CommonResult: openapi.BadRequestResult(resp.Status),
-							}, nil
-						}
-					} else {
-						if result.Ret != -1 || result.Msg != "faild" {
-							log.Errorf("error identify(%s/%s/%s) resp: %v",
-								air.Plugin.ID, v.Endpoint, v.AddonsPoint, result)
-							return &openapi.AddonsIdentifyResp{
-								CommonResult: openapi.BadRequestResult(resp.Status),
-							}, nil
-						}
-					}
-				}
-				return &openapi.AddonsIdentifyResp{
-					CommonResult: openapi.SuccessResult(),
-				}, nil
-			},
+		k.p.SetOptionalFunc(openapi.OptionalFunc{
+			AddonsIdentify: k.addonsIdentify,
 		})
-		err := m.p.Run([]*openapi.API{
-			{
-
-				Endpoint: "/",
-				H:        m.Route,
-			},
-		}...)
+		err := k.p.Run(&openapi.API{Endpoint: "/", H: k.Route})
 		if err != nil {
 			log.Fatalf("error plugin run: %s", err)
 			return
 		}
 	}()
-	log.Debug("keel runing")
+	log.Debug("keel running")
+}
+
+func (k *Keel) identify() (*openapi.IdentifyResp, error) {
+	return &openapi.IdentifyResp{
+		CommonResult: openapi.SuccessResult(),
+		PluginID:     k.p.GetIdentifyResp().PluginID,
+		Version:      k.p.GetIdentifyResp().Version,
+		AddonsPoints: []*openapi.AddonsPoint{
+			{
+				AddonsPoint: "externalPreRouteCheck",
+				Desc: `
+				callback before external flow routing
+				input request header and path
+				output http statecode
+				200   -- allow
+				other -- deny
+				`,
+			},
+		},
+	}, nil
+}
+
+func (k *Keel) addonsIdentify(air *openapi.AddonsIdentifyReq) (*openapi.AddonsIdentifyResp, error) {
+	endpointReq := air.Endpoint[0]
+	xKeelStr := getRandBoolStr()
+
+	resp, err := keel.CallKeel(context.TODO(), air.Plugin.ID, endpointReq.Endpoint,
+		http.MethodGet, &keel.CallReq{
+			Header: http.Header{
+				"x-keel-check": []string{xKeelStr},
+			},
+			Body: []byte(`Check whether the endpoint correctly implements this callback:
+			For example, when the request header contains the "x-keel-check" field, 
+			the HTTP request header 200 is returned. When the field value is "True", 
+			the body is 
+			{	
+				"msg":"ok",
+				"ret":0
+			}, 
+			When it is False, the body is 
+			{
+				"msg":"faild",
+				"ret":-1
+			}. 
+			If it is not included, it will judge whether the request is valid.`),
+		})
+	if err != nil {
+		log.Errorf("error addons identify: %w", err)
+		return &openapi.AddonsIdentifyResp{
+			CommonResult: openapi.BadRequestResult(resp.Status),
+		}, nil
+	}
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.Errorf("error response body close: %s", err)
+		}
+	}()
+	result := &openapi.CommonResult{}
+	if err := utils.ReadBody2Json(resp.Body, result); err != nil {
+		log.Errorf("error read addons identify(%s/%s/%s) resp: %s",
+			air.Plugin.ID, endpointReq.Endpoint, endpointReq.AddonsPoint, err.Error())
+		return &openapi.AddonsIdentifyResp{
+			CommonResult: openapi.BadRequestResult(err.Error()),
+		}, nil
+	}
+	if (xKeelStr == "True" && result.Ret == 0 && result.Msg == "ok") ||
+		(xKeelStr == "false" && result.Ret == -1 && result.Msg == "faild") {
+		return &openapi.AddonsIdentifyResp{
+			CommonResult: openapi.SuccessResult(),
+		}, nil
+	}
+	log.Errorf("error identify(%s/%s/%s) resp: %v",
+		air.Plugin.ID, endpointReq.Endpoint, endpointReq.AddonsPoint, result)
+	return &openapi.AddonsIdentifyResp{
+		CommonResult: openapi.BadRequestResult(resp.Status),
+	}, nil
+}
+
+func getRandBoolStr() string {
+	n, err := rand.Int(rand.Reader, big.NewInt(100))
+	if err != nil {
+		log.Errorf("error rand: %w", err)
+		return "False"
+	}
+	if n.Int64()%2 == 1 {
+		return "True"
+	}
+	return "False"
 }

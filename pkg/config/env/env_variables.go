@@ -9,6 +9,4 @@ const (
 	DaprGRPCPort string = "DAPR_GRPC_PORT"
 	// DaprHTTPPort is the dapr api http port.
 	DaprHTTPPort string = "DAPR_HTTP_PORT"
-	// PluginSecretKey is random string issued by keel platform.
-	PluginSecretKey string = "PLUGIN_SECRET_KEY"
 )

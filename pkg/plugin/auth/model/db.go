@@ -2,11 +2,13 @@ package model
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
-	daprc "github.com/dapr/go-sdk/client"
 	"github.com/tkeel-io/tkeel/pkg/keel"
 	"github.com/tkeel-io/tkeel/pkg/logger"
+
+	daprc "github.com/dapr/go-sdk/client"
 )
 
 var (
@@ -38,7 +40,10 @@ func (g *gdb) Insert(ctx context.Context, key string, data []byte) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	return g.dClient.SaveState(ctx, keel.PrivateStore, key, data)
+	if err := g.dClient.SaveState(ctx, keel.PrivateStore, key, data); err != nil {
+		return fmt.Errorf("error save state: %w", err)
+	}
+	return nil
 }
 
 func (g *gdb) Select(ctx context.Context, key string) ([]byte, error) {
@@ -47,8 +52,7 @@ func (g *gdb) Select(ctx context.Context, key string) ([]byte, error) {
 	}
 	item, err := g.dClient.GetState(ctx, keel.PrivateStore, key)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error get state: %w", err)
 	}
-
 	return item.Value, nil
 }
