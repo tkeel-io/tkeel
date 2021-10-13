@@ -18,10 +18,10 @@ var (
 
 func TestNewPluginFromFlag(t *testing.T) {
 	t.Run("test create plugin from flag", func(t *testing.T) {
-		// act
+		// act.
 		p, err = FromFlags()
 		conf := p.Conf()
-		// assert
+		// assert.
 		assert.NoError(t, err)
 		assert.NotNil(t, p)
 		assert.Equal(t, conf.Plugin.ID, "com-keel-hello")
@@ -36,24 +36,23 @@ func TestRun(t *testing.T) {
 			p.Run(&openapi.API{
 				Endpoint: "/echo",
 				H: func(a *openapi.APIEvent) {
-					switch a.HttpReq.Method {
+					switch a.HTTPReq.Method {
 					case http.MethodGet:
-						req := utils.GetURLValue(a.HttpReq.URL, "data")
+						req := utils.GetURLValue(a.HTTPReq.URL, "data")
 						a.Write([]byte(req))
 					case http.MethodPost:
 						resp := &struct {
 							Data string `json:"data"`
 						}{}
-						err = utils.ReadBody2Json(a.HttpReq.Body, resp)
+						err = utils.ReadBody2Json(a.HTTPReq.Body, resp)
 						assert.NoError(t, err)
 					default:
 						http.Error(a, "method not allow", http.StatusMethodNotAllowed)
-						assert.NotEqualValues(t, a.HttpReq.Method, http.MethodGet, http.MethodPost)
+						assert.NotEqualValues(t, a.HTTPReq.Method, http.MethodGet, http.MethodPost)
 					}
 				},
 			})
 		}()
 		time.Sleep(2 * time.Second)
 	})
-
 }

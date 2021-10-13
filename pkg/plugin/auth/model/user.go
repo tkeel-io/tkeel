@@ -13,13 +13,13 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/openapi"
 )
 
-// user.tenantID
+// user.tenantID.
 const UserPrefix = "user.%s"
 
-// UserName：User
+// UserName：User.
 type UserStoreOnTenant map[string]*User
 
-// 用户
+// 用户.
 type User struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
@@ -54,7 +54,7 @@ func (r *User) Create(ctx context.Context) error {
 	items, err := getDB().Select(ctx, genUserStateKey(r.TenantID))
 	if err != nil {
 		dblog.Error("[PluginAuth] User Create ", err)
-		return err
+		return fmt.Errorf("error user create: %w", err)
 	}
 
 	if items != nil {
@@ -70,10 +70,13 @@ func (r *User) Create(ctx context.Context) error {
 	user, _ := json.Marshal(r)
 	getDB().Insert(ctx, r.ID, user)
 	getDB().Insert(ctx, r.Name, user)
-	return getDB().Insert(ctx, genUserStateKey(r.TenantID), saveData)
+	if err := getDB().Insert(ctx, genUserStateKey(r.TenantID), saveData); err != nil {
+		return fmt.Errorf("error insert: %w", err)
+	}
+	return nil
 }
 
-// search by tenantID userName
+// search by tenantID userName.
 func (r *User) List(ctx context.Context) []*User {
 	UserStore := make(UserStoreOnTenant)
 	items, err := getDB().Select(ctx, genUserStateKey(r.TenantID))

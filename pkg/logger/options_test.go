@@ -57,7 +57,7 @@ func TestOptions(t *testing.T) {
 
 		o.AttachCmdFlags(testStringVarFn, testBoolVarFn)
 
-		// assert
+		// assert.
 		assert.True(t, logLevelAsserted)
 		assert.True(t, logAsJSONAsserted)
 	})
@@ -70,7 +70,7 @@ func TestApplyOptionsToLoggers(t *testing.T) {
 		OutputLevel:       "debug",
 	}
 
-	// Create two loggers
+	// Create two loggers.
 	testLoggers := []Logger{
 		NewLogger("testLogger0"),
 		NewLogger("testLogger1"),

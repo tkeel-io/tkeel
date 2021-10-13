@@ -20,12 +20,11 @@ type PluginAuth struct {
 }
 
 func NewPluginAuth(p *plugin.Plugin) *PluginAuth {
-	authApi := api.NewApi()
-	return &PluginAuth{p, authApi}
+	authAPI := api.NewAPI()
+	return &PluginAuth{p, authAPI}
 }
 
 func (p *PluginAuth) Run() {
-
 	pID := p.p.Conf().Plugin.ID
 	if pID == "" {
 		log.Fatal("error plugin id: \"\"")
@@ -35,46 +34,16 @@ func (p *PluginAuth) Run() {
 	}
 	go func() {
 		err := p.p.Run([]*openapi.API{
-			{
-				Endpoint: "/role/create",
-				H:        p.api.RoleCreate,
-			},
-			{
-				Endpoint: "/user/login",
-				H:        p.api.Login,
-			},
-			{
-				Endpoint: "/authenticate",
-				H:        p.api.Authenticate,
-			},
-			{
-				Endpoint: "/user/logout",
-				H:        p.api.UserLogout,
-			},
-			{
-				Endpoint: "/user/create",
-				H:        p.api.UserCreate,
-			},
-			{
-				Endpoint: "/tenant/create",
-				H:        p.api.TenantCreate,
-			},
-
-			{
-				Endpoint: "/tenant/list",
-				H:        p.api.TenantQuery,
-			},
-			{
-				Endpoint: "/token/parse",
-				H:        p.api.TokenParse,
-			}, {
-				Endpoint: "/token/create",
-				H:        p.api.TokenCreate,
-			},
-			{
-				Endpoint: "/token/valid",
-				H:        p.api.TokenValid,
-			},
+			{Endpoint: "/role/create", H: p.api.RoleCreate},
+			{Endpoint: "/user/login", H: p.api.Login},
+			{Endpoint: "/authenticate", H: p.api.Authenticate},
+			{Endpoint: "/user/logout", H: p.api.UserLogout},
+			{Endpoint: "/user/create", H: p.api.UserCreate},
+			{Endpoint: "/tenant/create", H: p.api.TenantCreate},
+			{Endpoint: "/tenant/list", H: p.api.TenantQuery},
+			{Endpoint: "/token/parse", H: p.api.TokenParse},
+			{Endpoint: "/token/create", H: p.api.TokenCreate},
+			{Endpoint: "/token/valid", H: p.api.TokenValid},
 		}...)
 		if err != nil {
 			log.Fatalf("error plugin run: %s", err)

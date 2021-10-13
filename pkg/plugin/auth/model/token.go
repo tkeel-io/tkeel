@@ -1,7 +1,7 @@
 package model
 
-// 身份令牌
+// 身份令牌.
 type Token struct {
-	Id    string `json:"id"`
+	ID    string `json:"id"`
 	Token string `json:"token"`
 }

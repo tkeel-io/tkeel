@@ -19,7 +19,7 @@ type Role struct {
 	Desc     string `json:"desc"`
 }
 
-// roleID：Role
+// roleID：Role.
 type RoleStoreOnTenant map[string]*Role
 
 func (r *Role) Create(ctx context.Context) error {
@@ -30,7 +30,7 @@ func (r *Role) Create(ctx context.Context) error {
 	items, err := getDB().Select(ctx, genRoleStateKey(r.TenantID))
 	if err != nil {
 		dblog.Error("[PluginAuth] Role Create ", err)
-		return err
+		return fmt.Errorf("error role create: %w", err)
 	}
 	if items != nil {
 		json.Unmarshal(items, &gRoleStore)
@@ -39,7 +39,10 @@ func (r *Role) Create(ctx context.Context) error {
 	gRoleStore[r.ID] = r
 	saveData, _ := json.Marshal(gRoleStore)
 
-	return getDB().Insert(ctx, genRoleStateKey(r.TenantID), saveData)
+	if err := getDB().Insert(ctx, genRoleStateKey(r.TenantID), saveData); err != nil {
+		return fmt.Errorf("error insert: %w", err)
+	}
+	return nil
 }
 
 func genRoleStateKey(tenantID string) string {

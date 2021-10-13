@@ -22,16 +22,16 @@ func DecodeRoute(path string) (pluginID, endpoint string) {
 	return sub[0], sub1[0]
 }
 
-func GetDaprInvokeUrl(appID, method string) string {
-	return fmt.Sprintf(PLUGIN_INVOKE_URL, daprAddr, appID, method)
+func GetDaprInvokeURL(appID, method string) string {
+	return fmt.Sprintf(PluginInvokeURLFormat, daprAddr, appID, method)
 }
 
-func GetPluginMethodUrl(pluginID, method string) string {
+func GetPluginMethodURL(pluginID, method string) string {
 	return fmt.Sprintf("%s/%s", pluginID, method)
 }
 
-func GetAddonsUrl(addonsPoint string) string {
-	return fmt.Sprintf("%s/%s", ADDONS_PATH, addonsPoint)
+func GetAddonsURL(addonsPoint string) string {
+	return fmt.Sprintf("%s/%s", AddonsPath, addonsPoint)
 }
 
 func CallPlugin(ctx context.Context, pluginID, method, httpMethod string, req *CallReq) (*http.Response, error) {
@@ -39,29 +39,29 @@ func CallPlugin(ctx context.Context, pluginID, method, httpMethod string, req *C
 		err     error
 		httpReq *http.Request
 	)
-	invokeUrl := GetDaprInvokeUrl(pluginID, method)
+	invokeURL := GetDaprInvokeURL(pluginID, method)
 	if req != nil {
-		if len(req.UrlValue) != 0 {
-			invokeUrl += "?" + req.UrlValue.Encode()
+		if len(req.URLValue) != 0 {
+			invokeURL += "?" + req.URLValue.Encode()
 		}
-		log.Debugf("call plugins url(%s)", invokeUrl)
-		httpReq, err = http.NewRequest(httpMethod, invokeUrl, bytes.NewReader(req.Body))
+		log.Debugf("call plugins url(%s)", invokeURL)
+		httpReq, err = http.NewRequest(httpMethod, invokeURL, bytes.NewReader(req.Body))
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error http request: %w", err)
 		}
 		if req.Header != nil {
 			httpReq.Header = req.Header.Clone()
 		}
 	} else {
-		log.Debugf("call plugins url(%s)", invokeUrl)
-		httpReq, err = http.NewRequest(httpMethod, invokeUrl, nil)
+		log.Debugf("call plugins url(%s)", invokeURL)
+		httpReq, err = http.NewRequest(httpMethod, invokeURL, nil)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error http request: %w", err)
 		}
 	}
 	resp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error http client do: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, errors.New(resp.Status)
@@ -74,26 +74,26 @@ func CallKeel(ctx context.Context, pluginID, method, httpMethod string, req *Cal
 		err     error
 		httpReq *http.Request
 	)
-	invokeUrl := GetDaprInvokeUrl("keel", GetPluginMethodUrl(pluginID, method))
+	invokeURL := GetDaprInvokeURL("keel", GetPluginMethodURL(pluginID, method))
 	if req != nil {
-		if len(req.UrlValue) != 0 {
-			invokeUrl += "?" + req.UrlValue.Encode()
+		if len(req.URLValue) != 0 {
+			invokeURL += "?" + req.URLValue.Encode()
 		}
-		log.Debugf("call keel url(%s)", invokeUrl)
-		httpReq, err = http.NewRequest(httpMethod, invokeUrl, bytes.NewReader(req.Body))
+		log.Debugf("call keel url(%s)", invokeURL)
+		httpReq, err = http.NewRequest(httpMethod, invokeURL, bytes.NewReader(req.Body))
 		if req.Header != nil {
 			httpReq.Header = req.Header.Clone()
 		}
 	} else {
-		log.Debugf("call keel url(%s)", invokeUrl)
-		httpReq, err = http.NewRequest(httpMethod, invokeUrl, nil)
+		log.Debugf("call keel url(%s)", invokeURL)
+		httpReq, err = http.NewRequest(httpMethod, invokeURL, nil)
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error http request: %w", err)
 	}
 	resp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error http client do: %w", err)
 	}
 	return resp, nil
 }
@@ -103,26 +103,26 @@ func CallAddons(ctx context.Context, addonsPoint, httpMethod string, req *CallRe
 		err     error
 		httpReq *http.Request
 	)
-	invokeUrl := GetDaprInvokeUrl("keel", GetAddonsUrl(addonsPoint))
+	invokeURL := GetDaprInvokeURL("keel", GetAddonsURL(addonsPoint))
 	if req != nil {
-		if len(req.UrlValue) != 0 {
-			invokeUrl += "?" + req.UrlValue.Encode()
+		if len(req.URLValue) != 0 {
+			invokeURL += "?" + req.URLValue.Encode()
 		}
-		log.Debugf("call addons url(%s)", invokeUrl)
-		httpReq, err = http.NewRequest(httpMethod, invokeUrl, bytes.NewReader(req.Body))
+		log.Debugf("call addons url(%s)", invokeURL)
+		httpReq, err = http.NewRequest(httpMethod, invokeURL, bytes.NewReader(req.Body))
 		if req.Header != nil {
 			httpReq.Header = req.Header.Clone()
 		}
 	} else {
-		log.Debugf("call addons url(%s)", invokeUrl)
-		httpReq, err = http.NewRequest(httpMethod, invokeUrl, nil)
+		log.Debugf("call addons url(%s)", invokeURL)
+		httpReq, err = http.NewRequest(httpMethod, invokeURL, nil)
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error http request: %w", err)
 	}
 	resp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error http client do: %w", err)
 	}
 	return resp, nil
 }

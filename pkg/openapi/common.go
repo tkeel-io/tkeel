@@ -10,13 +10,13 @@ import (
 )
 
 const (
-	IDENTIFY_METHOD       = "v1/identify"
-	STATUS_METHOD         = "v1/status"
-	ADDONSIDENTIFY_METHOD = "v1/addons/identify"
-	TENANTBIND_METHOD     = "v1/tenant/bind"
+	APIIdentifyMethod       = "v1/identify"
+	APIStatusMethod         = "v1/status"
+	APIAddonsIdentifyMethod = "v1/addons/identify"
+	APITenantBindMethod     = "v1/tenant/bind"
 )
 
-// AddonsPoint Plugin extension point
+// AddonsPoint Plugin extension point.
 type AddonsPoint struct {
 	AddonsPoint string `json:"addons_point"`
 	Desc        string `json:"desc,omitempty"`
@@ -27,14 +27,14 @@ type AddonsEndpoint struct {
 	Endpoint    string `json:"endpoint"`
 }
 
-// MainPlugin Main plugin for plugin extension
+// MainPlugin Main plugin for plugin extension.
 type MainPlugin struct {
 	ID        string            `json:"id"`
 	Version   string            `json:"version,omitempty"`
 	Endpoints []*AddonsEndpoint `json:"endpoints"`
 }
 
-// IdentifyResp response of /v1/identify
+// IdentifyResp response of /v1/identify.
 type IdentifyResp struct {
 	CommonResult `json:",inline"`
 	PluginID     string         `json:"plugin_id"`
@@ -43,7 +43,7 @@ type IdentifyResp struct {
 	MainPlugins  []*MainPlugin  `json:"main_plugins,omitempty"`
 }
 
-// AddonsIdentifyReq request of /v1/addons/idnetify POST
+// AddonsIdentifyReq request of /v1/addons/idnetify POST.
 type AddonsIdentifyReq struct {
 	Plugin struct {
 		ID      string `json:"id"`
@@ -52,23 +52,23 @@ type AddonsIdentifyReq struct {
 	Endpoint []*AddonsEndpoint `json:"endpoint"`
 }
 
-// AddonsIdentifyResp response of /v1/addons/identify
+// AddonsIdentifyResp response of /v1/addons/identify.
 type AddonsIdentifyResp struct {
 	CommonResult `json:",inline"`
 }
 
-// TenantBindReq request of /v1/tenant/bind POST
+// TenantBindReq request of /v1/tenant/bind POST.
 type TenantBindReq struct {
 	TenantID string `json:"tenant_id"`
 	Extra    []byte `json:"extra"`
 }
 
-// TenantBindResp response of /v1/tenant/bind
+// TenantBindResp response of /v1/tenant/bind.
 type TenantBindResp struct {
 	CommonResult `json:",inline"`
 }
 
-// PluginStatus plugin status
+// PluginStatus plugin status.
 type PluginStatus string
 
 const (
@@ -79,13 +79,13 @@ const (
 	Failed   PluginStatus = "FAILED"
 )
 
-// StatusResp response of /v1/Status
+// StatusResp response of /v1/Status.
 type StatusResp struct {
 	CommonResult `json:",inline"`
 	Status       PluginStatus `json:"status"`
 }
 
-// CommonResult open api request common response
+// CommonResult open api request common response.
 type CommonResult struct {
 	Ret int    `json:"ret"`
 	Msg string `json:"msg"`
@@ -119,10 +119,10 @@ type Endpoint struct {
 
 type APIEvent struct {
 	http.ResponseWriter
-	HttpReq *http.Request
+	HTTPReq *http.Request
 }
 
-// Handler need return http resp
+// Handler need return http resp.
 type Handler func(*APIEvent)
 
 type Desc struct {
@@ -161,16 +161,17 @@ func registerHandler(mux *http.ServeMux, path string, h Handler) {
 		}
 		event := &APIEvent{
 			ResponseWriter: rw,
-			HttpReq:        r,
+			HTTPReq:        r,
 		}
+		r.Body.Close()
 		h(event)
 	})
 }
 
-func convertFunc2Handler(matchMethod string, Func func([]byte) ([]byte, error)) Handler {
+func convertFunc2Handler(matchMethod string, f func([]byte) ([]byte, error)) Handler {
 	return func(e *APIEvent) {
-		if e.HttpReq.Method != matchMethod {
-			log.Errorf("not support method: %s", e.HttpReq.Method)
+		if e.HTTPReq.Method != matchMethod {
+			log.Errorf("not support method: %s", e.HTTPReq.Method)
 			http.Error(e, http.ErrNotSupported.ErrorString, http.StatusMethodNotAllowed)
 			return
 		}
@@ -178,14 +179,14 @@ func convertFunc2Handler(matchMethod string, Func func([]byte) ([]byte, error)) 
 		var err error
 
 		if matchMethod != http.MethodGet {
-			// check for post with no data
-			if e.HttpReq.ContentLength <= 0 {
+			// check for post with no data.
+			if e.HTTPReq.ContentLength <= 0 {
 				log.Error("content cannot be empty")
 				http.Error(e, "content cannot be empty", http.StatusBadRequest)
 				return
 			}
-			// read content
-			content, err = ioutil.ReadAll(e.HttpReq.Body)
+			// read content.
+			content, err = ioutil.ReadAll(e.HTTPReq.Body)
 			if err != nil {
 				log.Error(err.Error())
 				http.Error(e, err.Error(), http.StatusBadRequest)
@@ -193,7 +194,7 @@ func convertFunc2Handler(matchMethod string, Func func([]byte) ([]byte, error)) 
 			}
 		}
 
-		resp, err := Func(content)
+		resp, err := f(content)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(e, err.Error(), http.StatusInternalServerError)
@@ -208,7 +209,7 @@ func convertFunc2Handler(matchMethod string, Func func([]byte) ([]byte, error)) 
 	}
 }
 
-func (e *APIEvent) ResponseJson(res interface{}) []byte {
+func (e *APIEvent) ResponseJSON(res interface{}) []byte {
 	bRes, _ := json.Marshal(res)
 	e.Header().Set("Content-Type", "application/json")
 	e.Write(bRes)

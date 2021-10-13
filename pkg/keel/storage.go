@@ -14,14 +14,14 @@ var (
 		if e := os.Getenv("KEEL_PRIVATE_STORE"); e != "" {
 			return e
 		}
-		return PRIVATE_STORE
+		return DefaultPrivateStore
 	}()
 
 	PublicStore = func() string {
 		if e := os.Getenv("KEEL_PUBLIC_STORE"); e != "" {
 			return e
 		}
-		return PUBLIC_STORE
+		return DefaultPublicStore
 	}()
 )
 
@@ -31,9 +31,9 @@ func GetStoreKey(prifix, id string) string {
 
 func GetAllRegisteredPlugin(ctx context.Context) (allPlugin map[string]string, etag string, err error) {
 	allPinItem, err := GetClient().GetState(ctx, PrivateStore,
-		KEY_ALL_REGISTERED_PLUGIN)
+		KeyAllRegisteredPlugin)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("error get state: %w", err)
 	}
 	if allPinItem.Etag == "" {
 		log.Debugf("all plugins is not registered")
@@ -43,7 +43,7 @@ func GetAllRegisteredPlugin(ctx context.Context) (allPlugin map[string]string, e
 	err = json.Unmarshal(allPinItem.Value, &retP)
 	if err != nil {
 		log.Errorf("error json Unmarshal(%v): %s", allPinItem.Value, err)
-		return nil, "", err
+		return nil, "", fmt.Errorf("error json unmarshal: %w", err)
 	}
 	return retP, allPinItem.Etag, nil
 }
@@ -53,11 +53,11 @@ func SaveAllRegisteredPlugin(ctx context.Context, allPlugins map[string]string, 
 	if err != nil {
 		log.Errorf("error json marshal all resigtered plugin map(%v): %s",
 			allPlugins, err)
-		return err
+		return fmt.Errorf("error json marshal: %w", err)
 	}
 	err = GetClient().SaveBulkState(ctx, PrivateStore,
 		&client.SetStateItem{
-			Key:   KEY_ALL_REGISTERED_PLUGIN,
+			Key:   KeyAllRegisteredPlugin,
 			Value: allpByte,
 			Etag: &client.ETag{
 				Value: etag,
@@ -70,17 +70,17 @@ func SaveAllRegisteredPlugin(ctx context.Context, allPlugins map[string]string, 
 	if err != nil {
 		log.Errorf("error save all resigtered plugin map(%v): %s",
 			allPlugins, err)
-		return err
+		return fmt.Errorf("error save state: %w", err)
 	}
 	return nil
 }
 
 func GetScrapeFlag(ctx context.Context) (flag, etag string, err error) {
 	flagItem, err := GetClient().GetState(ctx, PrivateStore,
-		KEY_SCRAPE_FLAG)
+		KeyScrapeFlag)
 	if err != nil {
-		log.Errorf("error get scrape flag(%s): %s", KEY_SCRAPE_FLAG, err)
-		return "", "", err
+		log.Errorf("error get scrape flag(%s): %s", KeyScrapeFlag, err)
+		return "", "", fmt.Errorf("error get state: %w", err)
 	}
 	return string(flagItem.Value), flagItem.Etag, nil
 }
@@ -88,7 +88,7 @@ func GetScrapeFlag(ctx context.Context) (flag, etag string, err error) {
 func SaveScrapeFlag(ctx context.Context, etag string, ttlSecond int64) error {
 	err := GetClient().SaveBulkState(ctx, PrivateStore,
 		&client.SetStateItem{
-			Key:   KEY_SCRAPE_FLAG,
+			Key:   KeyScrapeFlag,
 			Value: []byte("true"),
 			Etag: &client.ETag{
 				Value: func() string {
@@ -107,7 +107,7 @@ func SaveScrapeFlag(ctx context.Context, etag string, ttlSecond int64) error {
 	if err != nil {
 		log.Errorf("error save scrape flag: %s",
 			err)
-		return err
+		return fmt.Errorf("error save state: %w", err)
 	}
 	return nil
 }
@@ -115,10 +115,10 @@ func SaveScrapeFlag(ctx context.Context, etag string, ttlSecond int64) error {
 func GetPlugin(ctx context.Context,
 	pID string) (p *Plugin, etag string, err error) {
 	pluginItem, err := GetClient().GetState(ctx, PrivateStore,
-		GetStoreKey(KEY_PREFIX_PLUGIN, pID))
+		GetStoreKey(KeyPrefixPlugin, pID))
 	if err != nil {
 		log.Errorf("error get plugin(%s): %s", pID, err)
-		return nil, "", err
+		return nil, "", fmt.Errorf("error get state: %w", err)
 	}
 	if pluginItem.Etag == "" {
 		log.Debugf("plugin(%s) is not registered", pID)
@@ -128,7 +128,7 @@ func GetPlugin(ctx context.Context,
 	err = json.Unmarshal(pluginItem.Value, retP)
 	if err != nil {
 		log.Errorf("error json Unmarshal(%v): %s", pluginItem, err)
-		return nil, "", err
+		return nil, "", fmt.Errorf("error json unmarshal: %w", err)
 	}
 	return retP, pluginItem.Etag, nil
 }
@@ -138,11 +138,11 @@ func SavePlugin(ctx context.Context, pin *Plugin, etag string) error {
 	if err != nil {
 		log.Errorf("error json marshal plugin(%s): %s",
 			pin.PluginID, err)
-		return err
+		return fmt.Errorf("error json marshal: %w", err)
 	}
 	err = GetClient().SaveBulkState(ctx, PrivateStore,
 		&client.SetStateItem{
-			Key:   GetStoreKey(KEY_PREFIX_PLUGIN, pin.PluginID),
+			Key:   GetStoreKey(KeyPrefixPlugin, pin.PluginID),
 			Value: npByte,
 			Etag: &client.ETag{
 				Value: etag,
@@ -155,7 +155,7 @@ func SavePlugin(ctx context.Context, pin *Plugin, etag string) error {
 	if err != nil {
 		log.Errorf("error save plugin(%s): %s",
 			pin.PluginID, err)
-		return err
+		return fmt.Errorf("error save state: %w", err)
 	}
 	return nil
 }
@@ -163,10 +163,10 @@ func SavePlugin(ctx context.Context, pin *Plugin, etag string) error {
 func GetPluginRoute(ctx context.Context,
 	pID string) (p *PluginRoute, etag string, err error) {
 	routeItem, err := GetClient().GetState(ctx, PublicStore,
-		GetStoreKey(KEY_PREFIX_PLUGIN_ROUTE, pID))
+		GetStoreKey(KeyPrefixPluginRoute, pID))
 	if err != nil {
 		log.Errorf("error get plugin_route(%s): %s", pID, err)
-		return nil, "", err
+		return nil, "", fmt.Errorf("error get state: %w", err)
 	}
 	if routeItem.Etag == "" {
 		log.Debugf("plugin route(%s) is not registered", pID)
@@ -176,7 +176,7 @@ func GetPluginRoute(ctx context.Context,
 	err = json.Unmarshal(routeItem.Value, retP)
 	if err != nil {
 		log.Errorf("error json Unmarshal(%v): %s", routeItem, err)
-		return nil, "", err
+		return nil, "", fmt.Errorf("error json unmarshal: %w", err)
 	}
 	return retP, routeItem.Etag, nil
 }
@@ -186,11 +186,11 @@ func SavePluginRoute(ctx context.Context, pID string, pRoute *PluginRoute, etag 
 	if err != nil {
 		log.Errorf("error json marshal plugin_route(%s): %s",
 			pID, err)
-		return err
+		return fmt.Errorf("error json marshal: %w", err)
 	}
 	err = GetClient().SaveBulkState(ctx, PublicStore,
 		&client.SetStateItem{
-			Key:   GetStoreKey(KEY_PREFIX_PLUGIN_ROUTE, pID),
+			Key:   GetStoreKey(KeyPrefixPluginRoute, pID),
 			Value: pRouteByte,
 			Etag: &client.ETag{
 				Value: etag,
@@ -203,27 +203,27 @@ func SavePluginRoute(ctx context.Context, pID string, pRoute *PluginRoute, etag 
 	if err != nil {
 		log.Errorf("error save plugin_route(%s): %s",
 			pID, err)
-		return err
+		return fmt.Errorf("error save state: %w", err)
 	}
 	return nil
 }
 
 func DeletePluginRoute(ctx context.Context, pID string) error {
 	err := GetClient().DeleteState(ctx, PublicStore,
-		GetStoreKey(KEY_PREFIX_PLUGIN_ROUTE, pID))
+		GetStoreKey(KeyPrefixPluginRoute, pID))
 	if err != nil {
 		log.Errorf("error delete plugin route(%s): %s", pID, err)
-		return err
+		return fmt.Errorf("error delete state: %w", err)
 	}
 	return nil
 }
 
 func DeletePlugin(ctx context.Context, pID string) error {
 	err := GetClient().DeleteState(ctx, PrivateStore,
-		GetStoreKey(KEY_PREFIX_PLUGIN, pID))
+		GetStoreKey(KeyPrefixPlugin, pID))
 	if err != nil {
 		log.Errorf("error delete plugin(%s): %s", pID, err)
-		return err
+		return fmt.Errorf("error delete state: %w", err)
 	}
 	return nil
 }

@@ -11,19 +11,19 @@ const (
 	undefinedID         = ""
 )
 
-// Options defines the sets of options for Keel logging
+// Options defines the sets of options for Keel logging.
 type Options struct {
-	// ID is the unique id of Keel Application
+	// ID is the unique id of Keel Application.
 	ID string
 
-	// JSONFormatEnabled is the flag to enable JSON formatted log
+	// JSONFormatEnabled is the flag to enable JSON formatted log.
 	JSONFormatEnabled bool
 
-	// OutputLevel is the level of logging
+	// OutputLevel is the level of logging.
 	OutputLevel string
 }
 
-// SetOutputLevel sets the log output level
+// SetOutputLevel sets the log output level.
 func (o *Options) SetOutputLevel(outputLevel string) error {
 	if toLogLevel(outputLevel) == UndefinedLevel {
 		return fmt.Errorf("undefined Log Output Level: %s", outputLevel)
@@ -32,12 +32,12 @@ func (o *Options) SetOutputLevel(outputLevel string) error {
 	return nil
 }
 
-// SetID sets Keel Application ID
+// SetID sets Keel Application ID.
 func (o *Options) SetID(id string) {
 	o.ID = id
 }
 
-// AttachCmdFlags attaches log options to command flags
+// AttachCmdFlags attaches log options to command flags.
 func (o *Options) AttachCmdFlags(
 	stringVar func(p *string, name string, value string, usage string),
 	boolVar func(p *bool, name string, value bool, usage string)) {
@@ -57,7 +57,7 @@ func (o *Options) AttachCmdFlags(
 	}
 }
 
-// DefaultOptions returns default values of Options
+// DefaultOptions returns default values of Options.
 func DefaultOptions() Options {
 	return Options{
 		JSONFormatEnabled: defaultJSONOutput,
@@ -66,11 +66,11 @@ func DefaultOptions() Options {
 	}
 }
 
-// ApplyOptionsToLoggers applys options to all registered loggers
+// ApplyOptionsToLoggers applys options to all registered loggers.
 func ApplyOptionsToLoggers(options *Options) error {
 	internalLoggers := getLoggers()
 
-	// Apply formatting options first
+	// Apply formatting options first.
 	for _, v := range internalLoggers {
 		v.EnableJSONOutput(options.JSONFormatEnabled)
 

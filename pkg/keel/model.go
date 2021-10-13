@@ -8,9 +8,10 @@ import (
 	"sync"
 	"time"
 
-	dapr "github.com/dapr/go-sdk/client"
 	"github.com/tkeel-io/tkeel/pkg/logger"
 	"github.com/tkeel-io/tkeel/pkg/openapi"
+
+	dapr "github.com/dapr/go-sdk/client"
 )
 
 var (
@@ -46,13 +47,13 @@ type Plugin struct {
 }
 
 type PluginRoute struct {
-	Status openapi.PluginStatus `json:"status"`
-	Addons map[string]string    `json:"register_addons"`
+	Status         openapi.PluginStatus `json:"status"`
+	RegisterAddons map[string]string    `json:"register_addons"`
 }
 
 type CallReq struct {
 	Header   http.Header
-	UrlValue url.Values
+	URLValue url.Values
 	Body     []byte
 }
 
@@ -77,7 +78,7 @@ func WaitDaprSidecarReady(retry int) bool {
 	}
 
 	health := func() bool {
-		resp, err := http.DefaultClient.Get(K8S_DAPR_SIDECAR_PROBE)
+		resp, err := http.DefaultClient.Get(K8SDaprSidecarProbe)
 		if err != nil || (resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK) {
 			log.Debugf("dapr sidecar not ready: %s", func() string {
 				if err != nil {

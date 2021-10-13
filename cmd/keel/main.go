@@ -16,7 +16,7 @@ var (
 )
 
 func main() {
-	logger.PluginVersion = version.Version()
+	logger.SetPluginVersion(version.Version())
 	log.Infof("starting tKeel keel -- version %s -- commit %s", version.Version(), version.Commit())
 	plugin, err := plugin.FromFlags()
 	if err != nil {

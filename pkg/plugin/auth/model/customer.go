@@ -1,6 +1,6 @@
 package model
 
-// 客户
+// 客户.
 type Customer struct {
 	ID          string `json:"id"`
 	TenantID    string `json:"tenant_id"`

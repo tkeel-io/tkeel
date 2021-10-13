@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"flag"
+	"fmt"
 	"strconv"
 
 	keelconfig "github.com/tkeel-io/tkeel/pkg/config"
@@ -25,7 +26,7 @@ func FromFlags() (*Plugin, error) {
 	pluginID := flag.String("plugin-id", utils.GetEnv("PLUGIN_ID", "keel-hello"), "Plugin id")
 	pluginVersion := flag.String("plugin-version", utils.GetEnv("PLUGIN_VERSION", version.Version()), "Plugin version")
 	defaultPluginHTTPPort, _ := strconv.Atoi(utils.GetEnv("PLUGIN_HTTP_PORT", "8080"))
-	pluginHttpPort := flag.Int("plugin-http-port", defaultPluginHTTPPort, "The port that the plugin listens to")
+	pluginHTTPPort := flag.Int("plugin-http-port", defaultPluginHTTPPort, "The port that the plugin listens to")
 	daprPort := flag.String("dapr-http-port", utils.GetEnv("DAPR_HTTP_PORT", "3500"), "The port that the dapr listens to")
 	config := flag.String("keel-plugin-config", utils.GetEnv("KEEL_PLUGIN_CONFIG", ""), "Path to config file, or name of a configuration object")
 
@@ -41,13 +42,13 @@ func FromFlags() (*Plugin, error) {
 		conf, err := keelconfig.LoadStandaloneConfiguration(*config)
 		if err != nil {
 			log.Errorf("load plugin config(%s) err: %s", *config, err)
-			return nil, err
+			return nil, fmt.Errorf("error load plugin: %w", err)
 		}
 		newPlugin.conf = conf
 	} else {
 		conf := keelconfig.LoadDefaultConfiguration()
 		conf.Plugin.ID = *pluginID
-		conf.Plugin.Port = *pluginHttpPort
+		conf.Plugin.Port = *pluginHTTPPort
 		conf.Plugin.Version = *pluginVersion
 		newPlugin.conf = conf
 	}
@@ -67,5 +68,8 @@ func (p *Plugin) Run(apis ...*openapi.API) error {
 	for _, a := range apis {
 		p.AddOpenAPI(a)
 	}
-	return p.Listen()
+	if err := p.Listen(); err != nil {
+		return fmt.Errorf("error plugin listen: %w", err)
+	}
+	return nil
 }

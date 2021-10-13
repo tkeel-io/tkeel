@@ -6,16 +6,17 @@ import (
 	"time"
 
 	"github.com/tkeel-io/tkeel/pkg/token"
+	"github.com/tkeel-io/tkeel/pkg/utils"
 )
 
-const userTokenSecret = "FZyPg6lWTtCt0yCf0ZnDNWhHSt1rtOho"
+var userTokenSecret = utils.GetEnv("USER_TOKEN_SECRET", "FZyPg6lWTtCt0yCf0ZnDNWhHSt1rtOho")
 
 var (
-	idProvider token.IdProvider
+	idProvider token.IDProvider
 )
 
 func init() {
-	idProvider = token.InitIdProvider([]byte(userTokenSecret), "", "")
+	idProvider = token.InitIDProvider([]byte(userTokenSecret), "", "")
 }
 
 func genUserToken(userID, tenantID, tokenID string) (token, jti string, err error) {
@@ -23,13 +24,18 @@ func genUserToken(userID, tenantID, tokenID string) (token, jti string, err erro
 	m["uid"] = userID
 	m["tid"] = tenantID
 	duration := 12 * time.Hour
-	token, err = idProvider.Token("user", tokenID, duration, &m)
-	jti = m["jti"].(string)
+	token, err = idProvider.Token("user", tokenID, duration, m)
+	var ok bool
+	jti, ok = m["jti"].(string)
+	if !ok {
+		err = errors.New("type assertion faild")
+		return
+	}
 	return
 }
 
 func parseUserToken(token string) (userID, tenantID string, err error) {
-	var m = make(map[string]interface{})
+	var m map[string]interface{}
 	if token == "" {
 		err = errors.New("invalid token")
 		return
@@ -38,8 +44,17 @@ func parseUserToken(token string) (userID, tenantID string, err error) {
 	if err != nil {
 		return
 	}
-	userID = m["uid"].(string)
-	tenantID = m["tid"].(string)
+	var ok bool
+	userID, ok = m["uid"].(string)
+	if !ok {
+		err = errors.New("type assertion faild")
+		return
+	}
+	tenantID, ok = m["tid"].(string)
+	if !ok {
+		err = errors.New("type assertion faild")
+		return
+	}
 	return
 }
 

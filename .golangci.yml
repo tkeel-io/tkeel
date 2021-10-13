@@ -217,6 +217,20 @@ linters-settings:
     allow-case-traling-whitespace: true
     # Allow declarations (var) to be cuddled.
     allow-cuddle-declarations: false
+  tagliatelle:
+    # check the struck tag name case
+    case:
+      # use the struct field name to check the name of the struct tag
+      use-field-name: true
+      rules:
+        # any struct tag type can be used.
+        # support string case: `camel`, `pascal`, `kebab`, `snake`, `goCamel`, `goPascal`, `goKebab`, `goSnake`, `upper`, `lower`
+        json: snake
+        yaml: camel
+        xml: kebab
+        bson: camel
+        avro: snake
+        mapstructure: kebab
 
 linters:
   fast: false
@@ -245,6 +259,9 @@ linters:
     - exhaustive
     - noctx
     - gci
+    - exhaustivestruct
+    - paralleltest
+    - gofumpt
 issues:
   exclude:
     # staticcheck

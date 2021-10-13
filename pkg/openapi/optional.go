@@ -2,6 +2,7 @@ package openapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -16,17 +17,17 @@ func registerOptional(mux *http.ServeMux, apiOptional Optional) {
 				req := &AddonsIdentifyReq{}
 				err := json.Unmarshal(b, req)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("error json unmashal: %w", err)
 				}
 
 				resp, err := apiOptional.AddonsIdentify(req)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("error addons identify: %w", err)
 				}
 
 				respByte, err := json.Marshal(resp)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("error json marshal: %w", err)
 				}
 				return respByte, nil
 			}))

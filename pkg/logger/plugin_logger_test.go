@@ -161,6 +161,7 @@ func TestJSONLoggerFields(t *testing.T) {
 		// 		l.Fatalf("%s", msg)
 		// 	},
 		// },
+		// .
 	}
 
 	for _, tt := range tests {
@@ -170,7 +171,7 @@ func TestJSONLoggerFields(t *testing.T) {
 			testLogger.EnableJSONOutput(true)
 			testLogger.SetID(tt.ID)
 			testLogger.SetPluginName(tt.ID)
-			PluginVersion = tt.ID
+			SetPluginVersion(tt.ID)
 			testLogger.SetOutputLevel(tt.outputLevel)
 			testLogger.logger.Data[logFieldInstance] = tt.instance
 
@@ -180,7 +181,7 @@ func TestJSONLoggerFields(t *testing.T) {
 			var o map[string]interface{}
 			assert.NoError(t, json.Unmarshal(b, &o))
 
-			// assert
+			// assert.
 			assert.Equal(t, tt.ID, o[logFieldID])
 			assert.Equal(t, tt.ID, o[logFieldPluginName])
 			assert.Equal(t, tt.instance, o[logFieldInstance])
@@ -202,8 +203,8 @@ func TestWithTypeFields(t *testing.T) {
 	testLogger.SetPluginName("plugin_test")
 	testLogger.SetOutputLevel(InfoLevel)
 
-	// WithLogType will return new Logger with request log type
-	// Meanwhile, testLogger uses the default logtype
+	// WithLogType will return new Logger with request log type.
+	// Meanwhile, testLogger uses the default logtype.
 	loggerWithRequestType := testLogger.WithLogType(LogTypeRequest)
 	loggerWithRequestType.Info("call user plugin")
 
@@ -213,7 +214,7 @@ func TestWithTypeFields(t *testing.T) {
 
 	assert.Equalf(t, LogTypeRequest, o[logFieldType], "new logger must be %s type", LogTypeRequest)
 
-	// Log our via testLogger to ensure that testLogger still uses the default logtype
+	// Log our via testLogger to ensure that testLogger still uses the default logtype.
 	testLogger.Info("testLogger with log LogType")
 
 	b, _ = buf.ReadBytes('\n')

@@ -8,27 +8,27 @@ import (
 
 func TestVersion(t *testing.T) {
 	t.Run("test version", func(t *testing.T) {
-		// act
+		// act.
 		ver := Version()
-		// assert
+		// assert.
 		assert.Equal(t, ver, "edge")
 	})
 }
 
 func TestCommit(t *testing.T) {
 	t.Run("test git commit", func(t *testing.T) {
-		// act
+		// act.
 		hash := Commit()
-		// assert
+		// assert.
 		assert.Equal(t, hash, "")
 	})
 }
 
 func TestGitVersion(t *testing.T) {
 	t.Run("test Git version", func(t *testing.T) {
-		// act
+		// act.
 		ver := GitVersion()
-		// assert
+		// assert.
 		assert.Equal(t, ver, "")
 	})
 }

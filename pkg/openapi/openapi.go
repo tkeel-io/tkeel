@@ -57,7 +57,10 @@ func (a *Openapi) Listen() error {
 		Addr:    fmt.Sprintf(":%d", a.port),
 		Handler: a.mux,
 	}
-	return server.ListenAndServe()
+	if err := server.ListenAndServe(); err != nil {
+		return fmt.Errorf("error listen(%d) and serve: %w", a.port, err)
+	}
+	return nil
 }
 
 func (a *Openapi) Close() error {
@@ -76,15 +79,14 @@ func (a *Openapi) SetOptionalFunc(o OptionalFunc) {
 }
 
 func (a *Openapi) AddOpenAPI(o *API) error {
-	err := o.Check()
-	if err != nil {
+	if err := o.Check(); err != nil {
 		return err
 	}
 	a.registerAPIMap[o.Endpoint] = o
 	return nil
 }
 
-// Required API
+// Required API.
 
 func (a *Openapi) GetIdentifyResp() *IdentifyResp {
 	return &IdentifyResp{
@@ -121,7 +123,7 @@ func (a *Openapi) TenantBind(req *TenantBindReq) (*TenantBindResp, error) {
 	return a.requiredFunc.TenantBind(req)
 }
 
-// Optional API
+// Optional API.
 
 func (a *Openapi) AddonsIdentify(req *AddonsIdentifyReq) (*AddonsIdentifyResp, error) {
 	if a.optionalFunc.AddonsIdentify == nil {

@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -9,31 +10,49 @@ import (
 )
 
 var (
-	entityIdp token.IdProvider
+	entityIdp token.IDProvider
 	devOnce   sync.Once
 )
 
 func InitEntityIdp(rsaPri, rsaPub string) {
-	devOnce.Do(func() { entityIdp = token.InitIdProvider(nil, rsaPri, rsaPub) })
+	devOnce.Do(func() { entityIdp = token.InitIDProvider(nil, rsaPri, rsaPub) })
 }
 
-func genEntityToken(userID, tenantID, tokenID, entityID, entityType string, m *map[string]interface{}) (token, jti string, err error) {
+func genEntityToken(userID, tenantID, tokenID, entityID, entityType string, m map[string]interface{}) (token, jti string, err error) {
 	if m == nil {
-		mm := make(map[string]interface{})
-		m = &mm
+		m = make(map[string]interface{})
 	}
-	(*m)["uid"] = userID
-	(*m)["tid"] = tenantID
-	(*m)["eid"] = entityID
-	(*m)["typ"] = entityType
+	m["uid"] = userID
+	m["tid"] = tenantID
+	m["eid"] = entityID
+	m["typ"] = entityType
 	duration := 365 * 24 * time.Hour
 	token, err = entityIdp.Token("entity", tokenID, duration, m)
-	jti = (*m)["jti"].(string)
+	if err != nil {
+		err = fmt.Errorf("error token: %w", err)
+		return
+	}
+	jti, ok := m["jti"].(string)
+	if !ok {
+		err = errors.New("error type assertion")
+		return
+	}
 	return
 }
 
+func checkEntityToken(token string) error {
+	if token == "" {
+		return errors.New("invalid token")
+	}
+	_, err := entityIdp.Validate(token)
+	if err != nil {
+		return fmt.Errorf("error validate: %w", err)
+	}
+	return nil
+}
+
 func parseEntityToken(token string) (userID, tenantID, tokenID, entityID, entityType string, err error) {
-	var m = make(map[string]interface{})
+	var m map[string]interface{}
 	if token == "" {
 		err = errors.New("invalid token")
 		return
@@ -42,10 +61,31 @@ func parseEntityToken(token string) (userID, tenantID, tokenID, entityID, entity
 	if err != nil {
 		return
 	}
-	userID = m["uid"].(string)
-	tenantID = m["tid"].(string)
-	tokenID = m["jti"].(string)
-	entityID = m["eid"].(string)
-	entityType = m["typ"].(string)
-	return
+	var ok bool
+	userID, ok = m["uid"].(string)
+	if !ok {
+		err = errors.New("error type assertion")
+		return
+	}
+	tenantID, ok = m["tid"].(string)
+	if !ok {
+		err = errors.New("error type assertion")
+		return
+	}
+	tokenID, ok = m["jti"].(string)
+	if !ok {
+		err = errors.New("error type assertion")
+		return
+	}
+	entityID, ok = m["eid"].(string)
+	if !ok {
+		err = errors.New("error type assertion")
+		return
+	}
+	entityType, ok = m["typ"].(string)
+	if !ok {
+		err = errors.New("error type assertion")
+		return
+	}
+	return userID, tenantID, tokenID, entityID, entityType, nil
 }
