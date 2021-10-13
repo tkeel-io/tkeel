@@ -1,0 +1,7 @@
+# Default values for keel-paas.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+redis:
+  architecture: standalone
+  fullnameOverride: tkeel-middleware-redis

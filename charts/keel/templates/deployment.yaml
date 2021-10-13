@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "keel.name" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "keel.name" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "keel.name" . }}
+  template:
+    metadata:
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: {{ include "keel.name" . }}
+        dapr.io/app-port: {{ .Values.appPort | quote }}
+        dapr.io/config: {{ .Values.daprConfig }}
+      labels:
+        app: {{ include "keel.name" . }}
+    spec:
+      {{- if .imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .imagePullSecrets }}
+      {{- end }}
+      containers:
+        - name: {{ include "keel.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.appPort }}
+          env:
+            - name: KEEL_PRIVATE_STORE
+              value: {{ printf "%s-redis-private-store" .Values.middleware.name }}
+            - name: KEEL_PUBLIC_STORE
+              value: {{ printf "%s-redis-public-store" .Values.middleware.name }}
