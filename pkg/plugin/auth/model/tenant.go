@@ -52,8 +52,7 @@ func (r *Tenant) Create(ctx context.Context) error {
 		json.Unmarshal(items, &gTenantStore)
 	}
 
-	_, ok := gTenantStore[r.Title]
-	if ok {
+	if _, ok := gTenantStore[r.Title]; ok {
 		return errors.New(openapi.ErrResourceExisted)
 	}
 
