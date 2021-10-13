@@ -41,7 +41,11 @@ func (p *PluginAuth) Run() {
 			},
 			{
 				Endpoint: "/user/login",
-				H:        p.api.UserLogin,
+				H:        p.api.Login,
+			},
+			{
+				Endpoint: "/authenticate",
+				H:        p.api.Authenticate,
 			},
 			{
 				Endpoint: "/user/logout",
@@ -63,6 +67,9 @@ func (p *PluginAuth) Run() {
 			{
 				Endpoint: "/token/parse",
 				H:        p.api.TokenParse,
+			}, {
+				Endpoint: "/token/create",
+				H:        p.api.TokenCreate,
 			},
 			{
 				Endpoint: "/token/valid",

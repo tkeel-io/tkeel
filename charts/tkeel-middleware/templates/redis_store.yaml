@@ -1,0 +1,22 @@
+{{- range tuple "private" "public" }}
+---
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: {{ printf "%s-redis-%s-store" $.Chart.Name . }}
+  namespace: {{ $.Release.Namespace | quote }}
+spec:
+  type: state.redis
+  version: v1
+  metadata:
+  - name: redisHost
+    value: {{ printf "%s-redis:6379" $.Chart.Name }}
+  - name: redisPassword
+    secretKeyRef:
+      key: redis-password
+      name: {{ printf "%s-redis" $.Chart.Name }}
+  {{- if (eq . "public") }}
+  - name: keyPrefix
+    value: none
+  {{- end }}
+{{- end }}
