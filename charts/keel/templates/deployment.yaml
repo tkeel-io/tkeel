@@ -1,37 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "auth.name" . }}
+  name: {{ include "keel.name" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    app: {{ include "auth.name" . }}
+    app: {{ include "keel.name" . }}
 spec:
-  replicas: {{ .Values.global.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "auth.name" . }}
+      app: {{ include "keel.name" . }}
   template:
     metadata:
       annotations:
         dapr.io/enabled: "true"
-        dapr.io/app-id: {{ include "auth.name" . | quote }}
-        dapr.io/app-port: {{.Values.global.pluginPort | quote }}
+        dapr.io/app-id: {{ include "keel.name" . }}
+        dapr.io/app-port: {{ .Values.appPort | quote }}
         dapr.io/config: {{ .Values.daprConfig }}
       labels:
-        app: {{ include "auth.name" . }}
+        app: {{ include "keel.name" . }}
     spec:
       {{- if .imagePullSecrets }}
       imagePullSecrets:
         - name: {{ .imagePullSecrets }}
       {{- end }}
       containers:
-        - name: {{ include "auth.name" . }}
+        - name: {{ include "keel.name" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.global.pluginPort }}
+            - containerPort: {{ .Values.appPort }}
           env:
             - name: KEEL_PRIVATE_STORE
-              value: {{ .Values.global.privateStore | quote }}
+              value: {{ printf "%s-redis-private-store" .Values.middleware.name }}
             - name: KEEL_PUBLIC_STORE
-              value: {{ .Values.global.publicStore | quote }}
+              value: {{ printf "%s-redis-public-store" .Values.middleware.name }}

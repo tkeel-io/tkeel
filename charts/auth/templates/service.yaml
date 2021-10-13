@@ -8,5 +8,5 @@ spec:
     app: {{ include "auth.name" . }}
   ports:
     - protocol: TCP
-      port: {{ .Values.global.pluginPort }}
-      targetPort: {{ .Values.global.pluginPort }}
+      port: {{ .Values.appPort }}
+      targetPort: {{ .Values.appPort }}

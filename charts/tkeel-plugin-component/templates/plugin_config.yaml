@@ -1,14 +1,12 @@
-{{- range .Values.plugins }}
----
 apiVersion: dapr.io/v1alpha1
 kind: Configuration
 metadata:
-  name: {{ .name }}
-  namespace: {{ $.Release.Namespace | quote }}
+  name: {{ .Values.pluginID }}
+  namespace: {{ .Release.Namespace | quote }}
 spec:
   accessControl:
     trustDomain: "keel"
-    {{- if (eq .name "keel") }}
+    {{- if (eq .Values.pluginID "keel") }}
     defaultAction: allow
     {{- else }}
     defaultAction: deny
@@ -16,14 +14,13 @@ spec:
     - appId: plugins
       defaultAction: allow
       trustDomain: 'keel'
-      namespace: {{ $.Release.Namespace | quote }}
+      namespace: {{ .Release.Namespace | quote }}
     - appId: keel
       defaultAction: allow
       trustDomain: 'keel'
-      namespace: {{ $.Release.Namespace | quote }}
+      namespace: {{ .Release.Namespace | quote }}
     {{- end }}
   httpPipeline:
     handlers:
-    - name: {{ .name }}-oauth2-client
+    - name: {{ .Values.pluginID }}-oauth2-client
       type: middleware.http.oauth2clientcredentials
-{{- end}}
