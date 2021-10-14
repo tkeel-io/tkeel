@@ -1,8 +1,18 @@
-# OAuth2.0 
+# AUTH-003-oauth2-design
+
+## Status
+Proposed
+
+## Context
+用户授权和认证系统为了以后更好的去对接第三方平台或第三方用户管理系统，在协议规范上应尽可能的遵循现有的主流认证规范。
+
+## Decision
+将**Oauth2**规范进行部分实现，加入到现有的**auth**插件中，结合平台的设计和特有的租户管理系统，对规范中的流程选择性的实现。
+
+
+### Oauth介绍和平台实现
 
 OAuth是一个开放标准，它允许用户在不提供用户名密码给第三方应用的情况下给第三方应用授权。
-
-## 简介
 
 ### 角色
 
@@ -214,8 +224,7 @@ error_uri
 ### api
 
 -   oauth
-    -   authorize
-        -   response_type(code/token)
-    -   token
-        -   grant_type(authorization_code/refresh_token/password)
-    -   authenticate( userinfo)
+    -   login
+    -   token( Resource Owner Password Credentials Grant)
+    -   authorize (Only support implicit grant flow)
+    -   authenticate( authentication)

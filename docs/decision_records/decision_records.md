@@ -11,7 +11,7 @@ All decisions are categorized in the following folders:
 * **Architecture** - Decisions on general architecture, code structure, coding conventions and common practices.
 
   
-* **API** - Decisions on TKeel platform API designs.
+* **OPENAPI** - Decisions on TKeel platform OPENAPI designs.
 
 
 * **CLI** - Decisions on TKeel CLI architecture and behaviors.
@@ -34,7 +34,10 @@ A new decision record should be a _.md_ file named as
 |Category|Prefix|
 |----|----|
 |Architecture|ARC|
-|API|API|
+|OPENAPI|OPENAPI|
+|PLUGIN-AUTH|AUTH|
+|PLUGIN-KEEL|KEEL|
+|PLUGIN-PLUGINS|PLUGINS|
 |CLI|CLI|
 |SDKs|SDK|
 |Engineering|ENG|
