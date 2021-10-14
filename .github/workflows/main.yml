@@ -1,5 +1,4 @@
-name: tkeel
-
+name: core
 on:
   push:
     branches:
@@ -23,12 +22,12 @@ jobs:
         with:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.42
-  test:
-    name: Test in ${{ matrix.target_os }}_${{ matrix.target_arch }}
+  test_ADM64:
+    name: Test in ${{ matrix.target_os }}_${{ matrix.target_arch }} with Go_${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     needs: [ lint ]
     env:
-      GOVER: 1.17.2
+      GOVER: ${{ matrix.go }}
       GOOS: ${{ matrix.target_os }}
       GOARCH: ${{ matrix.target_arch }}
       GOPROXY: https://proxy.golang.org
@@ -36,7 +35,8 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macOS-latest ]
-        target_arch: [ arm, arm64, amd64 ]
+        go: [ 1.17.2, 1.16 ]
+        target_arch: [ amd64 ]
         include:
           - os: ubuntu-latest
             target_os: linux
@@ -44,32 +44,27 @@ jobs:
             target_os: windows
           - os: macOS-latest
             target_os: darwin
-        exclude:
-          - os: windows-latest
-            target_arch: arm
-          - os: windows-latest
-            target_arch: arm64
-          - os: macOS-latest
-            target_arch: arm
-          - os: macOS-latest
-            target_arch: arm64
       fail-fast: false
     steps:
-      - name: Set up Go ${{env.GOVER}}
+      - name: Set up Go ${{ matrix.go }}
         uses: actions/setup-go@v2.1.4
         with:
-          go-version: ${{ env.GOVER }}
-      - name: Check out code into the Go module directory
+          go-version: ${{ matrix.go }}
+      - name: Check out code
         uses: actions/checkout@v2
       - name: Run make go.mod check-diff
-        if: matrix.target_arch == 'amd64' && matrix.target_os == 'linux'
+        if: matrix.target_os == 'linux'
         run: git diff --exit-code ./go.mod
-      - name: run test
+      - name: run test in widnows
+        if: matrix.target_os == 'windows'
+        run: go test -v -cover -gcflags=all=-l .\...
+      - name: run tests
+        if: matrix.target_os != 'windows'
         run: go test -v -cover -gcflags=all=-l -coverprofile=coverage.out ./...
   build:
     name: Build ${{ matrix.target_os }}_${{ matrix.target_arch }} binaries
     runs-on: ${{ matrix.os }}
-    needs: [lint, test]
+    needs: [ lint, test_ADM64 ]
     env:
       GOVER: 1.17.2
       GOOS: ${{ matrix.target_os }}
@@ -113,6 +108,13 @@ jobs:
       - name: Codecov
         if: matrix.target_arch == 'amd64' && matrix.target_os == 'linux'
         uses: codecov/codecov-action@v1
+      - name: Parse release version and set REL_VERSION
+        run: python ./.github/scripts/get_release_version.py
+      - name: Setup test output
+        shell: bash
+        run: |
+          export TEST_OUTPUT_FILE=$GITHUB_WORKSPACE/test-unit.json
+          echo "TEST_OUTPUT_FILE=$TEST_OUTPUT_FILE" >> $GITHUB_ENV
       - name: Run make release to build and archive binaries
         run: |
           mkdir -p ${{ env.ARCHIVE_OUTDIR }}
@@ -121,6 +123,17 @@ jobs:
         if: matrix.target_arch == 'amd64' && matrix.target_os == 'linux'
         run: |
           [ ! -z "${{ env.REL_VERSION }}" ] && echo "${{ env.REL_VERSION }}" > "${{ env.ARCHIVE_OUTDIR }}/release_version.txt"
+      - name: upload artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: cli_drop
+          path: ${{ env.ARCHIVE_OUTDIR }}
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ matrix.target_os }}_${{ matrix.target_arch }}_test_unit.json
+          path: ${{ env.TEST_OUTPUT_FILE }}
 
   publish:
     name: Publish binaries
