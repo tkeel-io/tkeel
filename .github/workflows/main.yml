@@ -64,7 +64,7 @@ jobs:
   build:
     name: Build ${{ matrix.target_os }}_${{ matrix.target_arch }} binaries
     runs-on: ${{ matrix.os }}
-    needs: [ lint, test_ADM64, test_ARM64 ]
+    needs: [ lint, test_ADM64 ]
     env:
       GOVER: 1.17.2
       GOOS: ${{ matrix.target_os }}
