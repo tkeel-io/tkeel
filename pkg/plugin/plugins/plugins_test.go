@@ -12,7 +12,8 @@ import (
 var pp *plugin.Plugin
 
 func TestMain(m *testing.M) {
-	os.Setenv("PLUGIN_ID", "keel-manager")
+	os.Setenv("PLUGIN_ID", "plugins")
+	os.Setenv("PLUGIN_HTTP_PORT", "8082")
 	pp, _ = plugin.FromFlags()
 	m.Run()
 	os.Exit(0)

@@ -24,7 +24,7 @@ func TestNewPluginFromFlag(t *testing.T) {
 		// assert.
 		assert.NoError(t, err)
 		assert.NotNil(t, p)
-		assert.Equal(t, conf.Plugin.ID, "com-keel-hello")
+		assert.Equal(t, conf.Plugin.ID, "keel-hello")
 		assert.Equal(t, conf.Plugin.Version, version.Version())
 		assert.Equal(t, conf.Plugin.Port, 8080)
 	})
