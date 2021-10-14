@@ -27,3 +27,8 @@ type TokenValidReq struct {
 type TokenValidResp struct {
 	IsValid bool `json:"is_valid"`
 }
+
+type OAuth2TokenReq struct {
+	
+
+}

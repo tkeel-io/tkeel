@@ -214,7 +214,8 @@ error_uri
 ### api
 
 -   oauth
-    -   login
-    -   token( Resource Owner Password Credentials Grant)
-    -   authorize (Only support implicit grant flow)
-    -   authenticate( authentication)
+    -   authorize
+        -   response_type(code/token)
+    -   token
+        -   grant_type(authorization_code/refresh_token/password)
+    -   authenticate( userinfo)

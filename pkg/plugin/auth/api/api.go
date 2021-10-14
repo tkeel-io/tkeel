@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,10 +19,10 @@ var (
 )
 
 type API interface {
+	OAuthToken(e *openapi.APIEvent)
+	OAuthAuthorize(e *openapi.APIEvent)
+	OAuthAuthenticate(e *openapi.APIEvent)
 	Login(e *openapi.APIEvent)
-	Token(e *openapi.APIEvent)
-	Authorize(e *openapi.APIEvent)
-	Authenticate(e *openapi.APIEvent)
 	UserLogout(e *openapi.APIEvent)
 
 	TenantCreate(e *openapi.APIEvent)
@@ -49,15 +50,33 @@ func NewAPI() API {
 	return &api{}
 }
 
-func (a *api) Token(e *openapi.APIEvent) {
+func (a *api) OAuthToken(e *openapi.APIEvent) {
+	if e.HTTPReq.Method!=http.MethodGet{
+		log.Errorf("error method(%s) not allowed for oauth token", e.HTTPReq.Method)
+		http.Error(e, "method not allow", http.StatusMethodNotAllowed)
+		return
+	}
+	switch utils.GetURLValue(e.HTTPReq.URL,"grant_type"){
+	case "code":
+
+	case "password":
+	case "refresh_token":
+	default:
+
+
+	}
+
+
+
+
+
+}
+
+func (a *api) OAuthAuthorize(e *openapi.APIEvent) {
 	panic("implement me")
 }
 
-func (a *api) Authorize(e *openapi.APIEvent) {
-	panic("implement me")
-}
-
-func (a *api) Authenticate(e *openapi.APIEvent) {
+func (a *api) OAuthAuthenticate(e *openapi.APIEvent) {
 	var (
 		req      *params.UserTokenReviewReq
 		respData *params.UserTokenReviewResp
@@ -65,7 +84,7 @@ func (a *api) Authenticate(e *openapi.APIEvent) {
 	)
 	req = &params.UserTokenReviewReq{}
 	if err = utils.ReadBody2Json(e.HTTPReq.Body, req); err != nil {
-		log.Errorf("[PluginAuth] api  Authenticate err %v", err)
+		log.Errorf("[PluginAuth] api  OAuthAuthenticate err %v", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrParamsInvalid))
 		return
 	}
@@ -75,7 +94,7 @@ func (a *api) Authenticate(e *openapi.APIEvent) {
 	}
 	userID, tenantID, err := parseUserToken(req.Token)
 	if err != nil {
-		log.Error("[PluginAuth] api Authenticate ", err)
+		log.Error("[PluginAuth] api OAuthAuthenticate ", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInvalidGrant))
 		return
 	}

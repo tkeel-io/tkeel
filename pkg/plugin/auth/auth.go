@@ -36,7 +36,7 @@ func (p *PluginAuth) Run() {
 		err := p.p.Run([]*openapi.API{
 			{Endpoint: "/role/create", H: p.api.RoleCreate},
 			{Endpoint: "/user/login", H: p.api.Login},
-			{Endpoint: "/authenticate", H: p.api.Authenticate},
+			{Endpoint: "/authenticate", H: p.api.OAuthAuthenticate},
 			{Endpoint: "/user/logout", H: p.api.UserLogout},
 			{Endpoint: "/user/create", H: p.api.UserCreate},
 			{Endpoint: "/tenant/create", H: p.api.TenantCreate},
