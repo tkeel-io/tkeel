@@ -108,6 +108,13 @@ jobs:
       - name: Codecov
         if: matrix.target_arch == 'amd64' && matrix.target_os == 'linux'
         uses: codecov/codecov-action@v1
+      - name: Parse release version and set REL_VERSION
+        run: python ./.github/scripts/get_release_version.py
+      - name: Setup test output
+        shell: bash
+        run: |
+          export TEST_OUTPUT_FILE=$GITHUB_WORKSPACE/test-unit.json
+          echo "TEST_OUTPUT_FILE=$TEST_OUTPUT_FILE" >> $GITHUB_ENV
       - name: Run make release to build and archive binaries
         run: |
           mkdir -p ${{ env.ARCHIVE_OUTDIR }}
@@ -116,6 +123,17 @@ jobs:
         if: matrix.target_arch == 'amd64' && matrix.target_os == 'linux'
         run: |
           [ ! -z "${{ env.REL_VERSION }}" ] && echo "${{ env.REL_VERSION }}" > "${{ env.ARCHIVE_OUTDIR }}/release_version.txt"
+      - name: upload artifacts
+        uses: actions/upload-artifact@master
+        with:
+          name: cli_drop
+          path: ${{ env.ARCHIVE_OUTDIR }}
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@master
+        with:
+          name: ${{ matrix.target_os }}_${{ matrix.target_arch }}_test_unit.json
+          path: ${{ env.TEST_OUTPUT_FILE }}
 
   publish:
     name: Publish binaries
