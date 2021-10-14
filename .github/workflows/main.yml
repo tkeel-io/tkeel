@@ -61,29 +61,6 @@ jobs:
       - name: run tests
         if: matrix.target_os != 'windows'
         run: go test -v -cover -gcflags=all=-l -coverprofile=coverage.out ./...
-  test_ARM64:
-    name: Test in ${{ matrix.os }} with go_${{ matrix.go }}
-    runs-on: ${{ matrix.os }}
-    needs: [ lint ]
-    env:
-      GOPROXY: https://proxy.golang.org
-    strategy:
-      matrix:
-        os: [ linux, ARM64 ]
-        go: [ 1.17.2, 1.16 ]
-      fail-fast: false
-    steps:
-      - name: Set up Go ${{ matrix.go }}
-        uses: actions/setup-go@v2.1.4
-        with:
-          go-version: ${{ matrix.go }}
-      - name: Check out code
-        uses: actions/checkout@v2
-      - name: Run make go.mod check-diff
-        if: matrix.target_os == 'linux'
-        run: git diff --exit-code ./go.mod
-      - name: run tests
-        run: go test -v -cover -gcflags=all=-l -coverprofile=coverage.out ./...
   build:
     name: Build ${{ matrix.target_os }}_${{ matrix.target_arch }} binaries
     runs-on: ${{ matrix.os }}
