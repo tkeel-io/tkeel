@@ -1,4 +1,4 @@
-# CLI-002: Kubernetes mode Init and Uninstall behaviours
+# CLI-001: Kubernetes mode Init and Uninstall behaviours
 
 ## Status
 Accepted
