@@ -23,7 +23,7 @@ jobs:
           # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
           version: v1.42
   test_ADM64:
-    name: Test in ${{ matrix.target_os }}_${{ matrix.target_arch }}
+    name: Test in ${{ matrix.target_os }}_${{ matrix.target_arch }} with Go_${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     needs: [ lint ]
     env:
