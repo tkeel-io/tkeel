@@ -35,7 +35,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macOS-latest ]
-        go: [ 1.17.2, 1.16, 1.15 ]
+        go: [ 1.17.2, 1.16 ]
         target_arch: [ amd64 ]
         include:
           - os: ubuntu-latest
@@ -57,7 +57,7 @@ jobs:
         run: git diff --exit-code ./go.mod
       - name: run test in widnows
         if: matrix.target_os == 'windows'
-        run: go test -v -cover -gcflags=all=-l -coverprofile=coverage.out .\...
+        run: go test -v -cover -gcflags=all=-l .\...
       - name: run tests
         if: matrix.target_os != 'windows'
         run: go test -v -cover -gcflags=all=-l -coverprofile=coverage.out ./...
@@ -70,7 +70,7 @@ jobs:
     strategy:
       matrix:
         os: [ self-hosted, linux, ARM64 ]
-        go: [ 1.17.2, 1.16, 1.15 ]
+        go: [ 1.17.2, 1.16 ]
       fail-fast: false
     steps:
       - name: Set up Go ${{ matrix.go }}
