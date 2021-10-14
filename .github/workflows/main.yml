@@ -62,14 +62,14 @@ jobs:
         if: matrix.target_os != 'windows'
         run: go test -v -cover -gcflags=all=-l -coverprofile=coverage.out ./...
   test_ARM64:
-    name: Test in ${{ matrix.target_os }}_${{ matrix.target_arch }}
+    name: Test in ${{ matrix.os }} with go_${{ matrix.go }}
     runs-on: ${{ matrix.os }}
     needs: [ lint ]
     env:
       GOPROXY: https://proxy.golang.org
     strategy:
       matrix:
-        os: [ self-hosted, linux, ARM64 ]
+        os: [ linux, ARM64 ]
         go: [ 1.17.2, 1.16 ]
       fail-fast: false
     steps:
