@@ -1,6 +1,8 @@
 package openapi
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"testing"
 	"time"
@@ -9,9 +11,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/utils"
 )
 
-var (
-	o *Openapi
-)
+var o *Openapi
 
 func newOprator() {
 	o = NewOpenapi(8080, "keel-hello", "1.0")
@@ -21,32 +21,6 @@ func TestNewOprator(t *testing.T) {
 	t.Run("test create oprator", func(t *testing.T) {
 		o = NewOpenapi(8080, "keel-hello", "1.0")
 		assert.NotNil(t, o)
-		assert.NoError(t, o.Close())
-	})
-}
-
-func TestOpratorAddOpenAPI(t *testing.T) {
-	t.Run("test oprator add open api", func(t *testing.T) {
-		newOprator()
-		o.AddOpenAPI(&API{
-			Endpoint: "/echo",
-			H: func(a *APIEvent) {
-				switch a.HTTPReq.Method {
-				case http.MethodGet:
-					req := utils.GetURLValue(a.HTTPReq.URL, "data")
-					a.Write([]byte(req))
-				case http.MethodPost:
-					resp := &struct {
-						Data string `json:"data"`
-					}{}
-					err := utils.ReadBody2Json(a.HTTPReq.Body, resp)
-					assert.NoError(t, err)
-				default:
-					http.Error(a, "method not allow", http.StatusMethodNotAllowed)
-					assert.NotEqualValues(t, a.HTTPReq.Method, http.MethodGet, http.MethodPost)
-				}
-			},
-		})
 		assert.NoError(t, o.Close())
 	})
 }
@@ -78,19 +52,28 @@ func TestOpratorStatus(t *testing.T) {
 	})
 }
 
-func TestOpratorListen(t *testing.T) {
-	t.Run("test oprator listen", func(t *testing.T) {
-		go func() {
-			err := o.Listen()
-			assert.NoError(t, err)
-		}()
-		time.Sleep(2 * time.Second)
-	})
-}
-
 func TestDefaultOpratorHttpMethod(t *testing.T) {
 	t.Run("test default oprator http method", func(t *testing.T) {
 		newOprator()
+		o.AddOpenAPI(&API{
+			Endpoint: "/echo",
+			H: func(a *APIEvent) {
+				switch a.HTTPReq.Method {
+				case http.MethodGet:
+					req := utils.GetURLValue(a.HTTPReq.URL, "data")
+					a.Write([]byte(req))
+				case http.MethodPost:
+					resp := &struct {
+						Data string `json:"data"`
+					}{}
+					err := utils.ReadBody2Json(a.HTTPReq.Body, resp)
+					assert.NoError(t, err)
+				default:
+					http.Error(a, "method not allow", http.StatusMethodNotAllowed)
+					assert.NotEqualValues(t, a.HTTPReq.Method, http.MethodGet, http.MethodPost)
+				}
+			},
+		})
 		go func() {
 			err := o.Listen()
 			assert.NoError(t, err)
@@ -124,14 +107,21 @@ func TestDefaultOpratorHttpMethod(t *testing.T) {
 		assert.NotNil(t, sresp)
 		assert.Equal(t, sresp.Ret, 0)
 		assert.Equal(t, sresp.Msg, "ok")
-		assert.Equal(t, sresp.Status, "ACTIVE")
+		assert.Equal(t, sresp.Status, PluginStatus("ACTIVE"))
 
 		// test default tenant bind.
-		resp, err = http.DefaultClient.Get("http://127.0.0.1:8080/v1/tenant/bind")
+		tenantReq := &TenantBindReq{
+			TenantID: "test",
+		}
+		tenantReqByte, err := json.Marshal(tenantReq)
+		assert.NoError(t, err)
+		resp, err = http.DefaultClient.Post("http://127.0.0.1:8080/v1/tenant/bind",
+			"application/json", bytes.NewReader(tenantReqByte))
 		defer func() {
 			assert.NoError(t, resp.Body.Close())
 		}()
 		assert.NoError(t, err)
+		assert.Equal(t, resp.StatusCode, http.StatusOK)
 		tresp := &TenantBindResp{}
 		assert.NoError(t, utils.ReadBody2Json(resp.Body, tresp))
 		assert.NotNil(t, tresp)
@@ -139,17 +129,36 @@ func TestDefaultOpratorHttpMethod(t *testing.T) {
 		assert.Equal(t, tresp.Msg, "ok")
 
 		// test default addons identify.
-		resp, err = http.DefaultClient.Get("http://127.0.0.1:8080/v1/addons/identify")
+		addonsIdentifyReq := &AddonsIdentifyReq{
+			Plugin: struct {
+				ID      string "json:\"id\""
+				Version string "json:\"version\""
+			}{
+				ID:      "test",
+				Version: "v1.0",
+			},
+			Endpoint: []*AddonsEndpoint{
+				{
+					AddonsPoint: "test",
+					Endpoint:    "test",
+				},
+			},
+		}
+		addonsIdentifyReqByte, err := json.Marshal(addonsIdentifyReq)
+		assert.NoError(t, err)
+		resp, err = http.DefaultClient.Post("http://127.0.0.1:8080/v1/addons/identify",
+			"application/json", bytes.NewReader(addonsIdentifyReqByte))
 		defer func() {
 			assert.NoError(t, resp.Body.Close())
 		}()
 		assert.NoError(t, err)
+		assert.Equal(t, resp.StatusCode, http.StatusOK)
 		aresp := &AddonsIdentifyResp{}
 		assert.NoError(t, utils.ReadBody2Json(resp.Body, aresp))
 		assert.NotNil(t, aresp)
-		assert.Equal(t, aresp.Ret, 400)
+		assert.Equal(t, aresp.Ret, -400)
 		assert.Equal(t, aresp.Msg, "no extension point")
-
 		assert.NoError(t, o.Close())
+		time.Sleep(2 * time.Second)
 	})
 }

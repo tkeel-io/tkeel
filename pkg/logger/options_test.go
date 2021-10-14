@@ -86,7 +86,7 @@ func TestApplyOptionsToLoggers(t *testing.T) {
 	for _, l := range testLoggers {
 		assert.Equal(
 			t,
-			"plugin-test",
+			"plugin-app",
 			(l.(*pluginLogger)).logger.Data[logFieldID])
 		assert.Equal(
 			t,

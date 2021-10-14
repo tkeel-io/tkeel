@@ -60,8 +60,8 @@ func (r *User) Create(ctx context.Context) error {
 	if items != nil {
 		json.Unmarshal(items, &UserStore)
 	}
-	_, ok := UserStore[r.Name]
-	if ok {
+
+	if _, ok := UserStore[r.Name]; ok {
 		return errors.New(openapi.ErrResourceExisted)
 	}
 	r.CreateTime = time.Now().Unix()

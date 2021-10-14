@@ -60,7 +60,7 @@ type AddonsIdentifyResp struct {
 // TenantBindReq request of /v1/tenant/bind POST.
 type TenantBindReq struct {
 	TenantID string `json:"tenant_id"`
-	Extra    []byte `json:"extra"`
+	Extra    []byte `json:"extra,omitempty"`
 }
 
 // TenantBindResp response of /v1/tenant/bind.
@@ -163,7 +163,6 @@ func registerHandler(mux *http.ServeMux, path string, h Handler) {
 			ResponseWriter: rw,
 			HTTPReq:        r,
 		}
-		r.Body.Close()
 		h(event)
 	})
 }
@@ -176,22 +175,28 @@ func convertFunc2Handler(matchMethod string, f func([]byte) ([]byte, error)) Han
 			return
 		}
 		var content []byte
-		var err error
 
 		if matchMethod != http.MethodGet {
 			// check for post with no data.
 			if e.HTTPReq.ContentLength <= 0 {
-				log.Error("content cannot be empty")
+				log.Error("content cannot be empty.")
 				http.Error(e, "content cannot be empty", http.StatusBadRequest)
 				return
 			}
 			// read content.
-			content, err = ioutil.ReadAll(e.HTTPReq.Body)
+			if e.HTTPReq.Close {
+				log.Error("request has been closed.")
+				http.Error(e, "request has been closed", http.StatusBadRequest)
+				return
+			}
+			readByte, err := ioutil.ReadAll(e.HTTPReq.Body)
 			if err != nil {
-				log.Error(err.Error())
+				log.Errorf("error read body: %s", err)
 				http.Error(e, err.Error(), http.StatusBadRequest)
 				return
 			}
+			defer e.HTTPReq.Body.Close()
+			content = readByte
 		}
 
 		resp, err := f(content)
