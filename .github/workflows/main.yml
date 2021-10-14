@@ -56,7 +56,7 @@ jobs:
         if: matrix.target_os == 'linux'
         run: git diff --exit-code ./go.mod
       - name: run test in widnows
-        if: matrox.target_os == 'windows'
+        if: matrix.target_os == 'windows'
         run: go test -v -cover -gcflags=all=-l -coverprofile=coverage.out .\...
       - name: run tests
         if: matrix.target_os != 'windows'
