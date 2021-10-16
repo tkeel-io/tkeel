@@ -10,6 +10,8 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "0.0.1"
 
+nameOverride: "core"
+fullnameOverride: "core"
 
 daprConfig: core
 appPort: 6789
