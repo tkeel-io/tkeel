@@ -3,7 +3,7 @@ description: File a feature request
 title: "[FEAT_REQUEST]: "
 labels: ["feat", "fr", "feat_request"]
 assignees:
-  - liuzhen21
+  - OdysseusC
 body:
   - type: markdown
     attributes:
