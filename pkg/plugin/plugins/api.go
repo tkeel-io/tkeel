@@ -234,7 +234,6 @@ func (ps *Plugins) TenantBind(e *openapi.APIEvent) {
 		PluginID string `json:"plugin_id"`
 		Version  string `json:"version"`
 		TenantID string `json:"tenant_id"`
-		License  string `json:"license"`
 		Extra    []byte `json:"extra"`
 	}{}
 	err := utils.ReadBody2Json(e.HTTPReq.Body, req)

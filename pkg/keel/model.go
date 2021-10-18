@@ -35,8 +35,10 @@ var (
 )
 
 type Tenant struct {
-	TenantID string `json:"tenant_id"`
-	License  string `json:"license"`
+	TenantID   string      `json:"tenant_id"`
+	TenantName string      `json:"tenant_name"`
+	ExpireTime int64       `json:"expire_time"`
+	Extra      interface{} `json:"extra,omitempty"`
 }
 
 type Plugin struct {
@@ -48,7 +50,7 @@ type Plugin struct {
 
 type PluginRoute struct {
 	Status         openapi.PluginStatus `json:"status"`
-	RegisterAddons map[string]string    `json:"register_addons"`
+	RegisterAddons map[string]string    `json:"register_addons,omitempty"`
 }
 
 type CallReq struct {
