@@ -400,7 +400,7 @@ func genPluginToken(pID string) (token, jti string, err error) {
 	m := make(map[string]interface{})
 	m["plugin_id"] = pID
 	duration := 24 * time.Hour
-	token, err = idProvider.Token("user", "", duration, m)
+	token, _, err = idProvider.Token("user", "", duration, m)
 	if err != nil {
 		err = fmt.Errorf("error token: %w", err)
 		return

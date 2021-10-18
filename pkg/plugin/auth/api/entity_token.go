@@ -27,7 +27,7 @@ func genEntityToken(userID, tenantID, tokenID, entityID, entityType string, m ma
 	m["eid"] = entityID
 	m["typ"] = entityType
 	duration := 365 * 24 * time.Hour
-	token, err = entityIdp.Token("entity", tokenID, duration, m)
+	token, _, err = entityIdp.Token("entity", tokenID, duration, m)
 	if err != nil {
 		err = fmt.Errorf("error token: %w", err)
 		return

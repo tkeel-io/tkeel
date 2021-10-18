@@ -60,7 +60,6 @@ func (r *Tenant) Create(ctx context.Context) error {
 	r.CreatedTime = time.Now().UTC().Unix()
 	gTenantStore[r.Title] = r
 	saveData, _ := json.Marshal(gTenantStore)
-
 	if err := getDB().Insert(ctx, SysTenant, saveData); err != nil {
 		return fmt.Errorf("error insert: %w", err)
 	}

@@ -194,7 +194,7 @@ B:授权服务对客户端进行身份验证，如果有效，颁发访问令牌
     "error":"invalid_request"
 }
 
-invalid_request:
+invalid_request
 请求缺少必需的参数、包含不支持的参数值（除了许可类型）、重复参数、包含多个凭据、采用超过一种客户端身份验证机制或其他不规范的格式。
 
 invalid_client:
@@ -221,10 +221,14 @@ error_uri
 
 ```
 
-### api
+### server api
 
 -   oauth
-    -   login
-    -   token( Resource Owner Password Credentials Grant)
-    -   authorize (Only support implicit grant flow)
-    -   authenticate( authentication)
+    -   authorize
+        -   response_type(code/token)
+    -   token
+        -   grant_type(code/refresh_token/password)
+    -   authenticate( userinfo)
+
+### 
+

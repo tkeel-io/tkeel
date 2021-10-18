@@ -51,24 +51,52 @@ func NewAPI() API {
 }
 
 func (a *api) OAuthToken(e *openapi.APIEvent) {
-	if e.HTTPReq.Method!=http.MethodGet{
+	if e.HTTPReq.Method != http.MethodGet {
 		log.Errorf("error method(%s) not allowed for oauth token", e.HTTPReq.Method)
 		http.Error(e, "method not allow", http.StatusMethodNotAllowed)
 		return
 	}
-	switch utils.GetURLValue(e.HTTPReq.URL,"grant_type"){
-	case "code":
+	switch utils.GetURLValue(e.HTTPReq.URL, "grant_type") {
 
 	case "password":
+		userName := utils.GetURLValue(e.HTTPReq.URL, "username")
+		password := utils.GetURLValue(e.HTTPReq.URL, "password")
+		if userName == "" || password == "" {
+			e.ResponseJSON(openapi.BadRequestResult(openapi.ErrParamsInvalid))
+			return
+		}
+		user := model.QueryUserByName(context.TODO(), userName)
+		if password != user.Password {
+			log.Error("[PluginAuth] api oauth token password invalid")
+			e.ResponseJSON(openapi.BadRequestResult(openapi.ErrParamsInvalid))
+			return
+		}
+
+		token, _, expire, err := genUserToken(user.ID, user.TenantID, "")
+		if err != nil {
+			log.Error(err)
+			e.ResponseJSON(openapi.BadRequestResult(openapi.ErrInternal))
+			return
+		}
+		respData := &params.OAuth2Token{
+			AccessToken: token,
+			ExpiresIn:   expire,
+		}
+		resp := &struct {
+			openapi.CommonResult `json:",inline"`
+			Data                 interface{} `json:"data"`
+		}{openapi.SuccessResult(),
+			respData}
+		log.Info(resp)
+		e.ResponseJSON(resp)
+	case "code":
+		fallthrough
 	case "refresh_token":
+		fallthrough
 	default:
-
-
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrGrantTypeNotSupported))
+		return
 	}
-
-
-
-
 
 }
 
@@ -236,7 +264,7 @@ func (a *api) Login(e *openapi.APIEvent) {
 		return
 	}
 
-	token, _, err := genUserToken(user.ID, user.TenantID, "")
+	token, _, _, err := genUserToken(user.ID, user.TenantID, "")
 	if err != nil {
 		log.Error(err)
 		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrInternal))

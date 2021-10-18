@@ -13,10 +13,10 @@ const RolePrefix = "role.%s"
 var gRoleStore = make(RoleStoreOnTenant)
 
 type Role struct {
-	ID       string `json:"id"`
-	TenantID string `json:"tenant_id"`
-	Name     string `json:"name"`
-	Desc     string `json:"desc"`
+	ID          string `json:"id"`
+	TenantID    string `json:"tenant_id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 // roleID：Role.

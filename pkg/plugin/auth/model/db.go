@@ -28,10 +28,9 @@ type gdb struct {
 }
 
 func getDB() DB {
-	c := keel.GetClient()
 	dbonce.Do(
 		func() {
-			globalDB = &gdb{c}
+			globalDB = &gdb{keel.GetClient()}
 		})
 	return globalDB
 }
