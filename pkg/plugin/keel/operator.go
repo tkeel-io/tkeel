@@ -86,16 +86,32 @@ func getUpstreamPlugin(ctx context.Context, pID, path string) (string, string, e
 	return upPluginID, endpoint, nil
 }
 
-func checkPluginStatus(ctx context.Context, pID string) error {
-	route, _, err := keel.GetPluginRoute(ctx, pID)
-	if err != nil {
-		return fmt.Errorf("error get plugin route: %w", err)
+func checkUpstreamPlugin(ctx context.Context, srcPID, upPID string) error {
+	checkDependVersion := false
+	srcDependVersion := ""
+	if srcPID != "" {
+		checkDependVersion = true
+		route, _, err := keel.GetPluginRoute(ctx, srcPID)
+		if err != nil {
+			return fmt.Errorf("error get src plugin route: %w", err)
+		}
+		srcDependVersion = route.TkeelVersion
 	}
-	if route == nil {
+	upRoute, _, err := keel.GetPluginRoute(ctx, upPID)
+	if err != nil {
+		return fmt.Errorf("error get up plugin route: %w", err)
+	}
+	if upRoute == nil {
 		return ErrNotRegister
 	}
-	if route.Status != openapi.Active && route.Status != openapi.Starting {
-		return fmt.Errorf("%s not ACTIVE or STARTING", route.Status)
+	if checkDependVersion {
+		if !keel.CheckRegisterPluginTkeelVersion(upRoute.TkeelVersion, srcDependVersion) {
+			return fmt.Errorf("error depened tkeel version: up(%s) > src(%s)",
+				upRoute.TkeelVersion, srcDependVersion)
+		}
+	}
+	if upRoute.Status != openapi.Active && upRoute.Status != openapi.Starting {
+		return fmt.Errorf("%s not ACTIVE or STARTING", upRoute.Status)
 	}
 	return nil
 }

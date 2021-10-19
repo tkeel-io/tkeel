@@ -13,6 +13,7 @@ type Openapi struct {
 	port         int
 	pluginID     string
 	version      string
+	tkeelVersion string
 	requiredFunc struct {
 		Identify   func() (*IdentifyResp, error)
 		Status     func() (*StatusResp, error)
@@ -37,11 +38,12 @@ type OptionalFunc struct {
 	AddonsIdentify func(*AddonsIdentifyReq) (*AddonsIdentifyResp, error)
 }
 
-func NewOpenapi(port int, id, ver string) *Openapi {
+func NewOpenapi(port int, id, ver, tkeelVer string) *Openapi {
 	return &Openapi{
 		port:           port,
 		pluginID:       id,
 		version:        ver,
+		tkeelVersion:   tkeelVer,
 		mux:            http.NewServeMux(),
 		registerAPIMap: make(map[string]*API),
 	}
@@ -93,6 +95,7 @@ func (a *Openapi) GetIdentifyResp() *IdentifyResp {
 		CommonResult: SuccessResult(),
 		PluginID:     a.pluginID,
 		Version:      a.version,
+		TkeelVersion: a.tkeelVersion,
 	}
 }
 

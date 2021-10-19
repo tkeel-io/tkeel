@@ -17,7 +17,8 @@ var (
 
 // Configuration is required by all plug-ins in keel.
 type Configuration struct {
-	Plugin PluginSpec `json:"plugin,omitempty" yaml:"plugin,omitempty"`
+	Plugin *PluginSpec `json:"plugin,omitempty" yaml:"plugin,omitempty"`
+	Tkeel  *TkeelSpec  `json:"tkeel,omitempty" yaml:"tkeel,omitempty"`
 }
 
 // PluginSpec describes plugin information.
@@ -27,12 +28,17 @@ type PluginSpec struct {
 	Port    int    `json:"port" yaml:"port"`
 }
 
+type TkeelSpec struct {
+	Version string `json:"version" yaml:"version"`
+}
+
 // LoadDefaultConfiguration returns the default config.
 func LoadDefaultConfiguration() *Configuration {
 	return &Configuration{
-		Plugin: PluginSpec{
+		Plugin: &PluginSpec{
 			Port: DefaultHTTPPort,
 		},
+		Tkeel: &TkeelSpec{},
 	}
 }
 

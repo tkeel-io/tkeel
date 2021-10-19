@@ -287,13 +287,14 @@ func saveNewPlugin(ctx context.Context, p *keel.Plugin) error {
 		}
 	}()
 
-	// get plugin status.
+	// update plugin status.
 	statusResp, err := requestPluginStatus(ctx, p.PluginID)
 	if err != nil {
 		return fmt.Errorf("error request status: %w", err)
 	}
 	err = keel.SavePluginRoute(ctx, p.PluginID, &keel.PluginRoute{
-		Status: statusResp.Status,
+		Status:       statusResp.Status,
+		TkeelVersion: p.TkeelVersion,
 	}, "1")
 	if err != nil {
 		return fmt.Errorf("error save plugin route: %w", err)
@@ -306,15 +307,22 @@ func saveNewPlugin(ctx context.Context, p *keel.Plugin) error {
 	return nil
 }
 
-func registerPlugin(ctx context.Context, identifyResp *openapi.IdentifyResp, secret string) (err error) {
+func registerPlugin(ctx context.Context, identifyResp *openapi.IdentifyResp, secret string, currTkeelVersion string) (err error) {
 	// check plugin id vaild.
 	pID, err := checkRegisterPluginID(ctx, identifyResp)
 	if err != nil {
 		return fmt.Errorf("error check register plugin id: %w", err)
 	}
 
+	// check plugin depende tkeel version.
+	if !keel.CheckRegisterPluginTkeelVersion(identifyResp.TkeelVersion, currTkeelVersion) {
+		return fmt.Errorf("error depende tkeel version: %s -- %s",
+			identifyResp.TkeelVersion, currTkeelVersion)
+	}
+
 	// save cache plugin route.
 	// main plugin will request new plugins.
+	// if register faild delete cache plugin route.
 	err = saveCachePluginRoute(ctx, pID)
 	if err != nil {
 		return fmt.Errorf("error save cache plugin route: %w", err)

@@ -45,7 +45,7 @@ func (k *Keel) Route(e *openapi.APIEvent) {
 	}
 
 	// check upstream plugin.
-	err = checkPluginStatus(e.HTTPReq.Context(), upPluginID)
+	err = checkUpstreamPlugin(e.HTTPReq.Context(), pID, upPluginID)
 	if err != nil {
 		log.Errorf("error check plugin(%s) status: %s", upPluginID, err)
 		http.Error(e, "bad request", http.StatusBadRequest)

@@ -55,6 +55,7 @@ func (k *Keel) identify() (*openapi.IdentifyResp, error) {
 		CommonResult: openapi.SuccessResult(),
 		PluginID:     k.p.GetIdentifyResp().PluginID,
 		Version:      k.p.GetIdentifyResp().Version,
+		TkeelVersion: k.p.Conf().Tkeel.Version,
 		AddonsPoints: []*openapi.AddonsPoint{
 			{
 				AddonsPoint: "externalPreRouteCheck",
