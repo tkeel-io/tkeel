@@ -1,7 +1,36 @@
 # AUTH-000-glossary
-相关名词定义。
+模块定义。
 
-## Roadmap(Schedule)
+## Context
+在平台使用过程中，需要保证使用者数据的安全，以及使用者身份的安全检查。并提供用户数据资源的控制。
+
+## Decisions
+auth模块功能提供：用户系统、授权服务。
+
+### Roadmap(Schedule)
+
+* 授权服务 [授权系统 v0.1](./AUTH-001-tkeel-certification-management.md)
+    1. 用户授权
+        - 内部
+            - 用户登录
+        - 外部
+            - 用户授权
+            - 用户认证
+           
+    2. 实体授权(资源)
+        - 实体授权
+        - 实体认证
+
+* 用户系统 [租户系统 v0.1](./AUTH-002-tenant-certification.md)
+    1. 租户
+        - 租户管理
+    
+    2. 用户
+        - 用户管理
+    
+    3. 角色
+        - 角色管理
+
 * 2021/09
   1. [授权系统 v0.1](./AUTH-001-tkeel-certification-management.md)
       - 用户登录
