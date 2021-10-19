@@ -25,23 +25,23 @@ other -- 拒绝
 - [Helm安装](https://helm.sh/)
 
 
-## Install demo-echo plugin by Helm
+## Install keel-echo plugin by Helm
 
-通过**Helm**安装**demo-echo**插件
+通过**Helm**安装**keel-echo**插件
 
 ```bash
-cd deploy/chart/demo-echo
-helm install -n keel-system demo-echo .
+cd deploy/chart/keel-echo
+helm install -n keel-system keel-echo .
 ```
 
 
-## Register demo-echo plugin
+## Register keel-echo plugin
 
-### Register demo-echo plugin by Keel CLI
+### Register keel-echo plugin by Keel CLI
 
-1. 注册**demo-echo**插件
+1. 注册**keel-echo**插件
 ```bash
-tkeel plugin register echo-demo
+tkeel plugin register keel-echo
 ```
 2. 检查状态
 ```bash
@@ -55,10 +55,10 @@ NAME       NAMESPACE    HEALTHY  STATUS    PLUGINSTATUS  REPLICAS  VERSION  AGE 
 auth       keel-system  True     Running   ACTIVE        1         0.0.1    37m  2021-10-07 16:07.00  
 plugins    keel-system  True     Running   ACTIVE        1         0.0.1    37m  2021-10-07 16:07.00  
 keel       keel-system  True     Running   ACTIVE        1         0.0.1    37m  2021-10-07 16:07.00
-echo-demo  keel-system  True    Running   ACTIVE        1         0.0.1    2m   2021-10-05 11:25.19  
+keel-echo  keel-system  True    Running   ACTIVE        1         0.0.1    2m   2021-10-05 11:25.19  
 ```
 
-### Register demo-echo plugin by curl
+### Register keel-echo plugin by curl
 
 1. 安装chart
 
@@ -66,7 +66,7 @@ echo-demo  keel-system  True    Running   ACTIVE        1         0.0.1    2m   
 2. 注册插件
 
 ```bash
-curl http://${KEELADDR}/plugins/register -d '{"id":"demo-echo","secret":"changeme"}'
+curl http://${KEELADDR}/plugins/register -d '{"id":"keel-echo","secret":"changeme"}'
 ```
 
 输出应如下：
@@ -77,7 +77,7 @@ curl http://${KEELADDR}/plugins/register -d '{"id":"demo-echo","secret":"changem
 3. 检查是否注册成功
 
 ```bash
-curl http://${KEELADDR}/plugins/get?id=demo-echo
+curl http://${KEELADDR}/plugins/get?id=keel-echo
 ```
 
 输出应如下：
@@ -88,7 +88,7 @@ curl http://${KEELADDR}/plugins/get?id=demo-echo
     "data": {
         "ret": 0,
         "msg": "ok",
-        "plugin_id": "demo-echo",
+        "plugin_id": "keel-echo",
         "version": "0.0.1",
         "main_plugins": [
             {
@@ -110,11 +110,11 @@ curl http://${KEELADDR}/plugins/get?id=demo-echo
 }
 ```
 
-## Demo-echo output
+## keel-echo output
 
 每当有外部请求进入**Keel**时就会访问回调端点**echo**。
 
-查看**demo-echo**的日志。
+查看**keel-echo**的日志。
 
 ```bash
 echo
