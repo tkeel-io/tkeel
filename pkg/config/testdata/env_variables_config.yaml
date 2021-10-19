@@ -1,6 +1,6 @@
 plugin:
   name: plugins
   version: 1.0
-  Port: ${PLUGIN_HTTP_PORT}
+  port: ${PLUGIN_HTTP_PORT}
   secret: 
     key: ${PLUGIN_SECRET_KEY}

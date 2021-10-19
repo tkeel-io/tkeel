@@ -40,6 +40,9 @@ func getAddonsUpstream(ctx context.Context,
 	if err != nil {
 		return "", fmt.Errorf("error get plugin route: %w", err)
 	}
+	if route.RegisterAddons == nil {
+		return "", nil
+	}
 	upstreamPath, ok := route.RegisterAddons[addonsPoint]
 	if !ok {
 		return "", nil

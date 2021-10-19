@@ -15,9 +15,9 @@ spec:
     value: "http://{{ .Values.pluginID }}.com"
   - name: tokenURL
   {{- if (eq .Values.pluginID "plugins") }}
-    value: "http://127.0.0.1:{{ .Values.pluginsPort }}/oauth2/token"
+    value: "http://127.0.0.1:{{ .Values.plugins.Port }}/oauth2/token"
   {{- else }}
-    value: "http://plugins:{{ .Values.pluginsPort }}/oauth2/token"
+    value: "http://plugins/oauth2/token"
   {{- end }}
   - name: headerName
     value: "x-plugin-jwt"

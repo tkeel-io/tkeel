@@ -115,7 +115,7 @@ func (a *Openapi) Status() (*StatusResp, error) {
 }
 
 func (a *Openapi) TenantBind(req *TenantBindReq) (*TenantBindResp, error) {
-	if a.requiredFunc.Status == nil {
+	if a.requiredFunc.TenantBind == nil {
 		return &TenantBindResp{
 			CommonResult: SuccessResult(),
 		}, nil
