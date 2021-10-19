@@ -1,6 +1,7 @@
 package keel
 
 import (
+	"errors"
 	"io"
 	"net/http"
 
@@ -17,7 +18,8 @@ func (k *Keel) Route(e *openapi.APIEvent) {
 		return
 	}
 	if !next {
-		e.WriteHeader(http.StatusOK)
+		e.Write([]byte("succ."))
+		return
 	}
 
 	pID, err := auth(e)
@@ -32,8 +34,14 @@ func (k *Keel) Route(e *openapi.APIEvent) {
 	// find upstream plugin.
 	upPluginID, endpoint, err := getUpstreamPlugin(e.HTTPReq.Context(), pID, path)
 	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			log.Errorf("not found(%s)", path)
+			http.Error(e, err.Error(), http.StatusNotFound)
+			return
+		}
 		log.Errorf("error request(%s): %s", path, err)
 		http.Error(e, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	// check upstream plugin.

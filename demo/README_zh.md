@@ -41,7 +41,7 @@ helm install -n keel-system demo-echo .
 
 1. 注册**demo-echo**插件
 ```bash
-tkeel plugin register echo-demo
+tkeel plugin register demo-echo
 ```
 2. 检查状态
 ```bash
@@ -55,7 +55,7 @@ NAME       NAMESPACE    HEALTHY  STATUS    PLUGINSTATUS  REPLICAS  VERSION  AGE 
 auth       keel-system  True     Running   ACTIVE        1         0.0.1    37m  2021-10-07 16:07.00  
 plugins    keel-system  True     Running   ACTIVE        1         0.0.1    37m  2021-10-07 16:07.00  
 keel       keel-system  True     Running   ACTIVE        1         0.0.1    37m  2021-10-07 16:07.00
-echo-demo  keel-system  True    Running   ACTIVE        1         0.0.1    2m   2021-10-05 11:25.19  
+demo-echo  keel-system  True    Running   ACTIVE        1         0.0.1    2m   2021-10-05 11:25.19  
 ```
 
 ### Register demo-echo plugin by curl

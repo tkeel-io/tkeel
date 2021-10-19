@@ -13,6 +13,13 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/utils"
 )
 
+var (
+	ErrNotFound        = errors.New("not found")
+	ErrNotInternalFlow = errors.New("request addons not internal flow")
+	ErrNotRegister     = errors.New("not registered")
+	ErrInvaildPath     = errors.New("error invaild path: /")
+)
+
 func auth(e *openapi.APIEvent) (string, error) {
 	if ok := e.HTTPReq.Header.Get("x-keel"); ok != "" {
 		log.Debugf("self request")
@@ -35,7 +42,8 @@ func auth(e *openapi.APIEvent) (string, error) {
 
 func getAddonsUpstream(ctx context.Context,
 	pID, path string) (upstreamPath string, err error) {
-	addonsPoint := strings.TrimPrefix(path, keel.AddonsURLPrefix)
+	ps := strings.Split(path, "?")
+	addonsPoint := strings.TrimPrefix(ps[0], keel.AddonsURLPrefix)
 	route, _, err := keel.GetPluginRoute(ctx, pID)
 	if err != nil {
 		return "", fmt.Errorf("error get plugin route: %w", err)
@@ -67,8 +75,10 @@ func getUpstreamPlugin(ctx context.Context, pID, path string) (string, string, e
 
 	if upstreamPath == "" {
 		log.Debugf("not found registered addons: %s %s", pID, path)
-		return "", "", errors.New("not found")
+		return "", "", ErrNotFound
 	}
+
+	log.Debugf("upstreamPath: %s", upstreamPath)
 	upPluginID, endpoint := keel.DecodeRoute(upstreamPath)
 	if upPluginID == "" || endpoint == "" {
 		return "", "", fmt.Errorf("error request %s", upstreamPath)
@@ -82,7 +92,7 @@ func checkPluginStatus(ctx context.Context, pID string) error {
 		return fmt.Errorf("error get plugin route: %w", err)
 	}
 	if route == nil {
-		return errors.New("not registered")
+		return ErrNotRegister
 	}
 	if route.Status != openapi.Active && route.Status != openapi.Starting {
 		return fmt.Errorf("%s not ACTIVE or STARTING", route.Status)
@@ -126,11 +136,9 @@ func externalPreRouteCheck(ctx context.Context, req *http.Request) error {
 	}
 	result := &openapi.CommonResult{}
 	if err := utils.ReadBody2Json(resp.Body, result); err != nil {
-		log.Errorf("error read externalPreRouteCheck func: %w", err)
 		return fmt.Errorf("error read externalPreRouteCheck func: %w", err)
 	}
 	if result.Ret != 0 {
-		log.Errorf("error externalPreRouteCheck: %s", result.Msg)
 		return errors.New(result.Msg)
 	}
 	return nil
@@ -140,7 +148,7 @@ func externalPreRouteCheck(ctx context.Context, req *http.Request) error {
 func checkRoutePath(path string) (bool, error) {
 	// check path.
 	if path == "/" {
-		return false, errors.New("error invaild path: /")
+		return false, ErrNotRegister
 	}
 	if strings.HasPrefix(path, "/dapr") {
 		log.Debugf("dapr sidecar request: %s", path)

@@ -2,6 +2,7 @@ apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
   name: demo-echo-oauth2-client
+  namespace: "keel-system"
 spec:
   type: middleware.http.oauth2clientcredentials
   version: v1

@@ -6,7 +6,7 @@ metadata:
   labels:
     app: {{ include "demo-echo.name" . }}
 spec:
-  replicas: {{ .Values.global.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: {{ include "demo-echo.name" . }}
@@ -15,7 +15,7 @@ spec:
       annotations:
         dapr.io/enabled: "true"
         dapr.io/app-id: {{ include "demo-echo.name" . | quote }}
-        dapr.io/app-port: {{ .Values.global.pluginPort | quote }}
+        dapr.io/app-port: {{ .Values.pluginPort | quote }}
         dapr.io/config: {{ .Values.daprConfig }}
       labels:
         app: {{ include "demo-echo.name" . }}
@@ -29,4 +29,4 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.global.pluginPort }}
+            - containerPort: {{ .Values.pluginPort }}

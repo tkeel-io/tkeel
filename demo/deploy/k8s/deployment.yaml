@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: demo-echo
+  namespace: "keel-system"
   labels:
     app: demo-echo
 spec:
@@ -15,21 +16,20 @@ spec:
         dapr.io/enabled: "true"
         dapr.io/app-id: "demo-echo"
         dapr.io/config: demo-echo
-        dapr.io/app-protocol: "grpc"
-        dapr.io/app-port: "50051"
+        dapr.io/app-port: "8080"
       labels:
         app: demo-echo
     spec:
       containers:
         - name: demo-echo
-          image: tkeelio/echo-demo:0.0.1 # EDIT HERE: Replace the image name
+          image: tkeelio/demo-echo:0.0.1 # EDIT HERE: Replace the image name
           imagePullPolicy: Always
           command:
             - "python"
           args:
             - "/app/demo-echo.py"
           ports:
-            - containerPort: 3000
+            - containerPort: 8080
           env:
             - name: KEEL_PRIVATE_STORE
               value: "0"
