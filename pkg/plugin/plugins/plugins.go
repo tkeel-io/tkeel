@@ -83,7 +83,7 @@ func (ps *Plugins) Run() {
 	}
 	log.Debugf("dapr ready: %s", time.Now().Format(time.RFC3339Nano))
 
-	err := registerPlugin(context.TODO(), ps.p.GetIdentifyResp(), *pluginTokenSecret)
+	err := registerPlugin(context.TODO(), ps.p.GetIdentifyResp(), *pluginTokenSecret, ps.p.Conf().Tkeel.Version)
 	if err != nil {
 		log.Debugf("error register plugin plugins: %s, If its a duplicate registration error, you can ignore it", err)
 	}
