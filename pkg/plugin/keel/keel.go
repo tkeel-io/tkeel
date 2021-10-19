@@ -13,9 +13,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/utils"
 )
 
-var (
-	log = logger.NewLogger("keel.plugin.keel")
-)
+var log = logger.NewLogger("keel.plugin.keel")
 
 type Keel struct {
 	p *plugin.Plugin
@@ -117,12 +115,12 @@ func (k *Keel) addonsIdentify(air *openapi.AddonsIdentifyReq) (*openapi.AddonsId
 		}, nil
 	}
 	if (xKeelStr == "True" && result.Ret == 0 && result.Msg == "ok") ||
-		(xKeelStr == "false" && result.Ret == -1 && result.Msg == "faild") {
+		(xKeelStr == "False" && result.Ret == -1 && result.Msg == "faild") {
 		return &openapi.AddonsIdentifyResp{
 			CommonResult: openapi.SuccessResult(),
 		}, nil
 	}
-	log.Errorf("error identify(%s/%s/%s) resp: %v",
+	log.Errorf("error addons check identify(%s/%s/%s) resp: %v",
 		air.Plugin.ID, endpointReq.Endpoint, endpointReq.AddonsPoint, result)
 	return &openapi.AddonsIdentifyResp{
 		CommonResult: openapi.BadRequestResult(resp.Status),

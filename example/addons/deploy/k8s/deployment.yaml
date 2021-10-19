@@ -1,33 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demo-echo
+  name: keel-echo
   namespace: "keel-system"
   labels:
-    app: demo-echo
+    app: keel-echo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: demo-echo
+      app: keel-echo
   template:
     metadata:
       annotations:
         dapr.io/enabled: "true"
-        dapr.io/app-id: "demo-echo"
-        dapr.io/config: demo-echo
+        dapr.io/app-id: "keel-echo"
+        dapr.io/config: keel-echo
         dapr.io/app-port: "8080"
       labels:
-        app: demo-echo
+        app: keel-echo
     spec:
       containers:
-        - name: demo-echo
-          image: tkeelio/demo-echo:0.0.1 # EDIT HERE: Replace the image name
+        - name: keel-echo
+          image: tkeelio/keel-echo:0.0.1 # EDIT HERE: Replace the image name
           imagePullPolicy: Always
           command:
             - "python"
           args:
-            - "/app/demo-echo.py"
+            - "/app/keel-echo.py"
           ports:
             - containerPort: 8080
           env:

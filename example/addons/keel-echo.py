@@ -5,7 +5,7 @@ app = Flask(__name__)
 @app.route('/v1/identify',methods=['GET'])
 def identify():
     print("identify", flush=True)
-    return jsonify({"ret": 0,"msg": "ok","plugin_id": "demo-echo","version": "0.0.1","main_plugins": [{"id": "keel","version": "1.0","endpoints": [{"addons_point": "externalPreRouteCheck","endpoint": "echo"}]}]})
+    return jsonify({"ret": 0,"msg": "ok","plugin_id": "keel-echo","version": "0.0.1","main_plugins": [{"id": "keel","version": "1.0","endpoints": [{"addons_point": "externalPreRouteCheck","endpoint": "echo"}]}]})
 
 @app.route('/v1/status',methods=['GET'])
 def status():

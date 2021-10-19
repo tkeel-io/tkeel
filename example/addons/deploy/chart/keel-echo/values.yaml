@@ -2,14 +2,14 @@ replicaCount: 1
 pluginSecret: changeme
 pluginPort: 8080
 
-daprConfig: demo-echo
+daprConfig: keel-echo
 
 imagePullSecrets: ""
 
 image:
-  repository: tkeelio/demo-echo
+  repository: tkeelio/keel-echo
   tag: 0.0.1
   pullPolicy: Always
 
 tkeel-plugin-components:
-  pluginID: demo-echo
+  pluginID: keel-echo

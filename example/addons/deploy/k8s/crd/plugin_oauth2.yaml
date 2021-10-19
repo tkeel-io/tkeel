@@ -1,18 +1,18 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: demo-echo-oauth2-client
+  name: keel-echo-oauth2-client
   namespace: "keel-system"
 spec:
   type: middleware.http.oauth2clientcredentials
   version: v1
   metadata:
   - name: clientId
-    value: "demo-echo"
+    value: "keel-echo"
   - name: clientSecret
     value: "changeme"
   - name: scopes
-    value: "http://demo-echo.com"
+    value: "http://keel-echo.com"
   - name: tokenURL
     value: "http://plugins:8080/oauth2/token"
   - name: headerName
