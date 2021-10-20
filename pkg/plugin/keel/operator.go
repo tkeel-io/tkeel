@@ -58,39 +58,67 @@ func getAddonsUpstream(ctx context.Context,
 	return upstreamPath, nil
 }
 
-func getUpstreamPlugin(ctx context.Context, pID, path string) (string, string, error) {
+func getUpstreamPlugin(ctx context.Context, pID, path string) (string, string, string, error) {
 	var upstreamPath string
+	var requestTkeelVersion string
 	if strings.HasPrefix(path, "/"+keel.AddonsPath) {
 		if pID == "" {
-			return "", "", errors.New("request addons not internal flow")
+			return "", "", "", errors.New("request addons not internal flow")
 		}
 		up, err := getAddonsUpstream(ctx, pID, path)
 		if err != nil {
-			return "", "", fmt.Errorf("error get addons upstream: %w", err)
+			return "", "", "", fmt.Errorf("error get addons upstream: %w", err)
 		}
 		upstreamPath = up
 	} else {
 		upstreamPath = strings.TrimPrefix(path, "/")
+		if pID == "" {
+			u := strings.SplitN(upstreamPath, "/", 2)
+			if len(u) != 2 {
+				return "", "", "", fmt.Errorf("error external request path: %s", upstreamPath)
+			}
+			upstreamPath = u[1]
+			requestTkeelVersion = u[0]
+		}
 	}
 
 	if upstreamPath == "" {
 		log.Debugf("not found registered addons: %s %s", pID, path)
-		return "", "", ErrNotFound
+		return "", "", "", ErrNotFound
 	}
 
 	log.Debugf("upstreamPath: %s", upstreamPath)
 	upPluginID, endpoint := keel.DecodeRoute(upstreamPath)
 	if upPluginID == "" || endpoint == "" {
-		return "", "", fmt.Errorf("error request %s", upstreamPath)
+		return "", "", "", fmt.Errorf("error request %s", upstreamPath)
 	}
-	return upPluginID, endpoint, nil
+	return requestTkeelVersion, upPluginID, endpoint, nil
 }
 
-func checkUpstreamPlugin(ctx context.Context, srcPID, upPID string) error {
-	checkDependVersion := false
-	srcDependVersion := ""
+func checkDependVersion(src, curr, up string) error {
+	log.Debugf("src(%v) cur(%v) up(%v)", src, curr, up)
+	ok, err := keel.CheckRegisterPluginTkeelVersion(src, curr)
+	if err != nil {
+		return fmt.Errorf("error check src tkeel version: %w", err)
+	}
+	if !ok {
+		return fmt.Errorf("error src(%s) > curr(%s)",
+			src, curr)
+	}
+	ok, err = keel.CheckRegisterPluginTkeelVersion(src, up)
+	if err != nil {
+		return fmt.Errorf("error check up tkeel version: %w", err)
+	}
+	if !ok {
+		return fmt.Errorf("error src(%s) > up(%s)",
+			src, up)
+	}
+	return nil
+}
+
+func checkUpstreamPlugin(ctx context.Context, srcPID, upPID, exTVer, curTVer string) error {
+	srcDependVersion := exTVer
 	if srcPID != "" {
-		checkDependVersion = true
 		route, _, err := keel.GetPluginRoute(ctx, srcPID)
 		if err != nil {
 			return fmt.Errorf("error get src plugin route: %w", err)
@@ -104,12 +132,12 @@ func checkUpstreamPlugin(ctx context.Context, srcPID, upPID string) error {
 	if upRoute == nil {
 		return ErrNotRegister
 	}
-	if checkDependVersion {
-		if !keel.CheckRegisterPluginTkeelVersion(upRoute.TkeelVersion, srcDependVersion) {
-			return fmt.Errorf("error depened tkeel version: up(%s) > src(%s)",
-				upRoute.TkeelVersion, srcDependVersion)
-		}
+
+	err = checkDependVersion(srcDependVersion, curTVer, upRoute.TkeelVersion)
+	if err != nil {
+		return fmt.Errorf("error check depend version: %w", err)
 	}
+
 	if upRoute.Status != openapi.Active && upRoute.Status != openapi.Starting {
 		return fmt.Errorf("%s not ACTIVE or STARTING", upRoute.Status)
 	}

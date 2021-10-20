@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
 spec:
   accessControl:
-    trustDomain: "keel"
+    trustDomain: "tkeel"
     {{- if (eq .Values.pluginID "keel") }}
     defaultAction: allow
     {{- else }}
@@ -13,11 +13,11 @@ spec:
     policies:
     - appId: plugins
       defaultAction: allow
-      trustDomain: 'keel'
+      trustDomain: 'tkeel'
       namespace: {{ .Release.Namespace | quote }}
     - appId: keel
       defaultAction: allow
-      trustDomain: 'keel'
+      trustDomain: 'tkeel'
       namespace: {{ .Release.Namespace | quote }}
     {{- end }}
   httpPipeline:
