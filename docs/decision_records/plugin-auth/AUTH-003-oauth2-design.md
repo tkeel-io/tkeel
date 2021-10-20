@@ -12,7 +12,7 @@ Proposed
 
 ### Oauth介绍和平台实现
 
-OAuth是一个开放标准，它允许用户在不提供用户名密码给第三方应用的情况下给第三方应用授权。
+OAuth 是一个开放标准，它允许用户在不提供用户名密码给第三方应用的情况下给第三方应用授权。
 
 ### 角色
 
@@ -24,15 +24,15 @@ OAuth2.0定义了四种角色，分别如下：
 
 2.  **Client**
 
-    >   客户端，通过申请ResourceOwner 的授权，从而实现访问受保护资源的第三方软件或者服务
+    >   客户端，通过申请 ResourceOwner 的授权，从而实现访问受保护资源的第三方软件或者服务
 
 3.  **AuthorizationServer**
 
-    >   授权服务，在ResourceOwner授权完毕后，负责颁发access token 的服务
+    >   授权服务，在 ResourceOwner 授权完毕后，负责颁发 access token 的服务
 
 4.  **ResourceServer** 
 
-    >   资源服务，**存储**着ResourceOwner的受保护的**资源**的**服务**，可通过验证access token来开放对ResourceServer的数据的访问
+    >   资源服务，**存储**着 ResourceOwner 的受保护的**资源**的**服务**，可通过验证 access token 来开放对 ResourceServer 的数据的访问
 
 ### 协议流程
 
