@@ -65,6 +65,7 @@ func (a *api) OAuthToken(e *openapi.APIEvent) {
 			e.ResponseJSON(openapi.BadRequestResult(openapi.ErrParamsInvalid))
 			return
 		}
+
 		user := model.QueryUserByName(context.TODO(), userName)
 		if password != user.Password {
 			log.Error("[PluginAuth] api oauth token password invalid")

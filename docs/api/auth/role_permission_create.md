@@ -15,7 +15,9 @@
 
 ###### 请求参数
 > |参数|必选|类型|说明|
-|:-----  |:-------|:-----|-----                               |
+> |:-----  |:-------|:-----|-----                               |
+> |permission_type|true|body|权限维度{plugin、device}|
+> |permission_id|true|body|实体ID{plugin_id、device_id}|
 
 
 ###### 返回数据(data)

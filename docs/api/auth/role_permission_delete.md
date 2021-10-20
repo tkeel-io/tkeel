@@ -8,14 +8,15 @@
 ###### HTTP请求方式
 > DELETE
 ###### URL
->  /role/{role_id}/permission/{permission_id}
+>  /role/permission
 ###### 支持格式
 > JSON
 
 
 ###### 请求参数
 > |参数|必选|类型|说明|
-|:-----  |:-------|:-----|-----                               |
+> |:-----  |:-------|:-----|-----                               |
+> |permission_id|true|query|实体ID,多个用英文逗号分隔。|
 
 
 ###### 返回数据(data)

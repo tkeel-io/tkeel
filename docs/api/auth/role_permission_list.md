@@ -8,14 +8,15 @@
 ###### HTTP请求方式
 > GET
 ###### URL
->  /role/{role_id}/permissions
+>  /role/permissions
 ###### 支持格式
 > JSON
 
 
 ###### 请求参数
 > |参数|必选|类型|说明|
-|:-----  |:-------|:-----|-----                               |
+> |:-----  |:-------|:-----|-----                               |
+> |role_id|true|query|角色id|
 
 
 ###### 返回数据(data)
