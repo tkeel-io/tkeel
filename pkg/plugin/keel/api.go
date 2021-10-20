@@ -32,7 +32,7 @@ func (k *Keel) Route(e *openapi.APIEvent) {
 	log.Debugf("route pID(%s) requst %s", pID, e.HTTPReq.RequestURI)
 
 	// find upstream plugin.
-	upPluginID, endpoint, err := getUpstreamPlugin(e.HTTPReq.Context(), pID, path)
+	externalRequestTkeelVersion, upPluginID, endpoint, err := getUpstreamPlugin(e.HTTPReq.Context(), pID, path)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
 			log.Errorf("not found(%s)", path)
@@ -45,7 +45,8 @@ func (k *Keel) Route(e *openapi.APIEvent) {
 	}
 
 	// check upstream plugin.
-	err = checkUpstreamPlugin(e.HTTPReq.Context(), pID, upPluginID)
+	err = checkUpstreamPlugin(e.HTTPReq.Context(), pID, upPluginID,
+		externalRequestTkeelVersion, k.p.Conf().Tkeel.Version)
 	if err != nil {
 		log.Errorf("error check plugin(%s) status: %s", upPluginID, err)
 		http.Error(e, "bad request", http.StatusBadRequest)

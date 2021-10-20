@@ -315,7 +315,11 @@ func registerPlugin(ctx context.Context, identifyResp *openapi.IdentifyResp, sec
 	}
 
 	// check plugin depende tkeel version.
-	if !keel.CheckRegisterPluginTkeelVersion(identifyResp.TkeelVersion, currTkeelVersion) {
+	ok, err := keel.CheckRegisterPluginTkeelVersion(identifyResp.TkeelVersion, currTkeelVersion)
+	if err != nil {
+		return fmt.Errorf("error check register plugin tkeel version: %w", err)
+	}
+	if !ok {
 		return fmt.Errorf("error depende tkeel version: %s -- %s",
 			identifyResp.TkeelVersion, currTkeelVersion)
 	}

@@ -25,26 +25,24 @@ func NewVersion(ver string) (*Version, error) {
 		return nil, fmt.Errorf("wrong format: %s", ver)
 	}
 	vs := strings.Split(strings.TrimPrefix(ver, "v"), ".")
-	if len(vs) != 3 {
-		return nil, fmt.Errorf("wrong format: %s", ver)
+	ret := &Version{Main: 0, Sub: 0, Revision: 0}
+	for i, v := range vs {
+		vInt, err := strconv.Atoi(v)
+		if err != nil {
+			return nil, fmt.Errorf("wrong format version: %d/%s/%s", i, v, ver)
+		}
+		switch i {
+		case 0:
+			ret.Main = vInt
+		case 1:
+			ret.Sub = vInt
+		case 2:
+			ret.Revision = vInt
+		default:
+			return nil, fmt.Errorf("wrong format: %s", ver)
+		}
 	}
-	m, err := strconv.Atoi(vs[0])
-	if err != nil {
-		return nil, fmt.Errorf("wrong format main: %s/%s", vs[0], ver)
-	}
-	s, err := strconv.Atoi(vs[1])
-	if err != nil {
-		return nil, fmt.Errorf("wrong format sub: %s/%s", vs[1], ver)
-	}
-	r, err := strconv.Atoi(vs[2])
-	if err != nil {
-		return nil, fmt.Errorf("wrong format revision: %s/%s", vs[2], ver)
-	}
-	return &Version{
-		Main:     m,
-		Sub:      s,
-		Revision: r,
-	}, nil
+	return ret, nil
 }
 
 func (v *Version) Compare(ver *Version, lvl ComparisonLevel) int {
@@ -69,19 +67,17 @@ func (v *Version) Compare(ver *Version, lvl ComparisonLevel) int {
 	return 0
 }
 
-func CheckRegisterPluginTkeelVersion(dependVersion string, currVersion string) bool {
+func CheckRegisterPluginTkeelVersion(dependVersion string, currVersion string) (bool, error) {
 	dVer, err := NewVersion(dependVersion)
 	if err != nil {
-		log.Errorf("error depend version: %s", err)
-		return false
+		return false, fmt.Errorf("error depend version: %w", err)
 	}
 	cVer, err := NewVersion(currVersion)
 	if err != nil {
-		log.Errorf("error current version: %s", err)
-		return false
+		return false, fmt.Errorf("error current version: %w", err)
 	}
 	if cVer.Compare(dVer, SubVersion) < 0 {
-		return false
+		return false, nil
 	}
-	return true
+	return true, nil
 }
