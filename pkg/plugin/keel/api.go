@@ -35,7 +35,6 @@ func (k *Keel) Route(e *openapi.APIEvent) {
 	externalRequestTkeelVersion, upPluginID, endpoint, err := getUpstreamPlugin(e.HTTPReq.Context(), pID, path)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
-			log.Errorf("not found(%s)", path)
 			http.Error(e, err.Error(), http.StatusNotFound)
 			return
 		}

@@ -95,6 +95,9 @@ func CallKeel(ctx context.Context, pluginID, method, httpMethod string, req *Cal
 	if err != nil {
 		return nil, fmt.Errorf("error http client do: %w", err)
 	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error http request: (%d/%s)", resp.StatusCode, resp.Status)
+	}
 	return resp, nil
 }
 

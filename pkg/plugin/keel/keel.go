@@ -75,8 +75,8 @@ func (k *Keel) addonsIdentify(air *openapi.AddonsIdentifyReq) (*openapi.AddonsId
 	endpointReq := air.Endpoint[0]
 	xKeelStr := getRandBoolStr()
 
-	resp, err := keel.CallKeel(context.TODO(), air.Plugin.ID, endpointReq.Endpoint,
-		http.MethodGet, &keel.CallReq{
+	resp, err := keel.CallPlugin(context.TODO(), air.Plugin.ID, endpointReq.Endpoint,
+		http.MethodPost, &keel.CallReq{
 			Header: http.Header{
 				"x-keel-check": []string{xKeelStr},
 			},
@@ -109,7 +109,7 @@ func (k *Keel) addonsIdentify(air *openapi.AddonsIdentifyReq) (*openapi.AddonsId
 	}()
 	result := &openapi.CommonResult{}
 	if err := utils.ReadBody2Json(resp.Body, result); err != nil {
-		log.Errorf("error read addons identify(%s/%s/%s) resp: %s",
+		log.Errorf("error read addons identify(%s/%s/%s) resp(%s): %s",
 			air.Plugin.ID, endpointReq.Endpoint, endpointReq.AddonsPoint, err.Error())
 		return &openapi.AddonsIdentifyResp{
 			CommonResult: openapi.BadRequestResult(err.Error()),
