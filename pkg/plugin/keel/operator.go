@@ -216,11 +216,6 @@ func proxy(req *http.Request, respWrite http.ResponseWriter, pluginID, endpoint 
 			URLValue: req.URL.Query(),
 		})
 	if err != nil {
-		if resp != nil {
-			http.Error(respWrite, resp.Status, resp.StatusCode)
-		} else {
-			http.Error(respWrite, "bad request", http.StatusBadRequest)
-		}
 		return nil, fmt.Errorf("error request(%s/%s/%s) : %w", pluginID, endpoint,
 			req.Method, err)
 	}
