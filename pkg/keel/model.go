@@ -50,6 +50,7 @@ type Plugin struct {
 
 type PluginRoute struct {
 	Status         openapi.PluginStatus `json:"status"`
+	TkeelVersion   string               `json:"tkeel_version"`
 	RegisterAddons map[string]string    `json:"register_addons,omitempty"`
 }
 

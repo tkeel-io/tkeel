@@ -39,6 +39,7 @@ type IdentifyResp struct {
 	CommonResult `json:",inline"`
 	PluginID     string         `json:"plugin_id"`
 	Version      string         `json:"version"`
+	TkeelVersion string         `json:"tkeel_version"`
 	AddonsPoints []*AddonsPoint `json:"addons_points,omitempty"`
 	MainPlugins  []*MainPlugin  `json:"main_plugins,omitempty"`
 }
@@ -137,12 +138,12 @@ type API struct {
 	H        Handler
 }
 
-func (o *API) Check() error {
-	if o.Endpoint == "" {
+func (a *API) Check() error {
+	if a.Endpoint == "" {
 		return errors.New("not define endpoint or method")
 	}
-	if !strings.HasPrefix(o.Endpoint, "/") {
-		return fmt.Errorf("endpoint is invaild: %s", o.Endpoint)
+	if !strings.HasPrefix(a.Endpoint, "/") {
+		return fmt.Errorf("endpoint is invaild: %s", a.Endpoint)
 	}
 	return nil
 }
@@ -168,55 +169,55 @@ func registerHandler(mux *http.ServeMux, path string, h Handler) {
 }
 
 func convertFunc2Handler(matchMethod string, f func([]byte) ([]byte, error)) Handler {
-	return func(e *APIEvent) {
-		if e.HTTPReq.Method != matchMethod {
-			log.Errorf("not support method: %s", e.HTTPReq.Method)
-			http.Error(e, http.ErrNotSupported.ErrorString, http.StatusMethodNotAllowed)
+	return func(a *APIEvent) {
+		if a.HTTPReq.Method != matchMethod {
+			log.Errorf("not support method: %s", a.HTTPReq.Method)
+			http.Error(a, http.ErrNotSupported.ErrorString, http.StatusMethodNotAllowed)
 			return
 		}
 		var content []byte
 
 		if matchMethod != http.MethodGet {
 			// check for post with no data.
-			if e.HTTPReq.ContentLength <= 0 {
+			if a.HTTPReq.ContentLength <= 0 {
 				log.Error("content cannot be empty.")
-				http.Error(e, "content cannot be empty", http.StatusBadRequest)
+				http.Error(a, "content cannot be empty", http.StatusBadRequest)
 				return
 			}
 			// read content.
-			if e.HTTPReq.Close {
+			if a.HTTPReq.Close {
 				log.Error("request has been closed.")
-				http.Error(e, "request has been closed", http.StatusBadRequest)
+				http.Error(a, "request has been closed", http.StatusBadRequest)
 				return
 			}
-			readByte, err := ioutil.ReadAll(e.HTTPReq.Body)
+			readByte, err := ioutil.ReadAll(a.HTTPReq.Body)
 			if err != nil {
 				log.Errorf("error read body: %s", err)
-				http.Error(e, err.Error(), http.StatusBadRequest)
+				http.Error(a, err.Error(), http.StatusBadRequest)
 				return
 			}
-			defer e.HTTPReq.Body.Close()
+			defer a.HTTPReq.Body.Close()
 			content = readByte
 		}
 
 		resp, err := f(content)
 		if err != nil {
 			log.Error(err.Error())
-			http.Error(e, err.Error(), http.StatusInternalServerError)
+			http.Error(a, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		e.Header().Set("Content-type", "application/json")
-		if _, err := e.Write(resp); err != nil {
-			http.Error(e, err.Error(), http.StatusInternalServerError)
+		a.Header().Set("Content-type", "application/json")
+		if _, err := a.Write(resp); err != nil {
+			http.Error(a, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
 }
 
-func (e *APIEvent) ResponseJSON(res interface{}) []byte {
+func (a *APIEvent) ResponseJSON(res interface{}) []byte {
 	bRes, _ := json.Marshal(res)
-	e.Header().Set("Content-Type", "application/json")
-	e.Write(bRes)
+	a.Header().Set("Content-Type", "application/json")
+	a.Write(bRes)
 	return bRes
 }

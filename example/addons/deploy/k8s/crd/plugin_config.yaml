@@ -1,7 +1,7 @@
 apiVersion: dapr.io/v1alpha1
 kind: Configuration
 metadata:
-  name: demo-echo
+  name: keel-echo
   namespace: "keel-system"
 spec:
   accessControl:
@@ -18,5 +18,5 @@ spec:
       namespace: "keel-system"
   httpPipeline:
     handlers:
-    - name: demo-echo-oauth2-client
+    - name: keel-echo-oauth2-client
       type: middleware.http.oauth2clientcredentials

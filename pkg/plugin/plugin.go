@@ -13,9 +13,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/version"
 )
 
-var (
-	log = logger.NewLogger("keel.plugin")
-)
+var log = logger.NewLogger("keel.plugin")
 
 type Plugin struct {
 	conf *keelconfig.Configuration
@@ -24,11 +22,12 @@ type Plugin struct {
 
 func FromFlags() (*Plugin, error) {
 	pluginID := flag.String("plugin-id", utils.GetEnv("PLUGIN_ID", "keel-hello"), "Plugin id")
-	pluginVersion := flag.String("plugin-version", utils.GetEnv("PLUGIN_VERSION", version.Version()), "Plugin version")
+	pluginVersion := flag.String("plugin-version", utils.GetEnv("PLUGIN_VERSION", version.Version()), "Plugin version.")
+	tkeelVersion := flag.String("tkeel-version", utils.GetEnv("TKEEL_VERSION", version.Version()), "The version of tkeel the plugin depends on.")
 	defaultPluginHTTPPort, _ := strconv.Atoi(utils.GetEnv("PLUGIN_HTTP_PORT", "8080"))
-	pluginHTTPPort := flag.Int("plugin-http-port", defaultPluginHTTPPort, "The port that the plugin listens to")
-	daprPort := flag.String("dapr-http-port", utils.GetEnv("DAPR_HTTP_PORT", "3500"), "The port that the dapr listens to")
-	config := flag.String("keel-plugin-config", utils.GetEnv("KEEL_PLUGIN_CONFIG", ""), "Path to config file, or name of a configuration object")
+	pluginHTTPPort := flag.Int("plugin-http-port", defaultPluginHTTPPort, "The port that the plugin listens to.")
+	daprPort := flag.String("dapr-http-port", utils.GetEnv("DAPR_HTTP_PORT", "3500"), "The port that the dapr listens to.")
+	config := flag.String("keel-plugin-config", utils.GetEnv("KEEL_PLUGIN_CONFIG", ""), "Path to config file, or name of a configuration object.")
 
 	flag.Parse()
 
@@ -50,10 +49,12 @@ func FromFlags() (*Plugin, error) {
 		conf.Plugin.ID = *pluginID
 		conf.Plugin.Port = *pluginHTTPPort
 		conf.Plugin.Version = *pluginVersion
+		conf.Tkeel.Version = *tkeelVersion
 		newPlugin.conf = conf
 	}
 
-	newPlugin.Openapi = openapi.NewOpenapi(newPlugin.conf.Plugin.Port, newPlugin.conf.Plugin.ID, newPlugin.conf.Plugin.Version)
+	newPlugin.Openapi = openapi.NewOpenapi(newPlugin.conf.Plugin.Port, newPlugin.conf.Plugin.ID,
+		newPlugin.conf.Plugin.Version, newPlugin.conf.Tkeel.Version)
 	return newPlugin, nil
 }
 

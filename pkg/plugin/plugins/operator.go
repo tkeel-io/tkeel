@@ -21,7 +21,6 @@ func requestPluginIdentify(ctx context.Context, pID string) (*openapi.IdentifyRe
 		openapi.APIIdentifyMethod, http.MethodGet,
 		nil)
 	if err != nil {
-		log.Errorf("error get plugin(%s) identify: %s", pID, err)
 		return nil, fmt.Errorf("error call plugin: %w", err)
 	}
 	defer func() {
@@ -33,20 +32,17 @@ func requestPluginIdentify(ctx context.Context, pID string) (*openapi.IdentifyRe
 
 	err = utils.ReadBody2Json(resp.Body, identifyResp)
 	if err != nil {
-		log.Errorf("error get plugin(%s) identify read body: %s", pID, err)
 		return nil, fmt.Errorf("error read body: %w", err)
 	}
 	if identifyResp.Ret != 0 {
 		err = fmt.Errorf("error plugin(%s) get identify: %s",
 			identifyResp.PluginID, identifyResp.Msg)
-		log.Error(err)
 		return nil, errors.New(err.Error())
 	}
 	// check plugin id matched.
 	if identifyResp.PluginID != pID {
 		err = fmt.Errorf("error plugin(%s) identify not match(%s)",
 			pID, identifyResp.PluginID)
-		log.Error(err)
 		return nil, errors.New(err.Error())
 	}
 	return identifyResp, nil
@@ -67,8 +63,6 @@ func requestPluginAddonsIdentify(ctx context.Context, pID string,
 	}
 	respByte, err := json.Marshal(addonsIdentifyRep)
 	if err != nil {
-		log.Errorf("error marshal addons resp(%s) : %s",
-			mp.ID, err)
 		return nil, fmt.Errorf("error json marshal: %w", err)
 	}
 	addonsIdentifyResp := &openapi.AddonsIdentifyResp{}
@@ -78,8 +72,6 @@ func requestPluginAddonsIdentify(ctx context.Context, pID string,
 			Body: respByte,
 		})
 	if err != nil {
-		log.Errorf("error post plugin(%s) addons identify: %s",
-			mp.ID, err)
 		return nil, fmt.Errorf("error json marshal: %w", err)
 	}
 	defer func() {
@@ -91,15 +83,11 @@ func requestPluginAddonsIdentify(ctx context.Context, pID string,
 
 	err = utils.ReadBody2Json(resp.Body, addonsIdentifyResp)
 	if err != nil {
-		log.Errorf("error post plugin(%s) read body: %s",
-			pID, err)
 		return nil, fmt.Errorf("error read body: %w", err)
 	}
 	if addonsIdentifyResp.Ret != 0 {
-		err = fmt.Errorf("error plugin(%s) check addons identify(%s): %s",
+		return nil, fmt.Errorf("error plugin(%s) check addons identify(%s): %s",
 			pID, mp.ID, addonsIdentifyResp.Msg)
-		log.Error(err)
-		return nil, errors.New(err.Error())
 	}
 	return addonsIdentifyResp, nil
 }
@@ -122,8 +110,6 @@ func requestPluginTenantBind(ctx context.Context, pID string,
 			Body: reqByte,
 		})
 	if err != nil {
-		log.Errorf("error post plugin(%s) tenant bind: %s",
-			pID, err)
 		return nil, fmt.Errorf("error post: %w", err)
 	}
 	defer func() {
@@ -135,8 +121,6 @@ func requestPluginTenantBind(ctx context.Context, pID string,
 
 	err = utils.ReadBody2Json(resp.Body, tenantBindResp)
 	if err != nil {
-		log.Errorf("error post plugin(%s) read body: %s",
-			pID, err)
 		return nil, fmt.Errorf("error read body: %w", err)
 	}
 	if tenantBindResp.Ret != 0 {
@@ -154,7 +138,6 @@ func requestPluginStatus(ctx context.Context, pID string) (*openapi.StatusResp, 
 	resp, err := keel.CallPlugin(ctx, pID, openapi.APIStatusMethod,
 		http.MethodGet, nil)
 	if err != nil {
-		log.Errorf("error get plugin(%s) status: %s", pID, err)
 		return nil, fmt.Errorf("error call plugin: %w", err)
 	}
 	defer func() {
@@ -166,14 +149,11 @@ func requestPluginStatus(ctx context.Context, pID string) (*openapi.StatusResp, 
 
 	err = utils.ReadBody2Json(resp.Body, statusResp)
 	if err != nil {
-		log.Errorf("error get plugin(%s) status read body: %s", pID, err)
 		return nil, fmt.Errorf("error read body: %w", err)
 	}
 	if statusResp.Ret != 0 {
-		err = fmt.Errorf("error plugin(%s) get status: %s",
+		return nil, fmt.Errorf("error plugin(%s) get status: %s",
 			pID, statusResp.Msg)
-		log.Error(err)
-		return nil, errors.New(err.Error())
 	}
 	return statusResp, nil
 }
@@ -307,13 +287,14 @@ func saveNewPlugin(ctx context.Context, p *keel.Plugin) error {
 		}
 	}()
 
-	// get plugin status.
+	// update plugin status.
 	statusResp, err := requestPluginStatus(ctx, p.PluginID)
 	if err != nil {
 		return fmt.Errorf("error request status: %w", err)
 	}
 	err = keel.SavePluginRoute(ctx, p.PluginID, &keel.PluginRoute{
-		Status: statusResp.Status,
+		Status:       statusResp.Status,
+		TkeelVersion: p.TkeelVersion,
 	}, "1")
 	if err != nil {
 		return fmt.Errorf("error save plugin route: %w", err)
@@ -326,15 +307,26 @@ func saveNewPlugin(ctx context.Context, p *keel.Plugin) error {
 	return nil
 }
 
-func registerPlugin(ctx context.Context, identifyResp *openapi.IdentifyResp, secret string) (err error) {
+func registerPlugin(ctx context.Context, identifyResp *openapi.IdentifyResp, secret string, currTkeelVersion string) (err error) {
 	// check plugin id vaild.
 	pID, err := checkRegisterPluginID(ctx, identifyResp)
 	if err != nil {
 		return fmt.Errorf("error check register plugin id: %w", err)
 	}
 
+	// check plugin depende tkeel version.
+	ok, err := keel.CheckRegisterPluginTkeelVersion(identifyResp.TkeelVersion, currTkeelVersion)
+	if err != nil {
+		return fmt.Errorf("error check register plugin tkeel version: %w", err)
+	}
+	if !ok {
+		return fmt.Errorf("error depende tkeel version: %s -- %s",
+			identifyResp.TkeelVersion, currTkeelVersion)
+	}
+
 	// save cache plugin route.
 	// main plugin will request new plugins.
+	// if register faild delete cache plugin route.
 	err = saveCachePluginRoute(ctx, pID)
 	if err != nil {
 		return fmt.Errorf("error save cache plugin route: %w", err)

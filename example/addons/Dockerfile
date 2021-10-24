@@ -7,4 +7,4 @@ RUN pip install -r requirements.txt
 
 COPY *.py /app/
 
-CMD [ "python", "demo-echo.py" ]
+CMD [ "python", "keel-echo.py" ]

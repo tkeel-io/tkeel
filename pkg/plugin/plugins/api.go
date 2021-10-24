@@ -210,7 +210,7 @@ func (ps *Plugins) RegisterPlugins(e *openapi.APIEvent) {
 		return
 	}
 
-	err = registerPlugin(e.HTTPReq.Context(), identifyResp, secret)
+	err = registerPlugin(e.HTTPReq.Context(), identifyResp, secret, ps.p.Conf().Tkeel.Version)
 	if err != nil {
 		log.Errorf("error register plugins: %s", err)
 		http.Error(e, "error register", http.StatusInternalServerError)
