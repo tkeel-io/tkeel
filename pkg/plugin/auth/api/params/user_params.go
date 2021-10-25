@@ -2,12 +2,6 @@ package params
 
 import "github.com/tkeel-io/tkeel/pkg/plugin/auth/model"
 
-const (
-	AuthoritySysAdmin    AuthorityType = "SYS_ADMIN"
-	AuthorityTenantAdmin AuthorityType = "TENANT_ADMIN"
-	AuthorityCustomer    AuthorityType = "CUSTOMER"
-)
-
 type AuthorityType string
 
 type UserCreateReq struct {
