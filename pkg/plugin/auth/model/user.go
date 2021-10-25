@@ -13,13 +13,13 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/openapi"
 )
 
-// user.tenantID.
+// UserPrefix user.XXX.
 const UserPrefix = "user.%s"
 
-// UserName：User.
+// UserStoreOnTenant UserName：User.
 type UserStoreOnTenant map[string]*User
 
-// 用户.
+// User .
 type User struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`
@@ -53,7 +53,7 @@ func (r *User) Create(ctx context.Context) error {
 
 	items, err := getDB().Select(ctx, genUserStateKey(r.TenantID))
 	if err != nil {
-		dblog.Error("[PluginAuth] User Create ", err)
+		_dbLog.Error("[PluginAuth] User Create ", err)
 		return fmt.Errorf("error user create: %w", err)
 	}
 
@@ -76,12 +76,12 @@ func (r *User) Create(ctx context.Context) error {
 	return nil
 }
 
-// search by tenantID userName.
+// List of search by tenantID userName.
 func (r *User) List(ctx context.Context) []*User {
 	UserStore := make(UserStoreOnTenant)
 	items, err := getDB().Select(ctx, genUserStateKey(r.TenantID))
 	if err != nil {
-		dblog.Error("[PluginAuth] User List ", err)
+		_dbLog.Error("[PluginAuth] User List ", err)
 		return nil
 	}
 	if items != nil {
@@ -109,13 +109,13 @@ func QueryUserByName(ctx context.Context, name string) *User {
 	}
 	data, err := getDB().Select(ctx, name)
 	if err != nil {
-		dblog.Error(err)
+		_dbLog.Error(err)
 		return nil
 	}
 	user := &User{}
 	err = json.Unmarshal(data, user)
 	if err != nil {
-		dblog.Error(err)
+		_dbLog.Error(err)
 		return nil
 	}
 	return user
@@ -127,13 +127,13 @@ func QueryUserByID(ctx context.Context, id string) *User {
 	}
 	data, err := getDB().Select(ctx, id)
 	if err != nil {
-		dblog.Error(err)
+		_dbLog.Error(err)
 		return nil
 	}
 	user := &User{}
 	err = json.Unmarshal(data, user)
 	if err != nil {
-		dblog.Error(err)
+		_dbLog.Error(err)
 		return nil
 	}
 	return user

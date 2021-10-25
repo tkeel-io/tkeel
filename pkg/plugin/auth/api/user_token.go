@@ -19,16 +19,17 @@ func init() {
 	idProvider = token.InitIDProvider([]byte(userTokenSecret), "", "")
 }
 
-func genUserToken(userID, tenantID, tokenID string) (token, jti string, err error) {
+func genUserToken(userID, tenantID, tokenID string) (token, jti string, expire int64, err error) {
 	m := make(map[string]interface{})
 	m["uid"] = userID
 	m["tid"] = tenantID
 	duration := 12 * time.Hour
-	token, err = idProvider.Token("user", tokenID, duration, m)
+	token, expire, err = idProvider.Token("user", tokenID, duration, m)
+
 	var ok bool
 	jti, ok = m["jti"].(string)
 	if !ok {
-		err = errors.New("type assertion faild")
+		err = errors.New("type assertion fail")
 		return
 	}
 	return

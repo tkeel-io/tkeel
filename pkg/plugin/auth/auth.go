@@ -34,13 +34,28 @@ func (p *PluginAuth) Run() {
 	}
 	go func() {
 		err := p.p.Run([]*openapi.API{
-			{Endpoint: "/role/create", H: p.api.RoleCreate},
-			{Endpoint: "/user/login", H: p.api.Login},
-			{Endpoint: "/authenticate", H: p.api.Authenticate},
-			{Endpoint: "/user/logout", H: p.api.UserLogout},
-			{Endpoint: "/user/create", H: p.api.UserCreate},
+			{Endpoint: "/oauth/authenticate", H: p.api.OAuthAuthenticate},
+			{Endpoint: "/oauth/token", H: p.api.OAuthToken},
+			{Endpoint: "/oauth/authorize", H: p.api.OAuthAuthorize},
+
 			{Endpoint: "/tenant/create", H: p.api.TenantCreate},
 			{Endpoint: "/tenant/list", H: p.api.TenantQuery},
+
+			{Endpoint: "/user/login", H: p.api.Login},
+			{Endpoint: "/user/logout", H: p.api.UserLogout},
+			{Endpoint: "/user/create", H: p.api.UserCreate},
+			{Endpoint: "/user/list", H: p.api.UserRoleList},
+			{Endpoint: "/user/role/add", H: p.api.UserCreate},
+			{Endpoint: "/user/role/delete", H: p.api.UserCreate},
+			{Endpoint: "/user/role/list", H: p.api.UserCreate},
+
+			{Endpoint: "/role/create", H: p.api.RoleCreate},
+			{Endpoint: "/role/delete", H: p.api.RoleDelete},
+			{Endpoint: "/role/list", H: p.api.RoleList},
+			{Endpoint: "/role/permission/add", H: p.api.RolePermissionAdd},
+			{Endpoint: "/role/permission/delete", H: p.api.RolePermissionDel},
+			{Endpoint: "/role/permission/list", H: p.api.RolePermissionQuery},
+
 			{Endpoint: "/token/parse", H: p.api.TokenParse},
 			{Endpoint: "/token/create", H: p.api.TokenCreate},
 			{Endpoint: "/token/valid", H: p.api.TokenValid},
