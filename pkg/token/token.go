@@ -59,7 +59,7 @@ func NewBasicJWTIdentityProvider(secret []byte, priKey *rsa.PrivateKey, pubKey *
 	return &BasicJWTIdentityProvider{secret, priKey, pubKey}
 }
 
-func (idp *BasicJWTIdentityProvider) Token(sub, jti string, d time.Duration, m map[string]interface{}) (string, error) {
+func (idp *BasicJWTIdentityProvider) Token(sub, jti string, d time.Duration, m map[string]interface{}) (token string, expires int64, err error) {
 	now := time.Now().UTC()
 	exp := now.Add(d)
 	if jti == "" {
@@ -72,12 +72,14 @@ func (idp *BasicJWTIdentityProvider) Token(sub, jti string, d time.Duration, m m
 	m["iat"] = now
 	m["exp"] = exp
 	m["jti"] = jti
-
+	expires = exp.Unix()
 	if idp.rsapri != nil {
-		return idp.rsaGen(m)
+		token, err = idp.rsaGen(m)
+		return
 	}
 
-	return idp.hsGen(m)
+	token, err = idp.hsGen(m)
+	return
 }
 
 func (idp *BasicJWTIdentityProvider) Validate(tokenStr string) (map[string]interface{}, error) {

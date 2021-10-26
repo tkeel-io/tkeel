@@ -1,0 +1,22 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: keel-echo
+  namespace: "keel-system"
+spec:
+  accessControl:
+    trustDomain: "keel"
+    defaultAction: deny
+    policies:
+    - appId: plugins
+      defaultAction: allow
+      trustDomain: 'keel'
+      namespace: "keel-system"
+    - appId: keel
+      defaultAction: allow
+      trustDomain: 'keel'
+      namespace: "keel-system"
+  httpPipeline:
+    handlers:
+    - name: keel-echo-oauth2-client
+      type: middleware.http.oauth2clientcredentials

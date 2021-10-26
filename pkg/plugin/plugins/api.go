@@ -210,7 +210,7 @@ func (ps *Plugins) RegisterPlugins(e *openapi.APIEvent) {
 		return
 	}
 
-	err = registerPlugin(e.HTTPReq.Context(), identifyResp, secret)
+	err = registerPlugin(e.HTTPReq.Context(), identifyResp, secret, ps.p.Conf().Tkeel.Version)
 	if err != nil {
 		log.Errorf("error register plugins: %s", err)
 		http.Error(e, "error register", http.StatusInternalServerError)
@@ -234,7 +234,6 @@ func (ps *Plugins) TenantBind(e *openapi.APIEvent) {
 		PluginID string `json:"plugin_id"`
 		Version  string `json:"version"`
 		TenantID string `json:"tenant_id"`
-		License  string `json:"license"`
 		Extra    []byte `json:"extra"`
 	}{}
 	err := utils.ReadBody2Json(e.HTTPReq.Body, req)

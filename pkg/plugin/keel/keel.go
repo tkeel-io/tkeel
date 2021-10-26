@@ -13,9 +13,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/utils"
 )
 
-var (
-	log = logger.NewLogger("keel.plugin.keel")
-)
+var log = logger.NewLogger("keel.plugin.keel")
 
 type Keel struct {
 	p *plugin.Plugin
@@ -57,6 +55,7 @@ func (k *Keel) identify() (*openapi.IdentifyResp, error) {
 		CommonResult: openapi.SuccessResult(),
 		PluginID:     k.p.GetIdentifyResp().PluginID,
 		Version:      k.p.GetIdentifyResp().Version,
+		TkeelVersion: k.p.Conf().Tkeel.Version,
 		AddonsPoints: []*openapi.AddonsPoint{
 			{
 				AddonsPoint: "externalPreRouteCheck",
@@ -76,8 +75,8 @@ func (k *Keel) addonsIdentify(air *openapi.AddonsIdentifyReq) (*openapi.AddonsId
 	endpointReq := air.Endpoint[0]
 	xKeelStr := getRandBoolStr()
 
-	resp, err := keel.CallKeel(context.TODO(), air.Plugin.ID, endpointReq.Endpoint,
-		http.MethodGet, &keel.CallReq{
+	resp, err := keel.CallPlugin(context.TODO(), air.Plugin.ID, endpointReq.Endpoint,
+		http.MethodPost, &keel.CallReq{
 			Header: http.Header{
 				"x-keel-check": []string{xKeelStr},
 			},
@@ -110,19 +109,19 @@ func (k *Keel) addonsIdentify(air *openapi.AddonsIdentifyReq) (*openapi.AddonsId
 	}()
 	result := &openapi.CommonResult{}
 	if err := utils.ReadBody2Json(resp.Body, result); err != nil {
-		log.Errorf("error read addons identify(%s/%s/%s) resp: %s",
+		log.Errorf("error read addons identify(%s/%s/%s) resp(%s): %s",
 			air.Plugin.ID, endpointReq.Endpoint, endpointReq.AddonsPoint, err.Error())
 		return &openapi.AddonsIdentifyResp{
 			CommonResult: openapi.BadRequestResult(err.Error()),
 		}, nil
 	}
 	if (xKeelStr == "True" && result.Ret == 0 && result.Msg == "ok") ||
-		(xKeelStr == "false" && result.Ret == -1 && result.Msg == "faild") {
+		(xKeelStr == "False" && result.Ret == -1 && result.Msg == "faild") {
 		return &openapi.AddonsIdentifyResp{
 			CommonResult: openapi.SuccessResult(),
 		}, nil
 	}
-	log.Errorf("error identify(%s/%s/%s) resp: %v",
+	log.Errorf("error addons check identify(%s/%s/%s) resp: %v",
 		air.Plugin.ID, endpointReq.Endpoint, endpointReq.AddonsPoint, result)
 	return &openapi.AddonsIdentifyResp{
 		CommonResult: openapi.BadRequestResult(resp.Status),

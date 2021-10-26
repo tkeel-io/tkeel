@@ -1,0 +1,25 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: {{ .Values.pluginID }}-oauth2-client
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  type: middleware.http.oauth2clientcredentials
+  version: v1
+  metadata:
+  - name: clientId
+    value: {{ .Values.pluginID | quote }}
+  - name: clientSecret
+    value: {{ .Values.secret | quote }}
+  - name: scopes
+    value: "http://{{ .Values.pluginID }}.com"
+  - name: tokenURL
+  {{- if (eq .Values.pluginID "plugins") }}
+    value: "http://127.0.0.1:{{ .Values.plugins.Port }}/oauth2/token"
+  {{- else }}
+    value: "http://plugins:{{ .Values.plugins.Port }}/oauth2/token"
+  {{- end }}
+  - name: headerName
+    value: "x-plugin-jwt"
+  - name: authStyle
+    value: 0

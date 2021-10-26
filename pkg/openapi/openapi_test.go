@@ -14,12 +14,12 @@ import (
 var o *Openapi
 
 func newOprator() {
-	o = NewOpenapi(8080, "keel-hello", "1.0")
+	o = NewOpenapi(8080, "keel-hello", "1.0", "v0.1.0")
 }
 
 func TestNewOprator(t *testing.T) {
 	t.Run("test create oprator", func(t *testing.T) {
-		o = NewOpenapi(8080, "keel-hello", "1.0")
+		o = NewOpenapi(8080, "keel-hello", "1.0", "v0.1.0")
 		assert.NotNil(t, o)
 		assert.NoError(t, o.Close())
 	})
@@ -35,6 +35,7 @@ func TestOpratorIdentify(t *testing.T) {
 		assert.Equal(t, iresp.Msg, "ok")
 		assert.Equal(t, iresp.PluginID, "keel-hello")
 		assert.Equal(t, iresp.Version, "1.0")
+		assert.Equal(t, iresp.TkeelVersion, "v0.1.0")
 		assert.Nil(t, iresp.AddonsPoints)
 		assert.Nil(t, iresp.MainPlugins)
 		assert.NoError(t, o.Close())
@@ -93,6 +94,7 @@ func TestDefaultOpratorHttpMethod(t *testing.T) {
 		assert.Equal(t, iresp.Msg, "ok")
 		assert.Equal(t, iresp.PluginID, "keel-hello")
 		assert.Equal(t, iresp.Version, "1.0")
+		assert.Equal(t, iresp.TkeelVersion, "v0.1.0")
 		assert.Nil(t, iresp.AddonsPoints)
 		assert.Nil(t, iresp.MainPlugins)
 

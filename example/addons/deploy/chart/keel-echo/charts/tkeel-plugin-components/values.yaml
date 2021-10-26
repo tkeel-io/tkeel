@@ -1,0 +1,4 @@
+pluginID: PLUGINID
+plugins:
+  Port: 8080
+secret: changeme

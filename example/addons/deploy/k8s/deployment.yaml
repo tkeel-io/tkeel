@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keel-echo
+  namespace: "keel-system"
+  labels:
+    app: keel-echo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keel-echo
+  template:
+    metadata:
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "keel-echo"
+        dapr.io/config: keel-echo
+        dapr.io/app-port: "8080"
+      labels:
+        app: keel-echo
+    spec:
+      containers:
+        - name: keel-echo
+          image: tkeelio/keel-echo:0.0.1 # EDIT HERE: Replace the image name
+          imagePullPolicy: Always
+          command:
+            - "python"
+          args:
+            - "/app/keel-echo.py"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KEEL_PRIVATE_STORE
+              value: "0"

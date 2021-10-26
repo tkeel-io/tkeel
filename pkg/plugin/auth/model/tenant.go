@@ -13,17 +13,15 @@ import (
 )
 
 const (
-	// tenant.tenantName.
+	// TenantPrefix tenant.tenantName.
 	TenantPrefix = "tenant.%s"
-	// SysAdmin tenant.
-	SysTenant = "sys.tenant"
+	// _sysTenant SysAdmin tenant.
+	_sysTenant = "sys.tenant"
 )
 
-var (
-	gTenantStore = make(TenantStoreOnSys)
-)
+// TenantStoreOnSys tenantTitle:Tenant.
+type TenantStoreOnSys map[string]*Tenant
 
-// 租户.
 type Tenant struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`
@@ -35,45 +33,53 @@ type Tenant struct {
 	CreatedTime int64  `json:"created_time"`
 }
 
-// tenantTitle:Tenant.
-type TenantStoreOnSys map[string]*Tenant
-
 func (r *Tenant) Create(ctx context.Context) error {
+	var tenantStore = make(TenantStoreOnSys)
 	if r.ID == "" {
 		r.ID = uuid.New().String()
 	}
 
-	items, err := getDB().Select(ctx, SysTenant)
+	items, err := getDB().Select(ctx, _sysTenant)
 	if err != nil {
-		dblog.Error("[PluginAuth] Tenant Create ", err)
+		_dbLog.Error("[PluginAuth] Tenant Create ", err)
 		return fmt.Errorf("error tenant create: %w", err)
 	}
 	if items != nil {
-		json.Unmarshal(items, &gTenantStore)
+		json.Unmarshal(items, &tenantStore)
 	}
 
-	if _, ok := gTenantStore[r.Title]; ok {
+	if _, ok := tenantStore[r.Title]; ok {
 		return errors.New(openapi.ErrResourceExisted)
 	}
 
 	r.CreatedTime = time.Now().UTC().Unix()
-	gTenantStore[r.Title] = r
-	saveData, _ := json.Marshal(gTenantStore)
+	tenantStore[r.Title] = r
+	saveData, _ := json.Marshal(tenantStore)
 
-	if err := getDB().Insert(ctx, SysTenant, saveData); err != nil {
+	if err := getDB().Insert(ctx, _sysTenant, saveData); err != nil {
 		return fmt.Errorf("error insert: %w", err)
 	}
 	return nil
 }
 
 func (r *Tenant) Query(ctx context.Context) []*Tenant {
+	var tenantStore = make(TenantStoreOnSys)
+	items, err := getDB().Select(ctx, _sysTenant)
+	if err != nil {
+		_dbLog.Error("[PluginAuth] Tenant Create ", err)
+		return nil
+	}
+	if items != nil {
+		json.Unmarshal(items, &tenantStore)
+	}
+
 	var tenants = make([]*Tenant, 0)
-	if gTenantStore == nil {
-		dblog.Error("please create tenant")
+	if tenantStore == nil {
+		_dbLog.Error("please create tenant")
 		return nil
 	}
 	if r.Title != "" {
-		tenant, ok := gTenantStore[r.Title]
+		tenant, ok := tenantStore[r.Title]
 		if ok {
 			tenants = append(tenants, tenant)
 			return tenants
@@ -81,12 +87,8 @@ func (r *Tenant) Query(ctx context.Context) []*Tenant {
 		return nil
 	}
 
-	for _, v := range gTenantStore {
+	for _, v := range tenantStore {
 		tenants = append(tenants, v)
 	}
 	return tenants
 }
-
-// func genTenantStateKey(tenantName string) string {
-// 	return fmt.Sprintf(TenantPrefix, tenantName)
-// }.

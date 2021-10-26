@@ -1,9 +1,10 @@
 package openapi
 
 const (
-	ErrResourceExisted = "ResourceExisted"
-	ErrInternal        = "InternalErr"
-	ErrParamsInvalid   = "ParamsInvalid"
-	ErrUnauthorized    = "UnauthorizedAccess"
-	ErrInvalidGrant    = "InvalidGrant"
+	ErrResourceExisted       = "ResourceExisted"
+	ErrInternal              = "InternalErr"
+	ErrParamsInvalid         = "ParamsInvalid"
+	ErrUnauthorized          = "UnauthorizedAccess"
+	ErrInvalidGrant          = "InvalidGrant"
+	ErrGrantTypeNotSupported = "GrantTypeNotSupported"
 )

@@ -10,7 +10,7 @@ spec:
   version: v1
   metadata:
   - name: redisHost
-    value: {{ printf "%s-redis:6379" $.Chart.Name }}
+    value: {{ printf "%s-redis-master:6379" $.Chart.Name }}
   - name: redisPassword
     secretKeyRef:
       key: redis-password
