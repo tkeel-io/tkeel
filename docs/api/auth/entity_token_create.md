@@ -22,12 +22,12 @@
 
 ###### 请求参数
 
-> | 参数        | 必选  | 类型   | 说明     |
-> | :---------- | :---- | :----- | -------- |
-> | entity_id   | ture  | string | 实体ID   |
-> | entity_type | true  | string | 实体类型 |
-> | user_id     | false | string | 用户ID   |
-> | tenant_id   | false | string | 租户ID   |
+> | 参数        | 必选  | 类型 | 说明     |
+> | :---------- | :---- | :--- | -------- |
+> | entity_id   | ture  | body | 实体ID   |
+> | entity_type | true  | body | 实体类型 |
+> | user_id     | false | body | 用户ID   |
+> | tenant_id   | false | body | 租户ID   |
 
 ###### 返回数据(data)
 

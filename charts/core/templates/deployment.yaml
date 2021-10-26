@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "core.fullname" . }}
+  name: {{ include "core.name" . }}
   labels:
-    {{- include "core.labels" . | nindent 4 }}
+    app: {{ include "core.name" . }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "core.selectorLabels" . | nindent 6 }}
+      app: {{ include "core.name" . }}
   template:
     metadata:
       annotations:
@@ -21,7 +21,7 @@ spec:
         dapr.io/app-protocol: "http"
         dapr.io/log-level: "debug"
       labels:
-        {{- include "core.selectorLabels" . | nindent 8 }}
+        app: {{ include "core.name" . }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:

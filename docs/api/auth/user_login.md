@@ -16,8 +16,8 @@
 ###### 请求参数
 > |参数|必选|类型|说明|
 |:-----  |:-------|:-----|-----                               |
-|username    |ture    |string|用户名                          |
-|password    |true    |string   |密码|
+|username    |true    |body|用户名                          |
+|password    |true    |body   |密码|
 
 ###### 返回数据(data)
 > |返回字段|字段类型|说明                              |
