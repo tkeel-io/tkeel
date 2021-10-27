@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,10 +19,10 @@ var (
 )
 
 type API interface {
+	OAuthToken(e *openapi.APIEvent)
+	OAuthAuthorize(e *openapi.APIEvent)
+	OAuthAuthenticate(e *openapi.APIEvent)
 	Login(e *openapi.APIEvent)
-	Token(e *openapi.APIEvent)
-	Authorize(e *openapi.APIEvent)
-	Authenticate(e *openapi.APIEvent)
 	UserLogout(e *openapi.APIEvent)
 
 	TenantCreate(e *openapi.APIEvent)
@@ -29,13 +30,17 @@ type API interface {
 
 	UserCreate(e *openapi.APIEvent)
 	UserRoleAdd(e *openapi.APIEvent)
-	UserRoleQuery(e *openapi.APIEvent)
+	UserRoleList(e *openapi.APIEvent)
+	UserRoleDelete(e *openapi.APIEvent)
 	UserPermissionQuery(e *openapi.APIEvent)
 
 	RoleCreate(e *openapi.APIEvent)
 	RoleQuery(e *openapi.APIEvent)
+	RoleList(e *openapi.APIEvent)
+	RoleDelete(e *openapi.APIEvent)
 	RolePermissionAdd(e *openapi.APIEvent)
 	RolePermissionQuery(e *openapi.APIEvent)
+	RolePermissionDel(e *openapi.APIEvent)
 
 	TokenCreate(e *openapi.APIEvent)
 	TokenParse(e *openapi.APIEvent)
@@ -49,15 +54,60 @@ func NewAPI() API {
 	return &api{}
 }
 
-func (a *api) Token(e *openapi.APIEvent) {
+func (a *api) OAuthToken(e *openapi.APIEvent) {
+	if e.HTTPReq.Method != http.MethodGet {
+		log.Errorf("error method(%s) not allowed for oauth token", e.HTTPReq.Method)
+		http.Error(e, "method not allow", http.StatusMethodNotAllowed)
+		return
+	}
+	switch utils.GetURLValue(e.HTTPReq.URL, "grant_type") {
+	case "password":
+		userName := utils.GetURLValue(e.HTTPReq.URL, "username")
+		password := utils.GetURLValue(e.HTTPReq.URL, "password")
+		if userName == "" || password == "" {
+			e.ResponseJSON(openapi.BadRequestResult(openapi.ErrParamsInvalid))
+			return
+		}
+
+		user := model.QueryUserByName(context.TODO(), userName)
+		if password != user.Password {
+			log.Error("[plugin auth] api oauth token password invalid")
+			e.ResponseJSON(openapi.BadRequestResult(openapi.ErrParamsInvalid))
+			return
+		}
+
+		token, _, expire, err := genUserToken(user.ID, user.TenantID, "")
+		if err != nil {
+			log.Error(err)
+			e.ResponseJSON(openapi.BadRequestResult(openapi.ErrInternal))
+			return
+		}
+		respData := &params.OAuth2Token{
+			AccessToken: token,
+			ExpiresIn:   expire,
+		}
+		resp := &struct {
+			openapi.CommonResult `json:",inline"`
+			Data                 interface{} `json:"data"`
+		}{openapi.SuccessResult(),
+			respData}
+		log.Info(resp)
+		e.ResponseJSON(resp)
+	case "code":
+		fallthrough
+	case "refresh_token":
+		fallthrough
+	default:
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrGrantTypeNotSupported))
+		return
+	}
+}
+
+func (a *api) OAuthAuthorize(e *openapi.APIEvent) {
 	panic("implement me")
 }
 
-func (a *api) Authorize(e *openapi.APIEvent) {
-	panic("implement me")
-}
-
-func (a *api) Authenticate(e *openapi.APIEvent) {
+func (a *api) OAuthAuthenticate(e *openapi.APIEvent) {
 	var (
 		req      *params.UserTokenReviewReq
 		respData *params.UserTokenReviewResp
@@ -65,7 +115,7 @@ func (a *api) Authenticate(e *openapi.APIEvent) {
 	)
 	req = &params.UserTokenReviewReq{}
 	if err = utils.ReadBody2Json(e.HTTPReq.Body, req); err != nil {
-		log.Errorf("[PluginAuth] api  Authenticate err %v", err)
+		log.Errorf("[plugin auth] api  oauth authenticate err %v", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrParamsInvalid))
 		return
 	}
@@ -75,7 +125,7 @@ func (a *api) Authenticate(e *openapi.APIEvent) {
 	}
 	userID, tenantID, err := parseUserToken(req.Token)
 	if err != nil {
-		log.Error("[PluginAuth] api Authenticate ", err)
+		log.Error("[plugin auth] api oauth authenticate ", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInvalidGrant))
 		return
 	}
@@ -105,7 +155,7 @@ func (a *api) TenantQuery(e *openapi.APIEvent) {
 	)
 	req = &params.TenantQueryReq{}
 	if err := utils.ReadBody2Json(e.HTTPReq.Body, req); err != nil {
-		log.Errorf("[PluginAuth] UserCreate err %v", err)
+		log.Errorf("[plugin auth] user create err %v", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInternal))
 		return
 	}
@@ -114,7 +164,7 @@ func (a *api) TenantQuery(e *openapi.APIEvent) {
 	}
 	tenants := tenant.Query(context.TODO())
 	if tenants == nil {
-		log.Error("[PluginAuth] api query tenant  nil result")
+		log.Error("[plugin auth] api query tenant  nil result")
 		e.ResponseJSON(openapi.ErrInternal)
 		return
 	}
@@ -157,7 +207,7 @@ func (a *api) UserCreate(e *openapi.APIEvent) {
 
 	req = &params.UserCreateReq{}
 	if err = utils.ReadBody2Json(e.HTTPReq.Body, req); err != nil {
-		log.Errorf("[PluginAuth] UserCreate err %v", err)
+		log.Errorf("[plugin auth] user create err %v", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInternal))
 		return
 	}
@@ -171,7 +221,7 @@ func (a *api) UserCreate(e *openapi.APIEvent) {
 	}
 	err = user.Create(context.TODO())
 	if err != nil {
-		log.Error("[PluginAuth] api UserCreate ", err)
+		log.Error("[plugin auth] api user create ", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInternal))
 		return
 	}
@@ -201,7 +251,7 @@ func (a *api) Login(e *openapi.APIEvent) {
 
 	req = &params.UserLoginReq{}
 	if err := utils.ReadBody2Json(e.HTTPReq.Body, req); err != nil {
-		log.Errorf("[PluginAuth] Login err %v", err)
+		log.Errorf("[plugin auth] login err %v", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInternal))
 		return
 	}
@@ -212,12 +262,12 @@ func (a *api) Login(e *openapi.APIEvent) {
 
 	user := model.QueryUserByName(context.TODO(), req.UserName)
 	if req.Password != user.Password {
-		log.Error("[PluginAuth] api Login password invalid")
+		log.Error("[plugin auth] api login password invalid")
 		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrParamsInvalid))
 		return
 	}
 
-	token, _, err := genUserToken(user.ID, user.TenantID, "")
+	token, _, _, err := genUserToken(user.ID, user.TenantID, "")
 	if err != nil {
 		log.Error(err)
 		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrInternal))
@@ -251,18 +301,10 @@ func (a *api) TenantCreate(e *openapi.APIEvent) {
 
 	req = &params.TenantCreateReq{}
 	if err = utils.ReadBody2Json(e.HTTPReq.Body, req); err != nil {
-		log.Errorf("[PluginAuth] TenantCreate err %v", err)
+		log.Errorf("[plugin auth] tenant create err %v", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInternal))
 		return
 	}
-	// checkAuth(e.HTTPReq).
-
-	// uid := e.HTTPReq.Header.Get("uid")
-	// if uid != "SysAdmin" {
-	// 	log.Warn("[PluginAuth] api TenantCre uid not SYSADMIN")
-	// 	e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrUnauthorized))
-	// 	return
-	// }.
 
 	tenant := model.Tenant{
 		Title:   req.Title,
@@ -273,7 +315,7 @@ func (a *api) TenantCreate(e *openapi.APIEvent) {
 		Address: req.Address,
 	}
 	if err = tenant.Create(context.TODO()); err != nil {
-		log.Error("[PluginAuth] api TenantCreate ", err)
+		log.Error("[plugin auth] api tenant create ", err)
 		e.ResponseJSON(openapi.InternalErrorResult(err.Error()))
 		return
 	}
@@ -284,13 +326,6 @@ func (a *api) TenantCreate(e *openapi.APIEvent) {
 		TenantID: tenant.ID,
 	}
 	user.Create(context.TODO())
-
-	// role := &model.Role{
-	// 	TenantID: tenant.ID,
-	// 	Name: "租户管理员",
-	// 	Desc:"创建租户时默认用户，赋予租户管理员权限",
-	// }
-	// role.Create(nil).
 	respData = &params.TenantCreateResp{
 		TenantID:    tenant.ID,
 		Title:       tenant.Title,
@@ -305,9 +340,6 @@ func (a *api) TenantCreate(e *openapi.APIEvent) {
 		respData,
 	}
 	e.ResponseJSON(resp)
-}
-func (a *api) CustomerCreate(e *openapi.APIEvent) {
-
 }
 
 /*
@@ -328,7 +360,7 @@ func (a *api) TokenCreate(e *openapi.APIEvent) {
 	checkAuth(e.HTTPReq)
 	req = &params.TokenCreateReq{}
 	if err = utils.ReadBody2Json(e.HTTPReq.Body, req); err != nil {
-		log.Errorf("[api] TokenCreate err %v", err)
+		log.Errorf("[plugin auth] token create err %v", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInternal))
 		return
 	}
@@ -373,7 +405,7 @@ func (a *api) TokenParse(e *openapi.APIEvent) {
 
 	req = &params.TokenParseReq{}
 	if err = utils.ReadBody2Json(e.HTTPReq.Body, req); err != nil {
-		log.Errorf("[api] TokenPArse err %v", err)
+		log.Errorf("[plugin auth] api token parse err %v", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInternal))
 		return
 	}
@@ -408,7 +440,7 @@ func (a *api) TokenValid(e *openapi.APIEvent) {
 
 	req = &params.TokenValidReq{}
 	if err := utils.ReadBody2Json(e.HTTPReq.Body, req); err != nil {
-		log.Errorf("[PluginAuth] TokenCreate err %v", err)
+		log.Errorf("[plugin auth] token create err %v", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInternal))
 		return
 	}
@@ -435,15 +467,16 @@ func (a *api) TokenValid(e *openapi.APIEvent) {
 func (a *api) RoleCreate(e *openapi.APIEvent) {
 	var (
 		err error
+		req *params.RoleCreateReq
 	)
-	req := &params.RoleCreateReq{}
+	req = &params.RoleCreateReq{}
 	if err = utils.ReadBody2Json(e.HTTPReq.Body, req); err != nil {
-		log.Errorf("[PluginAuth] api RoleCreate ", err)
+		log.Errorf("[plugin auth] api role create ", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrParamsInvalid))
 		return
 	}
 	if err = checkAuth(e.HTTPReq); err != nil {
-		log.Error("[PluginAuth] api RoleCreate checkAuth ", err)
+		log.Error("[plugin auth] api role create check auth ", err)
 		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrUnauthorized))
 		return
 	}
@@ -453,7 +486,7 @@ func (a *api) RoleCreate(e *openapi.APIEvent) {
 		TenantID: e.HTTPReq.Header.Get("tid"),
 	}
 	if err = role.Create(context.TODO()); err != nil {
-		log.Error("[PluginAuth] api RoleCreate ", err)
+		log.Error("[plugin auth] api role create ", err)
 		e.ResponseJSON(openapi.InternalErrorResult(openapi.ErrInternal))
 		return
 	}
@@ -465,26 +498,192 @@ func (a *api) RoleCreate(e *openapi.APIEvent) {
 	e.ResponseJSON(resp)
 }
 
+func (a *api) RoleList(e *openapi.APIEvent) {
+	var err error
+	if err = checkAuth(e.HTTPReq); err != nil {
+		log.Error("[plugin auth] api role list check auth ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrUnauthorized))
+		return
+	}
+	roles, err := model.RoleListOnTenant(e.HTTPReq.Context(), e.HTTPReq.Header.Get("tid"))
+	if err != nil {
+		log.Error("[plugin auth] api role list ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrInternal))
+		return
+	}
+	resp := &struct {
+		openapi.CommonResult `json:",inline"`
+		Data                 interface{} `json:"data"`
+	}{openapi.SuccessResult(),
+		roles}
+	e.ResponseJSON(resp)
+}
+
+func (a *api) RoleDelete(e *openapi.APIEvent) {
+	var err error
+	if err = checkAuth(e.HTTPReq); err != nil {
+		log.Error("[plugin auth] api role delete check auth ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrUnauthorized))
+		return
+	}
+	roleID := utils.GetURLValue(e.HTTPReq.URL, "role_id")
+	if err = model.DeleteRoleByID(e.HTTPReq.Context(), e.HTTPReq.Header.Get("tid"), roleID); err != nil {
+		log.Error("[plugin auth] api role delete ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrInternal))
+		return
+	}
+	e.ResponseJSON(openapi.SuccessResult())
+}
 func (a *api) RoleQuery(e *openapi.APIEvent) {
 	panic("implement me")
 }
 
-func (a *api) RolePermissionAdd(e *openapi.APIEvent) {
-	panic("implement me")
-}
-
-func (a *api) RolePermissionQuery(e *openapi.APIEvent) {
-	panic("implement me")
-}
-
 func (a *api) UserRoleAdd(e *openapi.APIEvent) {
-	panic("implement me")
+	var (
+		err error
+		req struct {
+			UserID     string   `json:"user_id"`
+			RoleIDList []string `json:"role_id_list"`
+		}
+	)
+	if err = checkAuth(e.HTTPReq); err != nil {
+		log.Error("[plugin auth] api role add check auth ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrUnauthorized))
+		return
+	}
+	tenantID := e.HTTPReq.Header.Get("tid")
+	if err = utils.ReadBody2Json(e.HTTPReq.Body, &req); err != nil {
+		log.Error("[plugin auth] api role add  ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrParamsInvalid))
+		return
+	}
+	for i := range req.RoleIDList {
+		model.UserRoleAdd(e.HTTPReq.Context(), tenantID, req.UserID, req.RoleIDList[i])
+	}
+	e.ResponseJSON(openapi.SuccessResult())
 }
 
-func (a *api) UserRoleQuery(e *openapi.APIEvent) {
-	panic("implement me")
+func (a *api) UserRoleList(e *openapi.APIEvent) {
+	var (
+		err error
+	)
+	if err = checkAuth(e.HTTPReq); err != nil {
+		log.Error("[plugin auth] api role list check auth ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrUnauthorized))
+		return
+	}
+	resp := struct {
+		openapi.CommonResult `json:",inline"`
+		Roles                []*model.Role `json:"roles"`
+	}{CommonResult: openapi.SuccessResult()}
+	userID := utils.GetURLValue(e.HTTPReq.URL, "user_id")
+	roleIDs := model.UserRoleList(e.HTTPReq.Context(), e.HTTPReq.Header.Get("tid"), userID)
+	for _, v := range roleIDs {
+		role, err := model.RoleQueryByID(e.HTTPReq.Context(), v)
+		if err != nil {
+			log.Error("user role list err", err)
+			continue
+		}
+		resp.Roles = append(resp.Roles, role)
+	}
+	e.ResponseJSON(resp)
+}
+
+func (a *api) UserRoleDelete(e *openapi.APIEvent) {
+	if err := checkAuth(e.HTTPReq); err != nil {
+		log.Error("[plugin auth] api role list check auth ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrUnauthorized))
+		return
+	}
+
+	userID := utils.GetURLValue(e.HTTPReq.URL, "user_id")
+	roleID := utils.GetURLValue(e.HTTPReq.URL, "role_id")
+	model.UserRoleDelete(e.HTTPReq.Context(), e.HTTPReq.Header.Get("tid"), userID, roleID)
+	e.ResponseJSON(openapi.SuccessResult())
 }
 
 func (a *api) UserPermissionQuery(e *openapi.APIEvent) {
 	panic("implement me")
+}
+
+func (a *api) RolePermissionAdd(e *openapi.APIEvent) {
+	var (
+		err error
+		req struct {
+			RoleID         string `json:"role_id"`
+			PermissionType string `json:"permission_type"`
+			PermissionID   string `json:"permission_id"`
+		}
+	)
+	if err = checkAuth(e.HTTPReq); err != nil {
+		log.Error("[plugin auth] api role permission add check auth ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrUnauthorized))
+		return
+	}
+	if err = utils.ReadBody2Json(e.HTTPReq.Body, &req); err != nil {
+		log.Error("[plugin auth] api role permission add  unmarshal req ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrParamsInvalid))
+		return
+	}
+
+	err = model.RolePermissionAdd(e.HTTPReq.Context(), req.RoleID, req.PermissionType, req.PermissionID)
+	if err != nil {
+		log.Error("[plugin auth] api role permission add ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrInternal))
+		return
+	}
+	e.ResponseJSON(openapi.SuccessResult())
+}
+
+func (a *api) RolePermissionQuery(e *openapi.APIEvent) {
+	var (
+		err error
+		req struct {
+			RoleID         string `json:"role_id"`
+			PermissionType string `json:"permission_type"`
+		}
+	)
+
+	if err = checkAuth(e.HTTPReq); err != nil {
+		log.Error("[plugin auth] api role permission query check auth ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrUnauthorized))
+		return
+	}
+	if err = utils.ReadBody2Json(e.HTTPReq.Body, &req); err != nil {
+		log.Error("[plugin auth] api role permission query  unmarshal req ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrParamsInvalid))
+		return
+	}
+	permissionIDs := model.RolePermissionList(e.HTTPReq.Context(), req.PermissionType, req.RoleID)
+	resp := struct {
+		openapi.CommonResult `json:",inline"`
+		PermissionType       string   `json:"permission_type"`
+		PermissionID         []string `json:"permission_id"`
+	}{openapi.SuccessResult(),
+		req.PermissionType,
+		permissionIDs}
+	e.ResponseJSON(resp)
+}
+
+func (a *api) RolePermissionDel(e *openapi.APIEvent) {
+	var (
+		err error
+		req struct {
+			RoleID         string `json:"role_id"`
+			PermissionType string `json:"permission_type"`
+			PermissionID   string `json:"permission_id"`
+		}
+	)
+	if err = checkAuth(e.HTTPReq); err != nil {
+		log.Error("[plugin auth] api role permission add check auth ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrUnauthorized))
+		return
+	}
+	if err = utils.ReadBody2Json(e.HTTPReq.Body, &req); err != nil {
+		log.Error("[plugin auth] api role permission add  unmarshal req ", err)
+		e.ResponseJSON(openapi.BadRequestResult(openapi.ErrParamsInvalid))
+		return
+	}
+	model.RolePermissionDelete(e.HTTPReq.Context(), req.RoleID, req.PermissionType, req.PermissionID)
+	e.ResponseJSON(openapi.SuccessResult())
 }

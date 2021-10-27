@@ -9,9 +9,11 @@ spec:
   version: v1
   metadata:
   - name: redisHost
-    value: core-redis-master:6379
+    value: tkeel-middleware-redis-master:6379
   - name: redisPassword
     secretKeyRef:
-      name: core-redis
+      name: tkeel-middleware-redis
       key: redis-password
+scopes:
+  - core
 

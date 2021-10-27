@@ -19,7 +19,7 @@ func ParsePluginID(payload string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error json unmarshal: %w", err)
 	}
-	pID, ok := pmap["client_id"]
+	pID, ok := pmap["plugin_id"]
 	if !ok {
 		return "", nil
 	}
@@ -28,6 +28,7 @@ func ParsePluginID(payload string) (string, error) {
 
 func GetPluginIDFromRequest(req *http.Request) (string, error) {
 	pluginJwt := req.Header.Get("x-plugin-jwt")
+	log.Debugf("pluginJwt: %s", pluginJwt)
 	typeAndToken := strings.Split(pluginJwt, " ")
 	if len(typeAndToken) != 2 {
 		return "", nil
