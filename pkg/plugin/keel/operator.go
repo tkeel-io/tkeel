@@ -105,12 +105,12 @@ func checkDependVersion(src, curr, up string) error {
 		return fmt.Errorf("error src(%s) > curr(%s)",
 			src, curr)
 	}
-	ok, err = keel.CheckRegisterPluginTkeelVersion(src, up)
+	ok, err = keel.CheckRegisterPluginTkeelVersion(up, src)
 	if err != nil {
 		return fmt.Errorf("error check up tkeel version: %w", err)
 	}
 	if !ok {
-		return fmt.Errorf("error src(%s) > up(%s)",
+		return fmt.Errorf("error up(%s) > src(%s)",
 			src, up)
 	}
 	return nil
