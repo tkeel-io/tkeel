@@ -1,4 +1,11 @@
-# Keel
+<h1 align="center"> tKeel</h1>
+<div align="center">
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/tkeel-io/tkeel)](https://goreportcard.com/report/github.com/tkeel-io/tkeel)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tkeel-io/tkeel)
+![GitHub](https://img.shields.io/github/license/tkeel-io/tkeel?style=plastic)
+[![GoDoc](https://godoc.org/github.com/tkeel-io/tkeel?status.png)](http://godoc.org/github.com/tkeel-io/tkeel)
+</div>
 [中文](README_zh.md)
 
 ![img.png](docs/images/img/system.png)
@@ -39,4 +46,4 @@ Please submit any keel bugs, issues, and feature requests to [keel GitHub Issue]
 
 ## Code of Conduct
 
-Please refer to our [TKeel Community Code of Conduct](docs/community/code-of-conduct.md)
+We have adopted a [Code of Conduct](docs/community/code-of-conduct.md) that we expect project participants to adhere to. Please read the full text so that you can understand what actions will and will not be tolerated.

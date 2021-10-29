@@ -1,74 +1,111 @@
-# Keel
-[English](README.md)
+<h1 align="center"> tKeel</h1>
+<h5 align="center"> 新一代物联网开放平台：简单易用，马上起飞</h5>
+<div align="center">
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/tkeel-io/tkeel)](https://goreportcard.com/report/github.com/tkeel-io/tkeel)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tkeel-io/tkeel)
+![GitHub](https://img.shields.io/github/license/tkeel-io/tkeel?style=plastic)
+[![GoDoc](https://godoc.org/github.com/tkeel-io/tkeel?status.png)](http://godoc.org/github.com/tkeel-io/tkeel)
+</div>
+
 
 ![img.png](docs/images/img/system.png)
 
-TKeel 解决了构建高性能、模块化数据接入平台的关键要求。 它利用微服务架构模式并提供可拔插架构以及高速数据平面，帮助您快速构建健壮可复用的物联网解决方案。
+tKeel 是一套强壮可复用的物联网平台，能帮助您快速构建解决方案。
 
-## How it works
+整体架构采用 **微服务** 模式，提供 *可拔插架构* 以及 *稳固可靠且快速响应* 的 **数据平面**。
+
+解决了构建高性能、从设备到应用，模块化接入的关键难题。 
+
+[English](README.md)
+
+## 🪜 架构设计
 
 ![img.png](docs/images/img/layer.png)
+### **Resource**
+数据存储支持，可以是任意您使用的数据库。
+### **Core**
+是整个平台的数据核心，提供了一些 **数据组织** 形式以及 **处理方式**。
+ - 提供了 *时序数据*、_属性数据_、*关系* 等不同形式组织的数据，来构建便于开发和理解的对象。
+ - 通过 **快照** 和 **订阅**（Event数据）来解决数据交互的问题。
 
- - Core 代表了一种模式，它包含一些数据组织形式以及处理方式。
-    - Core 通过时序数据、属性数据、关系数据来构建不同的对象。节点的唯一性由 ID 来保证
-    - 通过 快照+订阅（Event数据） 来解决数据交换。
- - Service 提供应用可拔插能力以及核心功能（消息路由、租户管理、权限控制）。
- - Interface 封装并提供简易的工具以及开发接口供 Application 使用
- - Application 是各类应用，通过Core以及Service来实现各类应用开发。
+### **Service** 
+提供应用 *可拔插能力* 以及其他一些 *核心功能（消息路由、租户管理、权限控制）*。
+### **Interface**
+通过封装，向 **Application** 提供简易的 *工具* 以及友好的 *接口*。
+### **Application**
+各种不同量级的应用，可以是您现有平台的一切服务。
+- 现有平台仅需通过调用 **Interface** 提供的 API 即可使用拿到需要的数据。
 
-## Why TKeel?
+## ✅ 我们有充分的理由
 
-### Keep Simply
-TKeel 开源接入框架基于物联网经验总结，通过数据平面处理分布式系统的复杂性。
-TKeel处理分布式系统的复杂性，并提供更简单的可编程抽象来快速构建物联网解决方案。
+### 🥛 保持简单 
+tKeel 平台总结了多年来在物联网中遇到的挑战与一些通用问题，只为解决物联网开发中的痛点。
 
-### Microservice, any language
-TKeel 开源物联网基于微服务架构构建，非厂商绑定且提供可扩展、可靠和高性能的伴随开发方法。
-通过sidecar形式提供更简单的可编程抽象，通过http以及gRPC来通信。
-平台使您的代码不受托管环境和应用程序高度可移植性的影响变得容易，可以采用任何语言来实现插件。
+tKeel 善于处理分布式系统中的数据流向与抽象问题，屏蔽了底层的复杂性，向外提供了**更简单**，**面向开发者更友好的抽象** ，帮助用户 *快速构建* 物联网解决方案。
 
-### Pluggable
-插件基于OpenAPI约定，基于云原生方式使得部署方式上没有限制。
-平台使您的代码不受托管环境和应用程序高度可移植性的影响变得容易。
+### ⛓️ 小, 同样也很强大
+tKeel 开源物联网平台基于 *微服务架构* 构建，非厂商绑定且提供 **可扩展**、**可靠** 和 **高性能** 的高效开发方法。
 
-通过插件机制可以方便的将您的应用复用、模块化。使得应用应对各种解决方案。
-实现插件非常的简单，企业可以继续利用原有应用能力。
+借助 [Dapr](https://dapr.io) 的强大能力通过 [sidecar](https://docs.dapr.io/concepts/dapr-services/sidecar/) 形式向用户提供 *更简单的* 抽象，通过 `HTTP` 以及 `gRPC` 交互。
 
-### Focus on data
-TKeel 开源物联网基础平台关注于数据实体。
-通过实体抽象可以对真实世界进行定义，
-通过配置关系映射可以提供高速的数据处理模式。
+该平台使您的代码可以忽视托管环境，让设备对接的应用/插件（Plugin） **高度可移植** ，**不受编程语言限制**，可以让开发者使用自己喜欢的技术栈进行得心应手的开发。
 
-通过数据实体我们可以同时适应消息、测点、对象以及关系等种抽象，提供更多层次以及多纬度的数据服务。
-通过配置关系映射用户无需记忆复杂的Topic以及消息格式即可提供高性能的数据处理解决方案。
+### 🔌 插件化
+插件（Plugin）的实现基于 **OpenAPI 约定**，通过云原生的方式让部署简捷轻便。
 
-## Getting Started
+通过插件机制可以方便的复用您或他人公开的插件。
 
-* See the [quickstarts repository](https://github.com/tkeel-io/cli#) for code examples that can help you get started with TKeel.
-* Explore additional samples in the TKeel plugin [samples repository](https://github.com/tkeel-io/tkeel/tree/master/demo).
+我们提供了一个 [官方插件市场]() 使得开发者可以应对各种需求场景。当然，如果您能将您的插件公开，有着相同需求场景的开发者将会感激不尽。
 
+通过 [插件指南]() 您会发现实现插件是一件非常简单的事情。
 
-## Community
-We want your contributions and suggestions!
-The [community](docs/development/README.md) walks you through how to get started contributing keel.
+### 📊 专注于数据
+tKeel 开源物联网平台通过数据中心（[tKeel-io/Core](https://github.com/tkeel-io/core )）定义了 **数据实体**。 
+通过定义对真实世界的物体（things）进行了模拟、抽象，
+您可以定义 **关系映射**，可以获得更多、更快、更简单的数据提炼。
 
-
-### Contributing to TKeel
-
-See the [development guide](docs/development/developing-tkeel.md) explains how to set up development environment.
-
-Please submit any keel bugs, issues, and feature requests to [keel GitHub Issue](https://github.com/tkeel-io/keel/issues)
+通过 **数据实体** 我们可以同时适应 *消息*、_测点_、*对象* 以及 *关系* 等种抽象，提供 **多层次** 和 **多纬度** 的数据服务。
+配置 **关系映射** 您无需记忆复杂的 `消息 Topic` 以及 `消息格式` ，因为我们提供了高性能的数据处理解决方案。
 
 
-## Repositories
+## 🏃🏻‍♀️ 让我们开始吧
 
-| Repo | Description |
+* 通过 [CLI](https://github.com/tkeel-io/cli#) 工具快速安装 tKeel 平台
+* [示例代码](https://github.com/tkeel-io/tkeel/tree/main/example) 会帮助您快速了解如何使用我们的 tKeel 开源物联网平台。
+
+[官网文档]() 会有详细介绍，从安装到使用细节。
+
+## 🛣️ 路线
+我们规划了一条 [时间线](https://github.com/tkeel-io/tkeel/issues/30) 为项目做更多的支持。
+
+## 💬 一起点亮世界
+如果您有任何的建议和想法，欢迎您随时开启一个 [Issue](https://github.com/tkeel-io/keel/issues )，期待我们可以一起交流，让世界更美好。
+
+同时非常的感谢您的反馈与建议 ！
+
+[社区文档](docs/development/README.md) 将会带领您了解如何开始为 tKeel 贡献。
+
+### 🧱 贡献一己之力
+
+[开发指南](docs/development/developing-tkeel.md) 向您解释了如何配置您的开发环境。
+
+我们有这样一份希望项目参与者遵守的 [行为准则](docs/community/code-of-conduct.md)。请阅读全文，以便您了解哪些行为会被容忍，哪些行为不会被容忍。
+
+### ☎️ 联系我们
+提出您可能有的任何问题，我们将确保尽快答复！
+
+| 平台 | 链接 |
+|:---|----|
+|email| tkeel@yunify.com|
+|微博| [@tkeel]()|
+
+## 🏘️ 仓库
+
+| 仓库 | 描述 |
 |:-----|:------------|
-| [TKeel](https://github.com/tkeel-io/tkeel) | The main repository that you are currently in. Contains the TKeel platform code and overview documentation.
-| [CLI](https://github.com/tkeel-io/cli) | The TKeel CLI allows you to setup TKeel on your local dev machine or on a Kubernetes cluster, provides debugging support, launches and manages TKeel instances.
-| [Helm](https://github.com/tkeel-io/helm-charts) | Helm charts for TKeel
+| [tKeel](https://github.com/tkeel-io/tkeel) | 如您所见，包含了平台的代码和平台概览|
+| [CLI](https://github.com/tkeel-io/cli) | tKeel CLI 是用于各种 tKeel 相关任务的主要工具 |
+| [Helm](https://github.com/tkeel-io/helm-charts) | tKeel 对应的 Helm charts |
+| [Core](https://github.com/tkeel-io/core) | tKeel 的数据中心 |
 
-
-## Code of Conduct
-
-Please refer to our [TKeel Community Code of Conduct](docs/community/code-of-conduct.md)
