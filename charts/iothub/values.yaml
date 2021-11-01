@@ -94,3 +94,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+emqx:
+  fullnameOverride: "emqx"
