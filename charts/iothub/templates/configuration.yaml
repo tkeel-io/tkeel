@@ -1,0 +1,22 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: iothub
+  namespace: keel-system
+spec:
+  accessControl:
+    defaultAction: deny
+    trustDomain: "keel"
+    policies:
+      - appId: plugins
+        defaultAction: allow
+        trustDomain: 'keel'
+        namespace: "keel-system"
+      - appId: keel
+        defaultAction: allow
+        trustDomain: 'keel'
+        namespace: "keel-system"
+  httpPipeline:
+    handlers:
+      - name: iothub-oauth2-client
+        type: middleware.http.oauth2clientcredentials

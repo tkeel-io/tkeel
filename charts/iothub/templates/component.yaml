@@ -1,0 +1,21 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: iothub-oauth2-client
+  namespace: keel-system
+spec:
+  type: middleware.http.oauth2clientcredentials
+  version: v1
+  metadata:
+    - name: clientId
+      value: "iothub"
+    - name: clientSecret
+      value: "zhu88jie"
+    - name: scopes
+      value: "http://iothub.com"
+    - name: tokenURL
+      value: "http://plugins:8080/oauth2/token"
+    - name: headerName
+      value: "x-plugin-jwt"
+    - name: authStyle
+      value: 0
