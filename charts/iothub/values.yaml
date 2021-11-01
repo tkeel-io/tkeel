@@ -10,8 +10,6 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "0.0.1"
 
-#imagePullSecrets:
-#  - name: hub-qingcloud
 nameOverride: ""
 fullnameOverride: "iothub"
 
