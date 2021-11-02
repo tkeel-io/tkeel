@@ -51,7 +51,7 @@ service:
     - protocol: TCP
       port: 9000
       targetPort: 9000
-  type: NodePort
+  type: ClusterIP
 
 
 ingress:
