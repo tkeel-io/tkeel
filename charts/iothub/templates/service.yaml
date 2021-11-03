@@ -8,8 +8,8 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: rpc
       protocol: TCP
-      name: http
+      name: rpc
   selector:
-    {{- include "iothub.selectorLabels" . | nindent 4 }}
+    app: {{ include "iothub.name" . }}
