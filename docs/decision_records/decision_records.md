@@ -25,22 +25,47 @@ All decisions are categorized in the following folders:
 
   - [ENG-001: Image Tagging](./engineering/ENG-001-tagging.md)
 
+* **Plugin-Auth**(Abandoned) - Decisions on the core plugin Auth of TKeel plartform.
+
+  - [AUTH-000: roadmap and glossary](./plugin-auth/AUTH-000-overview-and-roadmap.md)
+  - [AUTH-001: tkeel certification management](./plugin-auth/AUTH-001-tkeel-certification-management.md)
+  - [AUTH-002: tenant certification](./plugin-auth/AUTH-002-tenant-certification.md)
+  - [AUTH-003: oauth2 design](./plugin-auth/AUTH-003-oauth2-design.md)
+
+* **Plugin-Keel**(Abandoned) - Decisions on the core plugin keel of TKeel plartform.
+
+  - [KEEL-000: Overview and roadmap](./plugin-keel/KEEL-000-overview-and-roadmap.md)
+  - [KEEL-001: Internal flow](./plugin-keel/KEEL-001-internal-flow.md)
+  - [KEEL-002: External flow](./plugin-keel/KEEL-002-external-flow.md)
+  - [KEEL-003: api version](./plugin-keel/KEEL-003-api-version.md)
+
+* **Plugin-Plugins**(Abandoned) - Decisions on the core plugin Plugins of TKeel plartform.
+
+  - [PLUGINS-000: Overview and roadmap](./plugin-plugins/PLUGINS-000-overview-and-roadmap.md)
+  - [PLUGINS-001: plugin data storage design](./plugin-plugins/PLUGINS-001-plugin-data-storage-design.md)
+  - [PLUGINS-002: plugin management api design](./plugin-plugins/PLUGINS-002-plugin-management-api-design.md)
+  - [PLUGINS-003: tenant management api design](./plugin-plugins/PLUGINS-003-tenant-management-api-design.md)
+  - [PLUGINS-004: platform dependent version check](./plugin-plugins/PLUGINS-004-platform-dependent-version-check.md)
+
+
 ## Creating new decision records
 
 A new decision record should be a _.md_ file named as 
 ```
 <category prefix>-<sequence number in category>-<descriptive title>.md
 ```
-|Category|Prefix|
-|----|----|
-|Architecture|ARC|
-|OPENAPI|OPENAPI|
-|PLUGIN-AUTH|AUTH|
-|PLUGIN-KEEL|KEEL|
-|PLUGIN-PLUGINS|PLUGINS|
-|CLI|CLI|
-|SDKs|SDK|
-|Engineering|ENG|
+|Category|Prefix|Annotation|
+|----|----|----|
+|Architecture|ARC|-|
+|OPENAPI|OPENAPI|-|
+|PLUGIN-AUTH|AUTH|ABANDONED|
+|PLUGIN-KEEL|KEEL|ABANDONED|
+|PLUGIN-PLUGINS|PLUGINS|ABANDONED|
+|COMPONENT-MANAGER|MANAGER|-|
+|COMPONENT-KEEL|KEEL|-|
+|CLI|CLI|-|
+|SDKs|SDK|-|
+|Engineering|ENG|-|
 
 A decision record should contain the following fields:
 
