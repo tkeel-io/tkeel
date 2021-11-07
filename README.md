@@ -117,7 +117,7 @@ We have this [Code of Conduct] that we expect project participants to follow. Pl
 
 You may have many questions, and we will ensure that they are answered as soon as possible!
 
-| 平台 | 链接 |
+| Social Platforms | Links |
 |:---|----|
 |email| tkeel@yunify.com|
 |Weibo| [@tkeel]()|
