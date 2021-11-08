@@ -1,0 +1,35 @@
+name: on release published
+on:
+  release:
+    types: [ published ]
+jobs:
+  check:
+    name: Run lint test and build
+    uses: tkeel-io/tkeel/.github/workflows/public_call.yml@main
+    with:
+      archive_outdir: dist/archivers
+      go_version: 1.17.3
+  upload:
+    name: Upload release files
+    needs:
+      - check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        project:
+          - '*'
+    steps:
+      - name: Download Artifact
+        id: download
+        uses: actions/download-artifact@v2
+        with:
+          name: my-artifact
+          path: dist/archivers
+
+      - name: Upload release binaries
+        uses: alexellis/upload-assets@0.2.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_paths: '["${{ steps.download.outputs.download-path }}/${{ matrix.project }}"]'
