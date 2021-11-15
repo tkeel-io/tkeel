@@ -11,13 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package token
+package server
 
 import (
-	"time"
+	"github.com/tkeel-io/kit/transport/http"
 )
 
-type Provider interface {
-	Token(sub, jti string, d time.Duration, m map[string]interface{}) (string, int64, error)
-	Validate(tokenStr string) (map[string]interface{}, error)
+// NewHTTPServer new a HTTP server.
+func NewHTTPServer(addr string) *http.Server {
+	srv := http.NewServer(addr)
+	return srv
 }

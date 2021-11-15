@@ -1,24 +1,40 @@
+/*
+Copyright 2021 The tKeel Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+	http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package version
 
-// Values for these are injected by the build.
-var (
-	version = "edge"
-
-	gitcommit, gitversion string
+import (
+	"fmt"
+	"runtime"
 )
 
-// Version returns the Keel version. This is either a semantic version
-// number or else, in the case of unreleased code, the string "edge".
-func Version() string {
-	return version
-}
+// Version The tkeel platform Version.
+var Version string
 
-// Commit returns the git commit SHA for the code that Keel was built from.
-func Commit() string {
-	return gitcommit
-}
+// GitCommit The git commit that was compiled. This will be filled in by the compiler.
+var (
+	GitCommit string
+	GitBranch string
+)
 
-// GitVersion returns the git version for the code that Keel was built from.
-func GitVersion() string {
-	return gitversion
-}
+// GitVersion The main version number that is being run at the moment.
+var GitVersion string
+
+// BuildDate The build datetime at the moment.
+var BuildDate = ""
+
+// GoVersion The go compiler version.
+var GoVersion = runtime.Version()
+
+// OsArch The system info.
+var OsArch = fmt.Sprintf("%s %s", runtime.GOOS, runtime.GOARCH)

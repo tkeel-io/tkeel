@@ -28,6 +28,5 @@ docker/keel/keel
 docker/plugins/plugins
 docker/build.sh
 
-cmd/auth/auth
-cmd/keel/keel
-cmd/plugins/plugins
+# win
+*.exe
