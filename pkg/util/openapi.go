@@ -11,13 +11,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package token
+package util
 
-import (
-	"time"
-)
+import v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 
-type Provider interface {
-	Token(sub, jti string, d time.Duration, m map[string]interface{}) (string, int64, error)
-	Validate(tokenStr string) (map[string]interface{}, error)
+func GetV1ResultOK() *v1.Result {
+	return &v1.Result{
+		Ret: v1.Retcode_OK,
+		Msg: "ok",
+	}
+}
+
+func GetV1ResultBadRequest(msg string) *v1.Result {
+	return &v1.Result{
+		Ret: v1.Retcode_BAD_REQEUST,
+		Msg: msg,
+	}
+}
+
+func GetV1ResultInternalError(msg string) *v1.Result {
+	return &v1.Result{
+		Ret: v1.Retcode_INTERNAL_ERROR,
+		Msg: msg,
+	}
 }
