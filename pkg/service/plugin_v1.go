@@ -41,7 +41,7 @@ type PluginServiceV1 struct {
 	tkeelConf     *config.TkeelConf
 	pluginOp      plugin.Operator
 	pluginRouteOp proute.Operator
-	openapiClient    openapi.Client
+	openapiClient openapi.Client
 }
 
 func NewPluginServiceV1(conf *config.TkeelConf, pluginOperator plugin.Operator,
@@ -50,7 +50,7 @@ func NewPluginServiceV1(conf *config.TkeelConf, pluginOperator plugin.Operator,
 		tkeelConf:     conf,
 		pluginOp:      pluginOperator,
 		pluginRouteOp: prouteOperator,
-		openapiClient:    openapi,
+		openapiClient: openapi,
 	}
 }
 

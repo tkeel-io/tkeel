@@ -17,10 +17,10 @@ GOPATH:=$(shell go env GOPATH)
 INTERNAL_PROTO_FILES=$(shell find internal -name *.proto)
 API_PROTO_FILES=$(shell find api -name *.proto)
 
-GIT_COMMIT=$(shell git rev-parse HEAD)
-GIT_BRANCH=$(shell git name-rev --name-only HEAD)
-BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
-GIT_VERSION = $(shell git describe --always --abbrev=7 --dirty)
+GIT_COMMIT =$(shell git rev-parse HEAD)
+GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null)
+GIT_DIRTY  = $(shell test -n "`git status --porcelain`" && echo "dirty" || echo "clean")
+BUILD_DATE =$(shell date '+%Y-%m-%d-%H:%M:%S')
 # By default, disable CGO_ENABLED. See the details on https://golang.org/cmd/cgo
 CGO         ?= 0
 BINARIES    ?= rudder
@@ -92,18 +92,36 @@ OUT_DIR := ./dist
 ################################################################################
 BASE_PACKAGE_NAME := github.com/tkeel-io/tkeel
 
-DEFAULT_LDFLAGS:=-X $(BASE_PACKAGE_NAME)/pkg/version.GitCommit=$(GIT_COMMIT) \
-  -X $(BASE_PACKAGE_NAME)/pkg/version.Version=$(GIT_VERSION) \
-  -X $(BASE_PACKAGE_NAME)/pkg/version.GitVersion=$(GIT_VERSION) \
-  -X $(BASE_PACKAGE_NAME)/pkg/version.BuildDate=$(BUILD_DATE) \
-  -X $(BASE_PACKAGE_NAME)/pkg/version.Version=$(TKEEL_VERSION)
+DEFAULT_LDFLAGS := -w -s
+ifdef VERSION
+	BINARY_VERSION = $(VERSION)
+endif
+BINARY_VERSION ?= ${GIT_TAG}
+
+# Only set Version if building a tag or VERSION is set
+ifneq ($(BINARY_VERSION),)
+	DEFAULT_LDFLAGS += -X $(BASE_PACKAGE_NAME)/pkg/version.version=${BINARY_VERSION}
+endif
+
+VERSION_METADATA = unreleased
+# Clear the "unreleased" string in BuildMetadata
+ifneq ($(GIT_TAG),)
+	VERSION_METADATA =
+endif
+
+DEFAULT_LDFLAGS += -X $(BASE_PACKAGE_NAME)/pkg/version.gitCommit=$(GIT_COMMIT)
+DEFAULT_LDFLAGS += -X $(BASE_PACKAGE_NAME)/pkg/version.gitTreeState=$(GIT_DIRTY)
+DEFAULT_LDFLAGS += -X $(BASE_PACKAGE_NAME)/pkg/version.metadata=${VERSION_METADATA}
+DEFAULT_LDFLAGS += -X $(BASE_PACKAGE_NAME)/pkg/version.builtAt=$(BUILD_DATE)
+
+
 
 ifeq ($(origin DEBUG), undefined)
   BUILDTYPE_DIR:=release
-  LDFLAGS:="$(DEFAULT_LDFLAGS) -s -w"
+  LDFLAGS:="$(DEFAULT_LDFLAGS)"
 else ifeq ($(DEBUG),0)
   BUILDTYPE_DIR:=release
-  LDFLAGS:="$(DEFAULT_LDFLAGS) -s -w"
+  LDFLAGS:="$(DEFAULT_LDFLAGS)"
 else
   BUILDTYPE_DIR:=debug
   GCFLAGS:=-gcflags="all=-N -l"
@@ -214,12 +232,12 @@ check-diff:
 ################################################################################
 .PHONY: init-proto
 init-proto:
-	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
-	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
-	go get -u github.com/tkeel-io/kit/cmd/protoc-gen-go-http
 	go install google.golang.org/protobuf/cmd/protoc-gen-go
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
-	go install github.com/tkeel-io/kit/cmd/protoc-gen-go-http
+	go install google.golang.org/protobuf/cmd/protoc-gen-go
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
+	go install github.com/tkeel-io/tkeel-interface/protoc-gen-go-http
+
 ################################################################################
 # Target: gen-api-proto                                                        #
 ################################################################################

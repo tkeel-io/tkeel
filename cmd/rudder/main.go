@@ -13,8 +13,26 @@ limitations under the License.
 
 package main
 
+import (
+	"fmt"
+	"github.com/spf13/cobra"
+	"os"
+)
+
 func main() {
-	if err := rootCmd.Execute(); err != nil {
-		panic(err)
+	cmd, err := newRootCmd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%+v", err)
+		os.Exit(1)
+	}
+
+	// run when each command's execute method is called
+	cobra.OnInitialize(func() {
+
+	})
+
+	if err := cmd.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "%+v", err)
+		os.Exit(1)
 	}
 }

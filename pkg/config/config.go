@@ -15,6 +15,7 @@ package config
 
 import (
 	"fmt"
+	"github.com/spf13/pflag"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -95,17 +96,16 @@ func LoadStandaloneConfiguration(configPath string) (*Configuration, error) {
 	return conf, nil
 }
 
-func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value string, usage string),
-	boolVar func(p *bool, name string, value bool, usage string)) {
-	boolVar(&c.Log.Dev, "debug", getEnvBool("TMANAGER_DEBUG", false), "enable debug mod.")
-	strVar(&c.Log.Level, "log.level", getEnvStr("TMANAGER_LOG_LEVEL", "debug"), "log level(default debug).")
-	strVar(&c.HTTPAddr, "http.addr", getEnvStr("TMANAGER_HTTP_ADDR", ":31234"), "http listen address(default :31234).")
-	strVar(&c.GRPCAddr, "grpc.addr", getEnvStr("TMANAGER_GRPC_ADDR", ":31233"), "grpc listen address(default :31233).")
-	strVar(&c.Dapr.GRPCPort, "dapr.port", getEnvStr("DAPR_GRPC_PORT", "50001"), "dapr grpc listen address(default 50001).")
-	strVar(&c.Dapr.PrivateStateName, "dapr.private_state_name", getEnvStr("DAPR_PRIVATE_STATE_NAME", "keel-private-store"), "dapr private store name(default keel-private-store).")
-	strVar(&c.Dapr.PublicStateName, "dapr.public_state_name", getEnvStr("DAPR_PUBLIC_STATE_NAME", "keel-public-store"), "dapr public store name(default keel-public-store).")
-	strVar(&c.Tkeel.Secret, "tkeel.secret", getEnvStr("TKEEL_SECRET", "changeme"), "tkeel secret.(default changeme)")
-	strVar(&c.Tkeel.Version, "tkeel.version", getEnvStr("TKEEL_VERSION", "v0.2.0"), "tkeel version.(default v0.2.0)")
+func (c *Configuration) AddFlags(fs *pflag.FlagSet) {
+	fs.BoolVar(&c.Log.Dev, "debug", getEnvBool("RUDDER_DEBUG", false), "enable debug mod.")
+	fs.StringVar(&c.Log.Level, "log.level", getEnvStr("RUDDER_LOG_LEVEL", "debug"), "log level(default debug).")
+	fs.StringVar(&c.HTTPAddr, "http.addr", getEnvStr("RUDDER_HTTP_ADDR", ":31234"), "http listen address(default :31234).")
+	fs.StringVar(&c.GRPCAddr, "grpc.addr", getEnvStr("RUDDER_GRPC_ADDR", ":31233"), "grpc listen address(default :31233).")
+	fs.StringVar(&c.Dapr.GRPCPort, "dapr.port", getEnvStr("DAPR_GRPC_PORT", "50001"), "dapr grpc listen address(default 50001).")
+	fs.StringVar(&c.Dapr.PrivateStateName, "dapr.private_state_name", getEnvStr("DAPR_PRIVATE_STATE_NAME", "keel-private-store"), "dapr private store name(default keel-private-store).")
+	fs.StringVar(&c.Dapr.PublicStateName, "dapr.public_state_name", getEnvStr("DAPR_PUBLIC_STATE_NAME", "keel-public-store"), "dapr public store name(default keel-public-store).")
+	fs.StringVar(&c.Tkeel.Secret, "tkeel.secret", getEnvStr("TKEEL_SECRET", "changeme"), "tkeel secret.(default changeme)")
+	fs.StringVar(&c.Tkeel.Version, "tkeel.version", getEnvStr("TKEEL_VERSION", "v0.2.0"), "tkeel version.(default v0.2.0)")
 }
 
 func getEnvStr(env string, defaultValue string) string {

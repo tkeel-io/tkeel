@@ -18,23 +18,49 @@ import (
 	"runtime"
 )
 
-// Version The tkeel platform Version.
-var Version string
-
-// GitCommit The git commit that was compiled. This will be filled in by the compiler.
 var (
-	GitCommit string
-	GitBranch string
+	// version The tkeel platform Version.
+	version string = "v0.2.0"
+	// gitCommit The git commit that was compiled. This will be filled in by the compiler.
+	gitCommit string
+	// gitTreeState is the state of the git tree
+	gitTreeState string
+	// builtAt The build datetime at the moment.
+	builtAt string
+	// metadata is extra build time data
+	metadata = ""
 )
 
-// GitVersion The main version number that is being run at the moment.
-var GitVersion string
+type BuildInfo struct {
+	// Version is the current semver.
+	Version string `json:"version,omitempty"`
+	// GitCommit is the git sha1.
+	GitCommit string `json:"git_commit,omitempty"`
+	// GitTreeState is the state of the git tree.
+	GitTreeState string `json:"git_tree_state,omitempty"`
+	// BuiltAt is the time when this program built.
+	BuiltAt string `json:"built_at,omitempty"`
+	// GoVersion is the version of the Go compiler used.
+	GoVersion string `json:"go_version,omitempty"`
+	// OSArch is what architecture the program is built using.
+	OSArch string `json:"os_arch,omitempty"`
+}
 
-// BuildDate The build datetime at the moment.
-var BuildDate = ""
+func Get() BuildInfo {
+	return BuildInfo{
+		Version:      GetVersion(),
+		GitCommit:    gitCommit,
+		GitTreeState: gitTreeState,
+		BuiltAt:      builtAt,
+		GoVersion:    runtime.Version(),
+		OSArch:       fmt.Sprintf("%s %s", runtime.GOOS, runtime.GOARCH),
+	}
+}
 
-// GoVersion The go compiler version.
-var GoVersion = runtime.Version()
-
-// OsArch The system info.
-var OsArch = fmt.Sprintf("%s %s", runtime.GOOS, runtime.GOARCH)
+// GetVersion returns the semver string of the version
+func GetVersion() string {
+	if metadata == "" {
+		return version
+	}
+	return version + "+" + metadata
+}
