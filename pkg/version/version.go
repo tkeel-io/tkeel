@@ -20,14 +20,14 @@ import (
 
 var (
 	// version The tkeel platform Version.
-	version string = "v0.2.0"
+	version = "v0.2.0"
 	// gitCommit The git commit that was compiled. This will be filled in by the compiler.
 	gitCommit string
-	// gitTreeState is the state of the git tree
+	// gitTreeState is the state of the git tree.
 	gitTreeState string
 	// builtAt The build datetime at the moment.
 	builtAt string
-	// metadata is extra build time data
+	// metadata is extra build time data.
 	metadata = ""
 )
 
@@ -57,7 +57,7 @@ func Get() BuildInfo {
 	}
 }
 
-// GetVersion returns the semver string of the version
+// GetVersion returns the semver string of the version.
 func GetVersion() string {
 	if metadata == "" {
 		return version

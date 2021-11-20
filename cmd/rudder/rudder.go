@@ -113,7 +113,7 @@ func newRootCmd() (*cobra.Command, error) {
 		conf = c
 	}
 
-	// Add subcommands
+	// Add subcommands.
 	cmd.AddCommand(
 		NewVersionCmd(),
 	)
