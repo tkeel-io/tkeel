@@ -11,13 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package token
+package server
 
 import (
-	"time"
+	"github.com/tkeel-io/kit/transport/grpc"
 )
 
-type Provider interface {
-	Token(sub, jti string, d time.Duration, m map[string]interface{}) (string, int64, error)
-	Validate(tokenStr string) (map[string]interface{}, error)
+// NewHTTPServer new a GRPC server.
+func NewGRPCServer(addr string) *grpc.Server {
+	s := grpc.NewServer(addr)
+	return s
 }

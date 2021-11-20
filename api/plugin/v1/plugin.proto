@@ -1,0 +1,95 @@
+/*
+Copyright 2021 The tKeel Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+        http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+syntax = "proto3";
+
+package api.plugin.v1;
+
+import "openapi/v1/openapi.proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+
+option go_package = "github.com/tkeel-io/tkeel/api/plugin/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.plugin.v1";
+
+service Plugin {
+  rpc RegisterPlugin(RegisterPluginRequest) returns (RegisterPluginResponse) {
+    option (google.api.http) = {
+      post : "/plugins"
+      body : "*"
+    };
+  };
+  rpc DeletePlugin(DeletePluginRequest) returns (DeletePluginResponse) {
+    option (google.api.http) = {
+      delete : "/plugins/{id}"
+    };
+  };
+  rpc GetPlugin(GetPluginRequest) returns (GetPluginResponse) {
+    option (google.api.http) = {
+      get : "/plugins/{id}"
+    };
+  };
+  rpc ListPlugin(google.protobuf.Empty) returns (ListPluginResponse) {
+    option (google.api.http) = {
+      get : "/plugins"
+    };
+  };
+}
+
+/**
+ * Register Addons.
+ **/
+message RegisterAddons {
+  string addons = 1;   // addons name.
+  string upstream = 2; // upstream path.
+}
+
+/**
+ * plugin object.
+ **/
+message PluginObject {
+  string id = 1;             // plugin id.
+  string plugin_version = 2; // plugin version.
+  string tkeel_version = 3;  // plugin depend tkeel version.
+  repeated openapi.v1.AddonsPoint addons_point = 4; // plugin declares addons.
+  repeated openapi.v1.ImplementedPlugin implemented_plugin =
+      5;                               // plugin implemented plugin list.
+  string secret = 6;                   // plugin registered secret.
+  int64 register_timestamp = 7;        // register timestamp.
+  repeated string active_tenantes = 8; // active tenant's id list.
+  repeated RegisterAddons register_addons = 9; // register addons router.
+}
+
+message RegisterPluginRequest {
+  string id = 1;
+  string secret = 2;
+}
+message RegisterPluginResponse { openapi.v1.Result result = 1; }
+
+message DeletePluginRequest { string id = 1; }
+message DeletePluginResponse {
+  openapi.v1.Result result = 1;
+  PluginObject plugin = 2;
+}
+
+message GetPluginRequest { string id = 1; }
+message GetPluginResponse {
+  openapi.v1.Result result = 1;
+  PluginObject plugin = 2;
+}
+
+message ListPluginResponse {
+  openapi.v1.Result result = 1;
+  repeated PluginObject pluginList = 2;
+}

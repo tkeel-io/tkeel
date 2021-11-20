@@ -12,7 +12,6 @@ github.com/
 **/*.log
 **/.project
 **/.factorypath
-google
 
 test_report_e2e.json
 test_report_unit.json
@@ -28,6 +27,5 @@ docker/keel/keel
 docker/plugins/plugins
 docker/build.sh
 
-cmd/auth/auth
-cmd/keel/keel
-cmd/plugins/plugins
+# win
+*.exe

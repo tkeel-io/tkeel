@@ -11,13 +11,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package token
+package main
 
-import (
-	"time"
-)
-
-type Provider interface {
-	Token(sub, jti string, d time.Duration, m map[string]interface{}) (string, int64, error)
-	Validate(tokenStr string) (map[string]interface{}, error)
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		panic(err)
+	}
 }

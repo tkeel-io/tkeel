@@ -230,6 +230,9 @@ linters-settings:
         bson: camel
         avro: snake
         mapstructure: kebab
+  cyclop:
+    # the maximal code complexity to report
+    max-complexity: 15
 
 linters:
   fast: false
@@ -261,6 +264,8 @@ linters:
     - exhaustivestruct
     - paralleltest
     - gofumpt
+    - nilerr
+    - forbidigo
 issues:
   exclude:
     # staticcheck
