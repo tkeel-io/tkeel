@@ -14,33 +14,51 @@ package main
 
 import (
 	"context"
-	dapr "github.com/dapr/go-sdk/client"
-	"github.com/tkeel-io/kit/log"
-	pluginAPI "github.com/tkeel-io/tkeel/api/plugin/v1"
-	"github.com/tkeel-io/tkeel/cmd/version"
-	"github.com/tkeel-io/tkeel/pkg/client/openapi"
-	"github.com/tkeel-io/tkeel/pkg/model/plugin"
-	"github.com/tkeel-io/tkeel/pkg/model/proute"
-	"github.com/tkeel-io/tkeel/pkg/server"
-	"github.com/tkeel-io/tkeel/pkg/service"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	dapr "github.com/dapr/go-sdk/client"
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
+	"github.com/tkeel-io/kit/log"
+	pluginAPI "github.com/tkeel-io/tkeel/api/plugin/v1"
+	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
+	"github.com/tkeel-io/tkeel/pkg/model/plugin"
+	"github.com/tkeel-io/tkeel/pkg/model/proute"
+	"github.com/tkeel-io/tkeel/pkg/server"
+	"github.com/tkeel-io/tkeel/pkg/service"
 )
 
 var (
 	configFile string
 
-	conf      = config.NewDefaultConfiguration()
 	longUsage = `rudder is the main control plugin in the tkeel platform.
 	Used to manage plugins and tenants.`
+	conf = config.NewDefaultConfiguration()
 )
 
-func setup() *app.App {
+func main() {
+	cmd, err := newRootCmd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%+v", err)
+		os.Exit(1)
+	}
+
+	// run when each command's execute method is called.
+	cobra.OnInitialize(func() {
+		// you can do something here before the cmd run.
+	})
+
+	if err := cmd.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "%+v", err)
+		os.Exit(1)
+	}
+}
+
+func serverSetup() *app.App {
 	httpSrv := server.NewHTTPServer(conf.HTTPAddr)
 	grpcSrv := server.NewGRPCServer(conf.GRPCAddr)
 	daprClient, err := dapr.NewClientWithPort(conf.Dapr.GRPCPort)
@@ -69,7 +87,7 @@ func newRootCmd() (*cobra.Command, error) {
 		Short: longUsage,
 		Long:  longUsage,
 		Run: func(cmd *cobra.Command, args []string) {
-			rudder := setup()
+			rudder := serverSetup()
 			if err := rudder.Run(context.TODO()); err != nil {
 				panic(err)
 			}
@@ -97,7 +115,7 @@ func newRootCmd() (*cobra.Command, error) {
 
 	// Add subcommands
 	cmd.AddCommand(
-		version.NewCmd(),
+		NewVersionCmd(),
 	)
 
 	return cmd, nil

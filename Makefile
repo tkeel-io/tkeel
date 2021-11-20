@@ -115,7 +115,6 @@ DEFAULT_LDFLAGS += -X $(BASE_PACKAGE_NAME)/pkg/version.metadata=${VERSION_METADA
 DEFAULT_LDFLAGS += -X $(BASE_PACKAGE_NAME)/pkg/version.builtAt=$(BUILD_DATE)
 
 
-
 ifeq ($(origin DEBUG), undefined)
   BUILDTYPE_DIR:=release
   LDFLAGS:="$(DEFAULT_LDFLAGS)"
@@ -232,12 +231,12 @@ check-diff:
 ################################################################################
 .PHONY: init-proto
 init-proto:
+	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
+	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
+	go get -u github.com/tkeel-io/kit/cmd/protoc-gen-go-http
 	go install google.golang.org/protobuf/cmd/protoc-gen-go
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
-	go install google.golang.org/protobuf/cmd/protoc-gen-go
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
-	go install github.com/tkeel-io/tkeel-interface/protoc-gen-go-http
-
+	go install github.com/tkeel-io/kit/cmd/protoc-gen-go-http
 ################################################################################
 # Target: gen-api-proto                                                        #
 ################################################################################

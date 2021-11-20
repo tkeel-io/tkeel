@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package version
+package main
 
 import (
 	"fmt"
@@ -21,7 +21,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/version"
 )
 
-func NewCmd() *cobra.Command {
+func NewVersionCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Print the version number of metadata service",

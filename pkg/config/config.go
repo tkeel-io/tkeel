@@ -15,11 +15,11 @@ package config
 
 import (
 	"fmt"
-	"github.com/spf13/pflag"
 	"io/ioutil"
 	"os"
 	"strconv"
 
+	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
 )
 
