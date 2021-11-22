@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package oauth2.v1;
+
+option go_package = "github.com/tkeel-io/tkeel/api/oauth2/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.tkeel.rudder.api.oauth2.v1";
+option java_outer_classname = "OpenapiProtoV1";
+
+// @plugins=protoc-gen-go-errors
+// 错误
+enum Error {
+  // 未知类型
+  // @code=UNKNOWN
+  ERR_UNKNOWN = 0;
+  // Secret 不匹配
+  // @code=INVALID_ARGUMENT
+  ERR_SECRET_NOT_MATCH = 1;
+  // 白名单中已存在
+  // @code=ALREADY_EXISTS
+  ERR_CLIENT_ID_ALREADY_EXISTS = 2;
+  // 无效的插件ID
+  // @code=INVALID_ARGUMENT
+  ERR_INVAILD_PLUGIN_ID = 3;
+  // 请求后端存储错误
+  // @code=INTERNAL
+  ERR_INTERNAL_STORE = 4;
+}

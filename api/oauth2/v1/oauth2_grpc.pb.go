@@ -4,9 +4,11 @@ package v1
 
 import (
 	context "context"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type Oauth2Client interface {
 	IssueOauth2Token(ctx context.Context, in *IssueOauth2TokenRequest, opts ...grpc.CallOption) (*IssueOauth2TokenResponse, error)
+	AddWhiteList(ctx context.Context, in *AddWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type oauth2Client struct {
@@ -38,11 +41,21 @@ func (c *oauth2Client) IssueOauth2Token(ctx context.Context, in *IssueOauth2Toke
 	return out, nil
 }
 
+func (c *oauth2Client) AddWhiteList(ctx context.Context, in *AddWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/AddWhiteList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Oauth2Server is the server API for Oauth2 service.
 // All implementations must embed UnimplementedOauth2Server
 // for forward compatibility
 type Oauth2Server interface {
 	IssueOauth2Token(context.Context, *IssueOauth2TokenRequest) (*IssueOauth2TokenResponse, error)
+	AddWhiteList(context.Context, *AddWhiteListRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedOauth2Server()
 }
 
@@ -52,6 +65,9 @@ type UnimplementedOauth2Server struct {
 
 func (UnimplementedOauth2Server) IssueOauth2Token(context.Context, *IssueOauth2TokenRequest) (*IssueOauth2TokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IssueOauth2Token not implemented")
+}
+func (UnimplementedOauth2Server) AddWhiteList(context.Context, *AddWhiteListRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddWhiteList not implemented")
 }
 func (UnimplementedOauth2Server) mustEmbedUnimplementedOauth2Server() {}
 
@@ -84,6 +100,24 @@ func _Oauth2_IssueOauth2Token_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Oauth2_AddWhiteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddWhiteListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Oauth2Server).AddWhiteList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.oauth2.v1.Oauth2/AddWhiteList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Oauth2Server).AddWhiteList(ctx, req.(*AddWhiteListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Oauth2_ServiceDesc is the grpc.ServiceDesc for Oauth2 service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -94,6 +128,10 @@ var Oauth2_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IssueOauth2Token",
 			Handler:    _Oauth2_IssueOauth2Token_Handler,
+		},
+		{
+			MethodName: "AddWhiteList",
+			Handler:    _Oauth2_AddWhiteList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

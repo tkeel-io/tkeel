@@ -55,37 +55,27 @@ func NewPluginServiceV1(conf *config.TkeelConf, pluginOperator plugin.Operator,
 }
 
 func (s *PluginServiceV1) RegisterPlugin(ctx context.Context,
-	req *pb.RegisterPluginRequest) (retResp *pb.RegisterPluginResponse, err error) {
+	req *pb.RegisterPluginRequest) (retResp *emptypb.Empty, err error) {
 	// get register plugin identify.
 	resp, err := s.queryIdentify(ctx, req)
 	if err != nil {
 		log.Errorf("error query identify: %s", err)
-		return &pb.RegisterPluginResponse{
-			Result: util.GetV1ResultBadRequest(err.Error()),
-		}, nil
+		return nil, pb.ErrInvalidArgument()
 	}
 	// check register plugin identify.
 	if err = s.checkIdentify(ctx, resp); err != nil {
 		log.Errorf("error check identify: %s", err)
-		return &pb.RegisterPluginResponse{
-			Result: util.GetV1ResultBadRequest(err.Error()),
-		}, nil
+		return nil, pb.ErrInvalidArgument()
 	}
 	// register plugin.
 	if err = s.registerPlugin(ctx, req, resp); err != nil {
 		log.Errorf("error register plugin: %s", err)
 		if errors.Is(err, ErrPluginRegistered) {
-			return &pb.RegisterPluginResponse{
-				Result: util.GetV1ResultBadRequest(err.Error()),
-			}, nil
+			return nil, pb.ErrPluginAlreadyExists()
 		}
-		return &pb.RegisterPluginResponse{
-			Result: util.GetV1ResultInternalError(err.Error()),
-		}, nil
+		return nil, pb.ErrInternalQueryPluginOpenapi()
 	}
-	return &pb.RegisterPluginResponse{
-		Result: util.GetV1ResultOK(),
-	}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *PluginServiceV1) DeletePlugin(ctx context.Context,
@@ -96,32 +86,23 @@ func (s *PluginServiceV1) DeletePlugin(ctx context.Context,
 	if err != nil {
 		log.Errorf("error delete plugin(%s) route get: %s", deleteID, err)
 		if errors.Is(err, plugin.ErrPluginNotExsist) {
-			return &pb.DeletePluginResponse{
-				Result: util.GetV1ResultBadRequest(plugin.ErrPluginNotExsist.Error()),
-			}, nil
+			return nil, pb.ErrPluginNotFound()
 		}
-		return &pb.DeletePluginResponse{
-			Result: util.GetV1ResultInternalError(err.Error()),
-		}, nil
+		return nil, pb.ErrInternalStore()
 	}
 	// check whether the extension point is implemented.
 	if len(deletePluginRoute.RegisterAddons) != 0 {
 		log.Errorf("error delete plugin(%s): other plugins have implemented the extension points of this plugin.", deleteID)
-		return &pb.DeletePluginResponse{
-			Result: util.GetV1ResultBadRequest("other plugins have implemented the extension points of this plugin."),
-		}, nil
+		return nil, pb.ErrDeletePluginHasBeenDepended()
 	}
 
 	// delete plugin.
 	delPlugin, delPluginRoute, err := s.deletePlugin(ctx, deleteID)
 	if err != nil {
 		log.Errorf("error delete plugin(%s): %s", deleteID, err)
-		return &pb.DeletePluginResponse{
-			Result: util.GetV1ResultInternalError(err.Error()),
-		}, nil
+		return nil, pb.ErrInternalStore()
 	}
 	return &pb.DeletePluginResponse{
-		Result: util.GetV1ResultOK(),
 		Plugin: util.ConvertModel2PluginObjectPb(delPlugin, delPluginRoute),
 	}, nil
 }
@@ -132,24 +113,17 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 	if err != nil {
 		log.Errorf("error plugin(%s) get: %s", req.Id, err)
 		if errors.Is(err, plugin.ErrPluginNotExsist) {
-			return &pb.GetPluginResponse{
-				Result: util.GetV1ResultBadRequest(plugin.ErrPluginNotExsist.Error()),
-			}, nil
+			return nil, pb.ErrPluginNotFound()
 		}
-		return &pb.GetPluginResponse{
-			Result: util.GetV1ResultInternalError(err.Error()),
-		}, nil
+		return nil, pb.ErrInternalStore()
 	}
 	gPluginRoute, err := s.pluginRouteOp.Get(ctx, req.Id)
 	if err != nil {
 		log.Errorf("error plugin(%s) route get: %s", req.Id, err)
-		return &pb.GetPluginResponse{
-			Result: util.GetV1ResultInternalError(err.Error()),
-		}, nil
+		return nil, pb.ErrInternalStore()
 	}
 
 	return &pb.GetPluginResponse{
-		Result: util.GetV1ResultOK(),
 		Plugin: util.ConvertModel2PluginObjectPb(gPlugin, gPluginRoute),
 	}, nil
 }
@@ -159,24 +133,19 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 	ps, err := s.pluginOp.List(ctx)
 	if err != nil {
 		log.Errorf("error plugin list: %s", err)
-		return &pb.ListPluginResponse{
-			Result: util.GetV1ResultInternalError(err.Error()),
-		}, nil
+		return nil, pb.ErrListPlugin()
 	}
 	retList := make([]*pb.PluginObject, 0, len(ps))
 	for _, p := range ps {
 		pr, err := s.pluginRouteOp.Get(ctx, p.ID)
 		if err != nil {
 			log.Errorf("error plugin list get plugin(%s) route: %s", p.ID, err)
-			return &pb.ListPluginResponse{
-				Result: util.GetV1ResultInternalError(err.Error()),
-			}, nil
+			return nil, pb.ErrInternalStore()
 		}
 		retList = append(retList, util.ConvertModel2PluginObjectPb(p, pr))
 	}
 
 	return &pb.ListPluginResponse{
-		Result:     util.GetV1ResultOK(),
 		PluginList: retList,
 	}, nil
 }

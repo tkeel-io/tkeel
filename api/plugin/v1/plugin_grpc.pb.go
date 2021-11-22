@@ -4,6 +4,7 @@ package v1
 
 import (
 	context "context"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -19,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PluginClient interface {
-	RegisterPlugin(ctx context.Context, in *RegisterPluginRequest, opts ...grpc.CallOption) (*RegisterPluginResponse, error)
+	RegisterPlugin(ctx context.Context, in *RegisterPluginRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeletePlugin(ctx context.Context, in *DeletePluginRequest, opts ...grpc.CallOption) (*DeletePluginResponse, error)
 	GetPlugin(ctx context.Context, in *GetPluginRequest, opts ...grpc.CallOption) (*GetPluginResponse, error)
 	ListPlugin(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListPluginResponse, error)
@@ -33,8 +34,8 @@ func NewPluginClient(cc grpc.ClientConnInterface) PluginClient {
 	return &pluginClient{cc}
 }
 
-func (c *pluginClient) RegisterPlugin(ctx context.Context, in *RegisterPluginRequest, opts ...grpc.CallOption) (*RegisterPluginResponse, error) {
-	out := new(RegisterPluginResponse)
+func (c *pluginClient) RegisterPlugin(ctx context.Context, in *RegisterPluginRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/api.plugin.v1.Plugin/RegisterPlugin", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -73,7 +74,7 @@ func (c *pluginClient) ListPlugin(ctx context.Context, in *emptypb.Empty, opts .
 // All implementations must embed UnimplementedPluginServer
 // for forward compatibility
 type PluginServer interface {
-	RegisterPlugin(context.Context, *RegisterPluginRequest) (*RegisterPluginResponse, error)
+	RegisterPlugin(context.Context, *RegisterPluginRequest) (*emptypb.Empty, error)
 	DeletePlugin(context.Context, *DeletePluginRequest) (*DeletePluginResponse, error)
 	GetPlugin(context.Context, *GetPluginRequest) (*GetPluginResponse, error)
 	ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error)
@@ -84,7 +85,7 @@ type PluginServer interface {
 type UnimplementedPluginServer struct {
 }
 
-func (UnimplementedPluginServer) RegisterPlugin(context.Context, *RegisterPluginRequest) (*RegisterPluginResponse, error) {
+func (UnimplementedPluginServer) RegisterPlugin(context.Context, *RegisterPluginRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterPlugin not implemented")
 }
 func (UnimplementedPluginServer) DeletePlugin(context.Context, *DeletePluginRequest) (*DeletePluginResponse, error) {

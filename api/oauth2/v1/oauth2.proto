@@ -16,6 +16,7 @@ syntax = "proto3";
 package api.oauth2.v1;
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/oauth2/v1;v1";
 option java_multiple_files = true;
@@ -26,6 +27,12 @@ service Oauth2 {
       returns (IssueOauth2TokenResponse) {
     option (google.api.http) = {
       post : "/oauth2"
+      body : "*"
+    };
+  };
+  rpc AddWhiteList(AddWhiteListRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/oauth2/white-list"
       body : "*"
     };
   };
@@ -41,4 +48,9 @@ message IssueOauth2TokenResponse {
   string token_type = 2;
   string refresh_token = 3;
   int32 expires_in = 4;
+}
+
+message AddWhiteListRequest {
+  string client_id = 1;
+  string secret = 2;
 }

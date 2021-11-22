@@ -21,8 +21,9 @@ import (
 )
 
 var (
-	ErrPluginRouteExsist    = errors.New("plugin route existed")
-	ErrPluginRouteNotExsist = errors.New("plugin route not existed")
+	ErrPluginRouteExsist          = errors.New("error plugin route existed")
+	ErrPluginRouteNotExsist       = errors.New("error plugin route not existed")
+	ErrPluginRouteVersionMismatch = errors.New("error plugin route version mismatch")
 )
 
 // Operator contains all operations to plugin route.
@@ -36,4 +37,6 @@ type Operator interface {
 	Get(ctx context.Context, pluginID string) (*model.PluginRoute, error)
 	// Delete plugin route with the pluginID.
 	Delete(ctx context.Context, pluginID string) (*model.PluginRoute, error)
+	// Watch plugin proxy route map change.
+	Watch(ctx context.Context, interval string, callback func(model.PluginProxyRouteMap) error) error
 }

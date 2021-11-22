@@ -430,6 +430,7 @@ github.com/gogo/protobuf v1.3.0/go.mod h1:SlYgWuQ5SjCEi6WLHjHCa1yvBfUnHcTbrrZtXP
 github.com/gogo/protobuf v1.3.1/go.mod h1:SlYgWuQ5SjCEi6WLHjHCa1yvBfUnHcTbrrZtXPKa29o=
 github.com/gogo/protobuf v1.3.2/go.mod h1:P1XiOD3dCwIKUDQYPy72D8LYyHL2YPYrpS2s69NZV8Q=
 github.com/goji/httpauth v0.0.0-20160601135302-2da839ab0f4d/go.mod h1:nnjvkQ9ptGaCkuDUx6wNykzzlUixGxvkme+H/lnzb+A=
+github.com/golang-jwt/jwt v3.2.1+incompatible h1:73Z+4BJcrTC+KczS6WvTPvRGOp1WmfEP4Q1lOd9Z/+c=
 github.com/golang-jwt/jwt v3.2.1+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe/go.mod h1:8vg3r2VgvsThLBIFL93Qb5yWzgyZWhEmBwUJWevAkK0=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
@@ -988,8 +989,8 @@ github.com/tidwall/pretty v0.0.0-20190325153808-1166b9ac2b65/go.mod h1:XNkn88O1C
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tidwall/pretty v1.1.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tidwall/pretty v1.2.0/go.mod h1:ITEVvHYasfjBbM0u2Pg8T2nJnzm8xPwvNhhsoaGGjNU=
-github.com/tkeel-io/kit v0.0.0-20211118121155-69aaa7fac0a8 h1:/K2+aSdHLy6MCNr0NeUDDgIV0YwJ7CcHGjAO4PLpYss=
-github.com/tkeel-io/kit v0.0.0-20211118121155-69aaa7fac0a8/go.mod h1:j4xnjUXkc44InMNhGX7z5MbRf164ILLYZhWJL1ykW7I=
+github.com/tkeel-io/kit v0.0.0-20211122161648-31b3986683f2 h1:BDxx9F7wxGGOoyo9SHJD1Xx4K0LUH1Yn7o2dvbfKmFc=
+github.com/tkeel-io/kit v0.0.0-20211122161648-31b3986683f2/go.mod h1:j4xnjUXkc44InMNhGX7z5MbRf164ILLYZhWJL1ykW7I=
 github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211118023522-252e6880c03a h1:FyFPE9vlcFEteYTBXMX0neSndknwoGvurlIW2kPMgM0=
 github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211118023522-252e6880c03a/go.mod h1:tjJgHPar2pFjydhnOCLspww8tSOvcKch241PeP9OL8E=
 github.com/tklauser/go-sysconf v0.3.6/go.mod h1:MkWzOF4RMCshBAMXuhXJs64Rte09mITnppBXY/rYEFI=

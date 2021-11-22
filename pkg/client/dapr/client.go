@@ -11,13 +11,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package dapr
 
-import "os"
+import (
+	"context"
+	"net/http"
+	"net/url"
+)
 
-func main() {
-	if err := rootCmd.Execute(); err != nil {
-		rootCmd.PrintErrf("rudder root cmd execute: %s", err)
-		os.Exit(1)
+type AppReqeust struct {
+	ID         string      `json:"id"`
+	Method     string      `json:"method"`
+	Verb       string      `json:"verb"`
+	Header     http.Header `json:"header"`
+	QueryValue url.Values  `json:"query_value"`
+	Body       []byte      `json:"body"`
+}
+
+type Client interface {
+	Call(context.Context, *AppReqeust) (*http.Response, error)
+}
+
+type HTTPClient struct {
+	httpAddr string
+}
+
+func NewHTTPClient(httpPort string) *HTTPClient {
+	return &HTTPClient{
+		httpAddr: "127.0.0.1:" + httpPort,
 	}
 }

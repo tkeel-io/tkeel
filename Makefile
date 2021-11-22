@@ -23,7 +23,7 @@ BUILD_DATE=$(shell date '+%Y-%m-%d-%H:%M:%S')
 GIT_VERSION = $(shell git describe --always --abbrev=7 --dirty)
 # By default, disable CGO_ENABLED. See the details on https://golang.org/cmd/cgo
 CGO         ?= 0
-BINARIES    ?= rudder
+BINARIES    ?= rudder keel
 HA_MODE     ?= false
 
 # Add latest tag if LATEST_RELEASE is true
@@ -217,9 +217,13 @@ init-proto:
 	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
 	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	go get -u github.com/tkeel-io/kit/cmd/protoc-gen-go-http
+	go get -u github.com/tkeel-io/tkeel-interface/protoc-gen-go-errors
+	go get -u github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
 	go install google.golang.org/protobuf/cmd/protoc-gen-go
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	go install github.com/tkeel-io/kit/cmd/protoc-gen-go-http
+	go install github.com/tkeel-io/tkeel-interface/protoc-gen-go-errors
+	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
 ################################################################################
 # Target: gen-api-proto                                                        #
 ################################################################################
@@ -230,4 +234,8 @@ gen-api-proto:
  	       --go_out=paths=source_relative:. \
  	       --go-http_out=paths=source_relative:. \
  	       --go-grpc_out=paths=source_relative:. \
+		   --go-errors_out=paths=source_relative:. \
+ 	       --openapiv2_out . \
+ 	       --openapiv2_opt logtostderr=true \
+ 	       --openapiv2_opt json_names_for_fields=false \
 	       $(API_PROTO_FILES)

@@ -18,13 +18,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/tkeel-io/tkeel/pkg/model"
 
 	dapr "github.com/dapr/go-sdk/client"
 )
 
-const KeyPrefixPluginRoute = "plugin_route_"
+const KeyPluginProxyRouteMap = "plugin_proxy_route_map"
 
 type DaprStateOprator struct {
 	storeName  string
@@ -39,22 +40,37 @@ func NewDaprStateOperator(storeName string, c dapr.Client) *DaprStateOprator {
 }
 
 func (o *DaprStateOprator) Create(ctx context.Context, pr *model.PluginRoute) error {
-	// conver model version 2 etag.
-	vI, err := strconv.Atoi(pr.Version)
+	// get route map.
+	item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginProxyRouteMap)
 	if err != nil {
-		return fmt.Errorf("error dapr state oprator strconv model version(%s): %w", pr.Version, err)
+		return fmt.Errorf("error dapr state oprator get plugin_proxy_route_map: %w", err)
 	}
-	pluginRouteByte, err := json.Marshal(pr)
+	pluginProxyMap := make(model.PluginProxyRouteMap)
+	if item.Etag != "" {
+		if err = json.Unmarshal(item.Value, &pluginProxyMap); err != nil {
+			return fmt.Errorf("error dapr state oprator unmarshal plugin_proxy_route_map(%s): %w", item.Value, err)
+		}
+	}
+	if _, ok := pluginProxyMap[pr.ID]; ok {
+		return ErrPluginRouteExsist
+	}
+	pluginProxyMap[pr.ID] = pr
+	ppmByte, err := json.Marshal(pluginProxyMap)
 	if err != nil {
-		return fmt.Errorf("error dapr state oprator json marshal(%s): %w", pr, err)
+		return fmt.Errorf("error dapr state oprator marshal plugin_proxy_route_map: %w", err)
 	}
 	// save all plugins and plugin.
 	err = o.daprClient.SaveBulkState(ctx, o.storeName,
 		&dapr.SetStateItem{
-			Key:   getStoreKey(KeyPrefixPluginRoute, pr.ID),
-			Value: pluginRouteByte,
+			Key:   KeyPluginProxyRouteMap,
+			Value: ppmByte,
 			Etag: &dapr.ETag{
-				Value: strconv.Itoa(vI - 1),
+				Value: func() string {
+					if item.Etag == "" {
+						return "1"
+					}
+					return item.Etag
+				}(),
 			},
 			Options: &dapr.StateOptions{
 				Concurrency: dapr.StateConcurrencyFirstWrite,
@@ -68,22 +84,42 @@ func (o *DaprStateOprator) Create(ctx context.Context, pr *model.PluginRoute) er
 }
 
 func (o *DaprStateOprator) Update(ctx context.Context, pr *model.PluginRoute) error {
-	// convert model version 2 etag.
-	old := pr.Version
+	// get route map.
+	item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginProxyRouteMap)
+	if err != nil {
+		return fmt.Errorf("error dapr state oprator get plugin_proxy_route_map: %w", err)
+	}
+	pluginProxyMap := make(model.PluginProxyRouteMap)
+	if item.Etag == "" {
+		return ErrPluginRouteNotExsist
+	}
+	err = json.Unmarshal(item.Value, &pluginProxyMap)
+	if err != nil {
+		return fmt.Errorf("error dapr state oprator unmarshal plugin_proxy_route_map(%s): %w", item.Value, err)
+	}
+	oldPr, ok := pluginProxyMap[pr.ID]
+	if !ok {
+		return ErrPluginRouteExsist
+	}
+	if oldPr.Version != pr.Version {
+		return ErrPluginRouteVersionMismatch
+	}
+	// convert model version to etag.
 	vI, err := strconv.Atoi(pr.Version)
 	if err != nil {
 		return fmt.Errorf("error dapr state oprator strconv model version(%s): %w", pr.Version, err)
 	}
 	pr.Version = strconv.Itoa(vI + 1)
-	valueByte, err := json.Marshal(pr)
+	pluginProxyMap[pr.ID] = pr
+	valueByte, err := json.Marshal(pluginProxyMap)
 	if err != nil {
 		return fmt.Errorf("error dapr state oprator json marshal(%s): %w", pr, err)
 	}
 	err = o.daprClient.SaveBulkState(ctx, o.storeName, &dapr.SetStateItem{
-		Key:   getStoreKey(KeyPrefixPluginRoute, pr.ID),
+		Key:   KeyPluginProxyRouteMap,
 		Value: valueByte,
 		Etag: &dapr.ETag{
-			Value: old,
+			Value: item.Etag,
 		},
 		Options: &dapr.StateOptions{
 			Concurrency: dapr.StateConcurrencyFirstWrite,
@@ -97,32 +133,96 @@ func (o *DaprStateOprator) Update(ctx context.Context, pr *model.PluginRoute) er
 }
 
 func (o *DaprStateOprator) Get(ctx context.Context, pluginID string) (*model.PluginRoute, error) {
-	item, err := o.daprClient.GetState(ctx, o.storeName, getStoreKey(KeyPrefixPluginRoute, pluginID))
+	item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginProxyRouteMap)
 	if err != nil {
 		return nil, fmt.Errorf("error dapr state oprator get(%s): %w", pluginID, err)
 	}
 	if item.Etag == "" {
 		return nil, ErrPluginRouteNotExsist
 	}
-	pr := &model.PluginRoute{}
-	if err = json.Unmarshal(item.Value, pr); err != nil {
-		return nil, fmt.Errorf("error dapr state oprator get(%s) json unmarshal(%s): %w", item.Value, pluginID, err)
+	pluginProxyMap := make(model.PluginProxyRouteMap)
+	err = json.Unmarshal(item.Value, &pluginProxyMap)
+	if err != nil {
+		return nil, fmt.Errorf("error dapr state oprator unmarshal plugin_proxy_route_map(%s): %w", item.Value, err)
+	}
+	pr, ok := pluginProxyMap[pluginID]
+	if !ok {
+		return nil, ErrPluginRouteExsist
 	}
 	return pr, nil
 }
 
 func (o *DaprStateOprator) Delete(ctx context.Context, pluginID string) (*model.PluginRoute, error) {
-	// get plugin route.
-	pr, err := o.Get(ctx, pluginID)
+	item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginProxyRouteMap)
 	if err != nil {
-		return nil, fmt.Errorf("error dapr state oprator delete get(%s): %w", pluginID, err)
+		return nil, fmt.Errorf("error dapr state oprator get(%s): %w", pluginID, err)
 	}
-	if err = o.daprClient.DeleteState(ctx, o.storeName, getStoreKey(KeyPrefixPluginRoute, pluginID)); err != nil {
-		return nil, fmt.Errorf("error dapr state oprator delete(%s): %w", pr, err)
+	if item.Etag == "" {
+		return nil, ErrPluginRouteNotExsist
+	}
+	pluginProxyMap := make(model.PluginProxyRouteMap)
+	if err = json.Unmarshal(item.Value, &pluginProxyMap); err != nil {
+		return nil, fmt.Errorf("error dapr state oprator unmarshal plugin_proxy_route_map(%s): %w", item.Value, err)
+	}
+	pr, ok := pluginProxyMap[pluginID]
+	if !ok {
+		return nil, ErrPluginRouteExsist
+	}
+	delete(pluginProxyMap, pluginID)
+	if len(pluginProxyMap) == 0 {
+		if err = o.daprClient.DeleteState(ctx, o.storeName, KeyPluginProxyRouteMap); err != nil {
+			return nil, fmt.Errorf("error dapr state oprator delete plugin_proxy_route_map: %w", err)
+		}
+	}
+	valueByte, err := json.Marshal(pluginProxyMap)
+	if err != nil {
+		return nil, fmt.Errorf("error dapr state oprator json marshal(%s): %w", pr, err)
+	}
+	err = o.daprClient.SaveBulkState(ctx, o.storeName, &dapr.SetStateItem{
+		Key:   KeyPluginProxyRouteMap,
+		Value: valueByte,
+		Etag: &dapr.ETag{
+			Value: item.Etag,
+		},
+		Options: &dapr.StateOptions{
+			Concurrency: dapr.StateConcurrencyFirstWrite,
+			Consistency: dapr.StateConsistencyStrong,
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error dapr state oprator save(%s): %w", pr, err)
 	}
 	return pr, nil
 }
 
-func getStoreKey(prefix, pluginID string) string {
-	return prefix + pluginID
+// Watch Block waiting for plugin proxy route map changes.
+// when it changes, call callback function.
+func (o *DaprStateOprator) Watch(ctx context.Context, interval string, callback func(model.PluginProxyRouteMap) error) error {
+	in, err := time.ParseDuration(interval)
+	if err != nil {
+		return fmt.Errorf("error dapr state oprator watch parse interval(%s): %w", interval, err)
+	}
+	olditem, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginProxyRouteMap)
+	if err != nil {
+		return fmt.Errorf("error dapr state oprator watch get(%s): %w", KeyPluginProxyRouteMap, err)
+	}
+	tick := time.NewTicker(in)
+	for range tick.C {
+		item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginProxyRouteMap)
+		if err != nil {
+			return fmt.Errorf("error dapr state oprator watch get(%s): %w", KeyPluginProxyRouteMap, err)
+		}
+		if item.Etag != olditem.Etag {
+			rMap := make(model.PluginProxyRouteMap)
+			if err = json.Unmarshal(item.Value, &rMap); err != nil {
+				return fmt.Errorf("error dapr state oprator watch unmarshal(%s): %w", string(item.Value), err)
+			}
+			if err = callback(rMap); err != nil {
+				return fmt.Errorf("error dapr state oprator watch callback(%s): %w", rMap, err)
+			}
+			olditem = item
+			tick.Reset(in)
+		}
+	}
+	return nil
 }
