@@ -96,7 +96,7 @@ func LoadStandaloneConfiguration(configPath string) (*Configuration, error) {
 	return conf, nil
 }
 
-func (c *Configuration) AddFlags(fs *pflag.FlagSet) {
+func (c *Configuration) AttachFlags(fs *pflag.FlagSet) {
 	fs.BoolVar(&c.Log.Dev, "debug", getEnvBool("RUDDER_DEBUG", false), "enable debug mod.")
 	fs.StringVar(&c.Log.Level, "log.level", getEnvStr("RUDDER_LOG_LEVEL", "debug"), "log level(default debug).")
 	fs.StringVar(&c.HTTPAddr, "http.addr", getEnvStr("RUDDER_HTTP_ADDR", ":31234"), "http listen address(default :31234).")

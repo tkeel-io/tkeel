@@ -32,12 +32,12 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/service"
 )
 
-var (
-	configFile string
-
-	longUsage = `rudder is the main control plugin in the tkeel platform.
+const longUsage = `rudder is the main control plugin in the tkeel platform.
 	Used to manage plugins and tenants.`
-	conf = config.NewDefaultConfiguration()
+
+var (
+	configFilePath = ""
+	conf           = config.NewDefaultConfiguration()
 )
 
 func main() {
@@ -46,11 +46,6 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%+v", err)
 		os.Exit(1)
 	}
-
-	// run when each command's execute method is called.
-	cobra.OnInitialize(func() {
-		// you can do something here before the cmd run.
-	})
 
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "%+v", err)
@@ -84,7 +79,7 @@ func serverSetup() *app.App {
 func newRootCmd() (*cobra.Command, error) {
 	cmd := &cobra.Command{
 		Use:   "rudder",
-		Short: longUsage,
+		Short: "The main control plugin in the tkeel platform.",
 		Long:  longUsage,
 		Run: func(cmd *cobra.Command, args []string) {
 			rudder := serverSetup()
@@ -102,11 +97,11 @@ func newRootCmd() (*cobra.Command, error) {
 	}
 
 	flags := cmd.PersistentFlags()
-	conf.AddFlags(flags)
+	conf.AttachFlags(flags)
 
-	flags.StringVar(&configFile, "config", getEnvStr("RUDDER_CONFIG", ""), "rubber config file path.")
-	if configFile != "" {
-		c, err := config.LoadStandaloneConfiguration(configFile)
+	flags.StringVar(&configFilePath, "config", getEnvStr("RUDDER_CONFIG", ""), "rubber config file path.")
+	if configFilePath != "" {
+		c, err := config.LoadStandaloneConfiguration(configFilePath)
 		if err != nil {
 			panic(err)
 		}
