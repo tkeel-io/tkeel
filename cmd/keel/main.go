@@ -13,11 +13,13 @@ limitations under the License.
 
 package main
 
-import "os"
+import (
+	"os"
+)
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
-		rootCmd.PrintErrf("rudder root cmd execute: %s", err)
+		rootCmd.PrintErrf("keel root cmd execute: %s", err)
 		os.Exit(1)
 	}
 }

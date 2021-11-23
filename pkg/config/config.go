@@ -28,12 +28,16 @@ type TkeelConf struct {
 	Secret string `json:"secret" yaml:"secret"`
 	// tkeel platform version.
 	Version string `json:"version" yaml:"version"`
+	// watch plugin route interval.
+	WatchPluginRouteInterval string `json:"watch_plugin_route_interval" yaml:"watchPluginRouteInterval"`
 }
 
 // DaprConf dapr sidecar configuration.
 type DaprConf struct {
-	// dapr sidecar grpc listion port.
+	// dapr sidecar grpc listen port.
 	GRPCPort string `json:"grpc_port" yaml:"grpcPort"`
+	// dapr sidecar http listen port.
+	HTTPPort string `json:"http_port" yaml:"httpPort"`
 	// private state name.
 	PrivateStateName string `json:"private_state_name" yaml:"privateStateName"`
 	// public state name.
@@ -101,11 +105,13 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.Log.Level, "log.level", getEnvStr("TMANAGER_LOG_LEVEL", "debug"), "log level(default debug).")
 	strVar(&c.HTTPAddr, "http.addr", getEnvStr("TMANAGER_HTTP_ADDR", ":31234"), "http listen address(default :31234).")
 	strVar(&c.GRPCAddr, "grpc.addr", getEnvStr("TMANAGER_GRPC_ADDR", ":31233"), "grpc listen address(default :31233).")
-	strVar(&c.Dapr.GRPCPort, "dapr.port", getEnvStr("DAPR_GRPC_PORT", "50001"), "dapr grpc listen address(default 50001).")
+	strVar(&c.Dapr.GRPCPort, "dapr.grpc.port", getEnvStr("DAPR_GRPC_PORT", "50001"), "dapr grpc listen address(default 50001).")
+	strVar(&c.Dapr.GRPCPort, "dapr.http.port", getEnvStr("DAPR_HTTP_PORT", "3500"), "dapr grpc listen address(default 3500).")
 	strVar(&c.Dapr.PrivateStateName, "dapr.private_state_name", getEnvStr("DAPR_PRIVATE_STATE_NAME", "keel-private-store"), "dapr private store name(default keel-private-store).")
 	strVar(&c.Dapr.PublicStateName, "dapr.public_state_name", getEnvStr("DAPR_PUBLIC_STATE_NAME", "keel-public-store"), "dapr public store name(default keel-public-store).")
 	strVar(&c.Tkeel.Secret, "tkeel.secret", getEnvStr("TKEEL_SECRET", "changeme"), "tkeel secret.(default changeme)")
 	strVar(&c.Tkeel.Version, "tkeel.version", getEnvStr("TKEEL_VERSION", "v0.2.0"), "tkeel version.(default v0.2.0)")
+	strVar(&c.Tkeel.WatchPluginRouteInterval, "tkeel.watch_plugin_route_interval", getEnvStr("TKEEL_WATCH_PLUGIN_ROUTE_INTERVAL", "10s"), "tkeel watch plugin route change interval.(default 10s)")
 }
 
 func getEnvStr(env string, defaultValue string) string {

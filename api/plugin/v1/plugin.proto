@@ -24,7 +24,7 @@ option java_multiple_files = true;
 option java_package = "api.plugin.v1";
 
 service Plugin {
-  rpc RegisterPlugin(RegisterPluginRequest) returns (RegisterPluginResponse) {
+  rpc RegisterPlugin(RegisterPluginRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/plugins"
       body : "*"
@@ -75,21 +75,11 @@ message RegisterPluginRequest {
   string id = 1;
   string secret = 2;
 }
-message RegisterPluginResponse { openapi.v1.Result result = 1; }
 
 message DeletePluginRequest { string id = 1; }
-message DeletePluginResponse {
-  openapi.v1.Result result = 1;
-  PluginObject plugin = 2;
-}
+message DeletePluginResponse { PluginObject plugin = 1; }
 
 message GetPluginRequest { string id = 1; }
-message GetPluginResponse {
-  openapi.v1.Result result = 1;
-  PluginObject plugin = 2;
-}
+message GetPluginResponse { PluginObject plugin = 1; }
 
-message ListPluginResponse {
-  openapi.v1.Result result = 1;
-  repeated PluginObject pluginList = 2;
-}
+message ListPluginResponse { repeated PluginObject pluginList = 1; }

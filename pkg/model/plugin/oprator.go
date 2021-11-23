@@ -21,8 +21,9 @@ import (
 )
 
 var (
-	ErrPluginExsist    = errors.New("plugin existed")
-	ErrPluginNotExsist = errors.New("plugin not existed")
+	ErrPluginExsist          = errors.New("error plugin existed")
+	ErrPluginNotExsist       = errors.New("error plugin not existed")
+	ErrPluginVersionMismatch = errors.New("error plugin version mismatch")
 )
 
 // Operator contains all operations to plugin.

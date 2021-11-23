@@ -7,19 +7,21 @@ package v1
 import (
 	context "context"
 	json "encoding/json"
-	go_restful "github.com/emicklei/go-restful"
 	http "net/http"
-)
 
-import transportHTTP "github.com/tkeel-io/kit/transport/http"
+	go_restful "github.com/emicklei/go-restful"
+	errors "github.com/tkeel-io/kit/errors"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
+
+	transportHTTP "github.com/tkeel-io/kit/transport/http"
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the tkeel package it is being compiled against.
-// import package.context.http.go_restful.json.
-
-const _ = transportHTTP.ImportAndUsed
+// import package.context.http.go_restful.json.errors.
 
 type Oauth2HTTPServer interface {
+	AddWhiteList(context.Context, *AddWhiteListRequest) (*emptypb.Empty, error)
 	IssueOauth2Token(context.Context, *IssueOauth2TokenRequest) (*IssueOauth2TokenResponse, error)
 }
 
@@ -31,6 +33,35 @@ func newOauth2HTTPHandler(s Oauth2HTTPServer) *Oauth2HTTPHandler {
 	return &Oauth2HTTPHandler{srv: s}
 }
 
+func (h *Oauth2HTTPHandler) AddWhiteList(req *go_restful.Request, resp *go_restful.Response) {
+	in := AddWhiteListRequest{}
+	if err := transportHTTP.GetBody(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.AddWhiteList(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
+		return
+	}
+
+	result, err := json.Marshal(out)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+	_, err = resp.Write(result)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+}
+
 func (h *Oauth2HTTPHandler) IssueOauth2Token(req *go_restful.Request, resp *go_restful.Response) {
 	in := IssueOauth2TokenRequest{}
 	if err := transportHTTP.GetBody(req, &in); err != nil {
@@ -38,9 +69,13 @@ func (h *Oauth2HTTPHandler) IssueOauth2Token(req *go_restful.Request, resp *go_r
 		return
 	}
 
-	out, err := h.srv.IssueOauth2Token(req.Request.Context(), &in)
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.IssueOauth2Token(ctx, &in)
 	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
 
@@ -74,4 +109,6 @@ func RegisterOauth2HTTPServer(container *go_restful.Container, srv Oauth2HTTPSer
 	handler := newOauth2HTTPHandler(srv)
 	ws.Route(ws.POST("/oauth2").
 		To(handler.IssueOauth2Token))
+	ws.Route(ws.POST("/oauth2/white-list").
+		To(handler.AddWhiteList))
 }

@@ -7,24 +7,24 @@ package v1
 import (
 	context "context"
 	json "encoding/json"
-	go_restful "github.com/emicklei/go-restful"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
-)
 
-import transportHTTP "github.com/tkeel-io/kit/transport/http"
+	go_restful "github.com/emicklei/go-restful"
+	errors "github.com/tkeel-io/kit/errors"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
+
+	transportHTTP "github.com/tkeel-io/kit/transport/http"
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the tkeel package it is being compiled against.
-// import package.context.http.go_restful.json.
-
-const _ = transportHTTP.ImportAndUsed
+// import package.context.http.go_restful.json.errors.
 
 type PluginHTTPServer interface {
 	DeletePlugin(context.Context, *DeletePluginRequest) (*DeletePluginResponse, error)
 	GetPlugin(context.Context, *GetPluginRequest) (*GetPluginResponse, error)
 	ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error)
-	RegisterPlugin(context.Context, *RegisterPluginRequest) (*RegisterPluginResponse, error)
+	RegisterPlugin(context.Context, *RegisterPluginRequest) (*emptypb.Empty, error)
 }
 
 type PluginHTTPHandler struct {
@@ -37,14 +37,22 @@ func newPluginHTTPHandler(s PluginHTTPServer) *PluginHTTPHandler {
 
 func (h *PluginHTTPHandler) DeletePlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := DeletePluginRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	out, err := h.srv.DeletePlugin(req.Request.Context(), &in)
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.DeletePlugin(ctx, &in)
 	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
 
@@ -62,14 +70,22 @@ func (h *PluginHTTPHandler) DeletePlugin(req *go_restful.Request, resp *go_restf
 
 func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := GetPluginRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	out, err := h.srv.GetPlugin(req.Request.Context(), &in)
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.GetPlugin(ctx, &in)
 	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
 
@@ -87,10 +103,18 @@ func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.
 
 func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := emptypb.Empty{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
 
-	out, err := h.srv.ListPlugin(req.Request.Context(), &in)
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.ListPlugin(ctx, &in)
 	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
 
@@ -113,9 +137,13 @@ func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_res
 		return
 	}
 
-	out, err := h.srv.RegisterPlugin(req.Request.Context(), &in)
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.RegisterPlugin(ctx, &in)
 	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
 

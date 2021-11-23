@@ -36,7 +36,7 @@ type Plugin struct {
 func (p *Plugin) String() string {
 	b, err := json.Marshal(p)
 	if err != nil {
-		return err.Error()
+		return "<" + err.Error() + ">"
 	}
 	return string(b)
 }
@@ -92,6 +92,16 @@ func (p *Plugin) Clone() *Plugin {
 	}
 }
 
+type PluginProxyRouteMap map[string]*PluginRoute
+
+func (pprm *PluginProxyRouteMap) String() string {
+	b, err := json.Marshal(pprm)
+	if err != nil {
+		return "<" + err.Error() + ">"
+	}
+	return string(b)
+}
+
 type PluginRoute struct {
 	ID                string                  `json:"id,omitempty"`                 // plugin id.
 	Status            openapi_v1.PluginStatus `json:"status,omitempty"`             // plugin latest status.
@@ -104,7 +114,7 @@ type PluginRoute struct {
 func (pr *PluginRoute) String() string {
 	b, err := json.Marshal(pr)
 	if err != nil {
-		return err.Error()
+		return "<" + err.Error() + ">"
 	}
 	return string(b)
 }
