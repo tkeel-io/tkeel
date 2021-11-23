@@ -1,6 +1,6 @@
 <h1 align="center"> tKeel</h1>
-<h5 align="center"> New Generation of OpenSource Platforms for The IoT </h5>
-<h6 align="center"> easy to use and access success </h6> 
+<h5 align="center"> Next-generation IoT open source platform </h5>
+<h6 align="center"> High performance, High security and easy to use </h6> 
 <div align="center">
 
 
