@@ -19,6 +19,8 @@ import (
 	"os"
 	"strconv"
 
+	authConf "github.com/tkeel-io/security/pkg/apiserver/config"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -64,14 +66,26 @@ type Configuration struct {
 	Dapr *DaprConf `json:"dapr" yaml:"dapr"`
 	// Log log configuration.
 	Log *LogConf `json:"log" yaml:"log"`
+	// AuthMysql  mysql config of auth.
+	AuthMysql *authConf.MysqlConf `json:"auth_mysql" yaml:"authMysql"`
+	// RBAC rbac config of auth.
+	RBAC *authConf.RBACConfig `json:"rbac" yaml:"rbac"`
+	// OAuth2Config oauth2 config of auth.
+	OAuth2Config *authConf.OAuth2Config `json:"oauth2_config" yaml:"oauth2"`
+	// entity entity security config of auth.
+	Entity *authConf.EntityConfig `json:"entity" yaml:"entity"`
 }
 
 // NewDefaultConfiguration returns the empty config.
 func NewDefaultConfiguration() *Configuration {
 	return &Configuration{
-		Tkeel: &TkeelConf{},
-		Dapr:  &DaprConf{},
-		Log:   &LogConf{},
+		Tkeel:        &TkeelConf{},
+		Dapr:         &DaprConf{},
+		Log:          &LogConf{},
+		AuthMysql:    &authConf.MysqlConf{},
+		RBAC:         &authConf.RBACConfig{},
+		OAuth2Config: &authConf.OAuth2Config{},
+		Entity:       &authConf.EntityConfig{},
 	}
 }
 
@@ -100,7 +114,7 @@ func LoadStandaloneConfiguration(configPath string) (*Configuration, error) {
 }
 
 func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value string, usage string),
-	boolVar func(p *bool, name string, value bool, usage string)) {
+	boolVar func(p *bool, name string, value bool, usage string), intVar func(p *int, name string, value int, usage string)) {
 	boolVar(&c.Log.Dev, "debug", getEnvBool("TMANAGER_DEBUG", false), "enable debug mod.")
 	strVar(&c.Log.Level, "log.level", getEnvStr("TMANAGER_LOG_LEVEL", "debug"), "log level(default debug).")
 	strVar(&c.HTTPAddr, "http.addr", getEnvStr("TMANAGER_HTTP_ADDR", ":31234"), "http listen address(default :31234).")
@@ -112,6 +126,15 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.Tkeel.Secret, "tkeel.secret", getEnvStr("TKEEL_SECRET", "changeme"), "tkeel secret.(default changeme)")
 	strVar(&c.Tkeel.Version, "tkeel.version", getEnvStr("TKEEL_VERSION", "v0.2.0"), "tkeel version.(default v0.2.0)")
 	strVar(&c.Tkeel.WatchPluginRouteInterval, "tkeel.watch_plugin_route_interval", getEnvStr("TKEEL_WATCH_PLUGIN_ROUTE_INTERVAL", "10s"), "tkeel watch plugin route change interval.(default 10s)")
+	strVar(&c.AuthMysql.DBName, "auth.mysql.dbname", getEnvStr("AUTH_MYSQL_DBNAME", "tkeelauth"), "database name of auth`s mysql config")
+	strVar(&c.AuthMysql.User, "auth.mysql.user", getEnvStr("AUTH_MYSQL_USER", "root"), "user name of auth`s mysql config")
+	strVar(&c.AuthMysql.Password, "auth.mysql.password", getEnvStr("AUTH_MYSQL_PASSWORD", "123456"), "password of auth`s mysql config")
+	strVar(&c.AuthMysql.Host, "auth.mysql.host", getEnvStr("AUTH_MYSQL_HOST", "127.0.0.1"), "host of auth`s mysql config")
+	strVar(&c.AuthMysql.Port, "auth.mysql.port", getEnvStr("AUTH_MYSQL_PORT", "3306"), "port of auth`s mysql config")
+	strVar(&c.OAuth2Config.Redis.Addr, "auth.redis.addr", getEnvStr("AUTH_REDIS_ADDR", "127.0.0.1"), "address of auth`s redis config")
+	intVar(&c.OAuth2Config.Redis.DB, "auth.redis.db", getEnvInt("AUTH_REDIS_DB", 0), "db of auth`s redis")
+	strVar(&c.OAuth2Config.AccessGenerate.SecurityKey, "auth.access.sk", getEnvStr("AUTH_ACCESS_SK", "00000000"), "security key of auth`s access generate")
+	strVar(&c.Entity.SecurityKey, "auth.entity.sk", getEnvStr("AUTH_ENTITY_SK", "99999999"), "security  key auth`s entity token access")
 }
 
 func getEnvStr(env string, defaultValue string) string {
@@ -130,6 +153,18 @@ func getEnvBool(env string, defaultValue bool) bool {
 	ret, err := strconv.ParseBool(v)
 	if err != nil {
 		panic(fmt.Errorf("error get env(%s) bool: %w", env, err))
+	}
+	return ret
+}
+
+func getEnvInt(env string, defaultValue int) int {
+	v := os.Getenv(env)
+	if v == "" {
+		return defaultValue
+	}
+	ret, err := strconv.Atoi(v)
+	if err != nil {
+		panic(fmt.Errorf("error get env(%s) int: %w", env, err))
 	}
 	return ret
 }

@@ -21,6 +21,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
+	entity_v1 "github.com/tkeel-io/security/pkg/apirouter/entity/v1"
+	oauth_v1 "github.com/tkeel-io/security/pkg/apirouter/oauth/v1"
+	rbac_v1 "github.com/tkeel-io/security/pkg/apirouter/rbac/v1"
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
@@ -71,6 +74,14 @@ var rootCmd = &cobra.Command{
 			// proxy service.
 			ProxySrvV1 := service.NewProxyServiceV1(conf.Tkeel.WatchPluginRouteInterval, daprHTTPClient, prOp)
 			proxy_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, ProxySrvV1)
+
+			// oauth2.
+			oauth_v1.RegisterToRestContainer(httpSrv.Container, conf.OAuth2Config)
+			// rbac.
+			rbacConfigParse(conf)
+			rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.RBAC)
+			// entity token.
+			entity_v1.RegisterToRestContainer(httpSrv.Container, conf.Entity)
 		}
 
 		keelApp = app.New("keel", &log.Conf{
@@ -99,7 +110,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	conf = config.NewDefaultConfiguration()
-	conf.AttachCmdFlags(rootCmd.Flags().StringVar, rootCmd.Flags().BoolVar)
+	conf.AttachCmdFlags(rootCmd.Flags().StringVar, rootCmd.Flags().BoolVar, rootCmd.Flags().IntVar)
 	rootCmd.Flags().StringVar(&configFile, "config", getEnvStr("KEEL_CONFIG", ""), "keel config file path.")
 	rootCmd.AddCommand(cmd.VersionCmd)
 }
@@ -110,4 +121,8 @@ func getEnvStr(env string, defaultValue string) string {
 		return defaultValue
 	}
 	return v
+}
+
+func rbacConfigParse(conf *config.Configuration) {
+	conf.RBAC.Adapter = conf.AuthMysql
 }

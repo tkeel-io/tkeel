@@ -21,6 +21,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
+	tenantv1 "github.com/tkeel-io/security/pkg/apirouter/tenant/v1"
+	authDao "github.com/tkeel-io/security/pkg/models/dao"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/cmd"
@@ -78,6 +80,9 @@ var rootCmd = &cobra.Command{
 			Oauth2SrvV1 := service.NewOauth2Service(conf.Tkeel.Secret, pOp)
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
+			// tenant.
+			authDao.SetUp(conf.AuthMysql)
+			tenantv1.RegisterToRestContainer(httpSrv.Container)
 		}
 
 		rudderApp = app.New("rudder", &log.Conf{
@@ -106,7 +111,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	conf = config.NewDefaultConfiguration()
-	conf.AttachCmdFlags(rootCmd.Flags().StringVar, rootCmd.Flags().BoolVar)
+	conf.AttachCmdFlags(rootCmd.Flags().StringVar, rootCmd.Flags().BoolVar, rootCmd.Flags().IntVar)
 	rootCmd.Flags().StringVar(&configFile, "config", getEnvStr("RUDDER_CONFIG", ""), "rudder config file path.")
 	rootCmd.AddCommand(cmd.VersionCmd)
 }
