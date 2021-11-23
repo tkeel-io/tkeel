@@ -71,7 +71,7 @@ type Configuration struct {
 	// RBAC rbac config of auth.
 	RBAC *authConf.RBACConfig `json:"rbac" yaml:"rbac"`
 	// OAuth2Config oauth2 config of auth.
-	OAuth2Config *authConf.OAuth2Config `json:"oauth2_config" yaml:"oauth2"`
+	OAuth2Config *authConf.OAuth2Config `json:"oauth2_config" yaml:"oauth2"` // nolint
 	// entity entity security config of auth.
 	Entity *authConf.EntityConfig `json:"entity" yaml:"entity"`
 }
@@ -131,7 +131,7 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.AuthMysql.Password, "auth.mysql.password", getEnvStr("AUTH_MYSQL_PASSWORD", "123456"), "password of auth`s mysql config")
 	strVar(&c.AuthMysql.Host, "auth.mysql.host", getEnvStr("AUTH_MYSQL_HOST", "127.0.0.1"), "host of auth`s mysql config")
 	strVar(&c.AuthMysql.Port, "auth.mysql.port", getEnvStr("AUTH_MYSQL_PORT", "3306"), "port of auth`s mysql config")
-	strVar(&c.OAuth2Config.Redis.Addr, "auth.redis.addr", getEnvStr("AUTH_REDIS_ADDR", "127.0.0.1"), "address of auth`s redis config")
+	strVar(&c.OAuth2Config.Redis.Addr, "auth.redis.addr", getEnvStr("AUTH_REDIS_ADDR", "127.0.0.1:6379"), "address of auth`s redis config")
 	intVar(&c.OAuth2Config.Redis.DB, "auth.redis.db", getEnvInt("AUTH_REDIS_DB", 0), "db of auth`s redis")
 	strVar(&c.OAuth2Config.AccessGenerate.SecurityKey, "auth.access.sk", getEnvStr("AUTH_ACCESS_SK", "00000000"), "security key of auth`s access generate")
 	strVar(&c.Entity.SecurityKey, "auth.entity.sk", getEnvStr("AUTH_ENTITY_SK", "99999999"), "security  key auth`s entity token access")
