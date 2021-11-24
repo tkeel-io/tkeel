@@ -21,8 +21,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
-	tenantv1 "github.com/tkeel-io/security/pkg/apirouter/tenant/v1"
-	authDao "github.com/tkeel-io/security/pkg/models/dao"
+	tenant_v1 "github.com/tkeel-io/security/pkg/apirouter/tenant/v1"
+	auth_dao "github.com/tkeel-io/security/pkg/models/dao"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/cmd"
@@ -81,8 +81,8 @@ var rootCmd = &cobra.Command{
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
 			// tenant.
-			authDao.SetUp(conf.AuthMysql)
-			tenantv1.RegisterToRestContainer(httpSrv.Container)
+			auth_dao.SetUp(conf.SecurityConf.Mysql)
+			tenant_v1.RegisterToRestContainer(httpSrv.Container)
 		}
 
 		rudderApp = app.New("rudder", &log.Conf{

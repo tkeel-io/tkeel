@@ -76,12 +76,12 @@ var rootCmd = &cobra.Command{
 			proxy_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, ProxySrvV1)
 
 			// oauth2.
-			oauth_v1.RegisterToRestContainer(httpSrv.Container, conf.OAuth2Config)
+			oauth_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.OAuth2)
 			// rbac.
 			rbacConfigParse(conf)
-			rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.RBAC)
+			rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.RBAC)
 			// entity token.
-			entity_v1.RegisterToRestContainer(httpSrv.Container, conf.Entity)
+			entity_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.Entity)
 		}
 
 		keelApp = app.New("keel", &log.Conf{
@@ -124,5 +124,5 @@ func getEnvStr(env string, defaultValue string) string {
 }
 
 func rbacConfigParse(conf *config.Configuration) {
-	conf.RBAC.Adapter = conf.AuthMysql
+	conf.SecurityConf.RBAC.Adapter = conf.SecurityConf.Mysql
 }
