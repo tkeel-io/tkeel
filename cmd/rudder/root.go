@@ -81,17 +81,14 @@ var rootCmd = &cobra.Command{
 			Oauth2SrvV1 := service.NewOauth2Service(conf.Tkeel.Secret, pOp)
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
-<<<<<<< HEAD
 			// tenant.
 			auth_dao.SetUp(conf.SecurityConf.Mysql)
 			tenant_v1.RegisterToRestContainer(httpSrv.Container)
-=======
 
 			// repo service.
 			repoSrv := service.NewRepoService()
 			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
 			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
->>>>>>> 1d95aff (feat: repo API(WIP))
 		}
 
 		rudderApp = app.New("rudder", &log.Conf{
