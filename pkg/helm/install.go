@@ -87,7 +87,7 @@ func installChart(name, chart, version string) error {
 		}
 	}
 
-	installClient.Namespace = env.Namespace()
+	installClient.Namespace = namespace
 
 	if _, err := installClient.Run(chartRequested, vals); err != nil {
 		return errors.Wrap(err, "INSTALLATION FAILED")
