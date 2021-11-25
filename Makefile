@@ -214,16 +214,12 @@ check-diff:
 ################################################################################
 .PHONY: init-proto
 init-proto:
-	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
-	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
-	go get -u github.com/tkeel-io/kit/cmd/protoc-gen-go-http
-	go get -u github.com/tkeel-io/tkeel-interface/protoc-gen-go-errors
-	go get -u github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
-	go install google.golang.org/protobuf/cmd/protoc-gen-go
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
-	go install github.com/tkeel-io/kit/cmd/protoc-gen-go-http
-	go install github.com/tkeel-io/tkeel-interface/protoc-gen-go-errors
-	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
+	go get -d -u github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+	go install github.com/tkeel-io/tkeel-interface/protoc-gen-go-http@latest
+	go install github.com/tkeel-io/tkeel-interface/protoc-gen-go-errors@latest
+	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
 ################################################################################
 # Target: gen-api-proto                                                        #
 ################################################################################

@@ -23,12 +23,15 @@ import (
 	pb "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
+	"github.com/tkeel-io/tkeel/pkg/helm"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
 	"github.com/tkeel-io/tkeel/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+const installable = "installable"
 
 var (
 	ErrGetOpenapiIdentify = errors.New("error get openapi identify")
@@ -148,6 +151,15 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 	return &pb.ListPluginResponse{
 		PluginList: retList,
 	}, nil
+}
+
+func (s *PluginServiceV1) ListInstallablePlugin(ctx context.Context, req *pb.ListInstallablePluginRequest) (*pb.ListInstallablePluginResponse, error) {
+	if c, err := helm.ListInstallable("json", req.UpdateNow); err != nil {
+		log.Error("list charts err", err)
+		return nil, err
+	} else {
+		return &pb.ListInstallablePluginResponse{List: string(c)}, nil
+	}
 }
 
 func (s *PluginServiceV1) queryIdentify(ctx context.Context,

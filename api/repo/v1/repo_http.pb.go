@@ -19,21 +19,22 @@ import transportHTTP "github.com/tkeel-io/kit/transport/http"
 // is compatible with the tkeel package it is being compiled against.
 // import package.context.http.go_restful.json.errors.
 
-type Oauth2HTTPServer interface {
-	AddWhiteList(context.Context, *AddWhiteListRequest) (*emptypb.Empty, error)
-	IssueOauth2Token(context.Context, *IssueOauth2TokenRequest) (*IssueOauth2TokenResponse, error)
+type RepoHTTPServer interface {
+	CreateRepo(context.Context, *CreateRepoRequest) (*emptypb.Empty, error)
+	InstallPluginFromRepo(context.Context, *InstallPluginFromRepoRequest) (*emptypb.Empty, error)
+	ListRepo(context.Context, *emptypb.Empty) (*ListRepoResponse, error)
 }
 
-type Oauth2HTTPHandler struct {
-	srv Oauth2HTTPServer
+type RepoHTTPHandler struct {
+	srv RepoHTTPServer
 }
 
-func newOauth2HTTPHandler(s Oauth2HTTPServer) *Oauth2HTTPHandler {
-	return &Oauth2HTTPHandler{srv: s}
+func newRepoHTTPHandler(s RepoHTTPServer) *RepoHTTPHandler {
+	return &RepoHTTPHandler{srv: s}
 }
 
-func (h *Oauth2HTTPHandler) AddWhiteList(req *go_restful.Request, resp *go_restful.Response) {
-	in := AddWhiteListRequest{}
+func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.Response) {
+	in := CreateRepoRequest{}
 	if err := transportHTTP.GetBody(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
@@ -41,7 +42,7 @@ func (h *Oauth2HTTPHandler) AddWhiteList(req *go_restful.Request, resp *go_restf
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.AddWhiteList(ctx, &in)
+	out, err := h.srv.CreateRepo(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -61,16 +62,20 @@ func (h *Oauth2HTTPHandler) AddWhiteList(req *go_restful.Request, resp *go_restf
 	}
 }
 
-func (h *Oauth2HTTPHandler) IssueOauth2Token(req *go_restful.Request, resp *go_restful.Response) {
-	in := IssueOauth2TokenRequest{}
+func (h *RepoHTTPHandler) InstallPluginFromRepo(req *go_restful.Request, resp *go_restful.Response) {
+	in := InstallPluginFromRepoRequest{}
 	if err := transportHTTP.GetBody(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.IssueOauth2Token(ctx, &in)
+	out, err := h.srv.InstallPluginFromRepo(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -90,7 +95,36 @@ func (h *Oauth2HTTPHandler) IssueOauth2Token(req *go_restful.Request, resp *go_r
 	}
 }
 
-func RegisterOauth2HTTPServer(container *go_restful.Container, srv Oauth2HTTPServer) {
+func (h *RepoHTTPHandler) ListRepo(req *go_restful.Request, resp *go_restful.Response) {
+	in := emptypb.Empty{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.ListRepo(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
+		return
+	}
+
+	result, err := json.Marshal(out)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+	_, err = resp.Write(result)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+}
+
+func RegisterRepoHTTPServer(container *go_restful.Container, srv RepoHTTPServer) {
 	var ws *go_restful.WebService
 	for _, v := range container.RegisteredWebServices() {
 		if v.RootPath() == "/v1" {
@@ -105,9 +139,11 @@ func RegisterOauth2HTTPServer(container *go_restful.Container, srv Oauth2HTTPSer
 		container.Add(ws)
 	}
 
-	handler := newOauth2HTTPHandler(srv)
-	ws.Route(ws.POST("/oauth2").
-		To(handler.IssueOauth2Token))
-	ws.Route(ws.POST("/oauth2/white-list").
-		To(handler.AddWhiteList))
+	handler := newRepoHTTPHandler(srv)
+	ws.Route(ws.PUT("/repos").
+		To(handler.CreateRepo))
+	ws.Route(ws.GET("/repos").
+		To(handler.ListRepo))
+	ws.Route(ws.POST("/repos/{repo}/plugins/{plugin}").
+		To(handler.InstallPluginFromRepo))
 }

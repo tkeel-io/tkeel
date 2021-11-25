@@ -45,6 +45,12 @@ service Plugin {
       get : "/plugins"
     };
   };
+
+  rpc ListInstallablePlugin(ListInstallablePluginRequest) returns (ListInstallablePluginResponse) {
+    option (google.api.http) = {
+      get: "/plugins/installable"
+    };
+  };
 }
 
 /**
@@ -76,10 +82,17 @@ message RegisterPluginRequest {
   string secret = 2;
 }
 
-message DeletePluginRequest { string id = 1; }
-message DeletePluginResponse { PluginObject plugin = 1; }
+message DeletePluginRequest {string id = 1;}
+message DeletePluginResponse {PluginObject plugin = 1;}
 
-message GetPluginRequest { string id = 1; }
-message GetPluginResponse { PluginObject plugin = 1; }
+message GetPluginRequest {string id = 1;}
+message GetPluginResponse {PluginObject plugin = 1;}
 
-message ListPluginResponse { repeated PluginObject pluginList = 1; }
+message ListPluginResponse {repeated PluginObject pluginList = 1;}
+
+message ListInstallablePluginRequest {
+  bool updateNow = 1;
+}
+message ListInstallablePluginResponse {
+  string list = 1;
+}

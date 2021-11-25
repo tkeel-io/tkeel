@@ -7,14 +7,13 @@ package v1
 import (
 	context "context"
 	json "encoding/json"
-	http "net/http"
-
 	go_restful "github.com/emicklei/go-restful"
 	errors "github.com/tkeel-io/kit/errors"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-
-	transportHTTP "github.com/tkeel-io/kit/transport/http"
+	http "net/http"
 )
+
+import transportHTTP "github.com/tkeel-io/kit/transport/http"
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the tkeel package it is being compiled against.
@@ -23,6 +22,7 @@ import (
 type PluginHTTPServer interface {
 	DeletePlugin(context.Context, *DeletePluginRequest) (*DeletePluginResponse, error)
 	GetPlugin(context.Context, *GetPluginRequest) (*GetPluginResponse, error)
+	ListInstallablePlugin(context.Context, *ListInstallablePluginRequest) (*ListInstallablePluginResponse, error)
 	ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error)
 	RegisterPlugin(context.Context, *RegisterPluginRequest) (*emptypb.Empty, error)
 }
@@ -82,6 +82,35 @@ func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
 	out, err := h.srv.GetPlugin(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
+		return
+	}
+
+	result, err := json.Marshal(out)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+	_, err = resp.Write(result)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+}
+
+func (h *PluginHTTPHandler) ListInstallablePlugin(req *go_restful.Request, resp *go_restful.Response) {
+	in := ListInstallablePluginRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.ListInstallablePlugin(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -183,4 +212,6 @@ func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPSer
 		To(handler.GetPlugin))
 	ws.Route(ws.GET("/plugins").
 		To(handler.ListPlugin))
+	ws.Route(ws.GET("/plugins/installable").
+		To(handler.ListInstallablePlugin))
 }
