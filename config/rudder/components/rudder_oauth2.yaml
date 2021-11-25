@@ -1,14 +1,14 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: keel-oauth2-client
+  name: rudder-oauth2-client
   namespace: keel-system
 spec:
   type: middleware.http.oauth2clientcredentials
   version: v1
   metadata:
     - name: clientId
-      value: "keel"
+      value: "rudder"
     - name: clientSecret
       value: "changeme"
     - name: scopes

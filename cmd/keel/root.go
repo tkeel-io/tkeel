@@ -21,9 +21,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
-	entity_v1 "github.com/tkeel-io/security/pkg/apirouter/entity/v1"
-	oauth_v1 "github.com/tkeel-io/security/pkg/apirouter/oauth/v1"
-	rbac_v1 "github.com/tkeel-io/security/pkg/apirouter/rbac/v1"
+	"github.com/tkeel-io/security/pkg/apiserver/filters"
+	"github.com/tkeel-io/security/pkg/models/oauth"
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
@@ -31,8 +30,6 @@ import (
 	proxy_v1 "github.com/tkeel-io/tkeel/pkg/proxy/v1"
 	"github.com/tkeel-io/tkeel/pkg/server"
 	"github.com/tkeel-io/tkeel/pkg/service"
-
-	dapr "github.com/dapr/go-sdk/client"
 )
 
 var (
@@ -50,19 +47,28 @@ var rootCmd = &cobra.Command{
 		if configFile != "" {
 			c, err := config.LoadStandaloneConfiguration(configFile)
 			if err != nil {
-				panic(err)
+				log.Fatal("fatal config load(%s): %s", configFile, err)
+				os.Exit(-1)
 			}
 			conf = c
 		}
 		httpSrv := server.NewHTTPServer(conf.HTTPAddr)
 		grpcSrv := server.NewGRPCServer(conf.GRPCAddr)
 
+		keelApp = app.New("keel", &log.Conf{
+			App:    "keel",
+			Level:  conf.Log.Level,
+			Dev:    conf.Log.Dev,
+			Output: conf.Log.Output,
+		}, httpSrv, grpcSrv)
+
 		{
 			// init client.
 			// dapr grpc client.
-			daprGRPCClient, err := dapr.NewClientWithPort(conf.Dapr.GRPCPort)
+			daprGRPCClient, err := t_dapr.NewGPRCClient(10, "5s", conf.Dapr.GRPCPort)
 			if err != nil {
-				panic(err)
+				log.Fatal("fatal new dapr client: %s", err)
+				os.Exit(-1)
 			}
 			// dapr http client.
 			daprHTTPClient := t_dapr.NewHTTPClient(conf.Dapr.HTTPPort)
@@ -72,24 +78,15 @@ var rootCmd = &cobra.Command{
 
 			// init service.
 			// proxy service.
-			ProxySrvV1 := service.NewProxyServiceV1(conf.Tkeel.WatchPluginRouteInterval, daprHTTPClient, prOp)
-			proxy_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, ProxySrvV1)
-
-			// oauth2.
-			oauth_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.OAuth2)
-			// rbac.
-			rbacConfigParse(conf)
-			rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.RBAC)
-			// entity token.
-			entity_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.Entity)
+			ProxySrvV1 := service.NewProxyServiceV1(conf.Tkeel.WatchPluginRouteInterval,
+				conf.Proxy, daprHTTPClient, prOp)
+			// init oauth oprator.
+			if _, err = oauth.NewOperator(conf.SecurityConf.OAuth2); err != nil {
+				log.Fatal("fatal new oauth oprator: %s", err)
+				os.Exit(-1)
+			}
+			proxy_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, conf, filters.AuthFilter(conf.SecurityConf.OAuth2), ProxySrvV1)
 		}
-
-		keelApp = app.New("keel", &log.Conf{
-			App:    "keel",
-			Level:  conf.Log.Level,
-			Dev:    conf.Log.Dev,
-			Output: conf.Log.Output,
-		}, httpSrv, grpcSrv)
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := keelApp.Run(context.TODO()); err != nil {
@@ -121,8 +118,4 @@ func getEnvStr(env string, defaultValue string) string {
 		return defaultValue
 	}
 	return v
-}
-
-func rbacConfigParse(conf *config.Configuration) {
-	conf.SecurityConf.RBAC.Adapter = conf.SecurityConf.Mysql
 }

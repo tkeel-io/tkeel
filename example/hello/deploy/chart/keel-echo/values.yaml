@@ -1,0 +1,15 @@
+replicaCount: 1
+pluginSecret: changeme
+pluginPort: 8080
+
+daprConfig: keel-echo
+
+imagePullSecrets: ""
+
+image:
+  repository: tkeelio/keel-echo
+  tag: 0.2.0
+  pullPolicy: Always
+
+tkeel-plugin-components:
+  pluginID: keel-echo
