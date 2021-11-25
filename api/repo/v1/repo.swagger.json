@@ -105,6 +105,9 @@
             "schema": {
               "type": "object",
               "properties": {
+                "version": {
+                  "type": "string"
+                },
                 "name": {
                   "type": "string"
                 }
@@ -157,7 +160,7 @@
     "v1ListRepoResponse": {
       "type": "object",
       "properties": {
-        "data": {
+        "list": {
           "type": "string"
         }
       }

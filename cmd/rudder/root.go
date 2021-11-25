@@ -25,6 +25,7 @@ import (
 	auth_dao "github.com/tkeel-io/security/pkg/models/dao"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
+	repo "github.com/tkeel-io/tkeel/api/repo/v1"
 	"github.com/tkeel-io/tkeel/cmd"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
@@ -80,9 +81,17 @@ var rootCmd = &cobra.Command{
 			Oauth2SrvV1 := service.NewOauth2Service(conf.Tkeel.Secret, pOp)
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
+<<<<<<< HEAD
 			// tenant.
 			auth_dao.SetUp(conf.SecurityConf.Mysql)
 			tenant_v1.RegisterToRestContainer(httpSrv.Container)
+=======
+
+			// repo service.
+			repoSrv := service.NewRepoService()
+			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
+			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
+>>>>>>> 1d95aff (feat: repo API(WIP))
 		}
 
 		rudderApp = app.New("rudder", &log.Conf{

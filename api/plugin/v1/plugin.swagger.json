@@ -16,6 +16,36 @@
     "application/json"
   ],
   "paths": {
+    "/installed/plugins/{name}": {
+      "delete": {
+        "operationId": "Plugin_UninstallPlugin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
     "/plugins": {
       "get": {
         "operationId": "Plugin_ListPlugin",

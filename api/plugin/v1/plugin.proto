@@ -51,6 +51,12 @@ service Plugin {
       get: "/plugins/installable"
     };
   };
+
+  rpc UninstallPlugin(UninstallPluginRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/installed/plugins/{name}"
+    };
+  };
 }
 
 /**
@@ -95,4 +101,8 @@ message ListInstallablePluginRequest {
 }
 message ListInstallablePluginResponse {
   string list = 1;
+}
+
+message UninstallPluginRequest {
+  string name = 1;
 }

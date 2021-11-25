@@ -36,11 +36,12 @@ message CreateRepoRequest {
 }
 
 message ListRepoResponse {
-  string data = 1;
+  string list = 1;
 }
 
 message InstallPluginFromRepoRequest {
   string repo = 1;
   string plugin = 2;
-  string name = 3;
+  string version = 3;
+  string name = 4;
 }

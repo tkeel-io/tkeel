@@ -25,6 +25,7 @@ type PluginHTTPServer interface {
 	ListInstallablePlugin(context.Context, *ListInstallablePluginRequest) (*ListInstallablePluginResponse, error)
 	ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error)
 	RegisterPlugin(context.Context, *RegisterPluginRequest) (*emptypb.Empty, error)
+	UninstallPlugin(context.Context, *UninstallPluginRequest) (*emptypb.Empty, error)
 }
 
 type PluginHTTPHandler struct {
@@ -188,6 +189,39 @@ func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_res
 	}
 }
 
+func (h *PluginHTTPHandler) UninstallPlugin(req *go_restful.Request, resp *go_restful.Response) {
+	in := UninstallPluginRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.UninstallPlugin(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
+		return
+	}
+
+	result, err := json.Marshal(out)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+	_, err = resp.Write(result)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+}
+
 func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPServer) {
 	var ws *go_restful.WebService
 	for _, v := range container.RegisteredWebServices() {
@@ -214,4 +248,6 @@ func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPSer
 		To(handler.ListPlugin))
 	ws.Route(ws.GET("/plugins/installable").
 		To(handler.ListInstallablePlugin))
+	ws.Route(ws.DELETE("/installed/plugins/{name}").
+		To(handler.UninstallPlugin))
 }
