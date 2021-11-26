@@ -62,7 +62,7 @@ func installChart(name, chart, version string) error {
 		// https://github.com/helm/helm/issues/2209
 		if err := action.CheckDependencies(chartRequested, req); err != nil {
 			if installClient.DependencyUpdate {
-				man := &downloader.Manager{
+				manager := &downloader.Manager{
 					Out:              nil,
 					ChartPath:        cp,
 					Keyring:          installClient.ChartPathOptions.Keyring,
@@ -72,8 +72,8 @@ func installChart(name, chart, version string) error {
 					RepositoryCache:  env.RepositoryCache,
 					Debug:            env.Debug,
 				}
-				if err = man.Update(); err != nil {
-					err = errors.Wrap(err, "helm download manager update err")
+				if err = manager.Update(); err != nil {
+					err = errors.Wrap(err, "download manager update err")
 					return err
 				}
 				// Reload the chart with the updated Chart.lock file.

@@ -10,8 +10,13 @@ import (
 )
 
 func listRepo() (*repoListWriter, error) {
-	f, err := repo.LoadFile(env.RepositoryConfig)
-	if isNotExist(err) || len(f.Repositories) == 0 {
+	b, err := getRepositoryFormDapr()
+	if err != nil {
+		err = errors.Wrap(err, "failed try to get repository.yaml config")
+		return nil, err
+	}
+	f, err := newHelmRepoFile(b)
+	if len(f.Repositories) == 0 {
 		return nil, errors.New("no repositories to show")
 	}
 
