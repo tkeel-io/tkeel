@@ -14,6 +14,7 @@ package main
 
 import (
 	"context"
+	"github.com/tkeel-io/tkeel/pkg/helm"
 	"os"
 	"os/signal"
 	"syscall"
@@ -67,6 +68,8 @@ var rootCmd = &cobra.Command{
 				panic(err)
 			}
 			openapiCli := openapi.NewDaprClient("rudder", daprGRPCClient)
+
+			helm.SetDaprConfig(&daprGRPCClient, "statestore")
 
 			// init operator.
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)

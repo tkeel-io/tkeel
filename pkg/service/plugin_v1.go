@@ -161,6 +161,14 @@ func (s *PluginServiceV1) ListInstallablePlugin(ctx context.Context, req *pb.Lis
 	return &pb.ListInstallablePluginResponse{List: string(c)}, nil
 }
 
+func (s *PluginServiceV1) ListInstalledPlugin(ctx context.Context, empty *emptypb.Empty) (*pb.ListInstalledResponse, error) {
+	data, err := helm.ListInstalled("json")
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ListInstalledResponse{List: string(data)}, nil
+}
+
 func (s PluginServiceV1) UninstallPlugin(ctx context.Context, req *pb.UninstallPluginRequest) (*emptypb.Empty, error) {
 	if req.Name == "" {
 		return nil, pb.ErrInvalidArgument()

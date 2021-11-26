@@ -17,6 +17,10 @@ func AddRepo(addr string) error {
 	return addRepo(privateRepoName, addr)
 }
 
+func DeleteOwnRepo() error {
+	return deleteRepo(privateRepoName)
+}
+
 func ListRepo(format string) ([]byte, error) {
 	o, err := output.ParseFormat(format)
 	if err != nil {
@@ -49,35 +53,35 @@ func ListInstallable(format string, updateRepo bool) ([]byte, error) {
 		}
 	}
 
-	writer, err := searchAll()
+	pluginWriter, err := searchAll()
+	if err != nil {
+
+		return nil, errors.Wrap(err, "search helm repo failed")
+	}
+	buf := new(bytes.Buffer)
+	if err := output.Write(buf, o, pluginWriter); err != nil {
+		err = errors.Wrap(err, "convert to output err")
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func ListInstalled(format string) ([]byte, error) {
+	o, err := output.ParseFormat(format)
+	if err != nil {
+		err = errors.Wrap(err, "parse format err")
+		return nil, err
+	}
+	listWriter, err := list()
 	if err != nil {
 		return nil, errors.Wrap(err, "search helm repo failed")
 	}
-
-	listbuf := new(bytes.Buffer)
-	switch o {
-	case output.YAML:
-		if err := writer.WriteYAML(listbuf); err != nil {
-			err = errors.Wrap(err, "failed write yaml")
-			return nil, err
-		}
-	case output.JSON:
-		if err := writer.WriteJSON(listbuf); err != nil {
-			err = errors.Wrap(err, "failed write json")
-			return nil, err
-		}
-	case output.TABLE:
-		if err := writer.WriteTable(listbuf); err != nil {
-			err = errors.Wrap(err, "failed write table")
-			return nil, err
-		}
+	buf := new(bytes.Buffer)
+	if err := output.Write(buf, o, listWriter); err != nil {
+		err = errors.Wrap(err, "convert to output err")
+		return nil, err
 	}
-
-	return listbuf.Bytes(), nil
-}
-
-func ListInstalled() {
-
+	return buf.Bytes(), nil
 }
 
 func Install(ctx context.Context, name, chart, version string) error {

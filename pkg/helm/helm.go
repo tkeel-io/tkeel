@@ -3,12 +3,14 @@ package helm
 import (
 	"context"
 	"fmt"
-	dapr "github.com/dapr/go-sdk/client"
 	"gopkg.in/yaml.v3"
+	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/Masterminds/semver/v3"
+	dapr "github.com/dapr/go-sdk/client"
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"helm.sh/helm/v3/cmd/helm/search"
@@ -48,8 +50,9 @@ var (
 	namespace     = "tkeel"
 	daprStoreName = "keel-private-store"
 
-	errNoRepositories   = errors.New("no repositories found. You must add one before updating")
-	errNoDaprClientInit = errors.New("no dapr client init")
+	errNoRepositories              = errors.New("no repositories found. You must add one before updating")
+	errNoDaprClientInit            = errors.New("no dapr client init")
+	errNoRepositoryConfigFileExist = errors.New("no repository config file exist")
 
 	daprClient *dapr.Client
 )
@@ -79,8 +82,11 @@ func checkRepositoryConfigPath() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	if _, err := f.WriteString(repositoryConfig); err != nil {
+	configFormDapr, err := getRepositoryFormDapr()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err := f.Write(configFormDapr); err != nil {
 		log.Fatal(err)
 	}
 
@@ -240,5 +246,19 @@ func newHelmRepoFile(content []byte) (*repo.File, error) {
 		err = errors.Wrap(err, "yaml unmarshal err")
 		return nil, err
 	}
+	if err := syncRepositoriesConfig(content); err != nil {
+		log.Warn("sync repository config to local file from dapr err", err)
+	}
 	return r, nil
+}
+
+func syncRepositoriesConfig(content []byte) error {
+	if _, err := os.Stat(ownRepositoryConfigPath); os.IsNotExist(err) {
+		return errNoRepositoryConfigFileExist
+	}
+
+	if err := ioutil.WriteFile(ownRepositoryConfigPath, content, fs.ModePerm); err != nil {
+		return err
+	}
+	return nil
 }

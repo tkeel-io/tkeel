@@ -1,6 +1,7 @@
 package output
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"strings"
@@ -103,6 +104,27 @@ func EncodeTable(out io.Writer, table *uitable.Table) error {
 	raw = append(raw, []byte("\n")...)
 	if _, err := out.Write(raw); err != nil {
 		return errors.Wrap(err, "unable to write table output")
+	}
+	return nil
+}
+
+func Write(buf *bytes.Buffer, o Format, writer Writer) error {
+	switch o {
+	case YAML:
+		if err := writer.WriteYAML(buf); err != nil {
+			err = errors.Wrap(err, "failed write yaml")
+			return err
+		}
+	case JSON:
+		if err := writer.WriteJSON(buf); err != nil {
+			err = errors.Wrap(err, "failed write json")
+			return err
+		}
+	case TABLE:
+		if err := writer.WriteTable(buf); err != nil {
+			err = errors.Wrap(err, "failed write table")
+			return err
+		}
 	}
 	return nil
 }

@@ -21,6 +21,7 @@ import transportHTTP "github.com/tkeel-io/kit/transport/http"
 
 type RepoHTTPServer interface {
 	CreateRepo(context.Context, *CreateRepoRequest) (*emptypb.Empty, error)
+	DeleteRepo(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	InstallPluginFromRepo(context.Context, *InstallPluginFromRepoRequest) (*emptypb.Empty, error)
 	ListRepo(context.Context, *emptypb.Empty) (*ListRepoResponse, error)
 }
@@ -43,6 +44,35 @@ func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.R
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
 	out, err := h.srv.CreateRepo(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
+		return
+	}
+
+	result, err := json.Marshal(out)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+	_, err = resp.Write(result)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+}
+
+func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.Response) {
+	in := emptypb.Empty{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.DeleteRepo(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -142,6 +172,8 @@ func RegisterRepoHTTPServer(container *go_restful.Container, srv RepoHTTPServer)
 	handler := newRepoHTTPHandler(srv)
 	ws.Route(ws.PUT("/repos").
 		To(handler.CreateRepo))
+	ws.Route(ws.DELETE("/repos/own").
+		To(handler.DeleteRepo))
 	ws.Route(ws.GET("/repos").
 		To(handler.ListRepo))
 	ws.Route(ws.POST("/repos/{repo}/plugins/{plugin}").

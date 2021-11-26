@@ -52,6 +52,10 @@ func addRepo(name, url string) error {
 		err = errors.Wrap(err, "write repository to dapr err")
 		return err
 	}
+
+	if err := syncRepositoriesConfig(data); err != nil {
+		return err
+	}
 	log.Infof("%q has been added to your repositories\n", name)
 	return nil
 }

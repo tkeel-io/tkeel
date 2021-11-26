@@ -23,22 +23,22 @@ func searchAll() (output.Writer, error) {
 		return nil, errors.Wrap(err, "apply constraint failed")
 	}
 
-	return &repoSearchWriter{data, 50}, err
+	return &pluginWriter{data, 50}, err
 }
 
-type repoChartElement struct {
+type pluginElement struct {
 	Name        string `json:"name"`
 	Version     string `json:"version"`
 	AppVersion  string `json:"app_version"`
 	Description string `json:"description"`
 }
 
-type repoSearchWriter struct {
+type pluginWriter struct {
 	results     []*search.Result
 	columnWidth uint
 }
 
-func (r *repoSearchWriter) WriteTable(out io.Writer) error {
+func (r *pluginWriter) WriteTable(out io.Writer) error {
 	if len(r.results) == 0 {
 		_, err := out.Write([]byte("No results found\n"))
 		if err != nil {
@@ -61,20 +61,20 @@ func (r *repoSearchWriter) WriteTable(out io.Writer) error {
 	return nil
 }
 
-func (r *repoSearchWriter) WriteJSON(out io.Writer) error {
+func (r *pluginWriter) WriteJSON(out io.Writer) error {
 	return r.encodeByFormat(out, output.JSON)
 }
 
-func (r *repoSearchWriter) WriteYAML(out io.Writer) error {
+func (r *pluginWriter) WriteYAML(out io.Writer) error {
 	return r.encodeByFormat(out, output.YAML)
 }
 
-func (r *repoSearchWriter) encodeByFormat(out io.Writer, format output.Format) error {
+func (r *pluginWriter) encodeByFormat(out io.Writer, format output.Format) error {
 	// Initialize the array so no results returns an empty array instead of null.
-	chartList := make([]repoChartElement, 0, len(r.results))
+	chartList := make([]pluginElement, 0, len(r.results))
 
 	for _, r := range r.results {
-		chartList = append(chartList, repoChartElement{r.Name, r.Chart.Version, r.Chart.AppVersion, r.Chart.Description})
+		chartList = append(chartList, pluginElement{r.Name, r.Chart.Version, r.Chart.AppVersion, r.Chart.Description})
 	}
 
 	switch format {
