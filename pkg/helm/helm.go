@@ -116,7 +116,6 @@ func GetUsingNamespace() string {
 }
 
 func loadRepoFile() (*repo.File, error) {
-	// TODO: change this to use data in DB.
 	repoConf, err := getRepositoryFromDapr()
 	if err != nil {
 		err = errors.Wrap(err, "failed try to get repository.yaml config")
