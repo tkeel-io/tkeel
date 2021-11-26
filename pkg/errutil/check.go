@@ -7,5 +7,5 @@ import (
 )
 
 func IsNotExist(err error) bool {
-	return os.IsExist(err) || os.IsExist(errors.Cause(err))
+	return os.IsNotExist(err) || os.IsNotExist(errors.Cause(err))
 }
