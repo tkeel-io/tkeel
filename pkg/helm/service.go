@@ -55,7 +55,6 @@ func ListInstallable(format string, updateRepo bool) ([]byte, error) {
 
 	pluginWriter, err := searchAll()
 	if err != nil {
-
 		return nil, errors.Wrap(err, "search helm repo failed")
 	}
 	buf := new(bytes.Buffer)

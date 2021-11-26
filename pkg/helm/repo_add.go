@@ -1,12 +1,13 @@
 package helm
 
 import (
+	"os"
+
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
-	"os"
 )
 
 func addRepo(name, url string) error {
@@ -37,7 +38,7 @@ func addRepo(name, url string) error {
 	if env.RepositoryCache != "" {
 		r.CachePath = env.RepositoryCache
 	}
-	if _, err := r.DownloadIndexFile(); err != nil {
+	if _, err = r.DownloadIndexFile(); err != nil {
 		return errors.Wrapf(err, "looks like %q is not a valid chart repository or cannot be reached", url)
 	}
 

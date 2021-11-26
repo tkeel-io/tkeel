@@ -40,7 +40,7 @@ type releaseListWriter struct {
 }
 
 func newReleaseListWriter(releases []*release.Release, timeFormat string) *releaseListWriter {
-	// Initialize the array so no results returns an empty array instead of null
+	// Initialize the array so no results returns an empty array instead of null.
 	elements := make([]releaseElement, 0, len(releases))
 	for _, r := range releases {
 		element := releaseElement{
@@ -73,7 +73,11 @@ func (r *releaseListWriter) WriteTable(out io.Writer) error {
 	for _, r := range r.releases {
 		table.AddRow(r.Name, r.Namespace, r.Revision, r.Updated, r.Status, r.Chart, r.AppVersion)
 	}
-	return output.EncodeTable(out, table)
+	if err := output.EncodeTable(out, table); err != nil {
+		err = errors.Wrap(err, "encode release list to table err")
+		return err
+	}
+	return nil
 }
 
 func (r *releaseListWriter) WriteJSON(out io.Writer) error {

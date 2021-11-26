@@ -16,6 +16,10 @@ func listRepo() (*repoListWriter, error) {
 		return nil, err
 	}
 	f, err := newHelmRepoFile(b)
+	if err != nil {
+		err = errors.Wrap(err, "new helm repo.File err")
+		return nil, err
+	}
 	if len(f.Repositories) == 0 {
 		return nil, errors.New("no repositories to show")
 	}

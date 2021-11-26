@@ -164,6 +164,7 @@ func (s *PluginServiceV1) ListInstallablePlugin(ctx context.Context, req *pb.Lis
 func (s *PluginServiceV1) ListInstalledPlugin(ctx context.Context, empty *emptypb.Empty) (*pb.ListInstalledResponse, error) {
 	data, err := helm.ListInstalled("json")
 	if err != nil {
+		err = errors.Wrap(err, "get installed plugin list err")
 		return nil, err
 	}
 	return &pb.ListInstalledResponse{List: string(data)}, nil

@@ -14,7 +14,6 @@ package main
 
 import (
 	"context"
-	"github.com/tkeel-io/tkeel/pkg/helm"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,6 +29,7 @@ import (
 	"github.com/tkeel-io/tkeel/cmd"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
+	"github.com/tkeel-io/tkeel/pkg/helm"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
 	"github.com/tkeel-io/tkeel/pkg/server"

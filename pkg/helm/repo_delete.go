@@ -2,11 +2,11 @@ package helm
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/helmpath"
-	"path/filepath"
 )
 
 func deleteRepo(names ...string) error {
@@ -21,7 +21,7 @@ func deleteRepo(names ...string) error {
 		if !rf.Remove(name) {
 			return errors.Errorf("no repo named %q found", name)
 		}
-		if err := removeRepoCache(env.RepositoryCache, name); err != nil {
+		if err = removeRepoCache(env.RepositoryCache, name); err != nil {
 			return err
 		}
 	}
@@ -53,5 +53,10 @@ func removeRepoCache(root, name string) error {
 	} else if err != nil {
 		return errors.Wrapf(err, "can't remove index file %s", idx)
 	}
-	return os.Remove(idx)
+	if err := os.Remove(idx); err != nil {
+		err = errors.Wrap(err, "call OS remove failed")
+		return err
+	}
+
+	return nil
 }

@@ -3,7 +3,6 @@ package helm
 import (
 	"context"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -13,6 +12,7 @@ import (
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
+	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/cmd/helm/search"
 	helmAction "helm.sh/helm/v3/pkg/action"
 	helmCLI "helm.sh/helm/v3/pkg/cli"
@@ -204,10 +204,6 @@ func getLog() helmAction.DebugLog {
 	}
 }
 
-func isNotExist(err error) bool {
-	return os.IsNotExist(errors.Cause(err))
-}
-
 func getRepositoryFormDapr() ([]byte, error) {
 	if daprClient == nil {
 		return nil, errNoDaprClientInit
@@ -258,6 +254,7 @@ func syncRepositoriesConfig(content []byte) error {
 	}
 
 	if err := ioutil.WriteFile(ownRepositoryConfigPath, content, fs.ModePerm); err != nil {
+		err = errors.Wrap(err, "try write file")
 		return err
 	}
 	return nil
