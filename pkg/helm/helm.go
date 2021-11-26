@@ -82,11 +82,11 @@ func checkRepositoryConfigPath() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	configFormDapr, err := getRepositoryFormDapr()
+	configFromDapr, err := getRepositoryFromDapr()
 	if err != nil {
 		log.Fatal(err)
 	}
-	if _, err := f.Write(configFormDapr); err != nil {
+	if _, err := f.Write(configFromDapr); err != nil {
 		log.Fatal(err)
 	}
 
@@ -117,7 +117,7 @@ func GetUsingNamespace() string {
 
 func loadRepoFile() (*repo.File, error) {
 	// TODO: change this to use data in DB.
-	repoConf, err := getRepositoryFormDapr()
+	repoConf, err := getRepositoryFromDapr()
 	if err != nil {
 		err = errors.Wrap(err, "failed try to get repository.yaml config")
 		return nil, err
@@ -204,7 +204,7 @@ func getLog() helmAction.DebugLog {
 	}
 }
 
-func getRepositoryFormDapr() ([]byte, error) {
+func getRepositoryFromDapr() ([]byte, error) {
 	if daprClient == nil {
 		return nil, errNoDaprClientInit
 	}

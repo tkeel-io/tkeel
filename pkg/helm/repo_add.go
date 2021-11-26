@@ -11,7 +11,7 @@ import (
 )
 
 func addRepo(name, url string) error {
-	b, err := getRepositoryFormDapr()
+	b, err := getRepositoryFromDapr()
 	if err != nil && !os.IsNotExist(err) {
 		err = errors.Wrap(err, "open a file err")
 		return err

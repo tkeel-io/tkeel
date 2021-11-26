@@ -10,7 +10,7 @@ import (
 )
 
 func listRepo() (*repoListWriter, error) {
-	b, err := getRepositoryFormDapr()
+	b, err := getRepositoryFromDapr()
 	if err != nil {
 		err = errors.Wrap(err, "failed try to get repository.yaml config")
 		return nil, err
