@@ -17,13 +17,13 @@ import (
 )
 
 func addRepo(name, url string) error {
-	// Ensure the file directory exists as it is required for file locking
+	// Ensure the file directory exists as it is required for file locking.
 	err := os.MkdirAll(filepath.Dir(env.RepositoryConfig), os.ModePerm)
 	if err != nil && !os.IsExist(err) {
 		err = errors.Wrap(err, "mkdir "+env.RepositoryConfig+" err")
 		return err
 	}
-	// Acquire a file lock for process synchronization
+	// Acquire a file lock for process synchronization.
 	repoFileExt := filepath.Ext(env.RepositoryConfig)
 	var lockPath string
 	if len(repoFileExt) > 0 && len(repoFileExt) < len(env.RepositoryConfig) {
@@ -60,7 +60,7 @@ func addRepo(name, url string) error {
 		URL:  url,
 	}
 
-	// always force update repo file
+	// always force update repo file.
 	r, err := repo.NewChartRepository(&c, getter.All(env))
 	if err != nil {
 		err = errors.Wrap(err, "new chart repository err")

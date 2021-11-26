@@ -41,7 +41,7 @@ func installChart(name, chart, version string) error {
 		return err
 	}
 
-	// Check chart dependencies to make sure all are present in /charts
+	// Check chart dependencies to make sure all are present in /charts.
 	chartRequested, err := loader.Load(cp)
 	if err != nil {
 		err = errors.Wrap(err, "load chart err")

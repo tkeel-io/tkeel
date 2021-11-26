@@ -15,9 +15,9 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	pb "github.com/tkeel-io/tkeel/api/plugin/v1"
@@ -30,8 +30,6 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-const installable = "installable"
 
 var (
 	ErrGetOpenapiIdentify = errors.New("error get openapi identify")
@@ -154,12 +152,13 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 }
 
 func (s *PluginServiceV1) ListInstallablePlugin(ctx context.Context, req *pb.ListInstallablePluginRequest) (*pb.ListInstallablePluginResponse, error) {
-	if c, err := helm.ListInstallable("json", req.UpdateNow); err != nil {
+	c, err := helm.ListInstallable("json", req.UpdateNow)
+	if err != nil {
 		log.Error("list charts err", err)
+		err = errors.Wrap(err, "list installable plugins err")
 		return nil, err
-	} else {
-		return &pb.ListInstallablePluginResponse{List: string(c)}, nil
 	}
+	return &pb.ListInstallablePluginResponse{List: string(c)}, nil
 }
 
 func (s PluginServiceV1) UninstallPlugin(ctx context.Context, req *pb.UninstallPluginRequest) (*emptypb.Empty, error) {
@@ -167,6 +166,7 @@ func (s PluginServiceV1) UninstallPlugin(ctx context.Context, req *pb.UninstallP
 		return nil, pb.ErrInvalidArgument()
 	}
 	if err := helm.Uninstall(ctx, req.Name); err != nil {
+		err = errors.Wrap(err, "uninstall plugin err")
 		return nil, err
 	}
 	return &emptypb.Empty{}, nil

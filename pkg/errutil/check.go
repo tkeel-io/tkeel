@@ -1,11 +1,11 @@
 package errutil
 
 import (
-	"github.com/pkg/errors"
 	"os"
+
+	"github.com/pkg/errors"
 )
 
 func IsNotExist(err error) bool {
 	return os.IsExist(err) || os.IsExist(errors.Cause(err))
 }
-

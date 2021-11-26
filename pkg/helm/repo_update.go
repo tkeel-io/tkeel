@@ -20,7 +20,7 @@ func RepoUpdate(names ...string) error {
 	updateAllRepos := len(names) == 0
 
 	if !updateAllRepos {
-		// Fail early if the user specified an invalid repo to update
+		// Fail early if the user specified an invalid repo to update.
 		if err := checkRequestedRepos(names, rf.Repositories); err != nil {
 			return err
 		}

@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"github.com/tkeel-io/tkeel/pkg/helm"
 	"strings"
 
+	"github.com/pkg/errors"
 	pb "github.com/tkeel-io/tkeel/api/repo/v1"
+	"github.com/tkeel-io/tkeel/pkg/helm"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -45,6 +45,7 @@ func (s *RepoService) InstallPluginFromRepo(ctx context.Context, req *pb.Install
 		case errors.Is(err, helm.ErrVersionPattern):
 			return nil, pb.ErrInvalidArgument()
 		}
+		err = errors.Wrap(err, "install plugin err")
 		return nil, err
 	}
 	return &emptypb.Empty{}, nil

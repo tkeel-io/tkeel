@@ -70,7 +70,7 @@ func (r *repoSearchWriter) WriteYAML(out io.Writer) error {
 }
 
 func (r *repoSearchWriter) encodeByFormat(out io.Writer, format output.Format) error {
-	// Initialize the array so no results returns an empty array instead of null
+	// Initialize the array so no results returns an empty array instead of null.
 	chartList := make([]repoChartElement, 0, len(r.results))
 
 	for _, r := range r.results {
@@ -95,6 +95,6 @@ func (r *repoSearchWriter) encodeByFormat(out io.Writer, format output.Format) e
 	}
 
 	// Because this is a non-exported function and only called internally by
-	// WriteJSON and WriteYAML, we shouldn't get invalid types
+	// WriteJSON and WriteYAML, we shouldn't get invalid types.
 	return nil
 }

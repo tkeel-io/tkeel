@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/tkeel-io/tkeel/pkg/output"
 	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/tkeel/pkg/output"
 )
 
 // TODO: Make the call mock.
@@ -95,7 +95,7 @@ func TestAddRepo(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			// TODO: stub http request
+			// TODO: stub http request.
 			err := AddRepo(test.url)
 			assert.Equal(t, test.wantErr, err)
 			d, _ := ListRepo("json")
