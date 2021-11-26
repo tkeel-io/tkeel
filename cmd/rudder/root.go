@@ -69,7 +69,7 @@ var rootCmd = &cobra.Command{
 			}
 			openapiCli := openapi.NewDaprClient("rudder", daprGRPCClient)
 
-			helm.SetDaprConfig(&daprGRPCClient, "statestore")
+			helm.SetDaprConfig(&daprGRPCClient, conf.Dapr.PrivateStateName)
 
 			// init operator.
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
