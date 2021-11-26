@@ -29,6 +29,7 @@ import (
 	"github.com/tkeel-io/tkeel/cmd"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
+	"github.com/tkeel-io/tkeel/pkg/helm"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
 	"github.com/tkeel-io/tkeel/pkg/server"
@@ -67,6 +68,8 @@ var rootCmd = &cobra.Command{
 				panic(err)
 			}
 			openapiCli := openapi.NewDaprClient("rudder", daprGRPCClient)
+
+			helm.SetDaprConfig(&daprGRPCClient, conf.Dapr.PrivateStateName)
 
 			// init operator.
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)

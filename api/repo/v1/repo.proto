@@ -17,6 +17,12 @@ service Repo {
     };
   };
 
+  rpc DeleteRepo(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/repos/own"
+    };
+  };
+
   rpc ListRepo(google.protobuf.Empty) returns (ListRepoResponse) {
     option (google.api.http) = {
       get: "/repos"

@@ -16,6 +16,58 @@
     "application/json"
   ],
   "paths": {
+    "/installable/plugins": {
+      "get": {
+        "operationId": "Plugin_ListInstallablePlugin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListInstallablePluginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "updateNow",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
+    "/installed/plugins": {
+      "get": {
+        "operationId": "Plugin_ListInstalledPlugin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListInstalledResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
     "/installed/plugins/{name}": {
       "delete": {
         "operationId": "Plugin_UninstallPlugin",
@@ -91,36 +143,6 @@
             "schema": {
               "$ref": "#/definitions/v1RegisterPluginRequest"
             }
-          }
-        ],
-        "tags": [
-          "Plugin"
-        ]
-      }
-    },
-    "/plugins/installable": {
-      "get": {
-        "operationId": "Plugin_ListInstallablePlugin",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListInstallablePluginResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "updateNow",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
           }
         ],
         "tags": [
@@ -283,6 +305,14 @@
       "description": "*\nmessage plugin implemented other plugin."
     },
     "v1ListInstallablePluginResponse": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListInstalledResponse": {
       "type": "object",
       "properties": {
         "list": {

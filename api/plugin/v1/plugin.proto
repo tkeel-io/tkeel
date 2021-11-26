@@ -48,7 +48,13 @@ service Plugin {
 
   rpc ListInstallablePlugin(ListInstallablePluginRequest) returns (ListInstallablePluginResponse) {
     option (google.api.http) = {
-      get: "/plugins/installable"
+      get: "/installable/plugins"
+    };
+  };
+
+  rpc ListInstalledPlugin(google.protobuf.Empty) returns (ListInstalledResponse){
+    option (google.api.http) = {
+      get: "/installed/plugins"
     };
   };
 
@@ -105,4 +111,8 @@ message ListInstallablePluginResponse {
 
 message UninstallPluginRequest {
   string name = 1;
+}
+
+message ListInstalledResponse {
+  string list = 1;
 }

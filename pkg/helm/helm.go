@@ -1,14 +1,18 @@
 package helm
 
 import (
+	"context"
 	"fmt"
+	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/Masterminds/semver/v3"
+	dapr "github.com/dapr/go-sdk/client"
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
-	"github.com/tkeel-io/tkeel/pkg/errutil"
+	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/cmd/helm/search"
 	helmAction "helm.sh/helm/v3/pkg/action"
 	helmCLI "helm.sh/helm/v3/pkg/cli"
@@ -42,11 +46,21 @@ var (
 	defaultCfg, _           = getConfiguration()
 	ownRepositoryConfigPath = checkRepositoryConfigPath()
 
-	driver    = "secret"
-	namespace = "tkeel"
+	driver        = "secret"
+	namespace     = "tkeel"
+	daprStoreName = "keel-private-store"
 
-	errNoRepositories = errors.New("no repositories found. You must add one before updating")
+	errNoRepositories              = errors.New("no repositories found. You must add one before updating")
+	errNoDaprClientInit            = errors.New("no dapr client init")
+	errNoRepositoryConfigFileExist = errors.New("no repository config file exist")
+
+	daprClient *dapr.Client
 )
+
+func SetDaprConfig(client *dapr.Client, storeName string) {
+	daprClient = client
+	daprStoreName = storeName
+}
 
 func checkRepositoryConfigPath() string {
 	home, err := os.UserHomeDir()
@@ -68,8 +82,11 @@ func checkRepositoryConfigPath() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	if _, err := f.WriteString(repositoryConfig); err != nil {
+	configFormDapr, err := getRepositoryFormDapr()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err := f.Write(configFormDapr); err != nil {
 		log.Fatal(err)
 	}
 
@@ -99,19 +116,20 @@ func GetUsingNamespace() string {
 }
 
 func loadRepoFile() (*repo.File, error) {
-	rf, err := repo.LoadFile(env.RepositoryConfig)
-	switch {
-	case errutil.IsNotExist(err):
-		return nil, errNoRepositories
-	case err != nil:
-		return nil, errors.Wrapf(err, "failed loading file: %s", env.RepositoryConfig)
-	case len(rf.Repositories) == 0:
-		return nil, errNoRepositories
-	}
+	// TODO: change this to use data in DB.
+	repoConf, err := getRepositoryFormDapr()
 	if err != nil {
-		err = errors.Wrap(err, "load repo config err")
+		err = errors.Wrap(err, "failed try to get repository.yaml config")
+		return nil, err
 	}
-	return rf, err
+	rf, err := newHelmRepoFile(repoConf)
+	if err != nil {
+		return nil, errors.Wrap(err, "new repository.yaml as repo.File failed")
+	}
+	if len(rf.Repositories) == 0 {
+		return nil, errNoRepositories
+	}
+	return rf, nil
 }
 
 func buildIndex() (*search.Index, error) {
@@ -186,6 +204,58 @@ func getLog() helmAction.DebugLog {
 	}
 }
 
-func isNotExist(err error) bool {
-	return os.IsNotExist(errors.Cause(err))
+func getRepositoryFormDapr() ([]byte, error) {
+	if daprClient == nil {
+		return nil, errNoDaprClientInit
+	}
+
+	item, err := (*daprClient).GetState(context.Background(), daprStoreName, configFilename)
+	if err != nil {
+		err = errors.Wrap(err, "get state form dapr err")
+		return nil, err
+	}
+	if len(item.Value) == 0 {
+		if err := setRepositoryToDapr([]byte(repositoryConfig)); err != nil {
+			err = errors.Wrap(err, "set repository config to dapr status err")
+			return nil, err
+		}
+		return []byte(repositoryConfig), nil
+	}
+	return item.Value, nil
+}
+
+func setRepositoryToDapr(content []byte) error {
+	if daprClient == nil {
+		return errNoDaprClientInit
+	}
+	if err := (*daprClient).SaveState(context.Background(), daprStoreName, configFilename, content); err != nil {
+		err = errors.Wrap(err, "save state to dapr err")
+		return err
+	}
+	return nil
+}
+
+func newHelmRepoFile(content []byte) (*repo.File, error) {
+	r := new(repo.File)
+
+	if err := yaml.Unmarshal(content, r); err != nil {
+		err = errors.Wrap(err, "yaml unmarshal err")
+		return nil, err
+	}
+	if err := syncRepositoriesConfig(content); err != nil {
+		log.Warn("sync repository config to local file from dapr err", err)
+	}
+	return r, nil
+}
+
+func syncRepositoriesConfig(content []byte) error {
+	if _, err := os.Stat(ownRepositoryConfigPath); os.IsNotExist(err) {
+		return errNoRepositoryConfigFileExist
+	}
+
+	if err := ioutil.WriteFile(ownRepositoryConfigPath, content, fs.ModePerm); err != nil {
+		err = errors.Wrap(err, "try write file")
+		return err
+	}
+	return nil
 }

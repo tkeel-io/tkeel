@@ -29,6 +29,14 @@ func (s *RepoService) CreateRepo(ctx context.Context, req *pb.CreateRepoRequest)
 	return &emptypb.Empty{}, nil
 }
 
+func (s *RepoService) DeleteRepo(ctx context.Context, req *emptypb.Empty) (*emptypb.Empty, error) {
+	if err := helm.DeleteOwnRepo(); err != nil {
+		err = errors.Wrap(err, "call repo remove failed")
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
 func (s *RepoService) ListRepo(ctx context.Context, req *emptypb.Empty) (*pb.ListRepoResponse, error) {
 	c, err := helm.ListRepo("json")
 	if err != nil {

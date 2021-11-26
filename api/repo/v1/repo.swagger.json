@@ -68,6 +68,28 @@
         ]
       }
     },
+    "/repos/own": {
+      "delete": {
+        "operationId": "Repo_DeleteRepo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Repo"
+        ]
+      }
+    },
     "/repos/{repo}/plugins/{plugin}": {
       "post": {
         "operationId": "Repo_InstallPluginFromRepo",
