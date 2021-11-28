@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: keel
+  name: rudder
   namespace: keel-system
   labels:
-    app: keel
+    app: rudder
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: keel
+      app: rudder
   template:
     metadata:
       labels:
-        app: keel
+        app: rudder
       annotations:
         dapr.io/enabled: "true"
-        dapr.io/app-id: "keel"
+        dapr.io/app-id: "rudder"
         dapr.io/app-port: "31234"
-        dapr.io/config: keel
+        dapr.io/config: rudder
     spec:
       containers:
-        - name: keel
-          image: tkeelio/keel:0.2.0
+        - name: rudder
+          image: tkeelio/rudder:0.2.0
           imagePullPolicy: Always
           ports:
             - name: http

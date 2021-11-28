@@ -15,7 +15,7 @@ GOPATH:=$(shell go env GOPATH)
 
 # Proto files.
 INTERNAL_PROTO_FILES=$(shell find internal -name *.proto)
-API_PROTO_FILES=$(shell find api -name *.proto)
+RUDDER_V1_PROTO_FILES=$(shell find api/*/v1 -name *.proto)
 
 GIT_COMMIT=$(shell git rev-parse HEAD)
 GIT_BRANCH=$(shell git name-rev --name-only HEAD)
@@ -93,7 +93,6 @@ OUT_DIR := ./dist
 BASE_PACKAGE_NAME := github.com/tkeel-io/tkeel
 
 DEFAULT_LDFLAGS:=-X $(BASE_PACKAGE_NAME)/pkg/version.GitCommit=$(GIT_COMMIT) \
-  -X $(BASE_PACKAGE_NAME)/pkg/version.Version=$(GIT_VERSION) \
   -X $(BASE_PACKAGE_NAME)/pkg/version.GitVersion=$(GIT_VERSION) \
   -X $(BASE_PACKAGE_NAME)/pkg/version.BuildDate=$(BUILD_DATE) \
   -X $(BASE_PACKAGE_NAME)/pkg/version.Version=$(TKEEL_VERSION)
@@ -225,17 +224,19 @@ init-proto:
 	go install github.com/tkeel-io/tkeel-interface/protoc-gen-go-errors
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
 ################################################################################
-# Target: gen-api-proto                                                        #
+# Target: gen-rudder-proto                                                       #
 ################################################################################
-.PHONY: gen-api-proto
-gen-api-proto:
+.PHONY: gen-rudder-v1-proto
+gen-rudder-v1-proto:
 	protoc --proto_path=. \
 	       --proto_path=./third_party \
  	       --go_out=paths=source_relative:. \
  	       --go-http_out=paths=source_relative:. \
  	       --go-grpc_out=paths=source_relative:. \
 		   --go-errors_out=paths=source_relative:. \
- 	       --openapiv2_out . \
- 	       --openapiv2_opt logtostderr=true \
- 	       --openapiv2_opt json_names_for_fields=false \
-	       $(API_PROTO_FILES)
+ 	       --openapiv2_out=./api/ \
+		   --openapiv2_opt=allow_merge=true \
+		   --openapiv2_opt=merge_file_name=rudder.v1.docs \
+ 	       --openapiv2_opt=logtostderr=true \
+ 	       --openapiv2_opt=json_names_for_fields=false \
+	       $(RUDDER_V1_PROTO_FILES)

@@ -10,7 +10,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/spf13/cobra v1.2.1
 	github.com/tkeel-io/kit v0.0.0-20211122161648-31b3986683f2
-	github.com/tkeel-io/security v0.0.0-20211123095627-1cb4de4494c9
+	github.com/tkeel-io/security v0.0.0-20211126105008-d284a6d09240
 	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211118023522-252e6880c03a
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/sys v0.0.0-20210908233432-aa78b53d3365 // indirect
