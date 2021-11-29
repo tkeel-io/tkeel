@@ -53,7 +53,7 @@ func installChart(name, chart, version string, injects ...*chart.Chart) error { 
 	}
 
 	// Add inject dependencies.
-	if err := checkInjects(injects); err != nil {
+	if err := checkInjects(injects, name); err != nil {
 		err = errors.Wrap(err, "get injects dependency chart err")
 		return err
 	}
@@ -98,11 +98,12 @@ func installChart(name, chart, version string, injects ...*chart.Chart) error { 
 	return nil
 }
 
-func checkInjects(injects []*chart.Chart) error {
+func checkInjects(injects []*chart.Chart, pluginName string) error {
 	for i := range injects {
 		if injects[i] == nil {
 			return errors.New("unable dependency chart try to injects")
 		}
+		injects[i].Values["pluginID"] = pluginName
 	}
 	return nil
 }
