@@ -202,17 +202,14 @@ func (o *DaprStateOprator) Watch(ctx context.Context, interval string, callback 
 	if err != nil {
 		return fmt.Errorf("error dapr state oprator watch parse interval(%s): %w", interval, err)
 	}
-	olditem, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginProxyRouteMap)
-	if err != nil {
-		return fmt.Errorf("error dapr state oprator watch get(%s): %w", KeyPluginProxyRouteMap, err)
-	}
+	oldTag := ""
 	tick := time.NewTicker(in)
 	for range tick.C {
 		item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginProxyRouteMap)
 		if err != nil {
 			return fmt.Errorf("error dapr state oprator watch get(%s): %w", KeyPluginProxyRouteMap, err)
 		}
-		if item.Etag != olditem.Etag {
+		if item.Etag != oldTag {
 			rMap := make(model.PluginProxyRouteMap)
 			if err = json.Unmarshal(item.Value, &rMap); err != nil {
 				return fmt.Errorf("error dapr state oprator watch unmarshal(%s): %w", string(item.Value), err)
@@ -220,7 +217,7 @@ func (o *DaprStateOprator) Watch(ctx context.Context, interval string, callback 
 			if err = callback(rMap); err != nil {
 				return fmt.Errorf("error dapr state oprator watch callback(%s): %w", rMap, err)
 			}
-			olditem = item
+			oldTag = item.Etag
 			tick.Reset(in)
 		}
 	}

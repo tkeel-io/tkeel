@@ -5,3 +5,11 @@
 redis:
   architecture: standalone
   fullnameOverride: tkeel-middleware-redis
+  auth:
+    password: Biz0P8Xoup
+
+mysql:
+  fullnameOverride: tkeel-middleware-mysql
+  auth:
+    rootPassword: a3fks=ixmeb82a
+    database: tkeelauth
