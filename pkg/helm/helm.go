@@ -48,7 +48,6 @@ var (
 	env                     = helmCLI.New()
 	defaultCfg, _           = getConfiguration()
 	ownRepositoryConfigPath = checkRepositoryConfigPath()
-	componentChart          = loadComponentChart()
 
 	componentChartName = "tkeel-plugin-components"
 	driver             = "secret"

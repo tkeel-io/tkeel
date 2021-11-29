@@ -99,7 +99,7 @@ func Install(ctx context.Context, name, chart, version string) error {
 		}
 	}
 install:
-	return installChart(name, chart, version, componentChart)
+	return installChart(name, chart, version, loadComponentChart())
 }
 
 func Uninstall(ctx context.Context, name ...string) error {
