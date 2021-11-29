@@ -11,7 +11,7 @@ import (
 	"helm.sh/helm/v3/pkg/getter"
 )
 
-func installChart(name, chart, version string, injects ...*chart.Chart) error {
+func installChart(name, chart, version string, injects ...*chart.Chart) error { //nolint
 	installClient := action.NewInstall(defaultCfg)
 	valueOpts := &values.Options{}
 	installClient.Version = version
@@ -52,7 +52,7 @@ func installChart(name, chart, version string, injects ...*chart.Chart) error {
 		log.Warn("This chart is deprecated")
 	}
 
-	// Add inject dependencies
+	// Add inject dependencies.
 	if err := checkInjects(injects); err != nil {
 		err = errors.Wrap(err, "get injects dependency chart err")
 		return err

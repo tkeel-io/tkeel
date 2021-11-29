@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"helm.sh/helm/v3/pkg/chart/loader"
 	"github.com/Masterminds/semver/v3"
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/pkg/errors"
@@ -17,6 +16,7 @@ import (
 	"helm.sh/helm/v3/cmd/helm/search"
 	helmAction "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	helmCLI "helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/helmpath"
 	"helm.sh/helm/v3/pkg/repo"
