@@ -8,4 +8,4 @@ spec:
     app: keel
   ports:
     - protocol: TCP
-      port: 8080
+      port: 31234

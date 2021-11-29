@@ -16,17 +16,25 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
+	"github.com/emicklei/go-restful"
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
+	entity_v1 "github.com/tkeel-io/security/pkg/apirouter/entity/v1"
+	oauth_v1 "github.com/tkeel-io/security/pkg/apirouter/oauth/v1"
+	rbac_v1 "github.com/tkeel-io/security/pkg/apirouter/rbac/v1"
 	tenant_v1 "github.com/tkeel-io/security/pkg/apirouter/tenant/v1"
-	auth_dao "github.com/tkeel-io/security/pkg/models/dao"
+	"github.com/tkeel-io/security/pkg/apiserver/filters"
+	security_dao "github.com/tkeel-io/security/pkg/models/dao"
+	"github.com/tkeel-io/security/pkg/models/rbac"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	repo "github.com/tkeel-io/tkeel/api/repo/v1"
 	"github.com/tkeel-io/tkeel/cmd"
+	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/helm"
@@ -34,8 +42,6 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
 	"github.com/tkeel-io/tkeel/pkg/server"
 	"github.com/tkeel-io/tkeel/pkg/service"
-
-	dapr "github.com/dapr/go-sdk/client"
 )
 
 var (
@@ -53,19 +59,28 @@ var rootCmd = &cobra.Command{
 		if configFile != "" {
 			c, err := config.LoadStandaloneConfiguration(configFile)
 			if err != nil {
-				panic(err)
+				log.Fatal("fatal config load(%s): %s", configFile, err)
+				os.Exit(-1)
 			}
 			conf = c
 		}
 		httpSrv := server.NewHTTPServer(conf.HTTPAddr)
 		grpcSrv := server.NewGRPCServer(conf.GRPCAddr)
 
+		rudderApp = app.New("rudder", &log.Conf{
+			App:    "rudder",
+			Level:  conf.Log.Level,
+			Dev:    conf.Log.Dev,
+			Output: conf.Log.Output,
+		}, httpSrv, grpcSrv)
+
 		{
 			// init client.
 			// dapr grpc client.
-			daprGRPCClient, err := dapr.NewClientWithPort(conf.Dapr.GRPCPort)
+			daprGRPCClient, err := t_dapr.NewGPRCClient(10, "5s", conf.Dapr.GRPCPort)
 			if err != nil {
-				panic(err)
+				log.Fatal("fatal new dapr client: %s", err)
+				os.Exit(-1)
 			}
 			openapiCli := openapi.NewDaprClient("rudder", daprGRPCClient)
 
@@ -81,30 +96,50 @@ var rootCmd = &cobra.Command{
 			plugin_v1.RegisterPluginHTTPServer(httpSrv.Container, PluginSrvV1)
 			plugin_v1.RegisterPluginServer(grpcSrv.GetServe(), PluginSrvV1)
 			// oauth2 service.
-			Oauth2SrvV1 := service.NewOauth2Service(conf.Tkeel.Secret, pOp)
+			Oauth2SrvV1 := service.NewOauth2ServiceV1(conf.Tkeel.Secret, pOp)
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
-			// tenant.
-			auth_dao.SetUp(conf.SecurityConf.Mysql)
-			tenant_v1.RegisterToRestContainer(httpSrv.Container)
 
 			// repo service.
 			repoSrv := service.NewRepoService()
 			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
 			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
-		}
 
-		rudderApp = app.New("rudder", &log.Conf{
-			App:    "rudder",
-			Level:  conf.Log.Level,
-			Dev:    conf.Log.Dev,
-			Output: conf.Log.Output,
-		}, httpSrv, grpcSrv)
+			if _, err = rbac.NewRBACOperator(conf.SecurityConf.Mysql); err != nil {
+				log.Fatalf("fatal new rbac sync enforcer: %s", err)
+				os.Exit(-1)
+			}
+			{
+				// init security service.
+				security_dao.SetUp(conf.SecurityConf.Mysql)
+				// tenant.
+				tenant_v1.RegisterToRestContainer(httpSrv.Container)
+				// oauth2.
+				oauth_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.OAuth2)
+				// rbac.
+				rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.RBAC, conf.SecurityConf.OAuth2)
+				// entity token.
+				entity_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.Entity, conf.SecurityConf.OAuth2)
+				// add auth role filter.
+				tenantAdminRoleFilter := filters.AuthFilter(conf.SecurityConf.OAuth2, "admin")
+				for _, ws := range httpSrv.Container.RegisteredWebServices() {
+					if ws.RootPath() == "/v1/tenants" {
+						ws.Filter(func(r1 *restful.Request, r2 *restful.Response, fc *restful.FilterChain) {
+							if strings.HasPrefix(r1.Request.URL.Path, "/v1/tenants/users") {
+								tenantAdminRoleFilter(r1, r2, fc)
+								return
+							}
+							fc.ProcessFilter(r1, r2)
+						})
+					}
+				}
+			}
+		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := rudderApp.Run(context.TODO()); err != nil {
 			log.Fatal("fatal rudder app run: %s", err)
-			os.Exit(-1)
+			os.Exit(-2)
 		}
 
 		stop := make(chan os.Signal, 1)
@@ -113,7 +148,7 @@ var rootCmd = &cobra.Command{
 
 		if err := rudderApp.Stop(context.TODO()); err != nil {
 			log.Fatal("fatal rudder app stop: %s", err)
-			os.Exit(-2)
+			os.Exit(-3)
 		}
 	},
 }

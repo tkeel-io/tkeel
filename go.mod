@@ -10,7 +10,6 @@ require (
 	github.com/emicklei/go-restful v2.15.0+incompatible
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-errors/errors v1.4.0 // indirect
-	github.com/gofrs/flock v0.8.1
 	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.3.0
@@ -22,7 +21,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tkeel-io/kit v0.0.0-20211122161648-31b3986683f2
-	github.com/tkeel-io/security v0.0.0-20211123095627-1cb4de4494c9
+	github.com/tkeel-io/security v0.0.0-20211126105008-d284a6d09240
 	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211118023522-252e6880c03a
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect

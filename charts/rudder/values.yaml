@@ -1,0 +1,16 @@
+# > tkeel platform values
+# default plugin id
+daprConfig: rudder
+# < tkeel platform values
+
+# rudder custom values
+middleware:
+  name: tkeel-middleware
+replicaCount: 1
+appPort: 31234
+secret: changeme
+nodePort: 30777
+image:
+  repository: tkeelio/rudder
+  tag: 0.2.0
+  pullPolicy: Always

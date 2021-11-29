@@ -12,20 +12,20 @@ option go_package = "github.com/tkeel-io/tkeel-interface/openapi/v1;v1";
  * error code enum.
  **/
 enum Retcode {
-  ok = 0;
-  badRequest = 400;
-  internalError = 500;
+  OK = 0;
+  BAD_REQEUST = 400;
+  INTERNAL_ERROR = 500;
 }
 
 /**
  * plugin state enum.
  **/
 enum PluginStatus {
-  error = 0;
-  starting = 1;
-  runing = 2;
-  stopping = 3;
-  stopped = 4;
+  ERROR = 0;
+  STARTING = 1;
+  RUNNING = 2;
+  STOPPING = 3;
+  STOPPED = 4;
 }
 
 /**
@@ -56,8 +56,8 @@ message AddonsPoint {
  * message plugin declares implemented other plugin extension point.
  **/
 message ImplementedAddons {
-  string addonsPoint = 1; //
-  string implementedEndpoint = 2;
+  string addons_point = 1; //
+  string implemented_endpoint = 2;
 }
 
 /**
@@ -73,12 +73,12 @@ message ImplementedPlugin {
  * used when the plugin registered.
  **/
 message IdentifyResponse {
-  Result res = 1;                       // detail result.
-  string pluginID = 2;                  // register plugin id.
-  string version = 3;                   // register plugin version
-  string tkeelVersion = 4;              // register plugin depend tkeel version.
-  repeated AddonsPoint addonsPoint = 5; // register plugin declares addons.
-  repeated ImplementedPlugin implementedPlugin =
+  Result res = 1;           // detail result.
+  string plugin_id = 2;     // register plugin id.
+  string version = 3;       // register plugin version
+  string tkeel_version = 4; // register plugin depend tkeel version.
+  repeated AddonsPoint addons_point = 5; // register plugin declares addons.
+  repeated ImplementedPlugin implemented_plugin =
       6; // register plugin implemented plugin list.
 }
 
@@ -89,7 +89,7 @@ message IdentifyResponse {
  **/
 message AddonsIdentifyRequest {
   BriefPluginInfo plugin = 1; // implemented plugin information.
-  repeated ImplementedAddons implementedAddons = 2; // implemented addons.
+  repeated ImplementedAddons implemented_addons = 2; // implemented addons.
 }
 
 /**
@@ -106,8 +106,8 @@ message AddonsIdentifyResponse {
  * used when the tenant administrator enables the plugin.
  **/
 message TenantBindRequst {
-  string tenantID = 1; // unique tenant id.
-  bytes extra = 2;     // extra data
+  string tenant_id = 1; // unique tenant id.
+  bytes extra = 2;      // extra data
 }
 
 /**
@@ -123,8 +123,8 @@ message TenantBindResponse {
  * used when the tenant administrator disables the plugin.
  **/
 message TenantUnbindRequst {
-  string tenantID = 1; // unique tenant id.
-  bytes extra = 2;     // extra data
+  string tenant_id = 1; // unique tenant id.
+  bytes extra = 2;      // extra data
 }
 
 /**

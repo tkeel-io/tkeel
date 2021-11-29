@@ -7,15 +7,15 @@ spec:
   type: middleware.http.oauth2clientcredentials
   version: v1
   metadata:
-  - name: clientId
-    value: "keel"
-  - name: clientSecret
-    value: "zhu88jie"
-  - name: scopes
-    value: "http://keel.com"
-  - name: tokenURL
-    value: "http://plugins:8080/oauth2/token"
-  - name: headerName
-    value: "x-plugin-jwt"
-  - name: authStyle
-    value: 0
+    - name: clientId
+      value: "keel"
+    - name: clientSecret
+      value: "changeme"
+    - name: scopes
+      value: "http://keel.com"
+    - name: tokenURL
+      value: "http://rudder:31234/oauth2/token"
+    - name: headerName
+      value: "x-plugin-jwt"
+    - name: authStyle
+      value: 0

@@ -24,7 +24,7 @@ type Oauth2ServiceV1 struct {
 	secretProvider token.Provider
 }
 
-func NewOauth2Service(secret string, pluginOperator plugin.Operator) *Oauth2ServiceV1 {
+func NewOauth2ServiceV1(secret string, pluginOperator plugin.Operator) *Oauth2ServiceV1 {
 	return &Oauth2ServiceV1{
 		secret:         secret,
 		whiteList:      []string{"rudder", "keel", "core"},

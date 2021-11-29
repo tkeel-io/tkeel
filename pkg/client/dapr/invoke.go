@@ -20,16 +20,16 @@ import (
 	"net/http"
 )
 
-const daprInvokeURLTemplate = "http://%s/v1.0/invoke/%s/%s"
+const daprInvokeURLTemplate = "http://%s/v1.0/invoke/%s/method/%s"
 
 // Call http invake dapr sidecar.
 func (c *HTTPClient) Call(ctx context.Context,
-	req *AppReqeust) (*http.Response, error) {
+	req *AppRequest) (*http.Response, error) {
 	url := c.getInvokeURL(req)
 	if len(req.QueryValue) != 0 {
 		url += "?" + req.QueryValue.Encode()
 	}
-	httpReq, err := http.NewRequest(req.Verb, url, bytes.NewReader(req.Body))
+	httpReq, err := http.NewRequestWithContext(ctx, req.Verb, url, bytes.NewReader(req.Body))
 	if err != nil {
 		return nil, fmt.Errorf("error http new request: %w", err)
 	}
@@ -43,6 +43,6 @@ func (c *HTTPClient) Call(ctx context.Context,
 	return resp, nil
 }
 
-func (c *HTTPClient) getInvokeURL(req *AppReqeust) string {
+func (c *HTTPClient) getInvokeURL(req *AppRequest) string {
 	return fmt.Sprintf(daprInvokeURLTemplate, c.httpAddr, req.ID, req.Method)
 }
