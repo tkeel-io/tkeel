@@ -25,5 +25,6 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 			}
 			return ret
 		}(),
+		Status: pr.Status,
 	}
 }

@@ -15,9 +15,9 @@ spec:
     value: "http://{{ .Values.pluginID }}.com"
   - name: tokenURL
   {{- if (eq .Values.pluginID "rudder") }}
-    value: "http://127.0.0.1:{{ .Values.rudder.Port }}/v1/oauth2"
+    value: "http://127.0.0.1:{{ .Values.rudder.port }}/v1/oauth2"
   {{- else }}
-    value: "http://rudder:{{ .Values.rudder.Port }}/v1/oauth2"
+    value: "http://rudder:{{ .Values.rudder.port }}/v1/oauth2"
   {{- end }}
   - name: headerName
     value: "x-plugin-jwt"

@@ -39,13 +39,15 @@ func DaprInvokeJSON(ctx context.Context, c dapr.Client, appID, methodName, verb 
 			Data:        reqBody,
 			ContentType: contentTypeJSON,
 		})
+	} else {
+		out, err = c.InvokeMethod(ctx, appID, methodName, verb)
 	}
 
 	if err != nil {
 		return fmt.Errorf("error invoke app(%s) method(%s/%s): %w", appID, methodName, verb, err)
 	}
 
-	if !util.IsNil(resp) && req != nil {
+	if !util.IsNil(resp) && resp != nil {
 		err = json.Unmarshal(out, resp)
 		if err != nil {
 			return fmt.Errorf("error unmarshal app(%s) method(%s/%s): %w", appID, methodName, verb, err)

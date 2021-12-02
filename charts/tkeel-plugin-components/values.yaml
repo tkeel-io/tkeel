@@ -1,4 +1,4 @@
 pluginID: PLUGINID
 rudder:
-  Port: 31234
+  port: 31234
 secret: changeme

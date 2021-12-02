@@ -11,41 +11,41 @@ import (
 // is compatible with the ego package it is being compiled against.
 const _ = errors.SupportPackageIsVersion1
 
-var errUnknown *errors.TError
-var errSecretNotMatch *errors.TError
-var errClientIdAlreadyExists *errors.TError
-var errInvaildPluginId *errors.TError
-var errInternalStore *errors.TError
+var oauth2ErrUnknown *errors.TError
+var oauth2ErrSecretNotMatch *errors.TError
+var oauth2ErrClientIdAlreadyExists *errors.TError
+var oauth2ErrInvaildPluginId *errors.TError
+var oauth2ErrInternalStore *errors.TError
 
 func init() {
-	errUnknown = errors.New(int(codes.Unknown), "oauth2.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
-	errors.Register(errUnknown)
-	errSecretNotMatch = errors.New(int(codes.InvalidArgument), "oauth2.v1.ERR_SECRET_NOT_MATCH", Error_ERR_SECRET_NOT_MATCH.String())
-	errors.Register(errSecretNotMatch)
-	errClientIdAlreadyExists = errors.New(int(codes.AlreadyExists), "oauth2.v1.ERR_CLIENT_ID_ALREADY_EXISTS", Error_ERR_CLIENT_ID_ALREADY_EXISTS.String())
-	errors.Register(errClientIdAlreadyExists)
-	errInvaildPluginId = errors.New(int(codes.InvalidArgument), "oauth2.v1.ERR_INVAILD_PLUGIN_ID", Error_ERR_INVAILD_PLUGIN_ID.String())
-	errors.Register(errInvaildPluginId)
-	errInternalStore = errors.New(int(codes.Internal), "oauth2.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
-	errors.Register(errInternalStore)
+	oauth2ErrUnknown = errors.New(int(codes.Unknown), "oauth2.v1.OAUTH2_ERR_UNKNOWN", Error_OAUTH2_ERR_UNKNOWN.String())
+	errors.Register(oauth2ErrUnknown)
+	oauth2ErrSecretNotMatch = errors.New(int(codes.InvalidArgument), "oauth2.v1.OAUTH2_ERR_SECRET_NOT_MATCH", Error_OAUTH2_ERR_SECRET_NOT_MATCH.String())
+	errors.Register(oauth2ErrSecretNotMatch)
+	oauth2ErrClientIdAlreadyExists = errors.New(int(codes.AlreadyExists), "oauth2.v1.OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS", Error_OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS.String())
+	errors.Register(oauth2ErrClientIdAlreadyExists)
+	oauth2ErrInvaildPluginId = errors.New(int(codes.InvalidArgument), "oauth2.v1.OAUTH2_ERR_INVAILD_PLUGIN_ID", Error_OAUTH2_ERR_INVAILD_PLUGIN_ID.String())
+	errors.Register(oauth2ErrInvaildPluginId)
+	oauth2ErrInternalStore = errors.New(int(codes.Internal), "oauth2.v1.OAUTH2_ERR_INTERNAL_STORE", Error_OAUTH2_ERR_INTERNAL_STORE.String())
+	errors.Register(oauth2ErrInternalStore)
 }
 
-func ErrUnknown() errors.Error {
-	return errUnknown
+func Oauth2ErrUnknown() errors.Error {
+	return oauth2ErrUnknown
 }
 
-func ErrSecretNotMatch() errors.Error {
-	return errSecretNotMatch
+func Oauth2ErrSecretNotMatch() errors.Error {
+	return oauth2ErrSecretNotMatch
 }
 
-func ErrClientIdAlreadyExists() errors.Error {
-	return errClientIdAlreadyExists
+func Oauth2ErrClientIdAlreadyExists() errors.Error {
+	return oauth2ErrClientIdAlreadyExists
 }
 
-func ErrInvaildPluginId() errors.Error {
-	return errInvaildPluginId
+func Oauth2ErrInvaildPluginId() errors.Error {
+	return oauth2ErrInvaildPluginId
 }
 
-func ErrInternalStore() errors.Error {
-	return errInternalStore
+func Oauth2ErrInternalStore() errors.Error {
+	return oauth2ErrInternalStore
 }
