@@ -147,7 +147,7 @@ func (o *DaprStateOprator) Get(ctx context.Context, pluginID string) (*model.Plu
 	}
 	pr, ok := pluginProxyMap[pluginID]
 	if !ok {
-		return nil, ErrPluginRouteExsist
+		return nil, ErrPluginRouteNotExsist
 	}
 	return pr, nil
 }

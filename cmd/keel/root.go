@@ -53,6 +53,7 @@ var rootCmd = &cobra.Command{
 			conf = c
 		}
 		httpSrv := server.NewHTTPServer(conf.HTTPAddr)
+		httpSrv.Container.EnableContentEncoding(false)
 		grpcSrv := server.NewGRPCServer(conf.GRPCAddr)
 
 		keelApp = app.New("keel", &log.Conf{

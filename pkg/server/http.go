@@ -14,11 +14,13 @@ limitations under the License.
 package server
 
 import (
+	"github.com/emicklei/go-restful"
 	"github.com/tkeel-io/kit/transport/http"
 )
 
 // NewHTTPServer new a HTTP server.
 func NewHTTPServer(addr string) *http.Server {
 	srv := http.NewServer(addr)
+	restful.DefaultRequestContentType(restful.MIME_JSON)
 	return srv
 }

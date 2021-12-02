@@ -29,7 +29,6 @@ import (
 	tenant_v1 "github.com/tkeel-io/security/pkg/apirouter/tenant/v1"
 	"github.com/tkeel-io/security/pkg/apiserver/filters"
 	security_dao "github.com/tkeel-io/security/pkg/models/dao"
-	"github.com/tkeel-io/security/pkg/models/rbac"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/cmd"
@@ -95,12 +94,9 @@ var rootCmd = &cobra.Command{
 			Oauth2SrvV1 := service.NewOauth2ServiceV1(conf.Tkeel.Secret, pOp)
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
-			// tenant.
-			if _, err = rbac.NewRBACOperator(conf.SecurityConf.Mysql); err != nil {
-				log.Fatalf("fatal new rbac sync enforcer: %s", err)
-				os.Exit(-1)
-			}
 			{
+				// copy mysql configuration.
+				conf.SecurityConf.RBAC.Adapter = conf.SecurityConf.Mysql
 				// init security service.
 				security_dao.SetUp(conf.SecurityConf.Mysql)
 				// tenant.

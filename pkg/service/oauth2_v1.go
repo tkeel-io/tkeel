@@ -49,25 +49,25 @@ func (s *Oauth2ServiceV1) IssueOauth2Token(ctx context.Context, req *pb.IssueOau
 	pluginID := req.ClientId
 	if pluginID == "" {
 		log.Errorf("error invaild plugin id: empty string")
-		return nil, pb.ErrInvaildPluginId()
+		return nil, pb.Oauth2ErrInvaildPluginId()
 	}
 	if !s.checkWhiteList(pluginID) {
 		plugin, err := s.pluginOp.Get(ctx, pluginID)
 		if err != nil {
 			log.Errorf("error issue(%s) oauth2 token: %w", pluginID, err)
-			return nil, pb.ErrInternalStore()
+			return nil, pb.Oauth2ErrInternalStore()
 		}
 		if err = s.checkPluginSecret(plugin.Secret, req.ClientSecret); err != nil {
 			log.Errorf("error issue(%s) oauth2 token: %w", pluginID, err)
-			return nil, pb.ErrSecretNotMatch()
+			return nil, pb.Oauth2ErrSecretNotMatch()
 		}
 	}
 	token, _, err := s.genPluginToken(pluginID)
 	if err != nil {
 		log.Errorf("error issue(%s) oauth2 token gen plugin token: %s", pluginID, err)
-		return nil, pb.ErrUnknown()
+		return nil, pb.Oauth2ErrUnknown()
 	}
-
+	log.Debugf("issue(%s) oauth2 token: %s", pluginID, token)
 	return &pb.IssueOauth2TokenResponse{
 		AccessToken: token,
 		ExpiresIn:   int32((24 * time.Hour).Seconds()),

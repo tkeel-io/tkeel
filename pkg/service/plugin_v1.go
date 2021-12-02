@@ -60,21 +60,22 @@ func (s *PluginServiceV1) RegisterPlugin(ctx context.Context,
 	resp, err := s.queryIdentify(ctx, req)
 	if err != nil {
 		log.Errorf("error query identify: %s", err)
-		return nil, pb.ErrInvalidArgument()
+		return nil, pb.PluginErrInvalidArgument()
 	}
 	// check register plugin identify.
 	if err = s.checkIdentify(ctx, resp); err != nil {
 		log.Errorf("error check identify: %s", err)
-		return nil, pb.ErrInvalidArgument()
+		return nil, pb.PluginErrInvalidArgument()
 	}
 	// register plugin.
 	if err = s.registerPlugin(ctx, req, resp); err != nil {
 		log.Errorf("error register plugin: %s", err)
 		if errors.Is(err, ErrPluginRegistered) {
-			return nil, pb.ErrPluginAlreadyExists()
+			return nil, pb.PluginErrPluginAlreadyExists()
 		}
-		return nil, pb.ErrInternalQueryPluginOpenapi()
+		return nil, pb.PluginErrInternalQueryPluginOpenapi()
 	}
+	log.Debugf("register plugin(%s) ok", req.Id)
 	return &emptypb.Empty{}, nil
 }
 
@@ -85,22 +86,22 @@ func (s *PluginServiceV1) DeletePlugin(ctx context.Context,
 	deletePluginRoute, err := s.pluginRouteOp.Get(ctx, deleteID)
 	if err != nil {
 		log.Errorf("error delete plugin(%s) route get: %s", deleteID, err)
-		if errors.Is(err, plugin.ErrPluginNotExsist) {
-			return nil, pb.ErrPluginNotFound()
+		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
+			return nil, pb.PluginErrPluginNotFound()
 		}
-		return nil, pb.ErrInternalStore()
+		return nil, pb.PluginErrInternalStore()
 	}
 	// check whether the extension point is implemented.
 	if len(deletePluginRoute.RegisterAddons) != 0 {
 		log.Errorf("error delete plugin(%s): other plugins have implemented the extension points of this plugin.", deleteID)
-		return nil, pb.ErrDeletePluginHasBeenDepended()
+		return nil, pb.PluginErrDeletePluginHasBeenDepended()
 	}
 
 	// delete plugin.
 	delPlugin, delPluginRoute, err := s.deletePlugin(ctx, deleteID)
 	if err != nil {
 		log.Errorf("error delete plugin(%s): %s", deleteID, err)
-		return nil, pb.ErrInternalStore()
+		return nil, pb.PluginErrInternalStore()
 	}
 	return &pb.DeletePluginResponse{
 		Plugin: util.ConvertModel2PluginObjectPb(delPlugin, delPluginRoute),
@@ -113,14 +114,14 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 	if err != nil {
 		log.Errorf("error plugin(%s) get: %s", req.Id, err)
 		if errors.Is(err, plugin.ErrPluginNotExsist) {
-			return nil, pb.ErrPluginNotFound()
+			return nil, pb.PluginErrPluginNotFound()
 		}
-		return nil, pb.ErrInternalStore()
+		return nil, pb.PluginErrInternalStore()
 	}
 	gPluginRoute, err := s.pluginRouteOp.Get(ctx, req.Id)
 	if err != nil {
 		log.Errorf("error plugin(%s) route get: %s", req.Id, err)
-		return nil, pb.ErrInternalStore()
+		return nil, pb.PluginErrInternalStore()
 	}
 
 	return &pb.GetPluginResponse{
@@ -133,14 +134,14 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 	ps, err := s.pluginOp.List(ctx)
 	if err != nil {
 		log.Errorf("error plugin list: %s", err)
-		return nil, pb.ErrListPlugin()
+		return nil, pb.PluginErrListPlugin()
 	}
 	retList := make([]*pb.PluginObject, 0, len(ps))
 	for _, p := range ps {
 		pr, err := s.pluginRouteOp.Get(ctx, p.ID)
 		if err != nil {
 			log.Errorf("error plugin list get plugin(%s) route: %s", p.ID, err)
-			return nil, pb.ErrInternalStore()
+			return nil, pb.PluginErrInternalStore()
 		}
 		retList = append(retList, util.ConvertModel2PluginObjectPb(p, pr))
 	}
@@ -225,6 +226,7 @@ func (s *PluginServiceV1) saveRegisterPluginRouter(ctx context.Context,
 		return nil, nil, fmt.Errorf("error create new plugin route(%s): %w", newPluginRoute, err)
 	}
 	return func() error {
+		log.Debugf("save register plugin route roll back run.")
 		_, err := s.pluginRouteOp.Delete(ctx, newPluginRoute.ID)
 		if err != nil {
 			return fmt.Errorf("error delete new plugin(%s) route: %w", newPluginRoute.ID, err)
@@ -273,6 +275,7 @@ func (s *PluginServiceV1) registerImplementedPluginRoute(ctx context.Context,
 		pluginRouteBackup := oldPluginRoute.Clone()
 		util.UpdatePluginRoute(resp.PluginId, v.Addons, oldPluginRoute)
 		rbList = append(rbList, func() error {
+			log.Debugf("register implemented plugin route roll back run.")
 			err = s.pluginRouteOp.Update(ctx, pluginRouteBackup)
 			if err != nil {
 				return fmt.Errorf("error update plugin route backup(%s): %w", pluginRouteBackup, err)
@@ -308,6 +311,7 @@ func (s *PluginServiceV1) saveNewPlugin(ctx context.Context, resp *openapi_v1.Id
 		return fmt.Errorf("error create plugin(%s): %w", newPlugin, err)
 	}
 	rbList = append(rbList, func() error {
+		log.Debugf("save new plugin roll back run.")
 		_, err = s.pluginOp.Delete(ctx, newPlugin.ID)
 		if err != nil {
 			return fmt.Errorf("error delete newPlugin(%s): %w", newPlugin.ID, err)
@@ -334,6 +338,7 @@ func (s *PluginServiceV1) deletePlugin(ctx context.Context, deleteID string) (p 
 		return nil, nil, fmt.Errorf("error delete plugin(%s): %w", deleteID, err)
 	}
 	rbStack = append(rbStack, func() error {
+		log.Debugf("delete plugin roll back run.")
 		err = s.pluginOp.Create(ctx, deletePlugin)
 		if err != nil {
 			return fmt.Errorf("error create delete plugin(%s): %w", deletePlugin, err)
@@ -346,6 +351,7 @@ func (s *PluginServiceV1) deletePlugin(ctx context.Context, deleteID string) (p 
 		return nil, nil, fmt.Errorf("error delete plugin(%s) route: %w", deleteID, err)
 	}
 	rbStack = append(rbStack, func() error {
+		log.Debugf("delete plugin route roll back run.")
 		err = s.pluginRouteOp.Create(ctx, deletePluginRoute)
 		if err != nil {
 			return fmt.Errorf("error create delete plugin(%s) route: %w", deletePluginRoute, err)
@@ -382,6 +388,7 @@ func (s *PluginServiceV1) resetImplementedPluginRoute(ctx context.Context,
 			return nil, fmt.Errorf("error plugin route(%s) update: %w", oldRoute, err)
 		}
 		rbStack = append(rbStack, func() error {
+			log.Debugf("delete plugin reset implemented plugin route roll back run.")
 			if _, err := s.pluginRouteOp.Delete(ctx, tmpRoute.ID); err != nil {
 				return fmt.Errorf("error delete tmpRoute(%s): %w", tmpRoute, err)
 			}

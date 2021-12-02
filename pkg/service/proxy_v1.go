@@ -87,7 +87,8 @@ func (s *ProxyServiceV1) ProxyPlugin(ctx context.Context, resp http.ResponseWrit
 
 func (s *ProxyServiceV1) ProxyCore(ctx context.Context, resp http.ResponseWriter, req *http.Request) error {
 	log.Debugf("proxy call core %s", req.RequestURI)
-	if err := proxyHTTP(ctx, s.conf.CoreAddr, v1.ApisRootPath+v1.CoreSubPath, resp, req); err != nil {
+	dstPath := strings.TrimPrefix(req.URL.Path, v1.ApisRootPath+v1.CoreSubPath)
+	if err := proxyHTTP(ctx, s.conf.CoreAddr, dstPath, resp, req); err != nil {
 		return fmt.Errorf("error proxy core: %w", err)
 	}
 	return nil
@@ -95,7 +96,8 @@ func (s *ProxyServiceV1) ProxyCore(ctx context.Context, resp http.ResponseWriter
 
 func (s *ProxyServiceV1) ProxySecurity(ctx context.Context, resp http.ResponseWriter, req *http.Request) error {
 	log.Debugf("proxy call security %s", req.RequestURI)
-	if err := proxyHTTP(ctx, s.conf.RudderAddr, v1.ApisRootPath+v1.SecuritySubPath, resp, req); err != nil {
+	dstPath := strings.TrimPrefix(req.URL.Path, v1.ApisRootPath+v1.SecuritySubPath)
+	if err := proxyHTTP(ctx, s.conf.RudderAddr, dstPath, resp, req); err != nil {
 		return fmt.Errorf("error proxy security: %w", err)
 	}
 	return nil
@@ -103,20 +105,21 @@ func (s *ProxyServiceV1) ProxySecurity(ctx context.Context, resp http.ResponseWr
 
 func (s *ProxyServiceV1) ProxyRudder(ctx context.Context, resp http.ResponseWriter, req *http.Request) error {
 	log.Debugf("proxy call rudder %s", req.RequestURI)
-	if err := proxyHTTP(ctx, s.conf.RudderAddr, v1.ApisRootPath+v1.RudderSubPath, resp, req); err != nil {
+	dstPath := strings.TrimPrefix(req.URL.Path, v1.ApisRootPath+v1.RudderSubPath)
+	if err := proxyHTTP(ctx, s.conf.RudderAddr, dstPath, resp, req); err != nil {
 		return fmt.Errorf("error proxy rudder: %w", err)
 	}
 	return nil
 }
 
-func proxyHTTP(ctx context.Context, host, prefixPath string,
+func proxyHTTP(ctx context.Context, host, dstPath string,
 	resp http.ResponseWriter, req *http.Request) error {
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		http.Error(resp, err.Error(), http.StatusInternalServerError)
 		return fmt.Errorf("error read request body: %w", err)
 	}
-	url := fmt.Sprintf("http://%s%s", host, strings.TrimPrefix(req.URL.Path, prefixPath))
+	url := fmt.Sprintf("http://%s%s", host, dstPath)
 	if req.URL.RawQuery != "" {
 		url += "?" + req.URL.RawQuery
 	}
@@ -140,7 +143,6 @@ func proxyHTTP(ctx context.Context, host, prefixPath string,
 		resp.Write([]byte(err.Error()))
 		return fmt.Errorf("error proxy call: %w", err)
 	}
-	defer doResp.Body.Close()
 	if err = proxyHTTPResponse2RestfulResponse(doResp, resp); err != nil {
 		return fmt.Errorf("error proxy http response 2 restful response: %w", err)
 	}
@@ -149,6 +151,9 @@ func proxyHTTP(ctx context.Context, host, prefixPath string,
 
 func proxyHTTPResponse2RestfulResponse(dstResp *http.Response, resp http.ResponseWriter) error {
 	for k, vs := range dstResp.Header {
+		if k == "Content-Length" {
+			continue
+		}
 		for _, v := range vs {
 			resp.Header().Add(k, v)
 		}
