@@ -32,7 +32,7 @@ service Plugin {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "注册插件接口"
-      operation_id : "注册插件"
+      operation_id : "RegisterPlugin"
       tags : "Plugin"
       responses : [
         {
@@ -68,7 +68,7 @@ service Plugin {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "删除插件接口"
-      operation_id : "删除插件"
+      operation_id : "DeletePlugin"
       tags : "Plugin"
       responses : [
         {
@@ -99,8 +99,8 @@ service Plugin {
       get : "/plugins/{id}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "插叙插件接口"
-      operation_id : "插叙插件"
+      summary : "查询插件接口"
+      operation_id : "GetPlugin"
       tags : "Plugin"
       responses : [
         {
@@ -128,7 +128,7 @@ service Plugin {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "获取插件列表接口"
-      operation_id : "获取插件列表"
+      operation_id : "ListPlugin"
       tags : "Plugin"
       responses : [
         {
