@@ -32,7 +32,7 @@ service Oauth2 {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "插件Oauth2颁发接口"
-      operation_id : "插件Oauth2颁发"
+      operation_id : "IssueOauth2Token"
       tags : "Oauth2"
       responses : [
         {
@@ -62,7 +62,7 @@ service Oauth2 {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "添加 Oauth2 白名单 dapr App ID 接口"
-      operation_id : "添加Oauth2白名单"
+      operation_id : "AddWhiteList"
       tags : "Oauth2"
       responses : [
         {

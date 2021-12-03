@@ -22,7 +22,7 @@
     "/oauth2": {
       "post": {
         "summary": "插件Oauth2颁发接口",
-        "operationId": "插件Oauth2颁发",
+        "operationId": "IssueOauth2Token",
         "responses": {
           "200": {
             "description": "OK",
@@ -63,7 +63,7 @@
     "/oauth2/white-list": {
       "post": {
         "summary": "添加 Oauth2 白名单 dapr App ID 接口",
-        "operationId": "添加Oauth2白名单",
+        "operationId": "AddWhiteList",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -108,7 +108,7 @@
     "/plugins": {
       "get": {
         "summary": "获取插件列表接口",
-        "operationId": "获取插件列表",
+        "operationId": "ListPlugin",
         "responses": {
           "200": {
             "description": "OK",
@@ -137,7 +137,7 @@
       },
       "post": {
         "summary": "注册插件接口",
-        "operationId": "注册插件",
+        "operationId": "RegisterPlugin",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -189,8 +189,8 @@
     },
     "/plugins/{id}": {
       "get": {
-        "summary": "插叙插件接口",
-        "operationId": "插叙插件",
+        "summary": "查询插件接口",
+        "operationId": "GetPlugin",
         "responses": {
           "200": {
             "description": "OK",
@@ -232,7 +232,7 @@
       },
       "delete": {
         "summary": "删除插件接口",
-        "operationId": "删除插件",
+        "operationId": "DeletePlugin",
         "responses": {
           "200": {
             "description": "OK",
