@@ -173,7 +173,7 @@ func (s *PluginServiceV1) ListInstalledPlugin(ctx context.Context, empty *emptyp
 
 func (s PluginServiceV1) UninstallPlugin(ctx context.Context, req *pb.UninstallPluginRequest) (*emptypb.Empty, error) {
 	if req.Name == "" {
-		return nil, pb.ErrInvalidArgument()
+		return nil, pb.PluginErrInvalidArgument()
 	}
 	if err := helm.Uninstall(ctx, req.Name); err != nil {
 		err = errors.Wrap(err, "uninstall plugin err")

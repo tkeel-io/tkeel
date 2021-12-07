@@ -29,6 +29,7 @@ import (
 	tenant_v1 "github.com/tkeel-io/security/pkg/apirouter/tenant/v1"
 	"github.com/tkeel-io/security/pkg/apiserver/filters"
 	security_dao "github.com/tkeel-io/security/pkg/models/dao"
+	"github.com/tkeel-io/security/pkg/models/rbac"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	repo "github.com/tkeel-io/tkeel/api/repo/v1"
@@ -94,11 +95,13 @@ var rootCmd = &cobra.Command{
 			PluginSrvV1 := service.NewPluginServiceV1(conf.Tkeel, pOp, prOp, openapiCli)
 			plugin_v1.RegisterPluginHTTPServer(httpSrv.Container, PluginSrvV1)
 			plugin_v1.RegisterPluginServer(grpcSrv.GetServe(), PluginSrvV1)
+
 			// oauth2 service.
 			Oauth2SrvV1 := service.NewOauth2ServiceV1(conf.Tkeel.Secret, pOp)
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
-	// repo service.
+
+			// repo service.
 			repoSrv := service.NewRepoService()
 			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
 			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
@@ -107,6 +110,7 @@ var rootCmd = &cobra.Command{
 				log.Fatalf("fatal new rbac sync enforcer: %s", err)
 				os.Exit(-1)
 			}
+
 			{
 				// copy mysql configuration.
 				conf.SecurityConf.RBAC.Adapter = conf.SecurityConf.Mysql
