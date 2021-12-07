@@ -11,69 +11,69 @@ import (
 // is compatible with the ego package it is being compiled against.
 const _ = errors.SupportPackageIsVersion1
 
-var errUnknown *errors.TError
-var errPluginNotFound *errors.TError
-var errPluginRouteNotFound *errors.TError
-var errPluginAlreadyExists *errors.TError
-var errListPlugin *errors.TError
-var errInvalidArgument *errors.TError
-var errInternalQueryPluginOpenapi *errors.TError
-var errInternalStore *errors.TError
-var errDeletePluginHasBeenDepended *errors.TError
+var pluginErrUnknown *errors.TError
+var pluginErrPluginNotFound *errors.TError
+var pluginErrPluginRouteNotFound *errors.TError
+var pluginErrPluginAlreadyExists *errors.TError
+var pluginErrListPlugin *errors.TError
+var pluginErrInvalidArgument *errors.TError
+var pluginErrInternalQueryPluginOpenapi *errors.TError
+var pluginErrInternalStore *errors.TError
+var pluginErrDeletePluginHasBeenDepended *errors.TError
 
 func init() {
-	errUnknown = errors.New(int(codes.Unknown), "plugin.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
-	errors.Register(errUnknown)
-	errPluginNotFound = errors.New(int(codes.NotFound), "plugin.v1.ERR_PLUGIN_NOT_FOUND", Error_ERR_PLUGIN_NOT_FOUND.String())
-	errors.Register(errPluginNotFound)
-	errPluginRouteNotFound = errors.New(int(codes.NotFound), "plugin.v1.ERR_PLUGIN_ROUTE_NOT_FOUND", Error_ERR_PLUGIN_ROUTE_NOT_FOUND.String())
-	errors.Register(errPluginRouteNotFound)
-	errPluginAlreadyExists = errors.New(int(codes.AlreadyExists), "plugin.v1.ERR_PLUGIN_ALREADY_EXISTS", Error_ERR_PLUGIN_ALREADY_EXISTS.String())
-	errors.Register(errPluginAlreadyExists)
-	errListPlugin = errors.New(int(codes.Internal), "plugin.v1.ERR_LIST_PLUGIN", Error_ERR_LIST_PLUGIN.String())
-	errors.Register(errListPlugin)
-	errInvalidArgument = errors.New(int(codes.InvalidArgument), "plugin.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
-	errors.Register(errInvalidArgument)
-	errInternalQueryPluginOpenapi = errors.New(int(codes.Internal), "plugin.v1.ERR_INTERNAL_QUERY_PLUGIN_OPENAPI", Error_ERR_INTERNAL_QUERY_PLUGIN_OPENAPI.String())
-	errors.Register(errInternalQueryPluginOpenapi)
-	errInternalStore = errors.New(int(codes.Internal), "plugin.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
-	errors.Register(errInternalStore)
-	errDeletePluginHasBeenDepended = errors.New(int(codes.Internal), "plugin.v1.ERR_DELETE_PLUGIN_HAS_BEEN_DEPENDED", Error_ERR_DELETE_PLUGIN_HAS_BEEN_DEPENDED.String())
-	errors.Register(errDeletePluginHasBeenDepended)
+	pluginErrUnknown = errors.New(int(codes.Unknown), "plugin.v1.PLUGIN_ERR_UNKNOWN", Error_PLUGIN_ERR_UNKNOWN.String())
+	errors.Register(pluginErrUnknown)
+	pluginErrPluginNotFound = errors.New(int(codes.NotFound), "plugin.v1.PLUGIN_ERR_PLUGIN_NOT_FOUND", Error_PLUGIN_ERR_PLUGIN_NOT_FOUND.String())
+	errors.Register(pluginErrPluginNotFound)
+	pluginErrPluginRouteNotFound = errors.New(int(codes.NotFound), "plugin.v1.PLUGIN_ERR_PLUGIN_ROUTE_NOT_FOUND", Error_PLUGIN_ERR_PLUGIN_ROUTE_NOT_FOUND.String())
+	errors.Register(pluginErrPluginRouteNotFound)
+	pluginErrPluginAlreadyExists = errors.New(int(codes.AlreadyExists), "plugin.v1.PLUGIN_ERR_PLUGIN_ALREADY_EXISTS", Error_PLUGIN_ERR_PLUGIN_ALREADY_EXISTS.String())
+	errors.Register(pluginErrPluginAlreadyExists)
+	pluginErrListPlugin = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_LIST_PLUGIN", Error_PLUGIN_ERR_LIST_PLUGIN.String())
+	errors.Register(pluginErrListPlugin)
+	pluginErrInvalidArgument = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_INVALID_ARGUMENT", Error_PLUGIN_ERR_INVALID_ARGUMENT.String())
+	errors.Register(pluginErrInvalidArgument)
+	pluginErrInternalQueryPluginOpenapi = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_INTERNAL_QUERY_PLUGIN_OPENAPI", Error_PLUGIN_ERR_INTERNAL_QUERY_PLUGIN_OPENAPI.String())
+	errors.Register(pluginErrInternalQueryPluginOpenapi)
+	pluginErrInternalStore = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_INTERNAL_STORE", Error_PLUGIN_ERR_INTERNAL_STORE.String())
+	errors.Register(pluginErrInternalStore)
+	pluginErrDeletePluginHasBeenDepended = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_DELETE_PLUGIN_HAS_BEEN_DEPENDED", Error_PLUGIN_ERR_DELETE_PLUGIN_HAS_BEEN_DEPENDED.String())
+	errors.Register(pluginErrDeletePluginHasBeenDepended)
 }
 
-func ErrUnknown() errors.Error {
-	return errUnknown
+func PluginErrUnknown() errors.Error {
+	return pluginErrUnknown
 }
 
-func ErrPluginNotFound() errors.Error {
-	return errPluginNotFound
+func PluginErrPluginNotFound() errors.Error {
+	return pluginErrPluginNotFound
 }
 
-func ErrPluginRouteNotFound() errors.Error {
-	return errPluginRouteNotFound
+func PluginErrPluginRouteNotFound() errors.Error {
+	return pluginErrPluginRouteNotFound
 }
 
-func ErrPluginAlreadyExists() errors.Error {
-	return errPluginAlreadyExists
+func PluginErrPluginAlreadyExists() errors.Error {
+	return pluginErrPluginAlreadyExists
 }
 
-func ErrListPlugin() errors.Error {
-	return errListPlugin
+func PluginErrListPlugin() errors.Error {
+	return pluginErrListPlugin
 }
 
-func ErrInvalidArgument() errors.Error {
-	return errInvalidArgument
+func PluginErrInvalidArgument() errors.Error {
+	return pluginErrInvalidArgument
 }
 
-func ErrInternalQueryPluginOpenapi() errors.Error {
-	return errInternalQueryPluginOpenapi
+func PluginErrInternalQueryPluginOpenapi() errors.Error {
+	return pluginErrInternalQueryPluginOpenapi
 }
 
-func ErrInternalStore() errors.Error {
-	return errInternalStore
+func PluginErrInternalStore() errors.Error {
+	return pluginErrInternalStore
 }
 
-func ErrDeletePluginHasBeenDepended() errors.Error {
-	return errDeletePluginHasBeenDepended
+func PluginErrDeletePluginHasBeenDepended() errors.Error {
+	return pluginErrDeletePluginHasBeenDepended
 }

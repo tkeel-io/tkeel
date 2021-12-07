@@ -12,17 +12,17 @@ option java_outer_classname = "OpenapiProtoV1";
 enum Error {
   // 未知类型
   // @code=UNKNOWN
-  ERR_UNKNOWN = 0;
+  OAUTH2_ERR_UNKNOWN = 0;
   // Secret 不匹配
   // @code=INVALID_ARGUMENT
-  ERR_SECRET_NOT_MATCH = 1;
+  OAUTH2_ERR_SECRET_NOT_MATCH = 1;
   // 白名单中已存在
   // @code=ALREADY_EXISTS
-  ERR_CLIENT_ID_ALREADY_EXISTS = 2;
+  OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS = 2;
   // 无效的插件ID
   // @code=INVALID_ARGUMENT
-  ERR_INVAILD_PLUGIN_ID = 3;
+  OAUTH2_ERR_INVAILD_PLUGIN_ID = 3;
   // 请求后端存储错误
   // @code=INTERNAL
-  ERR_INTERNAL_STORE = 4;
+  OAUTH2_ERR_INTERNAL_STORE = 4;
 }

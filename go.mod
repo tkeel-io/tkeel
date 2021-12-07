@@ -13,20 +13,23 @@ require (
 	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.3.0
-	github.com/gosuri/uitable v0.0.4
+github.com/gosuri/uitable v0.0.4
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tkeel-io/kit v0.0.0-20211122161648-31b3986683f2
-	github.com/tkeel-io/security v0.0.0-20211126105008-d284a6d09240
-	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211118023522-252e6880c03a
+	github.com/tkeel-io/security v0.0.0-20211129082625-8d04a0ada3b8
+	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211201125403-d4d4343c7730
 	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/multierr v1.7.0 // indirect
+go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
 	google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1
+	golang.org/x/sys v0.0.0-20210908233432-aa78b53d3365 // indirect
+	google.golang.org/genproto v0.0.0-20211129164237-f09f9a12af12
 	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0

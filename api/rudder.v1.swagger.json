@@ -106,13 +106,22 @@
     },
     "/oauth2": {
       "post": {
-        "operationId": "Oauth2_IssueOauth2Token",
+        "summary": "插件Oauth2颁发接口",
+        "operationId": "IssueOauth2Token",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "OK",
             "schema": {
               "$ref": "#/definitions/v1IssueOauth2TokenResponse"
             }
+          },
+          "400": {
+            "description": "INVAILD_PLUGIN_ID",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
           },
           "default": {
             "description": "An unexpected error response.",
@@ -138,13 +147,26 @@
     },
     "/oauth2/white-list": {
       "post": {
-        "operationId": "Oauth2_AddWhiteList",
+        "summary": "添加 Oauth2 白名单 dapr App ID 接口",
+        "operationId": "AddWhiteList",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "properties": {}
             }
+          },
+          "204": {
+            "description": "SUCC_AND_NO_CONTENT",
+            "schema": {}
+          },
+          "409": {
+            "description": "CLIENT_ID_ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
           },
           "default": {
             "description": "An unexpected error response.",
@@ -170,13 +192,22 @@
     },
     "/plugins": {
       "get": {
-        "operationId": "Plugin_ListPlugin",
+        "summary": "获取插件列表接口",
+        "operationId": "ListPlugin",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "OK",
             "schema": {
               "$ref": "#/definitions/v1ListPluginResponse"
             }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
           },
           "default": {
             "description": "An unexpected error response.",
@@ -190,13 +221,34 @@
         ]
       },
       "post": {
-        "operationId": "Plugin_RegisterPlugin",
+        "summary": "注册插件接口",
+        "operationId": "RegisterPlugin",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
               "properties": {}
             }
+          },
+          "204": {
+            "description": "SUCC_AND_NO_CONTENT",
+            "schema": {}
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "PLUGIN_NOT_FOUND",
+            "schema": {}
+          },
+          "409": {
+            "description": "ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
           },
           "default": {
             "description": "An unexpected error response.",
@@ -222,13 +274,26 @@
     },
     "/plugins/{id}": {
       "get": {
-        "operationId": "Plugin_GetPlugin",
+        "summary": "查询插件接口",
+        "operationId": "GetPlugin",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "OK",
             "schema": {
               "$ref": "#/definitions/v1GetPluginResponse"
             }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "PLUGIN_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
           },
           "default": {
             "description": "An unexpected error response.",
@@ -240,6 +305,7 @@
         "parameters": [
           {
             "name": "id",
+            "description": "plugin id",
             "in": "path",
             "required": true,
             "type": "string"
@@ -250,13 +316,26 @@
         ]
       },
       "delete": {
-        "operationId": "Plugin_DeletePlugin",
+        "summary": "删除插件接口",
+        "operationId": "DeletePlugin",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "OK",
             "schema": {
               "$ref": "#/definitions/v1DeletePluginResponse"
             }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "PLUGIN_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
           },
           "default": {
             "description": "An unexpected error response.",
@@ -268,6 +347,7 @@
         "parameters": [
           {
             "name": "id",
+            "description": "plugin id",
             "in": "path",
             "required": true,
             "type": "string"
@@ -437,10 +517,12 @@
       "type": "object",
       "properties": {
         "client_id": {
-          "type": "string"
+          "type": "string",
+          "description": "oauth2 client id"
         },
         "secret": {
-          "type": "string"
+          "type": "string",
+          "description": "tkeel platform secret"
         }
       }
     },
@@ -480,7 +562,8 @@
       "type": "object",
       "properties": {
         "plugin": {
-          "$ref": "#/definitions/v1PluginObject"
+          "$ref": "#/definitions/v1PluginObject",
+          "description": "plugin object"
         }
       }
     },
@@ -488,7 +571,8 @@
       "type": "object",
       "properties": {
         "plugin": {
-          "$ref": "#/definitions/v1PluginObject"
+          "$ref": "#/definitions/v1PluginObject",
+          "description": "plugin object"
         }
       }
     },
@@ -523,10 +607,12 @@
       "type": "object",
       "properties": {
         "client_id": {
-          "type": "string"
+          "type": "string",
+          "description": "oauth2 client id"
         },
         "client_secret": {
-          "type": "string"
+          "type": "string",
+          "description": "plugin secret"
         }
       }
     },
@@ -534,17 +620,21 @@
       "type": "object",
       "properties": {
         "access_token": {
-          "type": "string"
+          "type": "string",
+          "description": "oauth2 access token"
         },
         "token_type": {
-          "type": "string"
+          "type": "string",
+          "description": "oauth2 token type"
         },
         "refresh_token": {
-          "type": "string"
+          "type": "string",
+          "description": "oauth2 refresh token"
         },
         "expires_in": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "oauth2 token expires"
         }
       }
     },
@@ -567,11 +657,12 @@
     "v1ListPluginResponse": {
       "type": "object",
       "properties": {
-        "pluginList": {
+        "plugin_list": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1PluginObject"
-          }
+          },
+          "description": "plugin object list"
         }
       }
     },
@@ -587,47 +678,72 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "plugin id"
         },
         "plugin_version": {
-          "type": "string"
+          "type": "string",
+          "description": "plugin version"
         },
         "tkeel_version": {
-          "type": "string"
+          "type": "string",
+          "description": "plugin depend tkeel version"
         },
         "addons_point": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1AddonsPoint"
-          }
+          },
+          "description": "plugin declares addons"
         },
         "implemented_plugin": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1ImplementedPlugin"
-          }
+          },
+          "description": "plugin implemented plugin list"
         },
         "secret": {
-          "type": "string"
+          "type": "string",
+          "description": "plugin registered secret"
         },
         "register_timestamp": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "register timestamp"
         },
         "active_tenantes": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "active tenant's id list"
         },
         "register_addons": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1RegisterAddons"
-          }
+          },
+          "description": "register addons router"
+        },
+        "status": {
+          "$ref": "#/definitions/v1PluginStatus",
+          "description": "register plugin status"
         }
       },
       "description": "*\nplugin object."
+    },
+    "v1PluginStatus": {
+      "type": "string",
+      "enum": [
+        "ERROR",
+        "STARTING",
+        "RUNNING",
+        "STOPPING",
+        "STOPPED"
+      ],
+      "default": "ERROR",
+      "description": "*\nplugin state enum."
     },
     "v1RegisterAddons": {
       "type": "object",
@@ -645,10 +761,12 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "plugin id"
         },
         "secret": {
-          "type": "string"
+          "type": "string",
+          "description": "plugin registered secret"
         }
       }
     }

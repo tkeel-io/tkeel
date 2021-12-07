@@ -18,6 +18,7 @@ package api.plugin.v1;
 import "openapi/v1/openapi.proto";
 import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/plugin/v1;v1";
 option java_multiple_files = true;
@@ -29,20 +30,120 @@ service Plugin {
       post : "/plugins"
       body : "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "注册插件接口"
+      operation_id : "RegisterPlugin"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "204"
+          value : {description : "SUCC_AND_NO_CONTENT"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "404"
+          value : {description : "PLUGIN_NOT_FOUND"}
+        },
+        {
+          key : "409"
+          value : {description : "ALREADY_EXISTS"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_QUERY_PLUGIN_OPENAPI"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
   };
   rpc DeletePlugin(DeletePluginRequest) returns (DeletePluginResponse) {
     option (google.api.http) = {
       delete : "/plugins/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "删除插件接口"
+      operation_id : "DeletePlugin"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "404"
+          value : {description : "PLUGIN_NOT_FOUND"}
+        },
+        {
+          key : "500"
+          value : {description : "DELETE_PLUGIN_HAS_BEEN_DEPENDED"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
     };
   };
   rpc GetPlugin(GetPluginRequest) returns (GetPluginResponse) {
     option (google.api.http) = {
       get : "/plugins/{id}"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "查询插件接口"
+      operation_id : "GetPlugin"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "404"
+          value : {description : "PLUGIN_NOT_FOUND"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
   };
   rpc ListPlugin(google.protobuf.Empty) returns (ListPluginResponse) {
     option (google.api.http) = {
       get : "/plugins"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "获取插件列表接口"
+      operation_id : "ListPlugin"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
     };
   };
 
@@ -77,31 +178,91 @@ message RegisterAddons {
  * plugin object.
  **/
 message PluginObject {
-  string id = 1;             // plugin id.
-  string plugin_version = 2; // plugin version.
-  string tkeel_version = 3;  // plugin depend tkeel version.
-  repeated openapi.v1.AddonsPoint addons_point = 4; // plugin declares addons.
-  repeated openapi.v1.ImplementedPlugin implemented_plugin =
-      5;                               // plugin implemented plugin list.
-  string secret = 6;                   // plugin registered secret.
-  int64 register_timestamp = 7;        // register timestamp.
-  repeated string active_tenantes = 8; // active tenant's id list.
-  repeated RegisterAddons register_addons = 9; // register addons router.
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ]; // plugin id.
+  string plugin_version = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin version"
+      } ]; // plugin version.
+  string tkeel_version = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin depend tkeel version"
+      } ]; // plugin depend tkeel version.
+  repeated openapi.v1.AddonsPoint addons_point = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin declares addons"
+      } ]; // plugin declares addons.
+  repeated openapi.v1.ImplementedPlugin implemented_plugin = 5
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin implemented plugin list"
+      } ]; // plugin implemented plugin list.
+  string secret = 6
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin registered secret"
+      } ]; // plugin registered secret.
+  int64 register_timestamp = 7
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "register timestamp"
+      } ]; // register timestamp.
+  repeated string active_tenantes = 8
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "active tenant's id list"
+      } ]; // active tenant's id list.
+  repeated RegisterAddons register_addons = 9
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "register addons router"
+      } ]; // register addons router.
+  openapi.v1.PluginStatus status = 10
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "register plugin status"
+      } ]; // register plugin status.
 }
 
 message RegisterPluginRequest {
-  string id = 1;
-  string secret = 2;
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+  string secret = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin registered secret"
+      } ];
 }
 
-message DeletePluginRequest {string id = 1;}
-message DeletePluginResponse {PluginObject plugin = 1;}
+message DeletePluginRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+}
+message DeletePluginResponse {
+  PluginObject plugin = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin object"
+      } ];
+}
 
-message GetPluginRequest {string id = 1;}
-message GetPluginResponse {PluginObject plugin = 1;}
+message GetPluginRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+}
+message GetPluginResponse {
+  PluginObject plugin = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin object"
+      } ];
+}
 
-message ListPluginResponse {repeated PluginObject pluginList = 1;}
-
+message ListPluginResponse {
+  repeated PluginObject plugin_list = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin object list"
+      } ];
+}
 message ListInstallablePluginRequest {
   bool updateNow = 1;
 }

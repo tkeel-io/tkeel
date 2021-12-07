@@ -12,29 +12,29 @@ option java_outer_classname = "OpenapiProtoV1";
 enum Error {
   // 未知类型
   // @code=UNKNOWN
-  ERR_UNKNOWN = 0;
+  PLUGIN_ERR_UNKNOWN = 0;
   // 找不到 Plugin
   // @code=NOT_FOUND
-  ERR_PLUGIN_NOT_FOUND = 1;
+  PLUGIN_ERR_PLUGIN_NOT_FOUND = 1;
   // 找不到 Plugin Route
   // @code=NOT_FOUND
-  ERR_PLUGIN_ROUTE_NOT_FOUND = 2;
+  PLUGIN_ERR_PLUGIN_ROUTE_NOT_FOUND = 2;
   // 找不到 Plugin Route
   // @code=ALREADY_EXISTS
-  ERR_PLUGIN_ALREADY_EXISTS = 3;
+  PLUGIN_ERR_PLUGIN_ALREADY_EXISTS = 3;
   // 获取 Plugin 列表数据出错
   // @code=INTERNAL
-  ERR_LIST_PLUGIN = 4;
+  PLUGIN_ERR_LIST_PLUGIN = 4;
   // 请求参数无效
   // @code=INVALID_ARGUMENT
-  ERR_INVALID_ARGUMENT = 5;
+  PLUGIN_ERR_INVALID_ARGUMENT = 5;
   // 请求 Plugin OPENAPI 错误
   // @code=INTERNAL
-  ERR_INTERNAL_QUERY_PLUGIN_OPENAPI = 6;
+  PLUGIN_ERR_INTERNAL_QUERY_PLUGIN_OPENAPI = 6;
   // 请求后端存储错误
   // @code=INTERNAL
-  ERR_INTERNAL_STORE = 7;
+  PLUGIN_ERR_INTERNAL_STORE = 7;
   // 删除的插件被依赖
   // @code=INTERNAL
-  ERR_DELETE_PLUGIN_HAS_BEEN_DEPENDED = 8;
+  PLUGIN_ERR_DELETE_PLUGIN_HAS_BEEN_DEPENDED = 8;
 }

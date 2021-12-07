@@ -152,10 +152,12 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.SecurityConf.Mysql.Password, "security.mysql.password", getEnvStr("TKEEL_SECURITY_MYSQL_PASSWORD", "a3fks=ixmeb82a"), "password of auth`s mysql config")
 	strVar(&c.SecurityConf.Mysql.Host, "security.mysql.host", getEnvStr("TKEEL_SECURITY_MYSQL_HOST", "tkeel-middleware-mysql"), "host of auth`s mysql config")
 	strVar(&c.SecurityConf.Mysql.Port, "security.mysql.port", getEnvStr("TKEEL_SECURITY_MYSQL_PORT", "3306"), "port of auth`s mysql config")
-	strVar(&c.SecurityConf.OAuth2.Redis.Addr, "security.redis.addr", getEnvStr("TKEEL_SECURITY_REDIS_ADDR", "tkeel-middleware-redis-master:6379"), "address of auth`s redis config")
-	strVar(&c.SecurityConf.OAuth2.Redis.Password, "security.redis.password", getEnvStr("TKEEL_SECURITY_REDIS_PASSWORD", "Biz0P8Xoup"), "password of auth`s redis config")
-	intVar(&c.SecurityConf.OAuth2.Redis.DB, "security.redis.db", getEnvInt("TKEEL_SECURITY_REDIS_DB", 0), "db of auth`s redis")
-	strVar(&c.SecurityConf.OAuth2.AccessGenerate.SecurityKey, "security.access.sk", getEnvStr("TKEEL_SECURITY_ACCESS_SK", "eixn27adg3"), "security key of auth`s access generate")
+	strVar(&c.SecurityConf.OAuth2.Redis.Addr, "security.oauth2.redis.addr", getEnvStr("TKEEL_SECURITY_OAUTH2_REDIS_ADDR", "tkeel-middleware-redis-master:6379"), "address of auth`s redis config")
+	strVar(&c.SecurityConf.OAuth2.Redis.Password, "security.oauth2.redis.password", getEnvStr("TKEEL_SECURITY_OAUTH2_REDIS_PASSWORD", "Biz0P8Xoup"), "password of auth`s redis config")
+	intVar(&c.SecurityConf.OAuth2.Redis.DB, "security.oauth2.redis.db", getEnvInt("TKEEL_SECURITY_OAUTH2_REDIS_DB", 0), "db of auth`s redis")
+	strVar(&c.SecurityConf.OAuth2.AuthType, "security.oauth2.auth_type", getEnvStr("TKEEL_SECURITY_OAUTH2_AUTH_TYPE", ""), "security auth type of auth`s access type,if type == demo sikp auth filter.")
+	strVar(&c.SecurityConf.OAuth2.AccessGenerate.SecurityKey, "security.oauth2.access.sk", getEnvStr("TKEEL_SECURITY_ACCESS_SK", "eixn27adg3"), "security key of auth`s access generate")
+	strVar(&c.SecurityConf.OAuth2.AccessGenerate.AccessTokenExp, "security.oauth2.access.access_token_exp", getEnvStr("TKEEL_SECURITY_ACCESS_TOKEN_EXP", "1000h"), "security token of auth`s access exp")
 	strVar(&c.SecurityConf.Entity.SecurityKey, "security.entity.sk", getEnvStr("TKEEL_SECURITY_ENTITY_SK", "i5s2x3nov894"), "security  key auth`s entity token access")
 }
 

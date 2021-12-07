@@ -17,6 +17,7 @@ package api.oauth2.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/oauth2/v1;v1";
 option java_multiple_files = true;
@@ -29,28 +30,95 @@ service Oauth2 {
       post : "/oauth2"
       body : "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "插件Oauth2颁发接口"
+      operation_id : "IssueOauth2Token"
+      tags : "Oauth2"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "SECRET_NOT_MATCH"}
+        },
+        {
+          key : "400"
+          value : {description : "INVAILD_PLUGIN_ID"}
+        },
+
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
   };
   rpc AddWhiteList(AddWhiteListRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/oauth2/white-list"
       body : "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "添加 Oauth2 白名单 dapr App ID 接口"
+      operation_id : "AddWhiteList"
+      tags : "Oauth2"
+      responses : [
+        {
+          key : "204"
+          value : {description : "SUCC_AND_NO_CONTENT"}
+        },
+        {
+          key : "409"
+          value : {description : "CLIENT_ID_ALREADY_EXISTS"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
   };
 }
 
 message IssueOauth2TokenRequest {
-  string client_id = 1;
-  string client_secret = 2;
+  string client_id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "oauth2 client id"
+      } ];
+  string client_secret = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin secret"
+      } ];
 }
 
 message IssueOauth2TokenResponse {
-  string access_token = 1;
-  string token_type = 2;
-  string refresh_token = 3;
-  int32 expires_in = 4;
+  string access_token = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "oauth2 access token"
+      } ];
+  string token_type = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "oauth2 token type"
+      } ];
+  string refresh_token = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "oauth2 refresh token"
+      } ];
+  int32 expires_in = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "oauth2 token expires"
+      } ];
 }
 
 message AddWhiteListRequest {
-  string client_id = 1;
-  string secret = 2;
+  string client_id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "oauth2 client id"
+      } ];
+  string secret = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tkeel platform secret"
+      } ];
 }

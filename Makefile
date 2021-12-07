@@ -222,9 +222,6 @@ init-proto:
 	go install github.com/tkeel-io/tkeel-interface/protoc-gen-go-http@latest
 	go install github.com/tkeel-io/tkeel-interface/protoc-gen-go-errors@latest
 	go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.7.0
-
-
-
 ################################################################################
 # Target: gen-rudder-proto                                                       #
 ################################################################################
