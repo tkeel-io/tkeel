@@ -146,6 +146,24 @@ service Plugin {
       ]
     };
   };
+
+  rpc ListInstallablePlugin(ListInstallablePluginRequest) returns (ListInstallablePluginResponse) {
+    option (google.api.http) = {
+      get: "/installable/plugins"
+    };
+  };
+
+  rpc ListInstalledPlugin(google.protobuf.Empty) returns (ListInstalledResponse){
+    option (google.api.http) = {
+      get: "/installed/plugins"
+    };
+  };
+
+  rpc UninstallPlugin(UninstallPluginRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/installed/plugins/{name}"
+    };
+  };
 }
 
 /**
@@ -244,4 +262,18 @@ message ListPluginResponse {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin object list"
       } ];
+}
+message ListInstallablePluginRequest {
+  bool updateNow = 1;
+}
+message ListInstallablePluginResponse {
+  string list = 1;
+}
+
+message UninstallPluginRequest {
+  string name = 1;
+}
+
+message ListInstalledResponse {
+  string list = 1;
 }

@@ -31,10 +31,12 @@ import (
 	security_dao "github.com/tkeel-io/security/pkg/models/dao"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
+	repo "github.com/tkeel-io/tkeel/api/repo/v1"
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
+	"github.com/tkeel-io/tkeel/pkg/helm"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
 	"github.com/tkeel-io/tkeel/pkg/server"
@@ -81,6 +83,8 @@ var rootCmd = &cobra.Command{
 			}
 			openapiCli := openapi.NewDaprClient("rudder", daprGRPCClient)
 
+			helm.SetDaprConfig(&daprGRPCClient, conf.Dapr.PrivateStateName)
+
 			// init operator.
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			prOp := proute.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
@@ -94,6 +98,15 @@ var rootCmd = &cobra.Command{
 			Oauth2SrvV1 := service.NewOauth2ServiceV1(conf.Tkeel.Secret, pOp)
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
+	// repo service.
+			repoSrv := service.NewRepoService()
+			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
+			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
+
+			if _, err = rbac.NewRBACOperator(conf.SecurityConf.Mysql); err != nil {
+				log.Fatalf("fatal new rbac sync enforcer: %s", err)
+				os.Exit(-1)
+			}
 			{
 				// copy mysql configuration.
 				conf.SecurityConf.RBAC.Adapter = conf.SecurityConf.Mysql

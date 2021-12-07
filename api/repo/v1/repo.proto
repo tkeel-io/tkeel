@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package api.repo.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "hello/api/repo/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.repo.v1";
+
+service Repo {
+  rpc CreateRepo (CreateRepoRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/repos"
+      body : "*"
+    };
+  };
+
+  rpc DeleteRepo(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/repos/own"
+    };
+  };
+
+  rpc ListRepo(google.protobuf.Empty) returns (ListRepoResponse) {
+    option (google.api.http) = {
+      get: "/repos"
+    };
+  };
+
+  rpc InstallPluginFromRepo(InstallPluginFromRepoRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/repos/{repo}/plugins/{plugin}"
+      body: "*"
+    };
+  };
+};
+
+message CreateRepoRequest {
+  string addr = 1;
+}
+
+message ListRepoResponse {
+  string list = 1;
+}
+
+message InstallPluginFromRepoRequest {
+  string repo = 1;
+  string plugin = 2;
+  string version = 3;
+  string name = 4;
+}

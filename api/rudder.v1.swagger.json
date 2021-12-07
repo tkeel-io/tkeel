@@ -10,6 +10,9 @@
     },
     {
       "name": "Plugin"
+    },
+    {
+      "name": "Repo"
     }
   ],
   "consumes": [
@@ -19,6 +22,88 @@
     "application/json"
   ],
   "paths": {
+    "/installable/plugins": {
+      "get": {
+        "operationId": "Plugin_ListInstallablePlugin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListInstallablePluginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "updateNow",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
+    "/installed/plugins": {
+      "get": {
+        "operationId": "Plugin_ListInstalledPlugin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListInstalledResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
+    "/installed/plugins/{name}": {
+      "delete": {
+        "operationId": "Plugin_UninstallPlugin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
     "/oauth2": {
       "post": {
         "summary": "插件Oauth2颁发接口",
@@ -272,6 +357,132 @@
           "Plugin"
         ]
       }
+    },
+    "/repos": {
+      "get": {
+        "operationId": "Repo_ListRepo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListRepoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Repo"
+        ]
+      },
+      "put": {
+        "operationId": "Repo_CreateRepo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateRepoRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Repo"
+        ]
+      }
+    },
+    "/repos/own": {
+      "delete": {
+        "operationId": "Repo_DeleteRepo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Repo"
+        ]
+      }
+    },
+    "/repos/{repo}/plugins/{plugin}": {
+      "post": {
+        "operationId": "Repo_InstallPluginFromRepo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repo",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "plugin",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Repo"
+        ]
+      }
     }
   },
   "definitions": {
@@ -338,6 +549,14 @@
         }
       },
       "description": "*\nmessage brief plugin information."
+    },
+    "v1CreateRepoRequest": {
+      "type": "object",
+      "properties": {
+        "addr": {
+          "type": "string"
+        }
+      }
     },
     "v1DeletePluginResponse": {
       "type": "object",
@@ -419,6 +638,22 @@
         }
       }
     },
+    "v1ListInstallablePluginResponse": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListInstalledResponse": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "string"
+        }
+      }
+    },
     "v1ListPluginResponse": {
       "type": "object",
       "properties": {
@@ -428,6 +663,14 @@
             "$ref": "#/definitions/v1PluginObject"
           },
           "description": "plugin object list"
+        }
+      }
+    },
+    "v1ListRepoResponse": {
+      "type": "object",
+      "properties": {
+        "list": {
+          "type": "string"
         }
       }
     },

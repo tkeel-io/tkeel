@@ -15,14 +15,15 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	pb "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
+	"github.com/tkeel-io/tkeel/pkg/helm"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
@@ -149,6 +150,36 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 	return &pb.ListPluginResponse{
 		PluginList: retList,
 	}, nil
+}
+
+func (s *PluginServiceV1) ListInstallablePlugin(ctx context.Context, req *pb.ListInstallablePluginRequest) (*pb.ListInstallablePluginResponse, error) {
+	c, err := helm.ListInstallable("json", req.UpdateNow)
+	if err != nil {
+		log.Error("list charts err", err)
+		err = errors.Wrap(err, "list installable plugins err")
+		return nil, err
+	}
+	return &pb.ListInstallablePluginResponse{List: string(c)}, nil
+}
+
+func (s *PluginServiceV1) ListInstalledPlugin(ctx context.Context, empty *emptypb.Empty) (*pb.ListInstalledResponse, error) {
+	data, err := helm.ListInstalled("json")
+	if err != nil {
+		err = errors.Wrap(err, "get installed plugin list err")
+		return nil, err
+	}
+	return &pb.ListInstalledResponse{List: string(data)}, nil
+}
+
+func (s PluginServiceV1) UninstallPlugin(ctx context.Context, req *pb.UninstallPluginRequest) (*emptypb.Empty, error) {
+	if req.Name == "" {
+		return nil, pb.ErrInvalidArgument()
+	}
+	if err := helm.Uninstall(ctx, req.Name); err != nil {
+		err = errors.Wrap(err, "uninstall plugin err")
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func (s *PluginServiceV1) queryIdentify(ctx context.Context,
