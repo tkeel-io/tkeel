@@ -11,7 +11,7 @@ import (
 	errors "github.com/tkeel-io/kit/errors"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
-reflect "reflect"
+	reflect "reflect"
 )
 
 import transportHTTP "github.com/tkeel-io/kit/transport/http"
@@ -21,13 +21,12 @@ import transportHTTP "github.com/tkeel-io/kit/transport/http"
 // import package.context.http.reflect.go_restful.json.errors.emptypb.
 
 type PluginHTTPServer interface {
-	DeletePlugin(context.Context, *DeletePluginRequest) (*DeletePluginResponse, error)
 	GetPlugin(context.Context, *GetPluginRequest) (*GetPluginResponse, error)
-	ListInstallablePlugin(context.Context, *ListInstallablePluginRequest) (*ListInstallablePluginResponse, error)
-	ListInstalledPlugin(context.Context, *emptypb.Empty) (*ListInstalledResponse, error)
+	InstallPlugin(context.Context, *InstallPluginRequest) (*InstallPluginResponse, error)
 	ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error)
 	RegisterPlugin(context.Context, *RegisterPluginRequest) (*emptypb.Empty, error)
-	UninstallPlugin(context.Context, *UninstallPluginRequest) (*emptypb.Empty, error)
+	UninstallPlugin(context.Context, *UninstallPluginRequest) (*UninstallPluginResponse, error)
+	UnregisterPlugin(context.Context, *UnregisterPluginRequest) (*UnregisterPluginResponse, error)
 }
 
 type PluginHTTPHandler struct {
@@ -36,42 +35,6 @@ type PluginHTTPHandler struct {
 
 func newPluginHTTPHandler(s PluginHTTPServer) *PluginHTTPHandler {
 	return &PluginHTTPHandler{srv: s}
-}
-
-func (h *PluginHTTPHandler) DeletePlugin(req *go_restful.Request, resp *go_restful.Response) {
-	in := DeletePluginRequest{}
-	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
-		return
-	}
-	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
-
-	out, err := h.srv.DeletePlugin(ctx, &in)
-	if err != nil {
-		tErr := errors.FromError(err)
-		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
-		return
-	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
 }
 
 func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.Response) {
@@ -110,52 +73,34 @@ func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.
 	}
 }
 
-func (h *PluginHTTPHandler) ListInstallablePlugin(req *go_restful.Request, resp *go_restful.Response) {
-	in := ListInstallablePluginRequest{}
+func (h *PluginHTTPHandler) InstallPlugin(req *go_restful.Request, resp *go_restful.Response) {
+	in := InstallPluginRequest{}
+	if err := transportHTTP.GetBody(req, &in.InstallerInfo); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.ListInstallablePlugin(ctx, &in)
+	out, err := h.srv.InstallPlugin(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
-
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
+		resp.WriteHeader(http.StatusNoContent)
 		return
 	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-}
-
-func (h *PluginHTTPHandler) ListInstalledPlugin(req *go_restful.Request, resp *go_restful.Response) {
-	in := emptypb.Empty{}
-	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
-
-	out, err := h.srv.ListInstalledPlugin(ctx, &in)
-	if err != nil {
-		tErr := errors.FromError(err)
-		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
-		return
-	}
-
 	result, err := json.Marshal(out)
 	if err != nil {
 		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
@@ -202,7 +147,15 @@ func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful
 
 func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := RegisterPluginRequest{}
-	if err := transportHTTP.GetBody(req, &in); err != nil {
+	if err := transportHTTP.GetBody(req, &in.Secret); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -252,7 +205,46 @@ func (h *PluginHTTPHandler) UninstallPlugin(req *go_restful.Request, resp *go_re
 		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
+	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
+		resp.WriteHeader(http.StatusNoContent)
+		return
+	}
+	result, err := json.Marshal(out)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+	_, err = resp.Write(result)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+}
 
+func (h *PluginHTTPHandler) UnregisterPlugin(req *go_restful.Request, resp *go_restful.Response) {
+	in := UnregisterPluginRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.UnregisterPlugin(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
+		return
+	}
+	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
+		resp.WriteHeader(http.StatusNoContent)
+		return
+	}
 	result, err := json.Marshal(out)
 	if err != nil {
 		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
@@ -281,18 +273,16 @@ func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPSer
 	}
 
 	handler := newPluginHTTPHandler(srv)
-	ws.Route(ws.POST("/plugins").
-		To(handler.RegisterPlugin))
+	ws.Route(ws.POST("/plugins/{id}").
+		To(handler.InstallPlugin))
 	ws.Route(ws.DELETE("/plugins/{id}").
-		To(handler.DeletePlugin))
+		To(handler.UninstallPlugin))
+	ws.Route(ws.POST("/plugins/{id}/register").
+		To(handler.RegisterPlugin))
+	ws.Route(ws.DELETE("/plugins/{id}/register").
+		To(handler.UnregisterPlugin))
 	ws.Route(ws.GET("/plugins/{id}").
 		To(handler.GetPlugin))
 	ws.Route(ws.GET("/plugins").
 		To(handler.ListPlugin))
-	ws.Route(ws.GET("/installable/plugins").
-		To(handler.ListInstallablePlugin))
-	ws.Route(ws.GET("/installed/plugins").
-		To(handler.ListInstalledPlugin))
-	ws.Route(ws.DELETE("/installed/plugins/{name}").
-		To(handler.UninstallPlugin))
 }

@@ -1,9 +1,12 @@
 /*
 Copyright 2021 The tKeel Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
 	http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -72,6 +76,9 @@ func proxyPluginTokenFilter(req *restful.Request, resp *restful.Response) bool {
 			return false
 		}
 		req.SetAttribute(SrcPluginIDAttribute, s)
+		req.Request = req.Request.WithContext(
+			context.WithValue(req.Request.Context(),
+				SrcPluginIDAttribute, s))
 	}
 	return true
 }

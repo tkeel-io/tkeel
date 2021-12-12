@@ -12,7 +12,9 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 		TkeelVersion:      p.TkeelVersion,
 		AddonsPoint:       p.AddonsPoint,
 		ImplementedPlugin: p.ImplementedPlugin,
-		Secret:            p.Secret,
+		Secret: &pb.Secret{
+			Data: p.Secret.Data,
+		},
 		RegisterTimestamp: p.RegisterTimestamp,
 		ActiveTenantes:    p.ActiveTenantes,
 		RegisterAddons: func() []*pb.RegisterAddons {

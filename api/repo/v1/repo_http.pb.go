@@ -11,19 +11,21 @@ import (
 	errors "github.com/tkeel-io/kit/errors"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
+	reflect "reflect"
 )
 
 import transportHTTP "github.com/tkeel-io/kit/transport/http"
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the tkeel package it is being compiled against.
-// import package.context.http.go_restful.json.errors.
+// import package.context.http.reflect.go_restful.json.errors.emptypb.
 
 type RepoHTTPServer interface {
 	CreateRepo(context.Context, *CreateRepoRequest) (*emptypb.Empty, error)
-	DeleteRepo(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
-	InstallPluginFromRepo(context.Context, *InstallPluginFromRepoRequest) (*emptypb.Empty, error)
+	DeleteRepo(context.Context, *DeleteRepoRequest) (*DeleteRepoResponse, error)
+	GetRepoInstaller(context.Context, *GetRepoInstallerRequest) (*GetRepoInstallerResponse, error)
 	ListRepo(context.Context, *emptypb.Empty) (*ListRepoResponse, error)
+	ListRepoInstaller(context.Context, *ListRepoInstallerRequest) (*ListRepoInstallerResponse, error)
 }
 
 type RepoHTTPHandler struct {
@@ -36,7 +38,15 @@ func newRepoHTTPHandler(s RepoHTTPServer) *RepoHTTPHandler {
 
 func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.Response) {
 	in := CreateRepoRequest{}
-	if err := transportHTTP.GetBody(req, &in); err != nil {
+	if err := transportHTTP.GetBody(req, &in.Url); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -50,7 +60,10 @@ func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.R
 		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
-
+	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
+		resp.WriteHeader(http.StatusNoContent)
+		return
+	}
 	result, err := json.Marshal(out)
 	if err != nil {
 		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
@@ -64,8 +77,12 @@ func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.R
 }
 
 func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.Response) {
-	in := emptypb.Empty{}
+	in := DeleteRepoRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -79,7 +96,10 @@ func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.R
 		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
-
+	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
+		resp.WriteHeader(http.StatusNoContent)
+		return
+	}
 	result, err := json.Marshal(out)
 	if err != nil {
 		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
@@ -92,9 +112,9 @@ func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.R
 	}
 }
 
-func (h *RepoHTTPHandler) InstallPluginFromRepo(req *go_restful.Request, resp *go_restful.Response) {
-	in := InstallPluginFromRepoRequest{}
-	if err := transportHTTP.GetBody(req, &in); err != nil {
+func (h *RepoHTTPHandler) GetRepoInstaller(req *go_restful.Request, resp *go_restful.Response) {
+	in := GetRepoInstallerRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -105,14 +125,17 @@ func (h *RepoHTTPHandler) InstallPluginFromRepo(req *go_restful.Request, resp *g
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.InstallPluginFromRepo(ctx, &in)
+	out, err := h.srv.GetRepoInstaller(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
-
+	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
+		resp.WriteHeader(http.StatusNoContent)
+		return
+	}
 	result, err := json.Marshal(out)
 	if err != nil {
 		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
@@ -141,7 +164,46 @@ func (h *RepoHTTPHandler) ListRepo(req *go_restful.Request, resp *go_restful.Res
 		resp.WriteErrorString(httpCode, tErr.Message)
 		return
 	}
+	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
+		resp.WriteHeader(http.StatusNoContent)
+		return
+	}
+	result, err := json.Marshal(out)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+	_, err = resp.Write(result)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+}
 
+func (h *RepoHTTPHandler) ListRepoInstaller(req *go_restful.Request, resp *go_restful.Response) {
+	in := ListRepoInstallerRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.ListRepoInstaller(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
+		return
+	}
+	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
+		resp.WriteHeader(http.StatusNoContent)
+		return
+	}
 	result, err := json.Marshal(out)
 	if err != nil {
 		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
@@ -170,12 +232,14 @@ func RegisterRepoHTTPServer(container *go_restful.Container, srv RepoHTTPServer)
 	}
 
 	handler := newRepoHTTPHandler(srv)
-	ws.Route(ws.PUT("/repos").
+	ws.Route(ws.PUT("/repos/{name}").
 		To(handler.CreateRepo))
-	ws.Route(ws.DELETE("/repos/own").
+	ws.Route(ws.DELETE("/repos/{name}").
 		To(handler.DeleteRepo))
 	ws.Route(ws.GET("/repos").
 		To(handler.ListRepo))
-	ws.Route(ws.POST("/repos/{repo}/plugins/{plugin}").
-		To(handler.InstallPluginFromRepo))
+	ws.Route(ws.GET("/repos/{repo_name}/installers").
+		To(handler.ListRepoInstaller))
+	ws.Route(ws.GET("/repos/{repo_name}/installers/{installer_name}").
+		To(handler.GetRepoInstaller))
 }

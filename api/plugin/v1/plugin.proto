@@ -25,10 +25,74 @@ option java_multiple_files = true;
 option java_package = "api.plugin.v1";
 
 service Plugin {
+  rpc InstallPlugin(InstallPluginRequest) returns (InstallPluginResponse) {
+    option (google.api.http) = {
+      post : "/plugins/{id}"
+      body : "installer_info"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "安装插件接口"
+      operation_id : "InstallPlugin"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "SUCC"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "404"
+          value : {description : "REPOSITORY_OR_INSTALLER_NOT_FOUND"}
+        },
+        {
+          key : "409"
+          value : {description : "ALREADY_EXISTS"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
+  };
+
+  rpc UninstallPlugin(UninstallPluginRequest)
+      returns (UninstallPluginResponse) {
+    option (google.api.http) = {
+      delete : "/plugins/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "卸载插件接口"
+      operation_id : "UninstallPlugin"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "404"
+          value : {description : "PLUGIN_NOT_FOUND"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
+
   rpc RegisterPlugin(RegisterPluginRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post : "/plugins"
-      body : "*"
+      post : "/plugins/{id}/register"
+      body : "secret"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "注册插件接口"
@@ -62,18 +126,20 @@ service Plugin {
       ]
     };
   };
-  rpc DeletePlugin(DeletePluginRequest) returns (DeletePluginResponse) {
+
+  rpc UnregisterPlugin(UnregisterPluginRequest)
+      returns (UnregisterPluginResponse) {
     option (google.api.http) = {
-      delete : "/plugins/{id}"
+      delete : "/plugins/{id}/register"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "删除插件接口"
-      operation_id : "DeletePlugin"
+      summary : "注销插件接口"
+      operation_id : "UnregisterPlugin"
       tags : "Plugin"
       responses : [
         {
-          key : "200"
-          value : {description : "OK"}
+          key : "204"
+          value : {description : "SUCC_AND_NO_CONTENT"}
         },
         {
           key : "400"
@@ -85,15 +151,16 @@ service Plugin {
         },
         {
           key : "500"
-          value : {description : "DELETE_PLUGIN_HAS_BEEN_DEPENDED"}
+          value : {description : "UNREGISTER_PLUGIN_HAS_BEEN_DEPENDED"}
         },
         {
           key : "500"
-          value : {description : "INTERNAL_ERROR"}
+          value : {description : "INTERNAL_STORE"}
         }
       ]
     };
   };
+
   rpc GetPlugin(GetPluginRequest) returns (GetPluginResponse) {
     option (google.api.http) = {
       get : "/plugins/{id}"
@@ -122,6 +189,7 @@ service Plugin {
       ]
     };
   };
+
   rpc ListPlugin(google.protobuf.Empty) returns (ListPluginResponse) {
     option (google.api.http) = {
       get : "/plugins"
@@ -146,32 +214,65 @@ service Plugin {
       ]
     };
   };
-
-  rpc ListInstallablePlugin(ListInstallablePluginRequest) returns (ListInstallablePluginResponse) {
-    option (google.api.http) = {
-      get: "/installable/plugins"
-    };
-  };
-
-  rpc ListInstalledPlugin(google.protobuf.Empty) returns (ListInstalledResponse){
-    option (google.api.http) = {
-      get: "/installed/plugins"
-    };
-  };
-
-  rpc UninstallPlugin(UninstallPluginRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete: "/installed/plugins/{name}"
-    };
-  };
 }
 
 /**
  * Register Addons.
  **/
 message RegisterAddons {
-  string addons = 1;   // addons name.
-  string upstream = 2; // upstream path.
+  string addons = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "addons name"
+      } ]; // addons name.
+  string upstream = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "upstream path"
+      } ]; // upstream path.
+}
+
+/**
+ * Secret.
+ **/
+message Secret {
+  string data = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin registered secret data"
+      } ];
+}
+
+enum ConfigurationType {
+  JSON = 0;
+  YAML = 1;
+}
+
+/**
+ * Installer.
+ **/
+message Installer {
+  string name = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer name"
+      } ];
+  string version = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer version"
+      } ];
+  string repo_name = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repository name"
+      } ];
+  bytes configuration = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer configuration data"
+      } ];
+  ConfigurationType type = 5
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "configuration type"
+      } ];
+  bool installed = 6
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "whether the installer has been installed"
+      } ];
 }
 
 /**
@@ -198,7 +299,7 @@ message PluginObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin implemented plugin list"
       } ]; // plugin implemented plugin list.
-  string secret = 6
+  Secret secret = 6
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin registered secret"
       } ]; // plugin registered secret.
@@ -218,6 +319,56 @@ message PluginObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "register plugin status"
       } ]; // register plugin status.
+  Installer brief_installer_info = 11 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "brief installer info only has name,verison,repo_name and "
+                    "installed field."
+    }
+  ]; // register plugin status.
+}
+
+message InstallPluginRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "install plugin id"
+      } ];
+  Installer installer_info = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer info"
+      } ];
+}
+
+message InstallPluginResponse {
+  PluginObject plugin = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin object"
+      } ];
+}
+
+message UninstallPluginRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+}
+message UninstallPluginResponse {
+  PluginObject plugin = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin object"
+      } ];
+}
+
+message UnregisterPluginRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+}
+message UnregisterPluginResponse {
+  PluginObject plugin = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin object"
+      } ];
 }
 
 message RegisterPluginRequest {
@@ -225,22 +376,9 @@ message RegisterPluginRequest {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
       } ];
-  string secret = 2
+  Secret secret = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin registered secret"
-      } ];
-}
-
-message DeletePluginRequest {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id"
-      } ];
-}
-message DeletePluginResponse {
-  PluginObject plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin object"
+        description : "plugin register secret"
       } ];
 }
 
@@ -262,18 +400,4 @@ message ListPluginResponse {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin object list"
       } ];
-}
-message ListInstallablePluginRequest {
-  bool updateNow = 1;
-}
-message ListInstallablePluginResponse {
-  string list = 1;
-}
-
-message UninstallPluginRequest {
-  string name = 1;
-}
-
-message ListInstalledResponse {
-  string list = 1;
 }

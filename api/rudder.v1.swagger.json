@@ -22,88 +22,6 @@
     "application/json"
   ],
   "paths": {
-    "/installable/plugins": {
-      "get": {
-        "operationId": "Plugin_ListInstallablePlugin",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListInstallablePluginResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "updateNow",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          }
-        ],
-        "tags": [
-          "Plugin"
-        ]
-      }
-    },
-    "/installed/plugins": {
-      "get": {
-        "operationId": "Plugin_ListInstalledPlugin",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1ListInstalledResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "Plugin"
-        ]
-      }
-    },
-    "/installed/plugins/{name}": {
-      "delete": {
-        "operationId": "Plugin_UninstallPlugin",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "properties": {}
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "Plugin"
-        ]
-      }
-    },
     "/oauth2": {
       "post": {
         "summary": "插件Oauth2颁发接口",
@@ -219,57 +137,6 @@
         "tags": [
           "Plugin"
         ]
-      },
-      "post": {
-        "summary": "注册插件接口",
-        "operationId": "RegisterPlugin",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "properties": {}
-            }
-          },
-          "204": {
-            "description": "SUCC_AND_NO_CONTENT",
-            "schema": {}
-          },
-          "400": {
-            "description": "INVALID_ARGUMENT",
-            "schema": {}
-          },
-          "404": {
-            "description": "PLUGIN_NOT_FOUND",
-            "schema": {}
-          },
-          "409": {
-            "description": "ALREADY_EXISTS",
-            "schema": {}
-          },
-          "500": {
-            "description": "INTERNAL_STORE",
-            "schema": {}
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1RegisterPluginRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Plugin"
-        ]
       }
     },
     "/plugins/{id}": {
@@ -316,13 +183,13 @@
         ]
       },
       "delete": {
-        "summary": "删除插件接口",
-        "operationId": "DeletePlugin",
+        "summary": "卸载插件接口",
+        "operationId": "UninstallPlugin",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1DeletePluginResponse"
+              "$ref": "#/definitions/v1UninstallPluginResponse"
             }
           },
           "400": {
@@ -356,17 +223,190 @@
         "tags": [
           "Plugin"
         ]
+      },
+      "post": {
+        "summary": "安装插件接口",
+        "operationId": "InstallPlugin",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "$ref": "#/definitions/v1InstallPluginResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "REPOSITORY_OR_INSTALLER_NOT_FOUND",
+            "schema": {}
+          },
+          "409": {
+            "description": "ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "install plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "installer info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Installer",
+              "description": "installer info"
+            }
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
       }
     },
-    "/repos": {
-      "get": {
-        "operationId": "Repo_ListRepo",
+    "/plugins/{id}/register": {
+      "delete": {
+        "summary": "注销插件接口",
+        "operationId": "UnregisterPlugin",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
+              "$ref": "#/definitions/v1UnregisterPluginResponse"
+            }
+          },
+          "204": {
+            "description": "SUCC_AND_NO_CONTENT",
+            "schema": {}
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "PLUGIN_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      },
+      "post": {
+        "summary": "注册插件接口",
+        "operationId": "RegisterPlugin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "204": {
+            "description": "SUCC_AND_NO_CONTENT",
+            "schema": {}
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "PLUGIN_NOT_FOUND",
+            "schema": {}
+          },
+          "409": {
+            "description": "ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "plugin register secret",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Secret",
+              "description": "plugin register secret"
+            }
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
+    "/repos": {
+      "get": {
+        "summary": "获取仓库列表接口",
+        "operationId": "ListRepo",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
               "$ref": "#/definitions/v1ListRepoResponse"
             }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
           },
           "default": {
             "description": "An unexpected error response.",
@@ -378,15 +418,30 @@
         "tags": [
           "Repo"
         ]
-      },
-      "put": {
-        "operationId": "Repo_CreateRepo",
+      }
+    },
+    "/repos/{name}": {
+      "delete": {
+        "summary": "删除仓库接口",
+        "operationId": "DeleteRepo",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "SUCC",
             "schema": {
-              "properties": {}
+              "$ref": "#/definitions/v1DeleteRepoResponse"
             }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "REPO_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
           },
           "default": {
             "description": "An unexpected error response.",
@@ -397,11 +452,62 @@
         },
         "parameters": [
           {
+            "name": "name",
+            "description": "repo name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Repo"
+        ]
+      },
+      "put": {
+        "summary": "创建仓库接口",
+        "operationId": "CreateRepo",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "409": {
+            "description": "ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "description": "repo name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
             "name": "body",
+            "description": "repo url",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1CreateRepoRequest"
+              "type": "string",
+              "description": "repo url"
             }
           }
         ],
@@ -410,37 +516,28 @@
         ]
       }
     },
-    "/repos/own": {
-      "delete": {
-        "operationId": "Repo_DeleteRepo",
+    "/repos/{repo_name}/installers": {
+      "get": {
+        "summary": "获取仓库中安装包列表接口",
+        "operationId": "ListRepoInstaller",
         "responses": {
           "200": {
-            "description": "A successful response.",
+            "description": "SUCC",
             "schema": {
-              "properties": {}
+              "$ref": "#/definitions/v1ListRepoInstallerResponse"
             }
           },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "Repo"
-        ]
-      }
-    },
-    "/repos/{repo}/plugins/{plugin}": {
-      "post": {
-        "operationId": "Repo_InstallPluginFromRepo",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "properties": {}
-            }
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "REPO_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
           },
           "default": {
             "description": "An unexpected error response.",
@@ -451,32 +548,62 @@
         },
         "parameters": [
           {
-            "name": "repo",
+            "name": "repo_name",
+            "description": "repo name",
             "in": "path",
             "required": true,
             "type": "string"
-          },
-          {
-            "name": "plugin",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
+          }
+        ],
+        "tags": [
+          "Repo"
+        ]
+      }
+    },
+    "/repos/{repo_name}/installers/{installer_name}": {
+      "get": {
+        "summary": "获取仓库中指定安装包",
+        "operationId": "GetRepoInstaller",
+        "responses": {
+          "200": {
+            "description": "SUCC",
             "schema": {
-              "type": "object",
-              "properties": {
-                "version": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/v1GetRepoInstallerResponse"
             }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "INSTALLER_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repo_name",
+            "description": "repo name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "installer_name",
+            "description": "installer name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
@@ -538,6 +665,23 @@
       },
       "description": "*\nmessage plugin declares extension point."
     },
+    "v1Annotations": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "key"
+        },
+        "value": {
+          "type": "string",
+          "description": "value"
+        },
+        "desc": {
+          "type": "string",
+          "description": "desc"
+        }
+      }
+    },
     "v1BriefPluginInfo": {
       "type": "object",
       "properties": {
@@ -550,20 +694,28 @@
       },
       "description": "*\nmessage brief plugin information."
     },
-    "v1CreateRepoRequest": {
-      "type": "object",
-      "properties": {
-        "addr": {
-          "type": "string"
-        }
-      }
+    "v1ConfigurationSchemaType": {
+      "type": "string",
+      "enum": [
+        "JSON",
+        "YAML"
+      ],
+      "default": "JSON"
     },
-    "v1DeletePluginResponse": {
+    "v1ConfigurationType": {
+      "type": "string",
+      "enum": [
+        "JSON",
+        "YAML"
+      ],
+      "default": "JSON"
+    },
+    "v1DeleteRepoResponse": {
       "type": "object",
       "properties": {
-        "plugin": {
-          "$ref": "#/definitions/v1PluginObject",
-          "description": "plugin object"
+        "repo": {
+          "$ref": "#/definitions/v1RepoObject",
+          "description": "repo"
         }
       }
     },
@@ -573,6 +725,15 @@
         "plugin": {
           "$ref": "#/definitions/v1PluginObject",
           "description": "plugin object"
+        }
+      }
+    },
+    "v1GetRepoInstallerResponse": {
+      "type": "object",
+      "properties": {
+        "installer": {
+          "$ref": "#/definitions/v1InstallerObject",
+          "description": "installer"
         }
       }
     },
@@ -602,6 +763,89 @@
         }
       },
       "description": "*\nmessage plugin implemented other plugin."
+    },
+    "v1InstallPluginResponse": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1PluginObject",
+          "description": "plugin object"
+        }
+      }
+    },
+    "v1Installer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "installer name"
+        },
+        "version": {
+          "type": "string",
+          "description": "installer version"
+        },
+        "repo_name": {
+          "type": "string",
+          "description": "repository name"
+        },
+        "configuration": {
+          "type": "string",
+          "format": "byte",
+          "description": "installer configuration data"
+        },
+        "type": {
+          "$ref": "#/definitions/v1ConfigurationType",
+          "description": "configuration type"
+        },
+        "installed": {
+          "type": "boolean",
+          "description": "whether the installer has been installed"
+        }
+      },
+      "description": "*\nInstaller."
+    },
+    "v1InstallerObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "installer name"
+        },
+        "version": {
+          "type": "string",
+          "description": "installer version"
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Annotations"
+          },
+          "description": "installer annotations"
+        },
+        "readme": {
+          "type": "string",
+          "format": "byte",
+          "description": "readme file"
+        },
+        "configuration_schema": {
+          "type": "string",
+          "format": "byte",
+          "description": "configuration schema file"
+        },
+        "schema_type": {
+          "$ref": "#/definitions/v1ConfigurationSchemaType",
+          "description": "configuration schema type"
+        },
+        "configuration": {
+          "type": "string",
+          "format": "byte",
+          "description": "configuration file"
+        },
+        "installed": {
+          "type": "boolean",
+          "description": "whether the installer has been installed"
+        }
+      }
     },
     "v1IssueOauth2TokenRequest": {
       "type": "object",
@@ -638,22 +882,6 @@
         }
       }
     },
-    "v1ListInstallablePluginResponse": {
-      "type": "object",
-      "properties": {
-        "list": {
-          "type": "string"
-        }
-      }
-    },
-    "v1ListInstalledResponse": {
-      "type": "object",
-      "properties": {
-        "list": {
-          "type": "string"
-        }
-      }
-    },
     "v1ListPluginResponse": {
       "type": "object",
       "properties": {
@@ -666,11 +894,27 @@
         }
       }
     },
+    "v1ListRepoInstallerResponse": {
+      "type": "object",
+      "properties": {
+        "brief_installers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1InstallerObject"
+          },
+          "description": "brief installer info list,only has name and version"
+        }
+      }
+    },
     "v1ListRepoResponse": {
       "type": "object",
       "properties": {
-        "list": {
-          "type": "string"
+        "repos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1RepoObject"
+          },
+          "description": "repo list"
         }
       }
     },
@@ -704,7 +948,7 @@
           "description": "plugin implemented plugin list"
         },
         "secret": {
-          "type": "string",
+          "$ref": "#/definitions/v1Secret",
           "description": "plugin registered secret"
         },
         "register_timestamp": {
@@ -729,6 +973,10 @@
         "status": {
           "$ref": "#/definitions/v1PluginStatus",
           "description": "register plugin status"
+        },
+        "brief_installer_info": {
+          "$ref": "#/definitions/v1Installer",
+          "description": "brief installer info only has name,verison,repo_name and installed field."
         }
       },
       "description": "*\nplugin object."
@@ -737,9 +985,9 @@
       "type": "string",
       "enum": [
         "ERROR",
-        "STARTING",
+        "UNREGISTER",
+        "REGISTER",
         "RUNNING",
-        "STOPPING",
         "STOPPED"
       ],
       "default": "ERROR",
@@ -749,24 +997,59 @@
       "type": "object",
       "properties": {
         "addons": {
-          "type": "string"
+          "type": "string",
+          "description": "addons name"
         },
         "upstream": {
-          "type": "string"
+          "type": "string",
+          "description": "upstream path"
         }
       },
       "description": "*\nRegister Addons."
     },
-    "v1RegisterPluginRequest": {
+    "v1RepoObject": {
       "type": "object",
       "properties": {
-        "id": {
+        "name": {
           "type": "string",
-          "description": "plugin id"
+          "description": "repo name"
         },
-        "secret": {
+        "url": {
           "type": "string",
-          "description": "plugin registered secret"
+          "description": "repo url"
+        },
+        "upsert_timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "upsert time stamp"
+        }
+      }
+    },
+    "v1Secret": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "plugin registered secret data"
+        }
+      },
+      "description": "*\nSecret."
+    },
+    "v1UninstallPluginResponse": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1PluginObject",
+          "description": "plugin object"
+        }
+      }
+    },
+    "v1UnregisterPluginResponse": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1PluginObject",
+          "description": "plugin object"
         }
       }
     }

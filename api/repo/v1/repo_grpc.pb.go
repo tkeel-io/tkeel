@@ -20,9 +20,10 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RepoClient interface {
 	CreateRepo(ctx context.Context, in *CreateRepoRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	DeleteRepo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DeleteRepo(ctx context.Context, in *DeleteRepoRequest, opts ...grpc.CallOption) (*DeleteRepoResponse, error)
 	ListRepo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListRepoResponse, error)
-	InstallPluginFromRepo(ctx context.Context, in *InstallPluginFromRepoRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ListRepoInstaller(ctx context.Context, in *ListRepoInstallerRequest, opts ...grpc.CallOption) (*ListRepoInstallerResponse, error)
+	GetRepoInstaller(ctx context.Context, in *GetRepoInstallerRequest, opts ...grpc.CallOption) (*GetRepoInstallerResponse, error)
 }
 
 type repoClient struct {
@@ -42,8 +43,8 @@ func (c *repoClient) CreateRepo(ctx context.Context, in *CreateRepoRequest, opts
 	return out, nil
 }
 
-func (c *repoClient) DeleteRepo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *repoClient) DeleteRepo(ctx context.Context, in *DeleteRepoRequest, opts ...grpc.CallOption) (*DeleteRepoResponse, error) {
+	out := new(DeleteRepoResponse)
 	err := c.cc.Invoke(ctx, "/api.repo.v1.Repo/DeleteRepo", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -60,9 +61,18 @@ func (c *repoClient) ListRepo(ctx context.Context, in *emptypb.Empty, opts ...gr
 	return out, nil
 }
 
-func (c *repoClient) InstallPluginFromRepo(ctx context.Context, in *InstallPluginFromRepoRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.repo.v1.Repo/InstallPluginFromRepo", in, out, opts...)
+func (c *repoClient) ListRepoInstaller(ctx context.Context, in *ListRepoInstallerRequest, opts ...grpc.CallOption) (*ListRepoInstallerResponse, error) {
+	out := new(ListRepoInstallerResponse)
+	err := c.cc.Invoke(ctx, "/api.repo.v1.Repo/ListRepoInstaller", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *repoClient) GetRepoInstaller(ctx context.Context, in *GetRepoInstallerRequest, opts ...grpc.CallOption) (*GetRepoInstallerResponse, error) {
+	out := new(GetRepoInstallerResponse)
+	err := c.cc.Invoke(ctx, "/api.repo.v1.Repo/GetRepoInstaller", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +84,10 @@ func (c *repoClient) InstallPluginFromRepo(ctx context.Context, in *InstallPlugi
 // for forward compatibility
 type RepoServer interface {
 	CreateRepo(context.Context, *CreateRepoRequest) (*emptypb.Empty, error)
-	DeleteRepo(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	DeleteRepo(context.Context, *DeleteRepoRequest) (*DeleteRepoResponse, error)
 	ListRepo(context.Context, *emptypb.Empty) (*ListRepoResponse, error)
-	InstallPluginFromRepo(context.Context, *InstallPluginFromRepoRequest) (*emptypb.Empty, error)
+	ListRepoInstaller(context.Context, *ListRepoInstallerRequest) (*ListRepoInstallerResponse, error)
+	GetRepoInstaller(context.Context, *GetRepoInstallerRequest) (*GetRepoInstallerResponse, error)
 	mustEmbedUnimplementedRepoServer()
 }
 
@@ -87,14 +98,17 @@ type UnimplementedRepoServer struct {
 func (UnimplementedRepoServer) CreateRepo(context.Context, *CreateRepoRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateRepo not implemented")
 }
-func (UnimplementedRepoServer) DeleteRepo(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+func (UnimplementedRepoServer) DeleteRepo(context.Context, *DeleteRepoRequest) (*DeleteRepoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRepo not implemented")
 }
 func (UnimplementedRepoServer) ListRepo(context.Context, *emptypb.Empty) (*ListRepoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListRepo not implemented")
 }
-func (UnimplementedRepoServer) InstallPluginFromRepo(context.Context, *InstallPluginFromRepoRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method InstallPluginFromRepo not implemented")
+func (UnimplementedRepoServer) ListRepoInstaller(context.Context, *ListRepoInstallerRequest) (*ListRepoInstallerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRepoInstaller not implemented")
+}
+func (UnimplementedRepoServer) GetRepoInstaller(context.Context, *GetRepoInstallerRequest) (*GetRepoInstallerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRepoInstaller not implemented")
 }
 func (UnimplementedRepoServer) mustEmbedUnimplementedRepoServer() {}
 
@@ -128,7 +142,7 @@ func _Repo_CreateRepo_Handler(srv interface{}, ctx context.Context, dec func(int
 }
 
 func _Repo_DeleteRepo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(DeleteRepoRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -140,7 +154,7 @@ func _Repo_DeleteRepo_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/api.repo.v1.Repo/DeleteRepo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RepoServer).DeleteRepo(ctx, req.(*emptypb.Empty))
+		return srv.(RepoServer).DeleteRepo(ctx, req.(*DeleteRepoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -163,20 +177,38 @@ func _Repo_ListRepo_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Repo_InstallPluginFromRepo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InstallPluginFromRepoRequest)
+func _Repo_ListRepoInstaller_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRepoInstallerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RepoServer).InstallPluginFromRepo(ctx, in)
+		return srv.(RepoServer).ListRepoInstaller(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.repo.v1.Repo/InstallPluginFromRepo",
+		FullMethod: "/api.repo.v1.Repo/ListRepoInstaller",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RepoServer).InstallPluginFromRepo(ctx, req.(*InstallPluginFromRepoRequest))
+		return srv.(RepoServer).ListRepoInstaller(ctx, req.(*ListRepoInstallerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Repo_GetRepoInstaller_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRepoInstallerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepoServer).GetRepoInstaller(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.repo.v1.Repo/GetRepoInstaller",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepoServer).GetRepoInstaller(ctx, req.(*GetRepoInstallerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -201,8 +233,12 @@ var Repo_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Repo_ListRepo_Handler,
 		},
 		{
-			MethodName: "InstallPluginFromRepo",
-			Handler:    _Repo_InstallPluginFromRepo_Handler,
+			MethodName: "ListRepoInstaller",
+			Handler:    _Repo_ListRepoInstaller_Handler,
+		},
+		{
+			MethodName: "GetRepoInstaller",
+			Handler:    _Repo_GetRepoInstaller_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

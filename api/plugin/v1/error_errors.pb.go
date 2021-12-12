@@ -19,7 +19,7 @@ var pluginErrListPlugin *errors.TError
 var pluginErrInvalidArgument *errors.TError
 var pluginErrInternalQueryPluginOpenapi *errors.TError
 var pluginErrInternalStore *errors.TError
-var pluginErrDeletePluginHasBeenDepended *errors.TError
+var pluginErrUnregisterPluginHasBeenDepended *errors.TError
 
 func init() {
 	pluginErrUnknown = errors.New(int(codes.Unknown), "plugin.v1.PLUGIN_ERR_UNKNOWN", Error_PLUGIN_ERR_UNKNOWN.String())
@@ -38,8 +38,8 @@ func init() {
 	errors.Register(pluginErrInternalQueryPluginOpenapi)
 	pluginErrInternalStore = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_INTERNAL_STORE", Error_PLUGIN_ERR_INTERNAL_STORE.String())
 	errors.Register(pluginErrInternalStore)
-	pluginErrDeletePluginHasBeenDepended = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_DELETE_PLUGIN_HAS_BEEN_DEPENDED", Error_PLUGIN_ERR_DELETE_PLUGIN_HAS_BEEN_DEPENDED.String())
-	errors.Register(pluginErrDeletePluginHasBeenDepended)
+	pluginErrUnregisterPluginHasBeenDepended = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_UNREGISTER_PLUGIN_HAS_BEEN_DEPENDED", Error_PLUGIN_ERR_UNREGISTER_PLUGIN_HAS_BEEN_DEPENDED.String())
+	errors.Register(pluginErrUnregisterPluginHasBeenDepended)
 }
 
 func PluginErrUnknown() errors.Error {
@@ -74,6 +74,6 @@ func PluginErrInternalStore() errors.Error {
 	return pluginErrInternalStore
 }
 
-func PluginErrDeletePluginHasBeenDepended() errors.Error {
-	return pluginErrDeletePluginHasBeenDepended
+func PluginErrUnregisterPluginHasBeenDepended() errors.Error {
+	return pluginErrUnregisterPluginHasBeenDepended
 }
