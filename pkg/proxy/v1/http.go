@@ -41,7 +41,10 @@ const (
 	SrcPluginIDAttribute = "SrcPluginID"
 )
 
-var pluginRouteMap = new(sync.Map)
+var (
+	ContextPluginIDKey = struct{}{}
+	pluginRouteMap     = new(sync.Map)
+)
 
 func RegisterPluginProxyHTTPServer(ctx context.Context, container *restful.Container, conf *config.Configuration,
 	externalFilter func(*restful.Request, *restful.Response, *restful.FilterChain), srv proxy.PluginProxyServer) error {

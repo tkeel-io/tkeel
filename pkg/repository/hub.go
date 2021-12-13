@@ -39,18 +39,18 @@ type Hub struct {
 	repoOperator    InfoOperator
 	repoSet         *sync.Map
 	constructor     Constructor
-	destory         DestoryPlugin
+	destroy         DestroyPlugin
 	constructorArgs []interface{}
 }
 
 // InitHub initial hub.
-func InitHub(interval string, op InfoOperator, c Constructor, d DestoryPlugin, initRepoArgs ...interface{}) {
+func InitHub(interval string, op InfoOperator, c Constructor, d DestroyPlugin, initRepoArgs ...interface{}) {
 	once.Do(func() {
 		h = &Hub{
 			repoOperator:    op,
 			repoSet:         new(sync.Map),
 			constructor:     c,
-			destory:         d,
+			destroy:         d,
 			constructorArgs: initRepoArgs,
 		}
 		if err := h.Init(interval); err != nil {
@@ -124,7 +124,7 @@ func (h *Hub) updateRepoSet(newInfo, updateInfo, deleteInfo []*Info) error {
 	return nil
 }
 
-// SetConstructor overflow constructor
+// SetConstructor overflow constructor.
 func (h *Hub) SetConstructor(c Constructor, args ...interface{}) {
 	h.constructor = c
 	h.constructorArgs = args
@@ -162,10 +162,10 @@ func (h *Hub) Delete(name string) (ret Repository, err error) {
 		return nil, errors.New("invaild repo type")
 	}
 	rbStack = append(rbStack, func() error {
-		rbRepo, err := h.constructor(repo.Info(), h.constructorArgs...)
-		if err != nil {
+		rbRepo, err1 := h.constructor(repo.Info(), h.constructorArgs...)
+		if err1 != nil {
 			return fmt.Errorf("error delete roll back constructor(%s): %w",
-				repo.Info().Name, err)
+				repo.Info().Name, err1)
 		}
 		h.repoSet.Store(name, rbRepo)
 		return nil
@@ -207,26 +207,26 @@ func (h *Hub) Get(name string) (Repository, error) {
 // Uninstall plugin.
 func (h *Hub) Uninstall(pluginID string, i Installer) error {
 	if i == nil {
-		return errors.New("invaild plugin installer info.")
+		return errors.New("invaild plugin installer info")
 	}
-	breif := i.Brief()
-	repoIn, ok := h.repoSet.Load(breif)
+	brief := i.Brief()
+	repoIn, ok := h.repoSet.Load(brief)
 	if ok {
 		repo, ok := repoIn.(Repository)
 		if !ok {
 			return errors.New("invaild repo type")
 		}
 		for _, v := range repo.Installed() {
-			if v.Brief().Name == breif.Name && v.Brief().Version == breif.Version {
+			if v.Brief().Name == brief.Name && v.Brief().Version == brief.Version {
 				if err := v.Uninstall(pluginID); err != nil {
-					return fmt.Errorf("error uninstall plugin(%s): %w", breif, err)
+					return fmt.Errorf("error uninstall plugin(%s): %w", brief, err)
 				}
 				return nil
 			}
 		}
 	}
-	if err := h.destory(pluginID); err != nil {
-		return fmt.Errorf("error destory plugin(%s): %w", pluginID, err)
+	if err := h.destroy(pluginID); err != nil {
+		return fmt.Errorf("error destroy plugin(%s): %w", pluginID, err)
 	}
 	return nil
 }

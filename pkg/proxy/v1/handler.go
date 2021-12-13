@@ -106,7 +106,7 @@ func proxyPlugin(srv proxy.PluginProxyServer) http.HandlerFunc {
 				responseWrite.Write([]byte("plugin cannot provide services"))
 				return
 			}
-			srcIDIn := req.Context().Value(SrcPluginIDAttribute)
+			srcIDIn := req.Context().Value(ContextPluginIDKey)
 			srcID, ok := srcIDIn.(string)
 			if !ok {
 				log.Errorf("error plugin(%s) status(%s) not running", pluginID, pRoute.Status)

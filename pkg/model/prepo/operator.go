@@ -36,7 +36,7 @@ type Operator interface {
 	// Info2Model repository.Info convert to model.PluginRepo.
 	Info2Model(*repository.Info) *model.PluginRepo
 	// GetChanges compare the old and the new one and get the new, update and delete.
-	GetChanges(old, curr model.PluginRepoMap) (new, update, delete []*model.PluginRepo)
+	GetChanges(old, curr model.PluginRepoMap) (news, updates, deletes []*model.PluginRepo)
 	// repository info.
 	repository.InfoOperator
 }

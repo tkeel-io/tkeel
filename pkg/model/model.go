@@ -202,9 +202,9 @@ func (pprm *PluginRepoMap) String() string {
 }
 
 type PluginRepo struct {
-	Name            string `json:"name,omitempty"`              // repo name,no duplication allowed.
-	URL             string `json:"url,omitempty"`               // repo url.
-	UpsertTimestamp int64  `json:"upsert_time_stamp,omitempty"` // last upsert time stamp.
+	Name            string `json:"name,omitempty"`             // repo name,no duplication allowed.
+	URL             string `json:"url,omitempty"`              // repo url.
+	UpsertTimestamp int64  `json:"upsert_timestamp,omitempty"` // last upsert time stamp.
 }
 
 func (pr *PluginRepo) String() string {

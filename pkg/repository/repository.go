@@ -31,8 +31,7 @@ var (
 type Annotations map[string]interface{}
 
 func (a *Annotations) Check() error {
-	_, err := json.Marshal(a)
-	if err != nil {
+	if _, err := json.Marshal(a); err != nil {
 		return ErrAnnotationsInvaild
 	}
 	return nil
@@ -45,8 +44,7 @@ type Option struct {
 }
 
 func (o *Option) Check() error {
-	_, err := json.Marshal(o)
-	if err != nil {
+	if _, err := json.Marshal(o); err != nil {
 		return ErrAnnotationsInvaild
 	}
 	return nil
@@ -146,5 +144,5 @@ type Repository interface {
 // Constructor return new repository.
 type Constructor func(connectInfo *Info, args ...interface{}) (Repository, error)
 
-// DestoryPlugin destory model.Plugin.
-type DestoryPlugin func(pluginID string) error
+// DestroyPlugin destroy model.Plugin.
+type DestroyPlugin func(pluginID string) error

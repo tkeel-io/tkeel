@@ -76,9 +76,9 @@ func proxyPluginTokenFilter(req *restful.Request, resp *restful.Response) bool {
 			return false
 		}
 		req.SetAttribute(SrcPluginIDAttribute, s)
-		req.Request = req.Request.WithContext(
-			context.WithValue(req.Request.Context(),
-				SrcPluginIDAttribute, s))
+		newCtx := context.WithValue(req.Request.Context(),
+			ContextPluginIDKey, s)
+		req.Request = req.Request.WithContext(newCtx)
 	}
 	return true
 }
