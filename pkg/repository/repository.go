@@ -50,21 +50,6 @@ func (o *Option) Check() error {
 	return nil
 }
 
-// ConfigurationItem installer configuration item,json format.
-type ConfigurationItem struct {
-	Key   string      `json:"key"`
-	Value interface{} `json:"value"`
-	Desc  string      `json:"desc,omitempty"`
-}
-
-func (c *ConfigurationItem) String() string {
-	b, err := json.Marshal(c)
-	if err != nil {
-		return "<" + err.Error() + ">"
-	}
-	return string(b)
-}
-
 // InstallerBrief installer brief information.
 type InstallerBrief struct {
 	Name      string `json:"name"`
