@@ -44,8 +44,8 @@ type Hub struct {
 	constructorArgs []interface{}
 }
 
-// InitHub initial hub.
-func InitHub(interval string, op repository.InfoOperator, c repository.Constructor, d repository.DestroyPlugin, initRepoArgs ...interface{}) {
+// Init initial hub.
+func Init(interval string, op repository.InfoOperator, c repository.Constructor, d repository.DestroyPlugin, initRepoArgs ...interface{}) {
 	once.Do(func() {
 		h = &Hub{
 			infoOperator:    op,
@@ -61,12 +61,12 @@ func InitHub(interval string, op repository.InfoOperator, c repository.Construct
 	})
 }
 
-// GetHub get hub instance.
-func GetHub() *Hub {
+// GetInstance get hub instance.
+func GetInstance() *Hub {
 	return h
 }
 
-// Init init hub, read and watch model repo.
+// Init init hub, read and watch repo info.
 func (h *Hub) Init(interval string) error {
 	if h.repoSet == nil {
 		return errors.New("need initial")
@@ -147,13 +147,9 @@ func (h *Hub) Add(i *repository.Info) error {
 }
 
 // Delete delete repo.
-func (h *Hub) Delete(name string) (ret repository.Repository, err error) {
+func (h *Hub) Delete(name string) (repository.Repository, error) {
 	rbStack := util.NewRollbackStack()
-	defer func() {
-		if err != nil {
-			rbStack.Run()
-		}
-	}()
+	defer rbStack.Run()
 	repoIn, ok := h.repoSet.LoadAndDelete(name)
 	if !ok {
 		return nil, errors.New("repo not exsist")
@@ -173,10 +169,10 @@ func (h *Hub) Delete(name string) (ret repository.Repository, err error) {
 	})
 	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 	defer cancel()
-	_, err = h.infoOperator.Delete(ctx, name)
-	if err != nil {
+	if _, err := h.infoOperator.Delete(ctx, name); err != nil {
 		return nil, fmt.Errorf("error repo operator delete repo(%s): %w", name, err)
 	}
+	rbStack = util.NewRollbackStack()
 	return repo, nil
 }
 
@@ -184,33 +180,35 @@ func (h *Hub) Delete(name string) (ret repository.Repository, err error) {
 func (h *Hub) Get(name string) (repository.Repository, error) {
 	repoIn, ok := h.repoSet.Load(name)
 	if !ok {
-		// find model repo.
+		// find repo info.
 		ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 		defer cancel()
 		modelInfo, err := h.infoOperator.Get(ctx, name)
 		if err != nil {
-			return nil, fmt.Errorf("error repo operator find %s: %w", name, err)
+			log.Errorf("error repo operator find %s: %w", name, err)
+			return nil, ErrRepoNotFound
 		}
 		repo, err := h.constructor(modelInfo, h.constructorArgs...)
 		if err != nil {
-			return nil, fmt.Errorf("error constructor(%s) repo: %w", modelInfo, err)
+			log.Errorf("error constructor(%s) repo: %w", modelInfo, err)
+			return nil, ErrInternalError
 		}
 		h.repoSet.Store(name, repo)
 		return repo, nil
 	}
 	repo, ok := repoIn.(repository.Repository)
 	if !ok {
-		return nil, errors.New("invaild repo type")
+		log.Errorf("invaild repo(%s) type.", name)
+		return nil, ErrInternalError
 	}
 	return repo, nil
 }
 
 // Uninstall plugin.
-func (h *Hub) Uninstall(pluginID string, i repository.Installer) error {
-	if i == nil {
+func (h *Hub) Uninstall(pluginID string, brief *repository.InstallerBrief) error {
+	if brief == nil {
 		return errors.New("invaild plugin installer info")
 	}
-	brief := i.Brief()
 	repoIn, ok := h.repoSet.Load(brief)
 	if ok {
 		repo, ok := repoIn.(repository.Repository)
