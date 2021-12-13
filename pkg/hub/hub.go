@@ -44,7 +44,7 @@ type Hub struct {
 	constructorArgs []interface{}
 }
 
-// InitHub initial hub.
+// InitHub Singleton pattern design, generating a new Hub that is globally one assigned to the h variable
 func InitHub(interval string, op repository.InfoOperator, c repository.Constructor, d repository.DestroyPlugin, initRepoArgs ...interface{}) {
 	once.Do(func() {
 		h = &Hub{
@@ -66,7 +66,7 @@ func GetHub() *Hub {
 	return h
 }
 
-// Init init hub, read and watch model repo.
+// Init hub, read and watch model repo.
 func (h *Hub) Init(interval string) error {
 	if h.repoSet == nil {
 		return errors.New("need initial")
@@ -131,7 +131,7 @@ func (h *Hub) SetConstructor(c repository.Constructor, args ...interface{}) {
 	h.constructorArgs = args
 }
 
-// Add add new repo into hub.
+// Add new repo into hub.
 func (h *Hub) Add(i *repository.Info) error {
 	repo, err := h.constructor(i, h.constructorArgs...)
 	if err != nil {
@@ -180,7 +180,7 @@ func (h *Hub) Delete(name string) (ret repository.Repository, err error) {
 	return repo, nil
 }
 
-// Get get repo.
+// Get repo.
 func (h *Hub) Get(name string) (repository.Repository, error) {
 	repoIn, ok := h.repoSet.Load(name)
 	if !ok {
@@ -208,7 +208,7 @@ func (h *Hub) Get(name string) (repository.Repository, error) {
 // Uninstall plugin.
 func (h *Hub) Uninstall(pluginID string, i repository.Installer) error {
 	if i == nil {
-		return errors.New("invaild plugin installer info")
+		return errors.New("invalid plugin installer info")
 	}
 	brief := i.Brief()
 	repoIn, ok := h.repoSet.Load(brief)
@@ -233,6 +233,7 @@ func (h *Hub) Uninstall(pluginID string, i repository.Installer) error {
 }
 
 func infoSliStr(is []*repository.Info) string {
+	// TODO: It may be better to use buffer.
 	ret := make([]string, 0, len(is)+2)
 	ret = append(ret, "[")
 	for _, v := range is {

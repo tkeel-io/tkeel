@@ -23,21 +23,21 @@ import (
 )
 
 var (
-	ErrAnnotationsInvaild = errors.New("annotations invaild")
-	ErrOptionsInvaild     = errors.New("options invaild")
+	ErrInvalidAnnotations = errors.New("invalid annotations")
+	ErrInvalidOptions     = errors.New("invalid options")
 )
 
-// Annotations json object.
+// Annotations is a json object. Any data you want it attach on.
 type Annotations map[string]interface{}
 
 func (a *Annotations) Check() error {
 	if _, err := json.Marshal(a); err != nil {
-		return ErrAnnotationsInvaild
+		return ErrInvalidAnnotations
 	}
 	return nil
 }
 
-// Options key and value.
+// Option key and value.
 type Option struct {
 	Key   string      `json:"key"`
 	Value interface{} `json:"value"`
@@ -45,12 +45,12 @@ type Option struct {
 
 func (o *Option) Check() error {
 	if _, err := json.Marshal(o); err != nil {
-		return ErrAnnotationsInvaild
+		return ErrInvalidAnnotations
 	}
 	return nil
 }
 
-// ConfigurationItem installer configutation item,json format.
+// ConfigurationItem installer configuration item,json format.
 type ConfigurationItem struct {
 	Key   string      `json:"key"`
 	Value interface{} `json:"value"`
@@ -85,15 +85,15 @@ func (ib *InstallerBrief) String() string {
 type Installer interface {
 	// SetPluginID set plugin id after installing to tKeel.
 	SetPluginID(pluginID string)
-	// Annotations get annotations.custom datas.
+	// Annotations get custom data.
 	Annotations() Annotations
 	// Options get installer options.
 	Options() []Option
-	// SetOption set installer option.
+	// SetOption set option to Installer.
 	SetOption(...*Option) error
-	// Install install plugin.
+	// Install plugin.
 	Install(...Option) error
-	// Uninstall Uninstall plugin.
+	// Uninstall plugin.
 	Uninstall(pluginID string) error
 	// Brief get installer brief information.
 	Brief() *InstallerBrief
@@ -106,14 +106,6 @@ type Info struct {
 	Annotations Annotations `json:"annotations,omitempty"` // repository annotations.
 }
 
-func (i *Info) String() string {
-	b, err := json.Marshal(i)
-	if err != nil {
-		return "<" + err.Error() + ">"
-	}
-	return string(b)
-}
-
 func NewInfo(name, url string, annotations Annotations) *Info {
 	return &Info{
 		Name:        name,
@@ -122,15 +114,24 @@ func NewInfo(name, url string, annotations Annotations) *Info {
 	}
 }
 
+func (i *Info) String() string {
+	// TODO: [Warning!] if err is a valid data then this programming is well.
+	b, err := json.Marshal(i)
+	if err != nil {
+		return "<" + err.Error() + ">"
+	}
+	return string(b)
+}
+
 // InfoOperator manager repository information operator.
 type InfoOperator interface {
-	// create plugin repo.
+	// Create plugin repo.
 	Create(context.Context, *Info) error
 	// Get plugin repo info with the repo name.
 	Get(ctx context.Context, repoName string) (*Info, error)
 	// Delete plugin repo with the repo name.
 	Delete(ctx context.Context, repoName string) (*Info, error)
-	// List get all plugin repo.
+	// List all plugin repo.
 	List(ctx context.Context) ([]*Info, error)
 	// Watch plugin repo map change. parameter is the changed data.
 	Watch(ctx context.Context, interval string, callback func(news, updates, deletes []*Info) error) error
@@ -146,7 +147,7 @@ type Repository interface {
 	Get(name, version string) (Installer, error)
 	// Installed find installed installer(contains installation packages that have been deleted in the repository).
 	Installed() []Installer
-	// Close close this repository.
+	// Close this repository.
 	Close() error
 }
 
