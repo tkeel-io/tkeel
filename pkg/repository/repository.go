@@ -70,7 +70,7 @@ func (ib *InstallerBrief) String() string {
 type Installer interface {
 	// SetPluginID set plugin id after installing to tKeel.
 	SetPluginID(pluginID string)
-	// Annotations get annotations.custom datas.
+	// Annotations get annotations.custom datas. Return a copy of the Annotations.
 	Annotations() Annotations
 	// Options get installer options.
 	Options() []Option
@@ -125,7 +125,7 @@ type InfoOperator interface {
 type Repository interface {
 	// Info get repository information.
 	Info() *Info
-	// Search for installers whose names match words.
+	// Search for installers whose names match words. * match all installers.
 	Search(word string) ([]*InstallerBrief, error)
 	// Get the installer with matching name and version.
 	Get(name, version string) (Installer, error)

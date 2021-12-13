@@ -128,7 +128,7 @@ service Repo {
   rpc GetRepoInstaller(GetRepoInstallerRequest)
       returns (GetRepoInstallerResponse) {
     option (google.api.http) = {
-      get : "/repos/{repo_name}/installers/{installer_name}"
+      get : "/repos/{repo_name}/installers/{installer_name}/{installer_version}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "获取仓库中指定安装包"
@@ -169,24 +169,9 @@ message RepoObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo url"
       } ];
-  int64 upsert_timestamp = 3
+  bytes annotations = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "upsert time stamp"
-      } ];
-}
-
-message Annotations {
-  string key = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "key"
-      } ];
-  string value = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "value"
-      } ];
-  string desc = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "desc"
+        description : "repo annotations"
       } ];
 }
 
@@ -204,27 +189,31 @@ message InstallerObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer version"
       } ];
-  repeated Annotations annotations = 3
+  string repo = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "installer annotations"
+        description : "installer repo"
       } ];
-  bytes readme = 4
+  bytes annotations = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo annotations"
+      } ];
+  bytes readme = 5
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "readme file"
       } ];
-  bytes configuration_schema = 5
+  bytes configuration_schema = 6
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "configuration schema file"
       } ];
-  ConfigurationSchemaType schema_type = 6
+  ConfigurationSchemaType schema_type = 7
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "configuration schema type"
       } ];
-  bytes configuration = 7
+  bytes configuration = 8
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "configuration file"
       } ];
-  bool installed = 8
+  bool installed = 9
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "whether the installer has been installed"
       } ];
@@ -291,6 +280,10 @@ message GetRepoInstallerRequest {
   string installer_name = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer name"
+      } ];
+  string installer_version = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer version"
       } ];
 }
 
