@@ -3,6 +3,7 @@ package util
 import (
 	pb "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/tkeel-io/tkeel/pkg/repository"
 )
 
 func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.PluginObject {
@@ -28,5 +29,24 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 			return ret
 		}(),
 		Status: pr.Status,
+		BriefInstallerInfo: func() *pb.Installer {
+			if p.Installer == nil {
+				return nil
+			}
+			return &pb.Installer{
+				Name:     p.Installer.Name,
+				Version:  p.Installer.Version,
+				RepoName: p.Installer.Repo,
+			}
+		}(),
+	}
+}
+
+func ConvertModel2RepositoryInstallerObject(i *model.Installer) *repository.InstallerBrief {
+	return &repository.InstallerBrief{
+		Repo:      i.Repo,
+		Name:      i.Name,
+		Version:   i.Version,
+		Installed: true,
 	}
 }

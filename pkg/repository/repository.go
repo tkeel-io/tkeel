@@ -68,6 +68,7 @@ func (c *ConfigurationItem) String() string {
 // InstallerBrief installer brief information.
 type InstallerBrief struct {
 	Name      string `json:"name"`
+	Repo      string `json:"repo"`
 	Version   string `json:"version"`
 	Installed bool   `json:"installed"`
 }
@@ -111,6 +112,14 @@ func (i *Info) String() string {
 		return "<" + err.Error() + ">"
 	}
 	return string(b)
+}
+
+func NewInfo(name, url string, annotations Annotations) *Info {
+	return &Info{
+		Name:        name,
+		URL:         url,
+		Annotations: annotations,
+	}
 }
 
 // InfoOperator manager repository information operator.

@@ -22,6 +22,7 @@ import (
 	"time"
 
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
+	"github.com/tkeel-io/tkeel/pkg/repository"
 )
 
 type Secret struct {
@@ -201,10 +202,20 @@ func (pprm *PluginRepoMap) String() string {
 	return string(b)
 }
 
+type Annotations map[string]interface{}
+
 type PluginRepo struct {
-	Name            string `json:"name,omitempty"`             // repo name,no duplication allowed.
-	URL             string `json:"url,omitempty"`              // repo url.
-	UpsertTimestamp int64  `json:"upsert_timestamp,omitempty"` // last upsert time stamp.
+	*repository.Info `json:",inline"`
+	UpsertTimestamp  int64  `json:"upsert_timestamp,omitempty"` // last upsert time stamp.
+	Version          string `json:"version,omitempty"`          // model version.
+}
+
+func NewPluginRepo(i *repository.Info) *PluginRepo {
+	return &PluginRepo{
+		Info:            i,
+		UpsertTimestamp: time.Now().Unix(),
+		Version:         "1",
+	}
 }
 
 func (pr *PluginRepo) String() string {

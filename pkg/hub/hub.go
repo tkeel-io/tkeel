@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package repository
+package hub
 
 import (
 	"context"
@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/util"
 )
 
@@ -36,18 +37,18 @@ var (
 
 // Hub repository manager hub.
 type Hub struct {
-	repoOperator    InfoOperator
+	infoOperator    repository.InfoOperator
 	repoSet         *sync.Map
-	constructor     Constructor
-	destroy         DestroyPlugin
+	constructor     repository.Constructor
+	destroy         repository.DestroyPlugin
 	constructorArgs []interface{}
 }
 
 // InitHub initial hub.
-func InitHub(interval string, op InfoOperator, c Constructor, d DestroyPlugin, initRepoArgs ...interface{}) {
+func InitHub(interval string, op repository.InfoOperator, c repository.Constructor, d repository.DestroyPlugin, initRepoArgs ...interface{}) {
 	once.Do(func() {
 		h = &Hub{
-			repoOperator:    op,
+			infoOperator:    op,
 			repoSet:         new(sync.Map),
 			constructor:     c,
 			destroy:         d,
@@ -72,7 +73,7 @@ func (h *Hub) Init(interval string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 	defer cancel()
-	modelRepos, err := h.repoOperator.List(ctx)
+	modelRepos, err := h.infoOperator.List(ctx)
 	if err != nil {
 		return fmt.Errorf("error list repo: %w", err)
 	}
@@ -85,7 +86,7 @@ func (h *Hub) Init(interval string) error {
 	}
 
 	go func() {
-		if err := h.repoOperator.Watch(context.Background(),
+		if err := h.infoOperator.Watch(context.Background(),
 			interval, h.updateRepoSet); err != nil {
 			log.Panicf("error watch repo: %s", err)
 		}
@@ -94,7 +95,7 @@ func (h *Hub) Init(interval string) error {
 }
 
 // updateRepoSet watch call back func.
-func (h *Hub) updateRepoSet(newInfo, updateInfo, deleteInfo []*Info) error {
+func (h *Hub) updateRepoSet(newInfo, updateInfo, deleteInfo []*repository.Info) error {
 	log.Debugf("update hub repo set, news: %s, updates: %s, deletes: %s",
 		infoSliStr(newInfo), infoSliStr(updateInfo), infoSliStr(deleteInfo))
 	// create new repo.
@@ -125,20 +126,20 @@ func (h *Hub) updateRepoSet(newInfo, updateInfo, deleteInfo []*Info) error {
 }
 
 // SetConstructor overflow constructor.
-func (h *Hub) SetConstructor(c Constructor, args ...interface{}) {
+func (h *Hub) SetConstructor(c repository.Constructor, args ...interface{}) {
 	h.constructor = c
 	h.constructorArgs = args
 }
 
 // Add add new repo into hub.
-func (h *Hub) Add(i *Info) error {
+func (h *Hub) Add(i *repository.Info) error {
 	repo, err := h.constructor(i, h.constructorArgs...)
 	if err != nil {
 		return fmt.Errorf("error hub constructor repo(%s): %w", i, err)
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 	defer cancel()
-	if err = h.repoOperator.Create(ctx, i); err != nil {
+	if err = h.infoOperator.Create(ctx, i); err != nil {
 		return fmt.Errorf("error repo operator create(%s): %w", i, err)
 	}
 	h.repoSet.Store(i.Name, repo)
@@ -146,7 +147,7 @@ func (h *Hub) Add(i *Info) error {
 }
 
 // Delete delete repo.
-func (h *Hub) Delete(name string) (ret Repository, err error) {
+func (h *Hub) Delete(name string) (ret repository.Repository, err error) {
 	rbStack := util.NewRollbackStack()
 	defer func() {
 		if err != nil {
@@ -157,7 +158,7 @@ func (h *Hub) Delete(name string) (ret Repository, err error) {
 	if !ok {
 		return nil, errors.New("repo not exsist")
 	}
-	repo, ok := repoIn.(Repository)
+	repo, ok := repoIn.(repository.Repository)
 	if !ok {
 		return nil, errors.New("invaild repo type")
 	}
@@ -172,7 +173,7 @@ func (h *Hub) Delete(name string) (ret Repository, err error) {
 	})
 	ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 	defer cancel()
-	_, err = h.repoOperator.Delete(ctx, name)
+	_, err = h.infoOperator.Delete(ctx, name)
 	if err != nil {
 		return nil, fmt.Errorf("error repo operator delete repo(%s): %w", name, err)
 	}
@@ -180,13 +181,13 @@ func (h *Hub) Delete(name string) (ret Repository, err error) {
 }
 
 // Get get repo.
-func (h *Hub) Get(name string) (Repository, error) {
+func (h *Hub) Get(name string) (repository.Repository, error) {
 	repoIn, ok := h.repoSet.Load(name)
 	if !ok {
 		// find model repo.
 		ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 		defer cancel()
-		modelInfo, err := h.repoOperator.Get(ctx, name)
+		modelInfo, err := h.infoOperator.Get(ctx, name)
 		if err != nil {
 			return nil, fmt.Errorf("error repo operator find %s: %w", name, err)
 		}
@@ -197,7 +198,7 @@ func (h *Hub) Get(name string) (Repository, error) {
 		h.repoSet.Store(name, repo)
 		return repo, nil
 	}
-	repo, ok := repoIn.(Repository)
+	repo, ok := repoIn.(repository.Repository)
 	if !ok {
 		return nil, errors.New("invaild repo type")
 	}
@@ -205,14 +206,14 @@ func (h *Hub) Get(name string) (Repository, error) {
 }
 
 // Uninstall plugin.
-func (h *Hub) Uninstall(pluginID string, i Installer) error {
+func (h *Hub) Uninstall(pluginID string, i repository.Installer) error {
 	if i == nil {
 		return errors.New("invaild plugin installer info")
 	}
 	brief := i.Brief()
 	repoIn, ok := h.repoSet.Load(brief)
 	if ok {
-		repo, ok := repoIn.(Repository)
+		repo, ok := repoIn.(repository.Repository)
 		if !ok {
 			return errors.New("invaild repo type")
 		}
@@ -231,7 +232,7 @@ func (h *Hub) Uninstall(pluginID string, i Installer) error {
 	return nil
 }
 
-func infoSliStr(is []*Info) string {
+func infoSliStr(is []*repository.Info) string {
 	ret := make([]string, 0, len(is)+2)
 	ret = append(ret, "[")
 	for _, v := range is {
