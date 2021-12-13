@@ -144,7 +144,7 @@ type Repository interface {
 }
 
 // Constructor return new repository.
-type Constructor func(*Info) (Repository, error)
+type Constructor func(connectInfo *Info, args ...interface{}) (Repository, error)
 
 // DestoryPlugin destory model.Plugin.
 type DestoryPlugin func(pluginID string) error

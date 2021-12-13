@@ -36,20 +36,22 @@ var (
 
 // Hub repository manager hub.
 type Hub struct {
-	repoOperator InfoOperator
-	repoSet      *sync.Map
-	constructor  Constructor
-	destory      DestoryPlugin
+	repoOperator    InfoOperator
+	repoSet         *sync.Map
+	constructor     Constructor
+	destory         DestoryPlugin
+	constructorArgs []interface{}
 }
 
 // InitHub initial hub.
-func InitHub(interval string, op InfoOperator, c Constructor, d DestoryPlugin) {
+func InitHub(interval string, op InfoOperator, c Constructor, d DestoryPlugin, initRepoArgs ...interface{}) {
 	once.Do(func() {
 		h = &Hub{
-			repoOperator: op,
-			repoSet:      new(sync.Map),
-			constructor:  c,
-			destory:      d,
+			repoOperator:    op,
+			repoSet:         new(sync.Map),
+			constructor:     c,
+			destory:         d,
+			constructorArgs: initRepoArgs,
 		}
 		if err := h.Init(interval); err != nil {
 			log.Fatalf("error init hub: %s", err)
@@ -75,7 +77,7 @@ func (h *Hub) Init(interval string) error {
 		return fmt.Errorf("error list repo: %w", err)
 	}
 	for _, v := range modelRepos {
-		repo, err := h.constructor(v)
+		repo, err := h.constructor(v, h.constructorArgs...)
 		if err != nil {
 			return fmt.Errorf("error constructor repo(%s): %w", v, err)
 		}
@@ -97,7 +99,7 @@ func (h *Hub) updateRepoSet(newInfo, updateInfo, deleteInfo []*Info) error {
 		infoSliStr(newInfo), infoSliStr(updateInfo), infoSliStr(deleteInfo))
 	// create new repo.
 	for _, v := range newInfo {
-		newRepo, err := h.constructor(v)
+		newRepo, err := h.constructor(v, h.constructorArgs...)
 		if err != nil {
 			err = fmt.Errorf("error constructor(%s): %w", v, err)
 			log.Error(err)
@@ -111,7 +113,7 @@ func (h *Hub) updateRepoSet(newInfo, updateInfo, deleteInfo []*Info) error {
 	}
 	// update new repo.
 	for _, v := range updateInfo {
-		changeRepo, err := h.constructor(v)
+		changeRepo, err := h.constructor(v, h.constructorArgs...)
 		if err != nil {
 			err = fmt.Errorf("error constructor(%s): %w", v, err)
 			log.Error(err)
@@ -122,9 +124,15 @@ func (h *Hub) updateRepoSet(newInfo, updateInfo, deleteInfo []*Info) error {
 	return nil
 }
 
+// SetConstructor overflow constructor
+func (h *Hub) SetConstructor(c Constructor, args ...interface{}) {
+	h.constructor = c
+	h.constructorArgs = args
+}
+
 // Add add new repo into hub.
 func (h *Hub) Add(i *Info) error {
-	repo, err := h.constructor(i)
+	repo, err := h.constructor(i, h.constructorArgs...)
 	if err != nil {
 		return fmt.Errorf("error hub constructor repo(%s): %w", i, err)
 	}
@@ -154,7 +162,7 @@ func (h *Hub) Delete(name string) (ret Repository, err error) {
 		return nil, errors.New("invaild repo type")
 	}
 	rbStack = append(rbStack, func() error {
-		rbRepo, err := h.constructor(repo.Info())
+		rbRepo, err := h.constructor(repo.Info(), h.constructorArgs...)
 		if err != nil {
 			return fmt.Errorf("error delete roll back constructor(%s): %w",
 				repo.Info().Name, err)
@@ -182,7 +190,7 @@ func (h *Hub) Get(name string) (Repository, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error repo operator find %s: %w", name, err)
 		}
-		repo, err := h.constructor(modelInfo)
+		repo, err := h.constructor(modelInfo, h.constructorArgs...)
 		if err != nil {
 			return nil, fmt.Errorf("error constructor(%s) repo: %w", modelInfo, err)
 		}
