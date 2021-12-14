@@ -23,12 +23,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
-	entity_v1 "github.com/tkeel-io/security/pkg/apirouter/entity/v1"
-	oauth_v1 "github.com/tkeel-io/security/pkg/apirouter/oauth/v1"
-	rbac_v1 "github.com/tkeel-io/security/pkg/apirouter/rbac/v1"
-	tenant_v1 "github.com/tkeel-io/security/pkg/apirouter/tenant/v1"
-	"github.com/tkeel-io/security/pkg/apiserver/filters"
-	security_dao "github.com/tkeel-io/security/pkg/models/dao"
+	entity_v1 "github.com/tkeel-io/security/apirouter/entity/v1"
+	oauth_v1 "github.com/tkeel-io/security/apirouter/oauth/v1"
+	rbac_v1 "github.com/tkeel-io/security/apirouter/rbac/v1"
+	tenant_v1 "github.com/tkeel-io/security/apirouter/tenant/v1"
+	"github.com/tkeel-io/security/apiserver/filters"
+	security_dao "github.com/tkeel-io/security/models/dao"
+	"github.com/tkeel-io/security/models/entity"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/cmd"
@@ -106,7 +107,11 @@ var rootCmd = &cobra.Command{
 				// rbac.
 				rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.RBAC, conf.SecurityConf.OAuth2)
 				// entity token.
-				entity_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.Entity, conf.SecurityConf.OAuth2)
+				entityTokenOperator := entity.NewEntityTokenOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
+				if entityTokenOperator == nil {
+					os.Exit(-1)
+				}
+				entity_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.Entity, entityTokenOperator)
 				// add auth role filter.
 				tenantAdminRoleFilter := filters.AuthFilter(conf.SecurityConf.OAuth2, "admin")
 				for _, ws := range httpSrv.Container.RegisteredWebServices() {
