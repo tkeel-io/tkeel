@@ -107,7 +107,7 @@ func (r *HelmRepo) Search(word string) ([]*InstallerBrief, error) {
 		return nil, errors.Wrap(err, "can't build helm index config")
 	}
 
-	res := index.Search(word)
+	res := index.Search(word, "")
 	return res.ToInstallerBrief(), nil
 }
 

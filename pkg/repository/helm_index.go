@@ -93,7 +93,7 @@ func NewIndex(repoName string, data []byte) (*Index, error) {
 	return index, nil
 }
 
-func (r *Index) Search(word string) PluginResList {
+func (r *Index) Search(word string, version string) PluginResList {
 	list := make(PluginResList, 0, len(r.helmIndex.Entries))
 	if word == "*" {
 		for name, ch := range r.charts {
@@ -110,7 +110,7 @@ func (r *Index) Search(word string) PluginResList {
 	}
 
 	for name, ch := range r.charts {
-		if name == word {
+		if name == word && ch.Version == version {
 			res := PluginRes{
 				Name:        ch.Name,
 				Version:     ch.Version,
