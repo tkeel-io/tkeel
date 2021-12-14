@@ -240,6 +240,6 @@ func RegisterRepoHTTPServer(container *go_restful.Container, srv RepoHTTPServer)
 		To(handler.ListRepo))
 	ws.Route(ws.GET("/repos/{repo_name}/installers").
 		To(handler.ListRepoInstaller))
-	ws.Route(ws.GET("/repos/{repo_name}/installers/{installer_name}").
+	ws.Route(ws.GET("/repos/{repo_name}/installers/{installer_name}/{installer_version}").
 		To(handler.GetRepoInstaller))
 }

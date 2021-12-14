@@ -560,7 +560,7 @@
         ]
       }
     },
-    "/repos/{repo_name}/installers/{installer_name}": {
+    "/repos/{repo_name}/installers/{installer_name}/{installer_version}": {
       "get": {
         "summary": "获取仓库中指定安装包",
         "operationId": "GetRepoInstaller",
@@ -601,6 +601,13 @@
           {
             "name": "installer_name",
             "description": "installer name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "installer_version",
+            "description": "installer version",
             "in": "path",
             "required": true,
             "type": "string"
@@ -664,23 +671,6 @@
         }
       },
       "description": "*\nmessage plugin declares extension point."
-    },
-    "v1Annotations": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string",
-          "description": "key"
-        },
-        "value": {
-          "type": "string",
-          "description": "value"
-        },
-        "desc": {
-          "type": "string",
-          "description": "desc"
-        }
-      }
     },
     "v1BriefPluginInfo": {
       "type": "object",
@@ -815,12 +805,14 @@
           "type": "string",
           "description": "installer version"
         },
+        "repo": {
+          "type": "string",
+          "description": "installer repo"
+        },
         "annotations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1Annotations"
-          },
-          "description": "installer annotations"
+          "type": "string",
+          "format": "byte",
+          "description": "repo annotations"
         },
         "readme": {
           "type": "string",
@@ -1018,10 +1010,10 @@
           "type": "string",
           "description": "repo url"
         },
-        "upsert_timestamp": {
+        "annotations": {
           "type": "string",
-          "format": "int64",
-          "description": "upsert time stamp"
+          "format": "byte",
+          "description": "repo annotations"
         }
       }
     },

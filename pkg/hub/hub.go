@@ -204,6 +204,21 @@ func (h *Hub) Get(name string) (repository.Repository, error) {
 	return repo, nil
 }
 
+// List get all repo.
+func (h *Hub) List() []repository.Repository {
+	ret := make([]repository.Repository, 0)
+	h.repoSet.Range(func(key, value interface{}) bool {
+		r, ok := value.(repository.Repository)
+		if !ok {
+			log.Errorf("error invalid repo type(%v)", key)
+			return false
+		}
+		ret = append(ret, r)
+		return true
+	})
+	return ret
+}
+
 // Uninstall plugin.
 func (h *Hub) Uninstall(pluginID string, brief *repository.InstallerBrief) error {
 	if brief == nil {
