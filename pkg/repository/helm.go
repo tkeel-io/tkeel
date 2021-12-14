@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"strings"
 
-	"helm.sh/helm/v3/pkg/getter"
-
 	"github.com/pkg/errors"
-
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	helmAction "helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/getter"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
