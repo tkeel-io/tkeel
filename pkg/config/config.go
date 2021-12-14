@@ -19,7 +19,7 @@ import (
 	"os"
 	"strconv"
 
-	security_conf "github.com/tkeel-io/security/pkg/apiserver/config"
+	security_conf "github.com/tkeel-io/security/apiserver/config"
 
 	"gopkg.in/yaml.v2"
 )
