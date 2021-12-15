@@ -51,7 +51,7 @@ func NewHelmRepo(info Info, driver Driver, namespace string) (*HelmRepo, error) 
 		driver:     driver,
 		httpGetter: httpGetter,
 	}
-	if err := repo.setActionConfig(); err != nil {
+	if err = repo.setActionConfig(); err != nil {
 		return nil, err
 	}
 	return repo, nil
