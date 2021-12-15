@@ -70,14 +70,14 @@ func (ib *InstallerBrief) String() string {
 type Installer interface {
 	// SetPluginID set plugin id after installing to tKeel.
 	SetPluginID(pluginID string)
-	// Annotations get annotations.custom datas. Return a copy of the Annotations.
+	// Annotations get annotations. custom data. Return a copy of the Annotations.
 	Annotations() Annotations
 	// Options get installer options.
-	Options() []Option
+	Options() []*Option
 	// SetOption set option to Installer.
 	SetOption(...*Option) error
 	// Install plugin.
-	Install(...Option) error
+	Install(...*Option) error
 	// Uninstall plugin.
 	Uninstall(pluginID string) error
 	// Brief get installer brief information.
@@ -131,7 +131,7 @@ type Repository interface {
 	// Get the installer with matching name and version.
 	Get(name, version string) (Installer, error)
 	// Installed find installed installer(contains installation packages that have been deleted in the repository).
-	Installed() []Installer
+	Installed() ([]Installer, error)
 	// Close this repository.
 	Close() error
 }

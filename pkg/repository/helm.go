@@ -20,15 +20,24 @@ import (
 	"fmt"
 	"strings"
 
+	"helm.sh/helm/v3/pkg/release"
+
+	"helm.sh/helm/v3/pkg/chart/loader"
+
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
-	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	helmAction "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/getter"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
 const _indexFileName = "index.yaml"
+
+var (
+	ErrNotFound       = errors.New("not found")
+	ErrNoValidURL     = errors.New("no valid url")
+	ErrNoChartInfoSet = errors.New("no chart info set in installer")
+)
 
 type Driver string
 
@@ -45,14 +54,19 @@ const (
 	SQL       Driver = "sql"
 )
 
-type HelmRepo struct {
-	info *Info
+const (
+	_tkeelRepo          = "https://tkeel-io.github.io/helm-charts"
+	_componentChartName = "tkeel-plugin-components"
+)
 
+type HelmRepo struct {
+	info         *Info
 	actionConfig *helmAction.Configuration
-	daprClient   *dapr.Client
 	httpGetter   getter.Getter
 	driver       Driver
 	namespace    string
+	indexCache   *Index
+	listCache    []*release.Release
 }
 
 func NewHelmRepo(info Info, driver Driver, namespace string) (*HelmRepo, error) {
@@ -75,14 +89,6 @@ func NewHelmRepo(info Info, driver Driver, namespace string) (*HelmRepo, error) 
 
 func (r *HelmRepo) SetInfo(info Info) {
 	r.info = &info
-}
-
-func (r *HelmRepo) DaprClient() *dapr.Client {
-	return r.daprClient
-}
-
-func (r *HelmRepo) SetDaprClient(daprClient *dapr.Client) {
-	r.daprClient = daprClient
 }
 
 func (r *HelmRepo) Namespace() string {
@@ -122,19 +128,46 @@ func (r *HelmRepo) Search(word string) ([]*InstallerBrief, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "can't build helm index config")
 	}
+	// The latest index file is requested for each query.
+	// This cache is intended for other functions.
+	r.indexCache = index
 
 	res := index.Search(word, "")
 	return res.ToInstallerBrief(), nil
 }
 
 func (r *HelmRepo) Get(name, version string) (Installer, error) {
-	// TODO implement me
-	panic("implement me")
+	index, err := r.buildIndex()
+	if err != nil {
+		return nil, errors.Wrap(err, "can't build helm index config")
+	}
+
+	res := index.Search(name, version)
+	if len(res) != 1 {
+		return nil, ErrNotFound
+	}
+
+	if len(res[0].URLs) == 0 {
+		return nil, ErrNoValidURL
+	}
+
+	buf, err := r.httpGetter.Get(res[0].URLs[0])
+	if err != nil {
+		return nil, errors.Wrap(err, "GET target file failed")
+	}
+
+	ch, err := loader.LoadArchive(buf)
+	if err != nil {
+		return nil, errors.Wrap(err, "Load archive to struct Chart failed")
+	}
+
+	brief := res[0].ToInstallerBrief()
+	i := NewHelmInstaller(brief.Name, ch, *brief, r.namespace, r.actionConfig)
+	return &i, nil
 }
 
-func (r *HelmRepo) Installed() []Installer {
-	// TODO implement me
-	panic("implement me")
+func (r *HelmRepo) Installed() ([]Installer, error) {
+	return r.getInstalled()
 }
 
 func (r *HelmRepo) Close() error {
@@ -143,14 +176,14 @@ func (r *HelmRepo) Close() error {
 }
 
 func (r *HelmRepo) buildIndex() (*Index, error) {
-	fileContent, err := r.QueryIndex()
+	fileContent, err := r.GetIndex()
 	if err != nil {
 		return nil, err
 	}
 	return NewIndex(r.info.Name, fileContent)
 }
 
-func (r *HelmRepo) QueryIndex() ([]byte, error) {
+func (r *HelmRepo) GetIndex() ([]byte, error) {
 	url := strings.TrimSuffix(r.info.URL, "/")
 	url += "/" + _indexFileName
 
@@ -160,6 +193,53 @@ func (r *HelmRepo) QueryIndex() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (r *HelmRepo) listAndCached() ([]*release.Release, error) {
+	listAction := helmAction.NewList(r.actionConfig)
+	releases, err := listAction.Run()
+	if err != nil {
+		return nil, err
+	}
+	r.listCache = releases
+	return releases, nil
+}
+
+func (r *HelmRepo) getInstalled() ([]Installer, error) {
+	if r.indexCache == nil {
+		index, err := r.buildIndex()
+		if err != nil {
+			return nil, err
+		}
+		r.indexCache = index
+	}
+
+	res := r.indexCache.Search("*", "")
+
+	if r.listCache == nil {
+		if _, err := r.listAndCached(); err != nil {
+			return nil, err
+		}
+	}
+
+	// TODO: Fix O(n²)
+	list := make([]Installer, 0)
+	for i := 0; i < len(r.listCache); i++ {
+		for j := 0; j < len(res); j++ {
+			if r.listCache[i].Chart.Name() == res[j].Name {
+				installer := NewHelmInstaller(
+					r.listCache[i].Name,        /* Installed Plugin ID. */
+					r.listCache[i].Chart,       /* Plugin Chart. */
+					*res[j].ToInstallerBrief(), /* Brief. */
+					r.namespace,                /* Namespace. */
+					r.actionConfig,             /* Action Config. */
+				)
+				list = append(list, &installer)
+			}
+		}
+	}
+
+	return list, nil
 }
 
 func getDebugLogFunc() helmAction.DebugLog {

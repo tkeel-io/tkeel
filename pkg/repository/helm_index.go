@@ -26,8 +26,8 @@ import (
 	"helm.sh/helm/v3/pkg/repo"
 )
 
-// verSep is a separator for version fields in map keys.
-const verSep = "$$"
+// _verSep is a separator for version fields in map keys.
+const _verSep = "$$"
 
 type PluginRes struct {
 	Name        string   `json:"name"`
@@ -101,7 +101,7 @@ func NewIndex(repoName string, data []byte) (*Index, error) {
 
 		fname := path.Join(repoName, name)
 		for _, rr := range ref {
-			versionedName := fname + verSep + rr.Version
+			versionedName := fname + _verSep + rr.Version
 			index.charts[versionedName] = rr
 		}
 	}
@@ -114,7 +114,7 @@ func (r *Index) Search(word string, version string) PluginResList {
 	if word == "*" {
 		for name, ch := range r.charts {
 			res := PluginRes{
-				Name:        strings.Split(name, verSep)[0],
+				Name:        strings.Split(name, _verSep)[0],
 				Version:     ch.Version,
 				Repo:        r.RepoName,
 				URLs:        ch.URLs,
