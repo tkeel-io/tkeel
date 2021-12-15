@@ -122,8 +122,8 @@ func (r *Index) Search(word string, version string) PluginResList {
 		return list
 	}
 
-	for name, ch := range r.charts {
-		if name == word {
+	for _, ch := range r.charts {
+		if ch.Name == word {
 			if version == "" || version == ch.Version {
 				res := PluginRes{
 					Name:        ch.Name,

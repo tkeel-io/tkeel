@@ -17,7 +17,6 @@ limitations under the License.
 package repository
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -411,13 +410,18 @@ func Test_initActionConfig(t *testing.T) {
 	}
 }
 
-func TestSearch(t *testing.T) {
-	info := NewInfo("tkeel", _tkeelRepo, nil)
-	repo, err := NewHelmRepo(*info, Mem, "default")
-	assert.Nil(t, err)
-
-	ibs, err := repo.Search("*")
-	assert.Nil(t, err)
-
-	fmt.Printf("%+v", ibs)
-}
+//func TestSearch(t *testing.T) {
+//	info := NewInfo("tkeel", _tkeelRepo, nil)
+//	repo, err := NewHelmRepo(*info, Mem, "default")
+//	assert.Nil(t, err)
+//
+//	ibs, err := repo.Search("*")
+//	assert.Nil(t, err)
+//
+//	fmt.Printf("%+v/n", ibs)
+//	fmt.Println()
+//
+//	ibs, err = repo.Search("keel")
+//	assert.Nil(t, err)
+//	fmt.Printf("%+v/n", ibs)
+//}
