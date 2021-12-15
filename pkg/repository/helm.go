@@ -65,8 +65,6 @@ type HelmRepo struct {
 	httpGetter   getter.Getter
 	driver       Driver
 	namespace    string
-	indexCache   *Index
-	listCache    []*release.Release
 }
 
 func NewHelmRepo(info Info, driver Driver, namespace string) (*HelmRepo, error) {
@@ -124,20 +122,37 @@ func (r *HelmRepo) Info() *Info {
 }
 
 func (r *HelmRepo) Search(word string) ([]*InstallerBrief, error) {
-	index, err := r.buildIndex()
+	index, err := r.BuildIndex()
 	if err != nil {
 		return nil, errors.Wrap(err, "can't build helm index config")
 	}
-	// The latest index file is requested for each query.
-	// This cache is intended for other functions.
-	r.indexCache = index
 
 	res := index.Search(word, "")
-	return res.ToInstallerBrief(), nil
+	briefs := res.ToInstallerBrief()
+
+	// modify briefs installed status
+	// 1. get this repo installed
+	// 2. range briefs and change status.
+	installedList, err := r.getInstalled()
+	if err != nil {
+		return nil, err
+	}
+
+	installedMap := make(map[string]struct{}, len(installedList))
+	for i := range installedList {
+		installedMap[installedList[i].Brief().Name] = struct{}{}
+	}
+	for i := 0; i < len(briefs); i++ {
+		if _, ok := installedMap[briefs[i].Name]; ok {
+			briefs[i].Installed = true
+		}
+	}
+
+	return briefs, nil
 }
 
 func (r *HelmRepo) Get(name, version string) (Installer, error) {
-	index, err := r.buildIndex()
+	index, err := r.BuildIndex()
 	if err != nil {
 		return nil, errors.Wrap(err, "can't build helm index config")
 	}
@@ -175,7 +190,7 @@ func (r *HelmRepo) Close() error {
 	panic("implement me")
 }
 
-func (r *HelmRepo) buildIndex() (*Index, error) {
+func (r *HelmRepo) BuildIndex() (*Index, error) {
 	fileContent, err := r.GetIndex()
 	if err != nil {
 		return nil, err
@@ -195,41 +210,36 @@ func (r *HelmRepo) GetIndex() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (r *HelmRepo) listAndCached() ([]*release.Release, error) {
+func (r *HelmRepo) list() ([]*release.Release, error) {
 	listAction := helmAction.NewList(r.actionConfig)
 	releases, err := listAction.Run()
 	if err != nil {
 		return nil, err
 	}
-	r.listCache = releases
 	return releases, nil
 }
 
 func (r *HelmRepo) getInstalled() ([]Installer, error) {
-	if r.indexCache == nil {
-		index, err := r.buildIndex()
-		if err != nil {
-			return nil, err
-		}
-		r.indexCache = index
+	index, err := r.BuildIndex()
+	if err != nil {
+		return nil, err
 	}
 
-	res := r.indexCache.Search("*", "")
+	res := index.Search("*", "")
 
-	if r.listCache == nil {
-		if _, err := r.listAndCached(); err != nil {
-			return nil, err
-		}
+	rls, err := r.list()
+	if err != nil {
+		return nil, err
 	}
 
 	// TODO: Fix O(n²)
 	list := make([]Installer, 0)
-	for i := 0; i < len(r.listCache); i++ {
+	for i := 0; i < len(rls); i++ {
 		for j := 0; j < len(res); j++ {
-			if r.listCache[i].Chart.Name() == res[j].Name {
+			if rls[i].Chart.Name() == res[j].Name {
 				installer := NewHelmInstaller(
-					r.listCache[i].Name,        /* Installed Plugin ID. */
-					r.listCache[i].Chart,       /* Plugin Chart. */
+					rls[i].Name,                /* Installed Plugin ID. */
+					rls[i].Chart,               /* Plugin Chart. */
 					*res[j].ToInstallerBrief(), /* Brief. */
 					r.namespace,                /* Namespace. */
 					r.actionConfig,             /* Action Config. */

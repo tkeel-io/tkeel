@@ -17,13 +17,10 @@ limitations under the License.
 package repository
 
 import (
-	"path"
-	"strings"
-
 	"github.com/tkeel-io/kit/log"
-	"gopkg.in/yaml.v2"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/repo"
+	"sigs.k8s.io/yaml"
 )
 
 // _verSep is a separator for version fields in map keys.
@@ -90,6 +87,7 @@ func NewIndex(repoName string, data []byte) (*Index, error) {
 	}
 
 	index := &Index{
+		RepoName:  repoName,
 		helmIndex: i,
 		charts:    make(map[string]*repo.ChartVersion),
 	}
@@ -99,9 +97,8 @@ func NewIndex(repoName string, data []byte) (*Index, error) {
 			continue
 		}
 
-		fname := path.Join(repoName, name)
 		for _, rr := range ref {
-			versionedName := fname + _verSep + rr.Version
+			versionedName := name + _verSep + rr.Version
 			index.charts[versionedName] = rr
 		}
 	}
@@ -112,9 +109,9 @@ func NewIndex(repoName string, data []byte) (*Index, error) {
 func (r *Index) Search(word string, version string) PluginResList {
 	list := make(PluginResList, 0, len(r.helmIndex.Entries))
 	if word == "*" {
-		for name, ch := range r.charts {
+		for _, ch := range r.charts {
 			res := PluginRes{
-				Name:        strings.Split(name, _verSep)[0],
+				Name:        ch.Name,
 				Version:     ch.Version,
 				Repo:        r.RepoName,
 				URLs:        ch.URLs,
