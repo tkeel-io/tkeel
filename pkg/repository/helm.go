@@ -236,20 +236,22 @@ func (r *HelmRepo) getInstalled() ([]Installer, error) {
 		return nil, err
 	}
 
-	// TODO: Fix O(n²).
+	cache := make(map[string]*PluginRes)
+	for i := 0; i < len(res); i++ {
+		cache[res[i].Name] = res[i]
+	}
+
 	list := make([]Installer, 0)
 	for i := 0; i < len(rls); i++ {
-		for j := 0; j < len(res); j++ {
-			if rls[i].Chart.Name() == res[j].Name {
-				installer := NewHelmInstaller(
-					rls[i].Name,                /* Installed Plugin ID. */
-					rls[i].Chart,               /* Plugin Chart. */
-					*res[j].ToInstallerBrief(), /* Brief. */
-					r.namespace,                /* Namespace. */
-					r.actionConfig,             /* Action Config. */
-				)
-				list = append(list, &installer)
-			}
+		if plugin, ok := cache[rls[i].Chart.Name()]; ok {
+			installer := NewHelmInstaller(
+				rls[i].Name,                /* Installed Plugin ID. */
+				rls[i].Chart,               /* Plugin Chart. */
+				*plugin.ToInstallerBrief(), /* Brief. */
+				r.namespace,                /* Namespace. */
+				r.actionConfig,             /* Action Config. */
+			)
+			list = append(list, &installer)
 		}
 	}
 
