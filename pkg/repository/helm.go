@@ -17,6 +17,7 @@ limitations under the License.
 package repository
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -39,13 +40,12 @@ var (
 	ErrNoChartInfoSet = errors.New("no chart info set in installer")
 )
 
+// Driver is a short way define for Helm Store Status
 type Driver string
 
 func (d Driver) String() string {
 	return string(d)
 }
-
-var _ Repository = &HelmRepo{}
 
 const (
 	Secret    Driver = "secret"
@@ -59,6 +59,9 @@ const (
 	_componentChartName = "tkeel-plugin-components"
 )
 
+var _ Repository = &HelmRepo{}
+
+// HelmRepo is the impl Repository Repo.
 type HelmRepo struct {
 	info         *Info
 	actionConfig *helmAction.Configuration
@@ -125,6 +128,7 @@ func (r *HelmRepo) Info() *Info {
 	return r.info
 }
 
+// Search the word in repo, support "*" to get all installable in repo.
 func (r *HelmRepo) Search(word string) ([]*InstallerBrief, error) {
 	index, err := r.BuildIndex()
 	if err != nil {
@@ -134,9 +138,9 @@ func (r *HelmRepo) Search(word string) ([]*InstallerBrief, error) {
 	res := index.Search(word, "")
 	briefs := res.ToInstallerBrief()
 
-	// modify briefs installed status
+	// modify briefs Installed status
 	// 1. get this repo installed
-	// 2. range briefs and change status.
+	// 2. range briefs and change Installed status.
 	installedList, err := r.getInstalled()
 	if err != nil {
 		return nil, err
@@ -155,6 +159,7 @@ func (r *HelmRepo) Search(word string) ([]*InstallerBrief, error) {
 	return briefs, nil
 }
 
+// Get the Installer of the specified installable.
 func (r *HelmRepo) Get(name, version string) (Installer, error) {
 	index, err := r.BuildIndex()
 	if err != nil {
@@ -170,7 +175,15 @@ func (r *HelmRepo) Get(name, version string) (Installer, error) {
 		return nil, ErrNoValidURL
 	}
 
-	buf, err := r.httpGetter.Get(res[0].URLs[0])
+	var buf *bytes.Buffer
+	err = nil
+	for i := range res[0].URLs {
+		buf, err = r.httpGetter.Get(res[0].URLs[i])
+		if err != nil {
+			continue
+		}
+		break
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "GET target file failed")
 	}
@@ -202,9 +215,9 @@ func (r *HelmRepo) BuildIndex() (*Index, error) {
 	return NewIndex(r.info.Name, fileContent)
 }
 
+// GetIndex get the repo index.yaml file content.
 func (r *HelmRepo) GetIndex() ([]byte, error) {
-	url := strings.TrimSuffix(r.info.URL, "/")
-	url += "/" + _indexFileName
+	url := strings.TrimSuffix(r.info.URL, "/") + "/" + _indexFileName
 
 	buf, err := r.httpGetter.Get(url)
 	if err != nil {
@@ -214,6 +227,7 @@ func (r *HelmRepo) GetIndex() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// list the installed release plugin by helm .
 func (r *HelmRepo) list() ([]*release.Release, error) {
 	listAction := helmAction.NewList(r.actionConfig)
 	releases, err := listAction.Run()
@@ -264,6 +278,7 @@ func getDebugLogFunc() helmAction.DebugLog {
 	}
 }
 
+// initActionConfig Initialize a usable helm action.Configuration.
 func initActionConfig(namespace string, driver Driver) (*helmAction.Configuration, error) {
 	config := new(helmAction.Configuration)
 	k8sFlags := &genericclioptions.ConfigFlags{
