@@ -89,8 +89,14 @@ func (h *HelmInstaller) SetOption(options ...*Option) error {
 }
 
 func (h HelmInstaller) Install(options ...*Option) error {
-	ops := h.options[:]
+	ops := h.options[:len(h.options):len(h.options)]
 	ops = append(ops, options...)
+
+	for i := 0; i < len(ops); i++ {
+		if err := ops[i].Check(); err != nil {
+			return errors.Wrap(err, "check option failed")
+		}
+	}
 
 	installer := action.NewInstall(h.helmConfig)
 
@@ -115,10 +121,8 @@ func (h HelmInstaller) Install(options ...*Option) error {
 
 	installer.Namespace = h.namespace
 	installer.ReleaseName = h.id
-	if r, err := installer.Run(h.chart, nil); err != nil {
+	if _, err := installer.Run(h.chart, nil); err != nil {
 		return errors.Wrap(err, "INSTALLATION FAILED")
-	} else {
-		fmt.Printf("%+v\n", r)
 	}
 	return nil
 }
@@ -160,7 +164,7 @@ func loadComponentChart() (*chart.Chart, error) {
 	c, err := loader.Load(cp)
 	if err != nil {
 		log.Warn("can't parse the file %q", cp, err)
-		return nil, err
+		return nil, errors.Wrap(err, "load helm chart failed")
 	}
 	if err := checkIfInstallable(c); err != nil {
 		log.Warn("uninstallable chart request")

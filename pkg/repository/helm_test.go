@@ -23,7 +23,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	helmAction "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/getter"
-	"helm.sh/helm/v3/pkg/release"
 )
 
 func TestDriver_String(t *testing.T) {
@@ -53,8 +52,6 @@ func TestHelmRepo_Close(t *testing.T) {
 		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
-		indexCache   *Index
-		listCache    []*release.Release
 	}
 	tests := []struct {
 		name    string
@@ -87,8 +84,6 @@ func TestHelmRepo_GetDriver(t *testing.T) {
 		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
-		indexCache   *Index
-		listCache    []*release.Release
 	}
 	tests := []struct {
 		name   string
@@ -120,8 +115,6 @@ func TestHelmRepo_Info(t *testing.T) {
 		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
-		indexCache   *Index
-		listCache    []*release.Release
 	}
 
 	i := Info{
@@ -159,8 +152,6 @@ func TestHelmRepo_Namespace(t *testing.T) {
 		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
-		indexCache   *Index
-		listCache    []*release.Release
 	}
 	tests := []struct {
 		name   string
@@ -192,8 +183,6 @@ func TestHelmRepo_SetDriver(t *testing.T) {
 		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
-		indexCache   *Index
-		listCache    []*release.Release
 	}
 	type args struct {
 		driver Driver
@@ -230,8 +219,6 @@ func TestHelmRepo_SetInfo(t *testing.T) {
 		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
-		indexCache   *Index
-		listCache    []*release.Release
 	}
 	type args struct {
 		info Info
@@ -271,8 +258,6 @@ func TestHelmRepo_SetNamespace(t *testing.T) {
 		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
-		indexCache   *Index
-		listCache    []*release.Release
 	}
 	type args struct {
 		namespace string
@@ -308,15 +293,13 @@ func TestHelmRepo_setActionConfig(t *testing.T) {
 		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
-		indexCache   *Index
-		listCache    []*release.Release
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		wantErr bool
 	}{
-		{"set action config", fields{actionConfig: nil}, false},
+		{"set action configSetup", fields{actionConfig: nil}, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -327,8 +310,8 @@ func TestHelmRepo_setActionConfig(t *testing.T) {
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
-			if err := r.setActionConfig(); (err != nil) != tt.wantErr {
-				t.Errorf("setActionConfig() error = %v, wantErr %v", err, tt.wantErr)
+			if err := r.configSetup(); (err != nil) != tt.wantErr {
+				t.Errorf("configSetup() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			assert.NotNil(t, r.actionConfig)
 		})
@@ -391,7 +374,7 @@ func Test_initActionConfig(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			"init helm action config",
+			"init helm action configSetup",
 			args{
 				namespace: "namespace",
 				driver:    Mem,
@@ -410,37 +393,40 @@ func Test_initActionConfig(t *testing.T) {
 	}
 }
 
-// func TestSearch(t *testing.T) {
-//	info := NewInfo("tkeel", _tkeelRepo, nil)
-//	repo, err := NewHelmRepo(*info, Secret, "default")
-//	assert.Nil(t, err)
+/*
+func TestSearch(t *testing.T) {
+	info := NewInfo("tkeel", _tkeelRepo, nil)
+	repo, err := NewHelmRepo(*info, Secret, "default")
+	assert.Nil(t, err)
 
-//ibs, err := repo.Search("*")
-//assert.Nil(t, err)
-//
-//fmt.Printf("%+v\n", ibs)
-//fmt.Println()
+	ibs, err := repo.Search("*")
+	assert.Nil(t, err)
 
-//ibs, err := repo.Search("keel")
-//assert.Nil(t, err)
-//fmt.Printf("%+v\n", ibs)
-//
-//i, err := repo.Get("iothub", "0.2.0")
-//assert.Nil(t, err)
-//fmt.Printf("%+v\n", i)
-//
-//fmt.Println("=== Run Install === ")
-// i.SetPluginID("test")
-// err = i.Install()
-// assert.Nil(t, err)
+	fmt.Printf("%+v\n", ibs)
+	fmt.Println()
 
-//list, err := repo.Search("iothub")
-//if err != nil {
-//	assert.True(t, list[0].Installed)
-//}
-//
-//ti := NewHelmInstallerQuick("test", repo.Namespace(), repo.actionConfig)
-//i = &ti
-//err = i.Uninstall()
-//assert.Nil(t, err)
-//}
+	ibs, err = repo.Search("keel")
+	assert.Nil(t, err)
+	fmt.Printf("%+v\n", ibs)
+
+	i, err := repo.Get("iothub", "0.2.0")
+	assert.Nil(t, err)
+	fmt.Printf("%+v\n", i)
+
+	fmt.Println("=== Run Install === ")
+	i.SetPluginID("test")
+	err = i.Install()
+	assert.Nil(t, err)
+
+	list, err := repo.Search("iothub")
+	if err != nil {
+		assert.True(t, list[0].Installed)
+	}
+
+	ti := NewHelmInstallerQuick("test", repo.Namespace(), repo.actionConfig)
+	i = &ti
+	err = i.Uninstall()
+	assert.Nil(t, err)
+}
+Test Search / Install / Uninstall / Get.
+*/

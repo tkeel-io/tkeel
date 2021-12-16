@@ -18,13 +18,13 @@ package hub
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/util"
@@ -230,9 +230,16 @@ func (h *Hub) Uninstall(pluginID string, brief *repository.InstallerBrief) error
 		if !ok {
 			return errors.New("invaild repo type")
 		}
-		for _, v := range repo.Installed() {
-			if v.Brief().Name == brief.Name && v.Brief().Version == brief.Version {
-				if err := v.Uninstall(pluginID); err != nil {
+		installedList, err := repo.Installed()
+		if err != nil {
+			return errors.Wrap(err, "get repo installed error")
+		}
+		for _, installer := range installedList {
+			if installer.Brief().Name == brief.Name && installer.Brief().Version == brief.Version {
+				// Here can be call Uninstall() immediate
+				// SetPluginID just for make sure the ID is pass by args.
+				installer.SetPluginID(pluginID)
+				if err := installer.Uninstall(); err != nil {
 					return fmt.Errorf("error uninstall plugin(%s): %w", brief, err)
 				}
 				return nil

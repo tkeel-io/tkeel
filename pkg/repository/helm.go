@@ -71,7 +71,7 @@ func NewHelmRepo(info Info, driver Driver, namespace string) (*HelmRepo, error) 
 	httpGetter, err := getter.NewHTTPGetter()
 	if err != nil {
 		log.Warn("init helm action configuration err", err)
-		return nil, err
+		return nil, errors.Wrap(err, "init http getter failed")
 	}
 	repo := &HelmRepo{
 		info:       &info,
@@ -79,8 +79,8 @@ func NewHelmRepo(info Info, driver Driver, namespace string) (*HelmRepo, error) 
 		driver:     driver,
 		httpGetter: httpGetter,
 	}
-	if err = repo.setActionConfig(); err != nil {
-		return nil, err
+	if err = repo.configSetup(); err != nil {
+		return nil, errors.Wrap(err, "setup helm action configuration failed")
 	}
 	return repo, nil
 }
@@ -89,25 +89,29 @@ func (r *HelmRepo) SetInfo(info Info) {
 	r.info = &info
 }
 
+func (r HelmRepo) Config() *helmAction.Configuration {
+	return r.actionConfig
+}
+
 func (r *HelmRepo) Namespace() string {
 	return r.namespace
 }
 
 func (r *HelmRepo) SetNamespace(namespace string) error {
 	r.namespace = namespace
-	return r.setActionConfig()
+	return r.configSetup()
 }
 
 func (r *HelmRepo) SetDriver(driver Driver) error {
 	r.driver = driver
-	return r.setActionConfig()
+	return r.configSetup()
 }
 
 func (r HelmRepo) GetDriver() Driver {
 	return r.driver
 }
 
-func (r *HelmRepo) setActionConfig() error {
+func (r *HelmRepo) configSetup() error {
 	config, err := initActionConfig(r.namespace, r.driver)
 	if err != nil {
 		log.Warn("init helm action configuration err", err)
@@ -124,7 +128,7 @@ func (r *HelmRepo) Info() *Info {
 func (r *HelmRepo) Search(word string) ([]*InstallerBrief, error) {
 	index, err := r.BuildIndex()
 	if err != nil {
-		return nil, errors.Wrap(err, "can't build helm index config")
+		return nil, errors.Wrap(err, "can't build helm index configSetup")
 	}
 
 	res := index.Search(word, "")
@@ -154,7 +158,7 @@ func (r *HelmRepo) Search(word string) ([]*InstallerBrief, error) {
 func (r *HelmRepo) Get(name, version string) (Installer, error) {
 	index, err := r.BuildIndex()
 	if err != nil {
-		return nil, errors.Wrap(err, "can't build helm index config")
+		return nil, errors.Wrap(err, "can't build helm index configSetup")
 	}
 
 	res := index.Search(name, version)
@@ -186,7 +190,7 @@ func (r *HelmRepo) Installed() ([]Installer, error) {
 }
 
 func (r *HelmRepo) Close() error {
-	// TODO implement me
+	// TODO implement me.
 	panic("implement me")
 }
 
@@ -214,7 +218,7 @@ func (r *HelmRepo) list() ([]*release.Release, error) {
 	listAction := helmAction.NewList(r.actionConfig)
 	releases, err := listAction.Run()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "run helm list action failed")
 	}
 	return releases, nil
 }
@@ -232,7 +236,7 @@ func (r *HelmRepo) getInstalled() ([]Installer, error) {
 		return nil, err
 	}
 
-	// TODO: Fix O(n²)
+	// TODO: Fix O(n²).
 	list := make([]Installer, 0)
 	for i := 0; i < len(rls); i++ {
 		for j := 0; j < len(res); j++ {

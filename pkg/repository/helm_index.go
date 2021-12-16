@@ -17,6 +17,7 @@ limitations under the License.
 package repository
 
 import (
+	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/repo"
@@ -29,8 +30,8 @@ const _verSep = "$$"
 type PluginRes struct {
 	Name        string   `json:"name"`
 	Version     string   `json:"version"`
-	Repo        string   `json:"repository"`
-	URLs        []string `json:"urls"`
+	Repo        string   `json:"repository"` // nolint
+	URLs        []string `json:"urls"`       //nolint
 	Description string   `json:"description"`
 }
 
@@ -68,7 +69,7 @@ func NewIndex(repoName string, data []byte) (*Index, error) {
 	}
 
 	if err := yaml.UnmarshalStrict(data, i); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unmarshal data to IndexFile failed")
 	}
 	for name, cvs := range i.Entries {
 		for idx := len(cvs) - 1; idx >= 0; idx-- {
