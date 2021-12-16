@@ -3,7 +3,6 @@ module github.com/tkeel-io/tkeel
 go 1.16
 
 require (
-	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/dapr/go-sdk v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docker/docker v17.12.0-ce-rc1.0.20200916142827-bd33bbf0497b+incompatible // indirect
@@ -31,7 +30,6 @@ require (
 	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	helm.sh/helm/v3 v3.7.1
 	k8s.io/cli-runtime v0.22.4
 	sigs.k8s.io/yaml v1.2.0
