@@ -405,10 +405,6 @@ func TestSearch(t *testing.T) {
 	fmt.Printf("%+v\n", ibs)
 	fmt.Println()
 
-	ibs, err = repo.Search("keel")
-	assert.Nil(t, err)
-	fmt.Printf("%+v\n", ibs)
-
 	i, err := repo.Get("iothub", "0.2.0")
 	assert.Nil(t, err)
 	fmt.Printf("%+v\n", i)
@@ -428,5 +424,6 @@ func TestSearch(t *testing.T) {
 	err = i.Uninstall()
 	assert.Nil(t, err)
 }
-Test Search / Install / Uninstall / Get.
+
+//Test Search / Install / Uninstall / Get.
 */
