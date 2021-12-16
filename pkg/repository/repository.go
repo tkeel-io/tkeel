@@ -79,7 +79,7 @@ type Installer interface {
 	// Install plugin.
 	Install(...*Option) error
 	// Uninstall plugin.
-	Uninstall(pluginID string) error
+	Uninstall() error
 	// Brief get installer brief information.
 	Brief() *InstallerBrief
 }

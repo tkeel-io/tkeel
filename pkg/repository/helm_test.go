@@ -410,18 +410,37 @@ func Test_initActionConfig(t *testing.T) {
 	}
 }
 
-//func TestSearch(t *testing.T) {
+// func TestSearch(t *testing.T) {
 //	info := NewInfo("tkeel", _tkeelRepo, nil)
-//	repo, err := NewHelmRepo(*info, Mem, "default")
+//	repo, err := NewHelmRepo(*info, Secret, "default")
 //	assert.Nil(t, err)
+
+//ibs, err := repo.Search("*")
+//assert.Nil(t, err)
 //
-//	ibs, err := repo.Search("*")
-//	assert.Nil(t, err)
+//fmt.Printf("%+v\n", ibs)
+//fmt.Println()
+
+//ibs, err := repo.Search("keel")
+//assert.Nil(t, err)
+//fmt.Printf("%+v\n", ibs)
 //
-//	fmt.Printf("%+v/n", ibs)
-//	fmt.Println()
+//i, err := repo.Get("iothub", "0.2.0")
+//assert.Nil(t, err)
+//fmt.Printf("%+v\n", i)
 //
-//	ibs, err = repo.Search("keel")
-//	assert.Nil(t, err)
-//	fmt.Printf("%+v/n", ibs)
+//fmt.Println("=== Run Install === ")
+// i.SetPluginID("test")
+// err = i.Install()
+// assert.Nil(t, err)
+
+//list, err := repo.Search("iothub")
+//if err != nil {
+//	assert.True(t, list[0].Installed)
+//}
+//
+//ti := NewHelmInstallerQuick("test", repo.Namespace(), repo.actionConfig)
+//i = &ti
+//err = i.Uninstall()
+//assert.Nil(t, err)
 //}

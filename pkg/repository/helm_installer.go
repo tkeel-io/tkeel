@@ -17,6 +17,10 @@ limitations under the License.
 package repository
 
 import (
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
+
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"helm.sh/helm/v3/pkg/action"
@@ -101,20 +105,27 @@ func (h HelmInstaller) Install(options ...*Option) error {
 	}
 
 	// Add inject dependencies.
-	inject := loadComponentChart()
+	inject, err := loadComponentChart()
+	if err != nil {
+		log.Error(err)
+		return errors.Wrap(err, "load component chart err")
+	}
 	failInject(inject, h.id)
 	h.chart.AddDependency(inject)
 
 	installer.Namespace = h.namespace
-	if _, err := installer.Run(h.chart, nil); err != nil {
+	installer.ReleaseName = h.id
+	if r, err := installer.Run(h.chart, nil); err != nil {
 		return errors.Wrap(err, "INSTALLATION FAILED")
+	} else {
+		fmt.Printf("%+v\n", r)
 	}
 	return nil
 }
 
-func (h HelmInstaller) Uninstall(id string) error {
+func (h HelmInstaller) Uninstall() error {
 	uninstallClint := action.NewUninstall(h.helmConfig)
-	_, err := uninstallClint.Run(id)
+	_, err := uninstallClint.Run(h.id)
 	if err != nil {
 		err = errors.Wrap(err, "call uninstall err")
 		return err
@@ -127,30 +138,40 @@ func (h HelmInstaller) Brief() *InstallerBrief {
 	return &h.brief
 }
 
-func loadComponentChart() *chart.Chart {
+func loadComponentChart() (*chart.Chart, error) {
 	pullAction := action.NewPull()
 	pullAction.RepoURL = _tkeelRepo
-	cp, err := pullAction.LocateChart(_componentChartName, &cli.EnvSettings{})
+	tmpDir, err := createTempDir()
 	if err != nil {
-		log.Warn("can't get the chart: %s", _componentChartName)
-		return nil
+		return nil, errors.Wrap(err, "create temp dir errr")
+	}
+	pullAction.DestDir = tmpDir
+	pullAction.Settings = &cli.EnvSettings{}
+	_, err = pullAction.Run(_componentChartName)
+	if err != nil {
+		log.Warn("can't get the chart: %q", _componentChartName)
+		return nil, errors.Wrap(err, "can't get the chart")
+	}
+	cp, err := locateChartFile(tmpDir)
+	if err != nil {
+		return nil, errors.Wrap(err, "locate chart failed")
 	}
 	log.Debugf("CHART PATH: %s\n", cp)
 	c, err := loader.Load(cp)
 	if err != nil {
 		log.Warn("can't parse the file %q", cp, err)
-		return nil
+		return nil, err
 	}
 	if err := checkIfInstallable(c); err != nil {
 		log.Warn("uninstallable chart request")
-		return nil
+		return nil, err
 	}
 
 	if c.Metadata.Deprecated {
 		log.Warn("%q: This chart is deprecated", cp)
 	}
 
-	return c
+	return c, nil
 }
 
 func checkIfInstallable(ch *chart.Chart) error {
@@ -166,4 +187,20 @@ func checkIfInstallable(ch *chart.Chart) error {
 
 func failInject(inject *chart.Chart, pluginName string) {
 	inject.Values["pluginID"] = pluginName
+}
+
+func createTempDir() (string, error) {
+	dir, err := ioutil.TempDir("", "tkeel")
+	if err != nil {
+		return "", fmt.Errorf("error creating temp dir: %w", err)
+	}
+	return dir, nil
+}
+
+func locateChartFile(dirPath string) (string, error) {
+	files, err := ioutil.ReadDir(dirPath)
+	if err != nil {
+		return "", fmt.Errorf("read dir err:%w", err)
+	}
+	return filepath.Join(dirPath, files[0].Name()), nil
 }
