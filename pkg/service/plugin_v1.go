@@ -91,10 +91,10 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 		return nil, pb.PluginErrInstallerNotFound()
 	}
 	installer.SetPluginID(req.Id)
-	if err = installer.Install(func() []repository.Option {
-		ret := make([]repository.Option, 0, len(installerConfiguration))
+	if err = installer.Install(func() []*repository.Option {
+		ret := make([]*repository.Option, 0, len(installerConfiguration))
 		for k, v := range installerConfiguration {
-			ret = append(ret, repository.Option{
+			ret = append(ret, &repository.Option{
 				Key:   k,
 				Value: v,
 			})

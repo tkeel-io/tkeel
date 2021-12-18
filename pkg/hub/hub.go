@@ -18,13 +18,13 @@ package hub
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/util"
@@ -44,7 +44,7 @@ type Hub struct {
 	constructorArgs []interface{}
 }
 
-// Init initial hub.
+// Init use Singleton pattern design, generating a new Hub that is globally one assigned to the h variable.
 func Init(interval string, op repository.InfoOperator, c repository.Constructor, d repository.DestroyPlugin, initRepoArgs ...interface{}) {
 	once.Do(func() {
 		h = &Hub{
@@ -66,7 +66,7 @@ func GetInstance() *Hub {
 	return h
 }
 
-// Init init hub, read and watch repo info.
+// Init hub, read and watch repo info.
 func (h *Hub) Init(interval string) error {
 	if h.repoSet == nil {
 		return errors.New("need initial")
@@ -131,7 +131,7 @@ func (h *Hub) SetConstructor(c repository.Constructor, args ...interface{}) {
 	h.constructorArgs = args
 }
 
-// Add add new repo into hub.
+// Add new repo into hub.
 func (h *Hub) Add(i *repository.Info) error {
 	repo, err := h.constructor(i, h.constructorArgs...)
 	if err != nil {
@@ -176,7 +176,7 @@ func (h *Hub) Delete(name string) (repository.Repository, error) {
 	return repo, nil
 }
 
-// Get get repo.
+// Get repo.
 func (h *Hub) Get(name string) (repository.Repository, error) {
 	repoIn, ok := h.repoSet.Load(name)
 	if !ok {
@@ -198,7 +198,7 @@ func (h *Hub) Get(name string) (repository.Repository, error) {
 	}
 	repo, ok := repoIn.(repository.Repository)
 	if !ok {
-		log.Errorf("invaild repo(%s) type.", name)
+		log.Errorf("invalid repo(%s) type.", name)
 		return nil, ErrInternalError
 	}
 	return repo, nil
@@ -222,7 +222,7 @@ func (h *Hub) List() []repository.Repository {
 // Uninstall plugin.
 func (h *Hub) Uninstall(pluginID string, brief *repository.InstallerBrief) error {
 	if brief == nil {
-		return errors.New("invaild plugin installer info")
+		return errors.New("invalid plugin installer info")
 	}
 	repoIn, ok := h.repoSet.Load(brief)
 	if ok {
@@ -230,9 +230,16 @@ func (h *Hub) Uninstall(pluginID string, brief *repository.InstallerBrief) error
 		if !ok {
 			return errors.New("invaild repo type")
 		}
-		for _, v := range repo.Installed() {
-			if v.Brief().Name == brief.Name && v.Brief().Version == brief.Version {
-				if err := v.Uninstall(pluginID); err != nil {
+		installedList, err := repo.Installed()
+		if err != nil {
+			return errors.Wrap(err, "get repo installed error")
+		}
+		for _, installer := range installedList {
+			if installer.Brief().Name == brief.Name && installer.Brief().Version == brief.Version {
+				// Here can be call Uninstall() immediate
+				// SetPluginID just for make sure the ID is pass by args.
+				installer.SetPluginID(pluginID)
+				if err := installer.Uninstall(); err != nil {
 					return fmt.Errorf("error uninstall plugin(%s): %w", brief, err)
 				}
 				return nil
@@ -246,6 +253,7 @@ func (h *Hub) Uninstall(pluginID string, brief *repository.InstallerBrief) error
 }
 
 func infoSliStr(is []*repository.Info) string {
+	// TODO: It may be better to use buffer.
 	ret := make([]string, 0, len(is)+2)
 	ret = append(ret, "[")
 	for _, v := range is {
