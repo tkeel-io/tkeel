@@ -21,8 +21,9 @@ import transportHTTP "github.com/tkeel-io/kit/transport/http"
 // import package.context.http.reflect.go_restful.json.errors.emptypb.
 
 type Oauth2HTTPServer interface {
-	AddWhiteList(context.Context, *AddWhiteListRequest) (*emptypb.Empty, error)
-	IssueOauth2Token(context.Context, *IssueOauth2TokenRequest) (*IssueOauth2TokenResponse, error)
+	AddPluginWhiteList(context.Context, *AddPluginWhiteListRequest) (*emptypb.Empty, error)
+	IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error)
+	IssuePluginToken(context.Context, *IssuePluginTokenRequest) (*IssueTokenResponse, error)
 }
 
 type Oauth2HTTPHandler struct {
@@ -33,8 +34,8 @@ func newOauth2HTTPHandler(s Oauth2HTTPServer) *Oauth2HTTPHandler {
 	return &Oauth2HTTPHandler{srv: s}
 }
 
-func (h *Oauth2HTTPHandler) AddWhiteList(req *go_restful.Request, resp *go_restful.Response) {
-	in := AddWhiteListRequest{}
+func (h *Oauth2HTTPHandler) AddPluginWhiteList(req *go_restful.Request, resp *go_restful.Response) {
+	in := AddPluginWhiteListRequest{}
 	if err := transportHTTP.GetBody(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
@@ -42,7 +43,7 @@ func (h *Oauth2HTTPHandler) AddWhiteList(req *go_restful.Request, resp *go_restf
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.AddWhiteList(ctx, &in)
+	out, err := h.srv.AddPluginWhiteList(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -65,8 +66,40 @@ func (h *Oauth2HTTPHandler) AddWhiteList(req *go_restful.Request, resp *go_restf
 	}
 }
 
-func (h *Oauth2HTTPHandler) IssueOauth2Token(req *go_restful.Request, resp *go_restful.Response) {
-	in := IssueOauth2TokenRequest{}
+func (h *Oauth2HTTPHandler) IssueAdminToken(req *go_restful.Request, resp *go_restful.Response) {
+	in := IssueAdminTokenRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.IssueAdminToken(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
+		return
+	}
+	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
+		resp.WriteHeader(http.StatusNoContent)
+		return
+	}
+	result, err := json.Marshal(out)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+	_, err = resp.Write(result)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+}
+
+func (h *Oauth2HTTPHandler) IssuePluginToken(req *go_restful.Request, resp *go_restful.Response) {
+	in := IssuePluginTokenRequest{}
 	if err := transportHTTP.GetBody(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
@@ -74,7 +107,7 @@ func (h *Oauth2HTTPHandler) IssueOauth2Token(req *go_restful.Request, resp *go_r
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.IssueOauth2Token(ctx, &in)
+	out, err := h.srv.IssuePluginToken(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -113,8 +146,10 @@ func RegisterOauth2HTTPServer(container *go_restful.Container, srv Oauth2HTTPSer
 	}
 
 	handler := newOauth2HTTPHandler(srv)
-	ws.Route(ws.POST("/oauth2").
-		To(handler.IssueOauth2Token))
-	ws.Route(ws.POST("/oauth2/white-list").
-		To(handler.AddWhiteList))
+	ws.Route(ws.POST("/oauth2/plugin").
+		To(handler.IssuePluginToken))
+	ws.Route(ws.POST("/oauth2/plugin/white-list").
+		To(handler.AddPluginWhiteList))
+	ws.Route(ws.GET("/oauth2/admin").
+		To(handler.IssueAdminToken))
 }

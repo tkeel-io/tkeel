@@ -214,6 +214,80 @@ service Plugin {
       ]
     };
   };
+  rpc BindTenants(BindTenantsRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/plugins/{id}/tenants"
+      body : "extra"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "插件绑定租户接口"
+      operation_id : "BindTenants"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
+  rpc UnbindTenants(UnbindTenantsRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/plugins/{id}/tenants"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "插件绑定租户接口"
+      operation_id : "UnindTenants"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
+  rpc ListBindTenants(ListBindTenantsRequest)
+      returns (ListBindTenantsResponse) {
+    option (google.api.http) = {
+      get : "/plugins/{id}/tenants"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "获取插件绑定租户接口"
+      operation_id : "ListBindTenants"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
 }
 
 /**
@@ -395,5 +469,37 @@ message ListPluginResponse {
   repeated PluginObject plugin_list = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin object list"
+      } ];
+}
+
+message BindTenantsRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+  string extra = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "extra data"
+      } ];
+}
+
+message UnbindTenantsRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+}
+
+message ListBindTenantsRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+}
+
+message ListBindTenantsResponse {
+  repeated string tenants = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin bind tenants list"
       } ];
 }

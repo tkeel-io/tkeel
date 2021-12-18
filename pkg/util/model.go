@@ -18,7 +18,7 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 			Data: p.Secret.Data,
 		},
 		RegisterTimestamp: p.RegisterTimestamp,
-		ActiveTenantes:    p.ActiveTenantes,
+		ActiveTenantes:    pr.ActiveTenantes,
 		RegisterAddons: func() []*pb.RegisterAddons {
 			if pr == nil {
 				return nil

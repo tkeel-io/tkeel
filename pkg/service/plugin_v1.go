@@ -20,10 +20,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+<<<<<<< HEAD
 	"time"
+=======
+	"net/http"
+>>>>>>> 7dca103 (feat: add tenant control)
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
+	transport_http "github.com/tkeel-io/kit/transport/http"
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	pb "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
@@ -289,6 +294,85 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 
 	return &pb.ListPluginResponse{
 		PluginList: retList,
+	}, nil
+}
+
+func (s *PluginServiceV1) BindTenants(ctx context.Context,
+	req *pb.BindTenantsRequest) (*emptypb.Empty, error) {
+	header := transport_http.HeaderFromContext(ctx)
+	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
+	if !ok {
+		log.Error("error get auth")
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	user := new(model.User)
+	if err := user.Base64Decode(auths[0]); err != nil {
+		log.Errorf("error decode auth(%s): %s", auths[0], err)
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	pr, err := s.pluginRouteOp.Get(ctx, req.Id)
+	if err != nil {
+		log.Errorf("error get plugin route: %s", err)
+		return nil, pb.PluginErrInternalStore()
+	}
+	for _, v := range pr.ActiveTenantes {
+		if v == user.Tenant {
+			log.Errorf("error plugin(%s) duplicat tenant tenant(%s)", req.Id, v)
+			return nil, pb.PluginErrDuplicateActiveTenant()
+		}
+	}
+	pr.ActiveTenantes = append(pr.ActiveTenantes, user.Tenant)
+	if err = s.pluginRouteOp.Update(ctx, pr); err != nil {
+		log.Errorf("error bind tenant(%s) update plugin(%s) route", user.Tenant, req.Id)
+		return nil, pb.PluginErrInternalStore()
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *PluginServiceV1) UnbindTenants(ctx context.Context,
+	req *pb.UnbindTenantsRequest) (*emptypb.Empty, error) {
+	header := transport_http.HeaderFromContext(ctx)
+	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
+	if !ok {
+		log.Error("error get auth")
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	user := new(model.User)
+	if err := user.Base64Decode(auths[0]); err != nil {
+		log.Errorf("error decode auth(%s): %s", auths[0], err)
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	pr, err := s.pluginRouteOp.Get(ctx, req.Id)
+	if err != nil {
+		log.Errorf("error get plugin route: %s", err)
+		return nil, pb.PluginErrInternalStore()
+	}
+	update := false
+	for i, v := range pr.ActiveTenantes {
+		if v == user.Tenant {
+			pr.ActiveTenantes = append(pr.ActiveTenantes[:i], pr.ActiveTenantes[i+1:]...)
+			update = true
+			break
+		}
+	}
+	if update {
+		if err = s.pluginRouteOp.Update(ctx, pr); err != nil {
+			log.Errorf("error unbind tenant(%s) update plugin(%s) route", user.Tenant, req.Id)
+			return nil, pb.PluginErrInternalStore()
+		}
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *PluginServiceV1) ListBindTenants(ctx context.Context,
+	req *pb.ListBindTenantsRequest) (*pb.ListBindTenantsResponse, error) {
+	pr, err := s.pluginRouteOp.Get(ctx, req.Id)
+	if err != nil {
+		log.Errorf("error get plugin route: %s", err)
+		return nil, pb.PluginErrInternalStore()
+	}
+	return &pb.ListBindTenantsResponse{
+		Tenants: pr.ActiveTenantes,
 	}, nil
 }
 

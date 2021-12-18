@@ -17,14 +17,17 @@ limitations under the License.
 package model
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"time"
 
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 )
 
+<<<<<<< HEAD
 type Secret struct {
 	Data string `json:"data,omitempty"` // data.
 }
@@ -34,6 +37,17 @@ type Installer struct {
 	Name    string `json:"name,omitempty"`    // installer name.
 	Version string `json:"version,omitempty"` // installer version.
 }
+=======
+const (
+	TKeelUser   = "_tKeel"
+	TKeelTenant = "_tKeel_system"
+
+	AdminRole = "admin"
+
+	XPluginJwtHeader = "x-plugin-jwt"
+	XtKeelAuthHeader = "x-tKeel-auth"
+)
+>>>>>>> 7dca103 (feat: add tenant control)
 
 type Plugin struct {
 	ID                string                          `json:"id,omitempty"`                 // plugin id.
@@ -44,7 +58,6 @@ type Plugin struct {
 	ImplementedPlugin []*openapi_v1.ImplementedPlugin `json:"implemented_plugin,omitempty"` // plugin implemented plugin list.
 	Secret            *Secret                         `json:"secret,omitempty"`             // plugin registered secret.
 	RegisterTimestamp int64                           `json:"register_timestamp,omitempty"` // register timestamp.
-	ActiveTenantes    []string                        `json:"active_tenantes,omitempty"`    // active tenant id list.
 	Version           string                          `json:"version,omitempty"`            // model version.
 	State             openapi_v1.PluginStatus         `json:"state,omitempty"`              // plugin state.
 }
@@ -101,12 +114,7 @@ func (p *Plugin) Clone() *Plugin {
 			Data: p.Secret.Data,
 		},
 		RegisterTimestamp: p.RegisterTimestamp,
-		ActiveTenantes: func() []string {
-			ret := make([]string, 0, len(p.ActiveTenantes))
-			copy(ret, p.ActiveTenantes)
-			return ret
-		}(),
-		Version: p.Version,
+		Version:           p.Version,
 	}
 }
 
@@ -126,6 +134,7 @@ type PluginRoute struct {
 	TkeelVersion      string                  `json:"tkeel_version,omitempty"`      // plugin depened tkeel version.
 	RegisterAddons    map[string]string       `json:"register_addons,omitempty"`    // plugin register addons route map.
 	ImplementedPlugin []string                `json:"implemented_plugin,omitempty"` // plugin implemented plugins.
+	ActiveTenantes    []string                `json:"active_tenantes,omitempty"`    // plugin active tenant id list.
 	Version           string                  `json:"version,omitempty"`            // model version.
 }
 
@@ -154,6 +163,11 @@ func (pr *PluginRoute) Clone() *PluginRoute {
 			copy(ret, pr.ImplementedPlugin)
 			return ret
 		}(),
+		ActiveTenantes: func() []string {
+			ret := make([]string, 0, len(pr.ActiveTenantes))
+			copy(ret, pr.ActiveTenantes)
+			return ret
+		}(),
 		Version: pr.Version,
 	}
 }
@@ -179,7 +193,11 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret *Secret) {
 func NewPluginRoute(resp *openapi_v1.IdentifyResponse) *PluginRoute {
 	return &PluginRoute{
 		ID:           resp.PluginId,
+<<<<<<< HEAD
 		Status:       openapi_v1.PluginStatus_UNREGISTER,
+=======
+		Status:       openapi_v1.PluginStatus_RUNNING,
+>>>>>>> 7dca103 (feat: add tenant control)
 		TkeelVersion: resp.TkeelVersion,
 		ImplementedPlugin: func() []string {
 			ret := make([]string, 0, len(resp.ImplementedPlugin))
@@ -188,7 +206,8 @@ func NewPluginRoute(resp *openapi_v1.IdentifyResponse) *PluginRoute {
 			}
 			return ret
 		}(),
-		Version: "1",
+		ActiveTenantes: []string{TKeelTenant},
+		Version:        "1",
 	}
 }
 
@@ -235,5 +254,68 @@ func Clone(src, dst interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error unmarshal dst: %w", err)
 	}
+	return nil
+}
+
+func Base64Decode(p string) string {
+	d, err := base64.StdEncoding.DecodeString(p)
+	if err != nil {
+		return err.Error()
+	}
+	return string(d)
+}
+
+func Base64Encode(p string) string {
+	return base64.StdEncoding.EncodeToString([]byte(p))
+}
+
+type User struct {
+	User   string `form:"user"`
+	Tenant string `form:"tenant"`
+	Role   string `form:"role"`
+}
+
+func (u *User) Base64Encode() string {
+	vars := url.Values{
+		"user":   []string{u.User},
+		"tenant": []string{u.Tenant},
+		"role":   []string{u.Role},
+	}
+	return base64.StdEncoding.EncodeToString([]byte(vars.Encode()))
+}
+
+func (u *User) Base64Decode(s string) error {
+	d, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return fmt.Errorf("error decode(%s): %w", s, err)
+	}
+	vars, err := url.ParseQuery(string(d))
+	if err != nil {
+		return fmt.Errorf("error parse(%s): %w", string(d), err)
+	}
+	us, ok := vars["user"]
+	if !ok {
+		u.User = ""
+	}
+	if len(us) == 0 {
+		u.User = ""
+	}
+	u.User = us[0]
+	ts, ok := vars["tenant"]
+	if !ok {
+		u.Tenant = ""
+	}
+	if len(ts) == 0 {
+		u.Tenant = ""
+	}
+	u.Tenant = ts[0]
+	rs, ok := vars["role"]
+	if !ok {
+		u.Role = ""
+	}
+	if len(rs) == 0 {
+		u.Role = ""
+	}
+	u.Role = rs[0]
 	return nil
 }

@@ -83,6 +83,7 @@ func (v *Version) Compare(ver *Version, lvl ComparisonLevel) int {
 	return 0
 }
 
+// CheckRegisterPluginTkeelVersion depend tkeel version must be less than or equal to curr tkeel version.
 func CheckRegisterPluginTkeelVersion(dependVersion string, currVersion string) (bool, error) {
 	dVer, err := NewVersion(dependVersion)
 	if err != nil {

@@ -1,10 +1,13 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/oauth2/v1/error.proto",
+    "title": "api/entry/v1/entry.proto",
     "version": "version not set"
   },
   "tags": [
+    {
+      "name": "entry"
+    },
     {
       "name": "Oauth2"
     },
@@ -22,15 +25,86 @@
     "application/json"
   ],
   "paths": {
-    "/oauth2": {
-      "post": {
-        "summary": "插件Oauth2颁发接口",
-        "operationId": "IssueOauth2Token",
+    "/entries": {
+      "get": {
+        "summary": "查询 console entries 接口",
+        "operationId": "GetEntries",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1IssueOauth2TokenResponse"
+              "$ref": "#/definitions/v1GetEntriesResponse"
+            }
+          },
+          "400": {
+            "description": "INVAILD_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "entry"
+        ]
+      }
+    },
+    "/oauth2/admin": {
+      "get": {
+        "summary": "平台管理员 Token 颁发接口",
+        "operationId": "IssueAdminToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1IssueTokenResponse"
+            }
+          },
+          "400": {
+            "description": "PASSWORD_NOT_MATCH",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "password",
+            "description": "admin password",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Oauth2"
+        ]
+      }
+    },
+    "/oauth2/plugin": {
+      "post": {
+        "summary": "插件 Token 颁发接口",
+        "operationId": "IssuePluginToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1IssueTokenResponse"
             }
           },
           "400": {
@@ -54,7 +128,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1IssueOauth2TokenRequest"
+              "$ref": "#/definitions/v1IssuePluginTokenRequest"
             }
           }
         ],
@@ -63,10 +137,10 @@
         ]
       }
     },
-    "/oauth2/white-list": {
+    "/oauth2/plugin/white-list": {
       "post": {
-        "summary": "添加 Oauth2 白名单 dapr App ID 接口",
-        "operationId": "AddWhiteList",
+        "summary": "添加 Plugin 白名单 dapr App ID 接口",
+        "operationId": "AddPluginWhiteList",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -99,7 +173,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1AddWhiteListRequest"
+              "$ref": "#/definitions/v1AddPluginWhiteListRequest"
             }
           }
         ],
@@ -389,6 +463,132 @@
         ]
       }
     },
+    "/plugins/{id}/tenants": {
+      "get": {
+        "summary": "获取插件绑定租户接口",
+        "operationId": "ListBindTenants",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListBindTenantsResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      },
+      "delete": {
+        "summary": "插件绑定租户接口",
+        "operationId": "UnindTenants",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      },
+      "post": {
+        "summary": "插件绑定租户接口",
+        "operationId": "BindTenants",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "extra data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "extra data"
+            }
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
     "/repos": {
       "get": {
         "summary": "获取仓库列表接口",
@@ -647,16 +847,12 @@
         }
       }
     },
-    "v1AddWhiteListRequest": {
+    "v1AddPluginWhiteListRequest": {
       "type": "object",
       "properties": {
-        "client_id": {
+        "plugin_id": {
           "type": "string",
-          "description": "oauth2 client id"
-        },
-        "secret": {
-          "type": "string",
-          "description": "tkeel platform secret"
+          "description": "plugin id(dapr app id)"
         }
       }
     },
@@ -706,6 +902,46 @@
         "repo": {
           "$ref": "#/definitions/v1RepoObject",
           "description": "repo"
+        }
+      }
+    },
+    "v1EntryObject": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "entry corresponding plugin id"
+        },
+        "name": {
+          "type": "string",
+          "description": "entry name"
+        },
+        "path": {
+          "type": "string",
+          "description": "entry name"
+        },
+        "entry": {
+          "type": "string",
+          "description": "entry url"
+        },
+        "menu": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "entry sub menu"
+        }
+      }
+    },
+    "v1GetEntriesResponse": {
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1EntryObject"
+          },
+          "description": "tenant entries"
         }
       }
     },
@@ -835,12 +1071,12 @@
         }
       }
     },
-    "v1IssueOauth2TokenRequest": {
+    "v1IssuePluginTokenRequest": {
       "type": "object",
       "properties": {
         "client_id": {
           "type": "string",
-          "description": "oauth2 client id"
+          "description": "plugin id(dapr app id)"
         },
         "client_secret": {
           "type": "string",
@@ -848,7 +1084,7 @@
         }
       }
     },
-    "v1IssueOauth2TokenResponse": {
+    "v1IssueTokenResponse": {
       "type": "object",
       "properties": {
         "access_token": {
@@ -867,6 +1103,18 @@
           "type": "integer",
           "format": "int32",
           "description": "oauth2 token expires"
+        }
+      }
+    },
+    "v1ListBindTenantsResponse": {
+      "type": "object",
+      "properties": {
+        "tenants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "plugin bind tenants list"
         }
       }
     },

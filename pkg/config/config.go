@@ -29,14 +29,17 @@ import (
 
 // TkeelConf tkeel platform configuration.
 type TkeelConf struct {
+<<<<<<< HEAD
 	// tkeel platform namespace.
 	Namespace string `json:"namespace" yaml:"namespace"`
 	// tkeel platform secret. set up when installing the platform.
 	Secret string `json:"secret" yaml:"secret"`
+=======
+>>>>>>> 7dca103 (feat: add tenant control)
 	// tkeel platform version.
 	Version string `json:"version" yaml:"version"`
-	// watch plugin route interval.
-	WatchPluginRouteInterval string `json:"watch_plugin_route_interval" yaml:"watchPluginRouteInterval"`
+	// watch interval.
+	WatchInterval string `json:"watch_interval" yaml:"watchInterval"`
 }
 
 // DaprConf dapr sidecar configuration.
@@ -53,6 +56,8 @@ type DaprConf struct {
 
 // ProxyConf proxy service configuration.
 type ProxyConf struct {
+	// proxy timeout.
+	Timeout string `json:"timeout" yamlL:"timeout"`
 	// core address.
 	CoreAddr string `json:"core_addr" yaml:"coreAddr"`
 	// rudder address.
@@ -143,16 +148,20 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.Log.Level, "log.level", getEnvStr("TKEEL_LOG_LEVEL", "debug"), "log level(default debug).")
 	strVar(&c.HTTPAddr, "http.addr", getEnvStr("TKEEL_HTTP_ADDR", ":31234"), "http listen address(default :31234).")
 	strVar(&c.GRPCAddr, "grpc.addr", getEnvStr("TKEEL_GRPC_ADDR", ":31233"), "grpc listen address(default :31233).")
+	strVar(&c.Proxy.Timeout, "proxy.timeout", getEnvStr("TKEEL_PROXY_TIMEOUT", "10s"), "proxy timeout(default 10s).")
 	strVar(&c.Proxy.CoreAddr, "proxy.core_addr", getEnvStr("TKEEL_PROXY_CORE_ADDR", "core:6789"), "core listen address(default core:6789).")
 	strVar(&c.Proxy.RudderAddr, "proxy.rudder_addr", getEnvStr("TKEEL_PROXY_RUDDER_ADDR", "rudder:31234"), "rudder listen address(default rudder:31234).")
 	strVar(&c.Dapr.GRPCPort, "dapr.grpc.port", getEnvStr("DAPR_GRPC_PORT", "50001"), "dapr grpc listen address(default 50001).")
 	strVar(&c.Dapr.HTTPPort, "dapr.http.port", getEnvStr("DAPR_HTTP_PORT", "3500"), "dapr grpc listen address(default 3500).")
 	strVar(&c.Dapr.PrivateStateName, "dapr.private_state_name", getEnvStr("TKEEL_DAPR_PRIVATE_STATE_NAME", "tkeel-middleware-redis-private-store"), "dapr private store name(default keel-private-store).")
 	strVar(&c.Dapr.PublicStateName, "dapr.public_state_name", getEnvStr("TKEEL_DAPR_PUBLIC_STATE_NAME", "tkeel-middleware-redis-public-store"), "dapr public store name(default keel-public-store).")
+<<<<<<< HEAD
 	strVar(&c.Tkeel.Secret, "tkeel.secret", getEnvStr("TKEEL_SECRET", "changeme"), "tkeel secret.(default changeme)")
 	strVar(&c.Tkeel.Namespace, "tkeel.namespace", getEnvStr("TKEEL_POD_NAMESPACE", "tkeel-system"), "tkeel pod namespace.(default tkeel-system)")
+=======
+>>>>>>> 7dca103 (feat: add tenant control)
 	strVar(&c.Tkeel.Version, "tkeel.version", getEnvStr("TKEEL_VERSION", "v0.2.0"), "tkeel version.(default v0.2.0)")
-	strVar(&c.Tkeel.WatchPluginRouteInterval, "tkeel.watch_plugin_route_interval", getEnvStr("TKEEL_WATCH_PLUGIN_ROUTE_INTERVAL", "10s"), "tkeel watch plugin route change interval.(default 10s)")
+	strVar(&c.Tkeel.WatchInterval, "tkeel.watch_interval", getEnvStr("TKEEL_WATCH_INTERVAL", "10s"), "tkeel watch change interval.(default 10s)")
 	strVar(&c.SecurityConf.Mysql.DBName, "security.mysql.dbname", getEnvStr("TKEEL_SECURITY_MYSQL_DBNAME", "tkeelauth"), "database name of auth`s mysql config")
 	strVar(&c.SecurityConf.Mysql.User, "security.mysql.user", getEnvStr("TKEEL_SECURITY_MYSQL_USER", "root"), "user name of auth`s mysql config")
 	strVar(&c.SecurityConf.Mysql.Password, "security.mysql.password", getEnvStr("TKEEL_SECURITY_MYSQL_PASSWORD", "a3fks=ixmeb82a"), "password of auth`s mysql config")

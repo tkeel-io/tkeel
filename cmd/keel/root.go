@@ -24,15 +24,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
-	"github.com/tkeel-io/security/apiserver/filters"
-	"github.com/tkeel-io/security/models/oauth"
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
-	proxy_v1 "github.com/tkeel-io/tkeel/pkg/proxy/v1"
 	"github.com/tkeel-io/tkeel/pkg/server"
 	"github.com/tkeel-io/tkeel/pkg/service"
+	keel_v1 "github.com/tkeel-io/tkeel/pkg/service/keel/v1"
 )
 
 var (
@@ -82,14 +80,9 @@ var rootCmd = &cobra.Command{
 
 			// init service.
 			// proxy service.
-			ProxySrvV1 := service.NewProxyServiceV1(conf.Tkeel.WatchPluginRouteInterval,
-				conf.Proxy, daprHTTPClient, prOp)
-			// init oauth oprator.
-			if _, err = oauth.NewOperator(conf.SecurityConf.OAuth2); err != nil {
-				log.Fatal("fatal new oauth oprator: %s", err)
-				os.Exit(-1)
-			}
-			proxy_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, conf, filters.AuthFilter(conf.SecurityConf.OAuth2), ProxySrvV1)
+			ProxySrvV1 := service.NewKeelServiceV1(conf.Tkeel.WatchInterval,
+				conf, daprHTTPClient, prOp)
+			keel_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, ProxySrvV1)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

@@ -19,10 +19,8 @@ var pluginErrListPlugin *errors.TError
 var pluginErrInvalidArgument *errors.TError
 var pluginErrInternalQueryPluginOpenapi *errors.TError
 var pluginErrInternalStore *errors.TError
-var pluginErrUnregisterPluginHasBeenDepended *errors.TError
-var pluginErrInstallerNotFound *errors.TError
-var pluginErrInstallInstaller *errors.TError
-var pluginErrUninstallPlugin *errors.TError
+var pluginErrDeletePluginHasBeenDepended *errors.TError
+var pluginErrDuplicateActiveTenant *errors.TError
 
 func init() {
 	pluginErrUnknown = errors.New(int(codes.Unknown), "plugin.v1.PLUGIN_ERR_UNKNOWN", Error_PLUGIN_ERR_UNKNOWN.String())
@@ -41,14 +39,10 @@ func init() {
 	errors.Register(pluginErrInternalQueryPluginOpenapi)
 	pluginErrInternalStore = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_INTERNAL_STORE", Error_PLUGIN_ERR_INTERNAL_STORE.String())
 	errors.Register(pluginErrInternalStore)
-	pluginErrUnregisterPluginHasBeenDepended = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_UNREGISTER_PLUGIN_HAS_BEEN_DEPENDED", Error_PLUGIN_ERR_UNREGISTER_PLUGIN_HAS_BEEN_DEPENDED.String())
-	errors.Register(pluginErrUnregisterPluginHasBeenDepended)
-	pluginErrInstallerNotFound = errors.New(int(codes.NotFound), "plugin.v1.PLUGIN_ERR_INSTALLER_NOT_FOUND", Error_PLUGIN_ERR_INSTALLER_NOT_FOUND.String())
-	errors.Register(pluginErrInstallerNotFound)
-	pluginErrInstallInstaller = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_INSTALL_INSTALLER", Error_PLUGIN_ERR_INSTALL_INSTALLER.String())
-	errors.Register(pluginErrInstallInstaller)
-	pluginErrUninstallPlugin = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_UNINSTALL_PLUGIN", Error_PLUGIN_ERR_UNINSTALL_PLUGIN.String())
-	errors.Register(pluginErrUninstallPlugin)
+	pluginErrDeletePluginHasBeenDepended = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_DELETE_PLUGIN_HAS_BEEN_DEPENDED", Error_PLUGIN_ERR_DELETE_PLUGIN_HAS_BEEN_DEPENDED.String())
+	errors.Register(pluginErrDeletePluginHasBeenDepended)
+	pluginErrDuplicateActiveTenant = errors.New(int(codes.AlreadyExists), "plugin.v1.PLUGIN_ERR_DUPLICATE_ACTIVE_TENANT", Error_PLUGIN_ERR_DUPLICATE_ACTIVE_TENANT.String())
+	errors.Register(pluginErrDuplicateActiveTenant)
 }
 
 func PluginErrUnknown() errors.Error {
@@ -83,18 +77,10 @@ func PluginErrInternalStore() errors.Error {
 	return pluginErrInternalStore
 }
 
-func PluginErrUnregisterPluginHasBeenDepended() errors.Error {
-	return pluginErrUnregisterPluginHasBeenDepended
+func PluginErrDeletePluginHasBeenDepended() errors.Error {
+	return pluginErrDeletePluginHasBeenDepended
 }
 
-func PluginErrInstallerNotFound() errors.Error {
-	return pluginErrInstallerNotFound
-}
-
-func PluginErrInstallInstaller() errors.Error {
-	return pluginErrInstallInstaller
-}
-
-func PluginErrUninstallPlugin() errors.Error {
-	return pluginErrUninstallPlugin
+func PluginErrDuplicateActiveTenant() errors.Error {
+	return pluginErrDuplicateActiveTenant
 }

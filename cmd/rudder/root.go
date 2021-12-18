@@ -21,10 +21,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
-	"github.com/emicklei/go-restful"
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
@@ -32,9 +30,9 @@ import (
 	oauth_v1 "github.com/tkeel-io/security/apirouter/oauth/v1"
 	rbac_v1 "github.com/tkeel-io/security/apirouter/rbac/v1"
 	tenant_v1 "github.com/tkeel-io/security/apirouter/tenant/v1"
-	"github.com/tkeel-io/security/apiserver/filters"
 	security_dao "github.com/tkeel-io/security/models/dao"
 	"github.com/tkeel-io/security/models/entity"
+	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	repo "github.com/tkeel-io/tkeel/api/repo/v1"
@@ -42,7 +40,11 @@ import (
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
+<<<<<<< HEAD
 	"github.com/tkeel-io/tkeel/pkg/hub"
+=======
+	"github.com/tkeel-io/tkeel/pkg/model/passwd"
+>>>>>>> 7dca103 (feat: add tenant control)
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/prepo"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
@@ -95,6 +97,7 @@ var rootCmd = &cobra.Command{
 			// init operator.
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			prOp := proute.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
+<<<<<<< HEAD
 			riOp := prepo.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 
 			// init repo hub.
@@ -129,6 +132,9 @@ var rootCmd = &cobra.Command{
 					}
 					return nil
 				}, helm.Mem, conf.Tkeel.Namespace)
+=======
+			passwdOp := passwd.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
+>>>>>>> 7dca103 (feat: add tenant control)
 
 			// init service.
 			// plugin service.
@@ -136,13 +142,20 @@ var rootCmd = &cobra.Command{
 			plugin_v1.RegisterPluginHTTPServer(httpSrv.Container, PluginSrvV1)
 			plugin_v1.RegisterPluginServer(grpcSrv.GetServe(), PluginSrvV1)
 			// oauth2 service.
-			Oauth2SrvV1 := service.NewOauth2ServiceV1(conf.Tkeel.Secret, pOp)
+			Oauth2SrvV1 := service.NewOauth2ServiceV1(passwdOp, pOp)
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
+<<<<<<< HEAD
 			// repo service.
 			repoSrv := service.NewRepoService()
 			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
 			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
+=======
+			// entries service.
+			EntriesSrvV1 := service.NewEntryService()
+			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, EntriesSrvV1)
+			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), EntriesSrvV1)
+>>>>>>> 7dca103 (feat: add tenant control)
 			{
 				// copy mysql configuration.
 				conf.SecurityConf.RBAC.Adapter = conf.SecurityConf.Mysql
@@ -160,19 +173,6 @@ var rootCmd = &cobra.Command{
 					os.Exit(-1)
 				}
 				entity_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.Entity, entityTokenOperator)
-				// add auth role filter.
-				tenantAdminRoleFilter := filters.AuthFilter(conf.SecurityConf.OAuth2, "admin")
-				for _, ws := range httpSrv.Container.RegisteredWebServices() {
-					if ws.RootPath() == "/v1/tenants" {
-						ws.Filter(func(r1 *restful.Request, r2 *restful.Response, fc *restful.FilterChain) {
-							if strings.HasPrefix(r1.Request.URL.Path, "/v1/tenants/users") {
-								tenantAdminRoleFilter(r1, r2, fc)
-								return
-							}
-							fc.ProcessFilter(r1, r2)
-						})
-					}
-				}
 			}
 		}
 	},
