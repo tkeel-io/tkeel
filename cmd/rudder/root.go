@@ -17,6 +17,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -40,8 +42,12 @@ import (
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
+	"github.com/tkeel-io/tkeel/pkg/hub"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
+	"github.com/tkeel-io/tkeel/pkg/model/prepo"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
+	"github.com/tkeel-io/tkeel/pkg/repository"
+	"github.com/tkeel-io/tkeel/pkg/repository/helm"
 	"github.com/tkeel-io/tkeel/pkg/server"
 	"github.com/tkeel-io/tkeel/pkg/service"
 )
@@ -89,6 +95,40 @@ var rootCmd = &cobra.Command{
 			// init operator.
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			prOp := proute.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
+			riOp := prepo.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
+
+			// init repo hub.
+			hub.Init(conf.Tkeel.WatchPluginRouteInterval, riOp,
+				func(connectInfo *repository.Info,
+					args ...interface{}) (repository.Repository, error) {
+					if len(args) != 2 {
+						return nil, errors.New("invalid arguments")
+					}
+					drive, ok := args[0].(string)
+					if !ok {
+						return nil, errors.New("invaild argument type")
+					}
+					namespace, ok := args[1].(string)
+					if !ok {
+						return nil, errors.New("invaild argument type")
+					}
+					repo, err := helm.NewHelmRepo(*connectInfo, helm.Driver(drive), namespace)
+					if err != nil {
+						return nil, fmt.Errorf("error new helm repo: %w", err)
+					}
+					return repo, nil
+				},
+				func(pluginID string) error {
+					repo, err := helm.NewHelmRepo(repository.Info{}, helm.Driver(helm.Mem), conf.Tkeel.Namespace)
+					if err != nil {
+						return fmt.Errorf("error new helm repo: %w", err)
+					}
+					installer := helm.NewHelmInstallerQuick(pluginID, conf.Tkeel.Namespace, repo.Config())
+					if err = installer.Uninstall(); err != nil {
+						return fmt.Errorf("error uninstall(%s) err: %w", pluginID, err)
+					}
+					return nil
+				}, helm.Mem, conf.Tkeel.Namespace)
 
 			// init service.
 			// plugin service.

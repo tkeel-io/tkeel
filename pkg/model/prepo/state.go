@@ -285,6 +285,27 @@ func (o *DaprStateOprator) Watch(ctx context.Context, interval string, callback 
 	return nil
 }
 
+func (o *DaprStateOprator) List(ctx context.Context) ([]*repository.Info, error) {
+	// get route map.
+	item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginRepoMap)
+	if err != nil {
+		return nil, fmt.Errorf("error dapr state oprator get plugin_repo_map: %w", err)
+	}
+	pluginProxyMap := make(model.PluginRepoMap)
+	if item.Etag == "" {
+		return nil, ErrPluginRepoNotExsist
+	}
+	err = json.Unmarshal(item.Value, &pluginProxyMap)
+	if err != nil {
+		return nil, fmt.Errorf("error dapr state oprator unmarshal plugin_repo_map(%s): %w", item.Value, err)
+	}
+	prSli := make([]*model.PluginRepo, 0, len(pluginProxyMap))
+	for _, v := range pluginProxyMap {
+		prSli = append(prSli, v)
+	}
+	return o.modelSli2Infos(prSli), nil
+}
+
 func modelConvertInfo(pr *model.PluginRepo) *repository.Info {
 	return &repository.Info{
 		Name:        pr.Name,

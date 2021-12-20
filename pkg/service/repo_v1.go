@@ -9,6 +9,7 @@ import (
 	pb "github.com/tkeel-io/tkeel/api/repo/v1"
 	"github.com/tkeel-io/tkeel/pkg/hub"
 	"github.com/tkeel-io/tkeel/pkg/repository"
+	"github.com/tkeel-io/tkeel/pkg/repository/helm"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -144,12 +145,11 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 		Repo:      ib.Repo,
 		Installed: ib.Installed,
 		Readme: func() []byte {
-			// TODO: readme.
 			inAn := i.Annotations()
 			if inAn == nil {
 				return nil
 			}
-			b, ok := inAn["README"].([]byte)
+			b, ok := inAn[helm.ReadmeFileNameKey].([]byte)
 			if !ok {
 				log.Errorf("error installer(%s) readme invaild type", ib)
 				return nil
@@ -157,12 +157,11 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 			return b
 		}(),
 		ConfigurationSchema: func() []byte {
-			// TODO: configuration schema.
 			inAn := i.Annotations()
 			if inAn == nil {
 				return nil
 			}
-			b, ok := inAn["CONFIGURATION_SCHEMA"].([]byte)
+			b, ok := inAn[helm.ValuesSchemaKey].([]byte)
 			if !ok {
 				log.Errorf("error installer(%s) configuration schema file invaild type", ib)
 				return nil
@@ -170,12 +169,11 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 			return b
 		}(),
 		SchemaType: func() pb.ConfigurationSchemaType {
-			// TODO: schema type.
 			inAn := i.Annotations()
 			if inAn == nil {
 				return pb.ConfigurationSchemaType_JSON
 			}
-			i, ok := inAn["SCHEMA_TYPE"].(int)
+			i, ok := inAn["VALUES.SCHEMA.TYPE"].(int)
 			if !ok {
 				log.Errorf("error installer(%s) configuration schema file invaild type", ib)
 				return pb.ConfigurationSchemaType_JSON
@@ -187,10 +185,9 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 			if inAn == nil {
 				return nil
 			}
-			// TODO: readme.
-			delete(inAn, "README")
-			delete(inAn, "CONFIGURATION_SCHEMA")
-			delete(inAn, "SCHEMA_TYPE")
+			delete(inAn, helm.ReadmeFileNameKey)
+			delete(inAn, helm.ValuesSchemaKey)
+			delete(inAn, "VALUES.SCHEMA.TYPE")
 			b, err := json.Marshal(inAn)
 			if err != nil {
 				log.Errorf("error marshal installer annotasion(%v) err: %s",

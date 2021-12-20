@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package repository
+package helm
 
 import (
 	"bytes"
@@ -27,6 +27,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/tkeel/pkg/repository"
 	helmAction "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/getter"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -59,18 +60,18 @@ const (
 	_componentChartName = "tkeel-plugin-components"
 )
 
-var _ Repository = &HelmRepo{}
+var _ repository.Repository = &HelmRepo{}
 
 // HelmRepo is the impl Repository Repo.
 type HelmRepo struct {
-	info         *Info
+	info         *repository.Info
 	actionConfig *helmAction.Configuration
 	httpGetter   getter.Getter
 	driver       Driver
 	namespace    string
 }
 
-func NewHelmRepo(info Info, driver Driver, namespace string) (*HelmRepo, error) {
+func NewHelmRepo(info repository.Info, driver Driver, namespace string) (*HelmRepo, error) {
 	httpGetter, err := getter.NewHTTPGetter()
 	if err != nil {
 		log.Warn("init helm action configuration err", err)
@@ -88,7 +89,7 @@ func NewHelmRepo(info Info, driver Driver, namespace string) (*HelmRepo, error) 
 	return repo, nil
 }
 
-func (r *HelmRepo) SetInfo(info Info) {
+func (r *HelmRepo) SetInfo(info repository.Info) {
 	r.info = &info
 }
 
@@ -124,12 +125,12 @@ func (r *HelmRepo) configSetup() error {
 	return nil
 }
 
-func (r *HelmRepo) Info() *Info {
+func (r *HelmRepo) Info() *repository.Info {
 	return r.info
 }
 
 // Search the word in repo, support "*" to get all installable in repo.
-func (r *HelmRepo) Search(word string) ([]*InstallerBrief, error) {
+func (r *HelmRepo) Search(word string) ([]*repository.InstallerBrief, error) {
 	index, err := r.BuildIndex()
 	if err != nil {
 		return nil, errors.Wrap(err, "can't build helm index configSetup")
@@ -160,7 +161,7 @@ func (r *HelmRepo) Search(word string) ([]*InstallerBrief, error) {
 }
 
 // Get the Installer of the specified installable.
-func (r *HelmRepo) Get(name, version string) (Installer, error) {
+func (r *HelmRepo) Get(name, version string) (repository.Installer, error) {
 	index, err := r.BuildIndex()
 	if err != nil {
 		return nil, errors.Wrap(err, "can't build helm index configSetup")
@@ -198,7 +199,7 @@ func (r *HelmRepo) Get(name, version string) (Installer, error) {
 	return &i, nil
 }
 
-func (r *HelmRepo) Installed() ([]Installer, error) {
+func (r *HelmRepo) Installed() ([]repository.Installer, error) {
 	return r.getInstalled()
 }
 
@@ -237,7 +238,7 @@ func (r *HelmRepo) list() ([]*release.Release, error) {
 	return releases, nil
 }
 
-func (r *HelmRepo) getInstalled() ([]Installer, error) {
+func (r *HelmRepo) getInstalled() ([]repository.Installer, error) {
 	index, err := r.BuildIndex()
 	if err != nil {
 		return nil, err
@@ -255,7 +256,7 @@ func (r *HelmRepo) getInstalled() ([]Installer, error) {
 		cache[res[i].Name] = res[i]
 	}
 
-	list := make([]Installer, 0)
+	list := make([]repository.Installer, 0)
 	for i := 0; i < len(rls); i++ {
 		if plugin, ok := cache[rls[i].Chart.Name()]; ok {
 			installer := NewHelmInstaller(

@@ -269,10 +269,6 @@ message Installer {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "configuration type"
       } ];
-  bool installed = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "whether the installer has been installed"
-      } ];
 }
 
 /**

@@ -35,6 +35,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -71,11 +72,21 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 	}
 	installerConfiguration := make(map[string]interface{})
 	if req.InstallerInfo.Configuration != nil {
-		if err := json.Unmarshal(req.InstallerInfo.Configuration,
-			&installerConfiguration); err != nil {
-			log.Errorf("error unmarshal request installer info configuration: %s",
-				err)
-			return nil, pb.PluginErrInvalidArgument()
+		switch req.InstallerInfo.Type {
+		case pb.ConfigurationType_JSON:
+			if err := json.Unmarshal(req.InstallerInfo.Configuration,
+				&installerConfiguration); err != nil {
+				log.Errorf("error unmarshal request installer info configuration: %s",
+					err)
+				return nil, pb.PluginErrInvalidArgument()
+			}
+		case pb.ConfigurationType_YAML:
+			if err := yaml.Unmarshal(req.InstallerInfo.Configuration,
+				&installerConfiguration); err != nil {
+				log.Errorf("error unmarshal request installer info configuration: %s",
+					err)
+				return nil, pb.PluginErrInvalidArgument()
+			}
 		}
 	}
 	repo, err := hub.GetInstance().Get(req.InstallerInfo.RepoName)

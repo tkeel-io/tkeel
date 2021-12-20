@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package repository
+package helm
 
 import (
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/tkeel/pkg/repository"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/repo"
 	"sigs.k8s.io/yaml"
@@ -35,8 +36,8 @@ type PluginRes struct {
 	Description string   `json:"description"`
 }
 
-func (r PluginRes) ToInstallerBrief() *InstallerBrief {
-	return &InstallerBrief{
+func (r PluginRes) ToInstallerBrief() *repository.InstallerBrief {
+	return &repository.InstallerBrief{
 		Name:      r.Name,
 		Repo:      r.Repo,
 		Version:   r.Version,
@@ -46,8 +47,8 @@ func (r PluginRes) ToInstallerBrief() *InstallerBrief {
 
 type PluginResList []*PluginRes
 
-func (r *PluginResList) ToInstallerBrief() []*InstallerBrief {
-	list := make([]*InstallerBrief, 0, len(*r))
+func (r *PluginResList) ToInstallerBrief() []*repository.InstallerBrief {
+	list := make([]*repository.InstallerBrief, 0, len(*r))
 	for _, res := range *r {
 		list = append(list, res.ToInstallerBrief())
 	}

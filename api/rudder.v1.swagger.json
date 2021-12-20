@@ -786,10 +786,6 @@
         "type": {
           "$ref": "#/definitions/v1ConfigurationType",
           "description": "configuration type"
-        },
-        "installed": {
-          "type": "boolean",
-          "description": "whether the installer has been installed"
         }
       },
       "description": "*\nInstaller."

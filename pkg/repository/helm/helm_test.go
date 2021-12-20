@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package repository
+package helm
 
 import (
 	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/tkeel-io/tkeel/pkg/repository"
 	helmAction "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/getter"
 )
@@ -47,7 +48,7 @@ func TestDriver_String(t *testing.T) {
 
 func TestHelmRepo_Close(t *testing.T) {
 	type fields struct {
-		info         *Info
+		info         *repository.Info
 		actionConfig *helmAction.Configuration
 		httpGetter   getter.Getter
 		driver       Driver
@@ -79,7 +80,7 @@ func TestHelmRepo_Close(t *testing.T) {
 
 func TestHelmRepo_GetDriver(t *testing.T) {
 	type fields struct {
-		info         *Info
+		info         *repository.Info
 		actionConfig *helmAction.Configuration
 		httpGetter   getter.Getter
 		driver       Driver
@@ -110,14 +111,14 @@ func TestHelmRepo_GetDriver(t *testing.T) {
 
 func TestHelmRepo_Info(t *testing.T) {
 	type fields struct {
-		info         *Info
+		info         *repository.Info
 		actionConfig *helmAction.Configuration
 		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
 
-	i := Info{
+	i := repository.Info{
 		Name:        "test",
 		URL:         "url",
 		Annotations: nil,
@@ -125,7 +126,7 @@ func TestHelmRepo_Info(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   *Info
+		want   *repository.Info
 	}{
 		{"get info", fields{info: &i}, &i},
 	}
@@ -147,7 +148,7 @@ func TestHelmRepo_Info(t *testing.T) {
 
 func TestHelmRepo_Namespace(t *testing.T) {
 	type fields struct {
-		info         *Info
+		info         *repository.Info
 		actionConfig *helmAction.Configuration
 		httpGetter   getter.Getter
 		driver       Driver
@@ -178,7 +179,7 @@ func TestHelmRepo_Namespace(t *testing.T) {
 
 func TestHelmRepo_SetDriver(t *testing.T) {
 	type fields struct {
-		info         *Info
+		info         *repository.Info
 		actionConfig *helmAction.Configuration
 		httpGetter   getter.Getter
 		driver       Driver
@@ -214,16 +215,16 @@ func TestHelmRepo_SetDriver(t *testing.T) {
 
 func TestHelmRepo_SetInfo(t *testing.T) {
 	type fields struct {
-		info         *Info
+		info         *repository.Info
 		actionConfig *helmAction.Configuration
 		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
 	type args struct {
-		info Info
+		info repository.Info
 	}
-	i := Info{
+	i := repository.Info{
 		Name:        "name",
 		URL:         "url",
 		Annotations: nil,
@@ -253,7 +254,7 @@ func TestHelmRepo_SetInfo(t *testing.T) {
 
 func TestHelmRepo_SetNamespace(t *testing.T) {
 	type fields struct {
-		info         *Info
+		info         *repository.Info
 		actionConfig *helmAction.Configuration
 		httpGetter   getter.Getter
 		driver       Driver
@@ -288,7 +289,7 @@ func TestHelmRepo_SetNamespace(t *testing.T) {
 
 func TestHelmRepo_setActionConfig(t *testing.T) {
 	type fields struct {
-		info         *Info
+		info         *repository.Info
 		actionConfig *helmAction.Configuration
 		httpGetter   getter.Getter
 		driver       Driver
@@ -320,7 +321,7 @@ func TestHelmRepo_setActionConfig(t *testing.T) {
 
 func TestNewHelmRepo(t *testing.T) {
 	type args struct {
-		info      Info
+		info      repository.Info
 		driver    Driver
 		namespace string
 	}
@@ -333,7 +334,7 @@ func TestNewHelmRepo(t *testing.T) {
 		{
 			"new helm repo",
 			args{
-				info: Info{
+				info: repository.Info{
 					Name:        "name",
 					URL:         "url",
 					Annotations: nil,
@@ -341,7 +342,7 @@ func TestNewHelmRepo(t *testing.T) {
 				driver:    Mem,
 				namespace: "namespace",
 			},
-			&HelmRepo{info: &Info{
+			&HelmRepo{info: &repository.Info{
 				Name:        "name",
 				URL:         "url",
 				Annotations: nil,

@@ -14,9 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package repository
+package helm
 
 import (
+	"strings"
+
 	"helm.sh/helm/v3/pkg/cli"
 
 	"helm.sh/helm/v3/pkg/getter"
@@ -24,42 +26,58 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/tkeel/pkg/repository"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
-var _ Installer = &HelmInstaller{}
+const (
+	ReadmeFileNameKey = "README"
+	ValuesSchemaKey   = "VALUES.SCHEMA"
+)
+
+var _ repository.Installer = &HelmInstaller{}
 
 type HelmInstaller struct {
 	chart       *chart.Chart
 	helmConfig  *action.Configuration
-	options     []*Option
+	options     map[string]interface{}
 	id          string
-	brief       InstallerBrief
-	annotations Annotations
+	brief       repository.InstallerBrief
+	annotations repository.Annotations
 	namespace   string
 }
 
-func NewHelmInstaller(id string, ch *chart.Chart, brief InstallerBrief, namespace string, helmConfig *action.Configuration, options ...*Option) HelmInstaller {
+func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrief, namespace string, helmConfig *action.Configuration) HelmInstaller {
 	return HelmInstaller{
-		chart:       ch,
-		helmConfig:  helmConfig,
-		id:          id,
-		namespace:   namespace,
-		annotations: make(Annotations),
-		brief:       brief,
-		options:     options,
+		chart:      ch,
+		helmConfig: helmConfig,
+		id:         id,
+		namespace:  namespace,
+		annotations: func() repository.Annotations {
+			a := make(repository.Annotations)
+			for _, v := range ch.Files {
+				if strings.HasPrefix(v.Name, ReadmeFileNameKey) {
+					a[ReadmeFileNameKey] = v.Data
+				}
+				if ch.Schema != nil {
+					a[ValuesSchemaKey] = ch.Schema
+				}
+			}
+			return a
+		}(),
+		brief:   brief,
+		options: ch.Values,
 	}
 }
 
-func NewHelmInstallerQuick(id, namespace string, config *action.Configuration, options ...*Option) HelmInstaller {
+func NewHelmInstallerQuick(id, namespace string, config *action.Configuration) HelmInstaller {
 	return HelmInstaller{
 		namespace:   namespace,
 		id:          id,
 		helmConfig:  config,
-		options:     options,
-		annotations: make(Annotations),
+		annotations: make(repository.Annotations),
 	}
 }
 
@@ -75,22 +93,41 @@ func (h *HelmInstaller) SetPluginID(id string) {
 	h.id = id
 }
 
-func (h HelmInstaller) Annotations() Annotations {
+func (h HelmInstaller) Annotations() repository.Annotations {
 	return h.annotations
 }
 
-func (h HelmInstaller) Options() []*Option {
-	return h.options
+func (h HelmInstaller) Options() []*repository.Option {
+	return func() []*repository.Option {
+		ret := make([]*repository.Option, 0, len(h.options))
+		for k, v := range h.options {
+			ret = append(ret, &repository.Option{
+				Key:   k,
+				Value: v,
+			})
+		}
+		return ret
+	}()
 }
 
-func (h *HelmInstaller) SetOption(options ...*Option) error {
-	h.options = append(h.options, options...)
+func (h *HelmInstaller) SetOption(ops ...*repository.Option) error {
+	for _, v := range ops {
+		_, ok := h.options[v.Key]
+		if !ok {
+			return errors.New("option(" + v.Key + ") not found")
+		}
+		h.options[v.Key] = v.Value
+	}
 	return nil
 }
 
-func (h HelmInstaller) Install(options ...*Option) error {
-	ops := h.options[:len(h.options):len(h.options)]
-	ops = append(ops, options...)
+func (h HelmInstaller) Install(ops ...*repository.Option) error {
+	for _, v := range ops {
+		_, ok := h.options[v.Key]
+		if ok {
+			h.options[v.Key] = v.Value
+		}
+	}
 
 	for i := 0; i < len(ops); i++ {
 		if err := ops[i].Check(); err != nil {
@@ -138,7 +175,7 @@ func (h HelmInstaller) Uninstall() error {
 	return nil
 }
 
-func (h HelmInstaller) Brief() *InstallerBrief {
+func (h HelmInstaller) Brief() *repository.InstallerBrief {
 	return &h.brief
 }
 
