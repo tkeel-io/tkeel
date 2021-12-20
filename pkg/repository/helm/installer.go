@@ -37,9 +37,9 @@ const (
 	ValuesSchemaKey   = "VALUES.SCHEMA"
 )
 
-var _ repository.Installer = &HelmInstaller{}
+var _ repository.Installer = &Installer{}
 
-type HelmInstaller struct {
+type Installer struct {
 	chart       *chart.Chart
 	helmConfig  *action.Configuration
 	options     map[string]interface{}
@@ -49,8 +49,8 @@ type HelmInstaller struct {
 	namespace   string
 }
 
-func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrief, namespace string, helmConfig *action.Configuration) HelmInstaller {
-	return HelmInstaller{
+func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrief, namespace string, helmConfig *action.Configuration) Installer {
+	return Installer{
 		chart:      ch,
 		helmConfig: helmConfig,
 		id:         id,
@@ -72,8 +72,8 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 	}
 }
 
-func NewHelmInstallerQuick(id, namespace string, config *action.Configuration) HelmInstaller {
-	return HelmInstaller{
+func NewHelmInstallerQuick(id, namespace string, config *action.Configuration) Installer {
+	return Installer{
 		namespace:   namespace,
 		id:          id,
 		helmConfig:  config,
@@ -81,23 +81,23 @@ func NewHelmInstallerQuick(id, namespace string, config *action.Configuration) H
 	}
 }
 
-func (h *HelmInstaller) SetChart(ch *chart.Chart) {
+func (h *Installer) SetChart(ch *chart.Chart) {
 	h.chart = ch
 }
 
-func (h HelmInstaller) GetChart() *chart.Chart {
+func (h Installer) GetChart() *chart.Chart {
 	return h.chart
 }
 
-func (h *HelmInstaller) SetPluginID(id string) {
+func (h *Installer) SetPluginID(id string) {
 	h.id = id
 }
 
-func (h HelmInstaller) Annotations() repository.Annotations {
+func (h Installer) Annotations() repository.Annotations {
 	return h.annotations
 }
 
-func (h HelmInstaller) Options() []*repository.Option {
+func (h Installer) Options() []*repository.Option {
 	return func() []*repository.Option {
 		ret := make([]*repository.Option, 0, len(h.options))
 		for k, v := range h.options {
@@ -110,7 +110,7 @@ func (h HelmInstaller) Options() []*repository.Option {
 	}()
 }
 
-func (h *HelmInstaller) SetOption(ops ...*repository.Option) error {
+func (h *Installer) SetOption(ops ...*repository.Option) error {
 	for _, v := range ops {
 		_, ok := h.options[v.Key]
 		if !ok {
@@ -121,7 +121,7 @@ func (h *HelmInstaller) SetOption(ops ...*repository.Option) error {
 	return nil
 }
 
-func (h HelmInstaller) Install(ops ...*repository.Option) error {
+func (h Installer) Install(ops ...*repository.Option) error {
 	for _, v := range ops {
 		_, ok := h.options[v.Key]
 		if ok {
@@ -164,7 +164,7 @@ func (h HelmInstaller) Install(ops ...*repository.Option) error {
 	return nil
 }
 
-func (h HelmInstaller) Uninstall() error {
+func (h Installer) Uninstall() error {
 	uninstallClint := action.NewUninstall(h.helmConfig)
 	_, err := uninstallClint.Run(h.id)
 	if err != nil {
@@ -175,31 +175,11 @@ func (h HelmInstaller) Uninstall() error {
 	return nil
 }
 
-func (h HelmInstaller) Brief() *repository.InstallerBrief {
+func (h Installer) Brief() *repository.InstallerBrief {
 	return &h.brief
 }
 
 func loadComponentChart() (*chart.Chart, error) {
-	//pullAction := action.NewPull()
-	//pullAction.RepoURL = _tkeelRepo
-	//tmpDir, err := createTempDir()
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "create temp dir errr")
-	//}
-	//defer os.RemoveAll(tmpDir)
-	//pullAction.DestDir = tmpDir
-	//pullAction.Settings = &cli.EnvSettings{}
-	//_, err = pullAction.Run(_componentChartName)
-	//if err != nil {
-	//	log.Warn("can't get the chart: %q", _componentChartName)
-	//	return nil, errors.Wrap(err, "can't get the chart")
-	//}
-	//cp, err := locateChartFile(tmpDir)
-	//if err != nil {
-	//	return nil, errors.Wrap(err, "locate chart failed")
-	//}
-	//log.Debugf("CHART PATH: %s\n", cp)
-
 	chartURL, err := repo.FindChartInRepoURL(_tkeelRepo, _componentChartName, "", "", "", "", getter.All(new(cli.EnvSettings)))
 	if err != nil {
 		return nil, errors.Wrap(err, "get component chart url err")

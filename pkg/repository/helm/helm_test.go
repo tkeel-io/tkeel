@@ -64,16 +64,15 @@ func TestHelmRepo_Close(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &HelmRepo{
+			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
 				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
-			assert.Panics(t, func() {
-				_ = r.Close()
-			})
+			err := r.Close()
+			assert.Nil(t, err)
 		})
 	}
 }
@@ -95,7 +94,7 @@ func TestHelmRepo_GetDriver(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := HelmRepo{
+			r := Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
 				httpGetter:   tt.fields.httpGetter,
@@ -132,7 +131,7 @@ func TestHelmRepo_Info(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &HelmRepo{
+			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
 				httpGetter:   tt.fields.httpGetter,
@@ -163,7 +162,7 @@ func TestHelmRepo_Namespace(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &HelmRepo{
+			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
 				httpGetter:   tt.fields.httpGetter,
@@ -198,7 +197,7 @@ func TestHelmRepo_SetDriver(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &HelmRepo{
+			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
 				httpGetter:   tt.fields.httpGetter,
@@ -238,7 +237,7 @@ func TestHelmRepo_SetInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &HelmRepo{
+			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
 				httpGetter:   tt.fields.httpGetter,
@@ -273,7 +272,7 @@ func TestHelmRepo_SetNamespace(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &HelmRepo{
+			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
 				httpGetter:   tt.fields.httpGetter,
@@ -304,7 +303,7 @@ func TestHelmRepo_setActionConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &HelmRepo{
+			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
 				httpGetter:   tt.fields.httpGetter,
@@ -328,7 +327,7 @@ func TestNewHelmRepo(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *HelmRepo
+		want    *Repo
 		wantErr bool
 	}{
 		{
@@ -342,7 +341,7 @@ func TestNewHelmRepo(t *testing.T) {
 				driver:    Mem,
 				namespace: "namespace",
 			},
-			&HelmRepo{info: &repository.Info{
+			&Repo{info: &repository.Info{
 				Name:        "name",
 				URL:         "url",
 				Annotations: nil,
@@ -396,14 +395,15 @@ func Test_initActionConfig(t *testing.T) {
 
 /*
 func TestSearch(t *testing.T) {
-	info := NewInfo("tkeel", _tkeelRepo, nil)
-	repo, err := NewHelmRepo(*info, Secret, "default")
+	info := repository.NewInfo("tkeel", _tkeelRepo, nil)
+	repo, err := NewHelmRepo(*info, Mem, "default")
 	assert.Nil(t, err)
 
-	ibs, err := repo.Search("*")
+	iothub, err := repo.Search("iothub")
 	assert.Nil(t, err)
 
-	fmt.Printf("%+v\n", ibs)
+	assert.False(t, iothub[0].Installed)
+	fmt.Printf("%+v\n", iothub)
 	fmt.Println()
 
 	i, err := repo.Get("iothub", "0.2.0")
@@ -416,15 +416,15 @@ func TestSearch(t *testing.T) {
 	assert.Nil(t, err)
 
 	list, err := repo.Search("iothub")
-	if err != nil {
-		assert.True(t, list[0].Installed)
-	}
+	assert.Nil(t, err)
+	fmt.Printf("%+v", list)
+	assert.True(t, list[0].Installed)
 
-	ti := NewHelmInstallerQuick("test", repo.Namespace(), repo.actionConfig)
+	ti := NewHelmInstallerQuick("test", repo.Namespace(), repo.Config())
 	i = &ti
 	err = i.Uninstall()
 	assert.Nil(t, err)
 }
 
-//Test Search / Install / Uninstall / Get.
+// Test Search / Install / Uninstall / Get.
 */
