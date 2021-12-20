@@ -58,10 +58,10 @@ const (
 	_componentChartName = "tkeel-plugin-components"
 )
 
-var _ repository.Repository = &HelmRepo{}
+var _ repository.Repository = &Repo{}
 
-// HelmRepo is the impl Repository Repo.
-type HelmRepo struct {
+// Repo is the impl repository.Repository.
+type Repo struct {
 	info         *repository.Info
 	actionConfig *helmAction.Configuration
 	httpGetter   getter.Getter
@@ -69,13 +69,13 @@ type HelmRepo struct {
 	namespace    string
 }
 
-func NewHelmRepo(info repository.Info, driver Driver, namespace string) (*HelmRepo, error) {
+func NewHelmRepo(info repository.Info, driver Driver, namespace string) (*Repo, error) {
 	httpGetter, err := getter.NewHTTPGetter()
 	if err != nil {
 		log.Warn("init helm action configuration err", err)
 		return nil, errors.Wrap(err, "init http getter failed")
 	}
-	repo := &HelmRepo{
+	repo := &Repo{
 		info:       &info,
 		namespace:  namespace,
 		driver:     driver,
@@ -87,33 +87,33 @@ func NewHelmRepo(info repository.Info, driver Driver, namespace string) (*HelmRe
 	return repo, nil
 }
 
-func (r *HelmRepo) SetInfo(info repository.Info) {
+func (r *Repo) SetInfo(info repository.Info) {
 	r.info = &info
 }
 
-func (r HelmRepo) Config() *helmAction.Configuration {
+func (r Repo) Config() *helmAction.Configuration {
 	return r.actionConfig
 }
 
-func (r *HelmRepo) Namespace() string {
+func (r *Repo) Namespace() string {
 	return r.namespace
 }
 
-func (r *HelmRepo) SetNamespace(namespace string) error {
+func (r *Repo) SetNamespace(namespace string) error {
 	r.namespace = namespace
 	return r.configSetup()
 }
 
-func (r *HelmRepo) SetDriver(driver Driver) error {
+func (r *Repo) SetDriver(driver Driver) error {
 	r.driver = driver
 	return r.configSetup()
 }
 
-func (r HelmRepo) GetDriver() Driver {
+func (r Repo) GetDriver() Driver {
 	return r.driver
 }
 
-func (r *HelmRepo) configSetup() error {
+func (r *Repo) configSetup() error {
 	config, err := initActionConfig(r.namespace, r.driver)
 	if err != nil {
 		log.Warn("init helm action configuration err", err)
@@ -123,12 +123,12 @@ func (r *HelmRepo) configSetup() error {
 	return nil
 }
 
-func (r *HelmRepo) Info() *repository.Info {
+func (r *Repo) Info() *repository.Info {
 	return r.info
 }
 
 // Search the word in repo, support "*" to get all installable in repo.
-func (r *HelmRepo) Search(word string) ([]*repository.InstallerBrief, error) {
+func (r *Repo) Search(word string) ([]*repository.InstallerBrief, error) {
 	index, err := r.BuildIndex()
 	if err != nil {
 		return nil, errors.Wrap(err, "can't build helm index configSetup")
@@ -145,13 +145,15 @@ func (r *HelmRepo) Search(word string) ([]*repository.InstallerBrief, error) {
 		return nil, err
 	}
 
-	installedMap := make(map[string]struct{}, len(installedList))
+	installedMap := make(map[string]string, len(installedList))
 	for i := range installedList {
-		installedMap[installedList[i].Brief().Name] = struct{}{}
+		installedMap[installedList[i].Brief().Name] = installedList[i].Brief().Version
 	}
 	for i := 0; i < len(briefs); i++ {
-		if _, ok := installedMap[briefs[i].Name]; ok {
-			briefs[i].Installed = true
+		if version, ok := installedMap[briefs[i].Name]; ok {
+			if version == briefs[i].Version {
+				briefs[i].Installed = true
+			}
 		}
 	}
 
@@ -159,7 +161,7 @@ func (r *HelmRepo) Search(word string) ([]*repository.InstallerBrief, error) {
 }
 
 // Get the Installer of the specified installable.
-func (r *HelmRepo) Get(name, version string) (repository.Installer, error) {
+func (r *Repo) Get(name, version string) (repository.Installer, error) {
 	index, err := r.BuildIndex()
 	if err != nil {
 		return nil, errors.Wrap(err, "can't build helm index configSetup")
@@ -197,15 +199,15 @@ func (r *HelmRepo) Get(name, version string) (repository.Installer, error) {
 	return &i, nil
 }
 
-func (r *HelmRepo) Installed() ([]repository.Installer, error) {
+func (r *Repo) Installed() ([]repository.Installer, error) {
 	return r.getInstalled()
 }
 
-func (r *HelmRepo) Close() error {
+func (r *Repo) Close() error {
 	return nil
 }
 
-func (r *HelmRepo) BuildIndex() (*Index, error) {
+func (r *Repo) BuildIndex() (*Index, error) {
 	fileContent, err := r.GetIndex()
 	if err != nil {
 		return nil, err
@@ -214,7 +216,7 @@ func (r *HelmRepo) BuildIndex() (*Index, error) {
 }
 
 // GetIndex get the repo index.yaml file content.
-func (r *HelmRepo) GetIndex() ([]byte, error) {
+func (r *Repo) GetIndex() ([]byte, error) {
 	url := strings.TrimSuffix(r.info.URL, "/") + "/" + _indexFileName
 
 	buf, err := r.httpGetter.Get(url)
@@ -226,7 +228,7 @@ func (r *HelmRepo) GetIndex() ([]byte, error) {
 }
 
 // list the installed release plugin by helm .
-func (r *HelmRepo) list() ([]*release.Release, error) {
+func (r *Repo) list() ([]*release.Release, error) {
 	listAction := helmAction.NewList(r.actionConfig)
 	releases, err := listAction.Run()
 	if err != nil {
@@ -235,7 +237,7 @@ func (r *HelmRepo) list() ([]*release.Release, error) {
 	return releases, nil
 }
 
-func (r *HelmRepo) getInstalled() ([]repository.Installer, error) {
+func (r *Repo) getInstalled() ([]repository.Installer, error) {
 	index, err := r.BuildIndex()
 	if err != nil {
 		return nil, err
