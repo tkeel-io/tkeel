@@ -21,15 +21,13 @@ import (
 	"fmt"
 	"strings"
 
-	"helm.sh/helm/v3/pkg/release"
-
-	"helm.sh/helm/v3/pkg/chart/loader"
-
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	helmAction "helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/getter"
+	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
@@ -204,8 +202,7 @@ func (r *HelmRepo) Installed() ([]repository.Installer, error) {
 }
 
 func (r *HelmRepo) Close() error {
-	// TODO implement me.
-	panic("implement me")
+	return nil
 }
 
 func (r *HelmRepo) BuildIndex() (*Index, error) {

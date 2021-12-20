@@ -25,7 +25,9 @@ require (
 	google.golang.org/grpc v1.42.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v2 v2.4.0
-	helm.sh/helm/v3 v3.7.1
-	k8s.io/cli-runtime v0.22.4
+	helm.sh/helm/v3 v3.7.2
+	k8s.io/cli-runtime v0.23.1
 	sigs.k8s.io/yaml v1.2.0
 )
+
+replace github.com/russross/blackfriday => github.com/russross/blackfriday v1.6.0
