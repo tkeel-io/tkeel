@@ -17,7 +17,6 @@ limitations under the License.
 package helm
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -394,6 +393,7 @@ func Test_initActionConfig(t *testing.T) {
 	}
 }
 
+/*
 func TestSearch(t *testing.T) {
 	info := repository.NewInfo("tkeel", _tkeelRepo, nil)
 	repo, err := NewHelmRepo(*info, Mem, "default")
@@ -427,3 +427,4 @@ func TestSearch(t *testing.T) {
 }
 
 // Test Search / Install / Uninstall / Get.
+*/
