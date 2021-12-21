@@ -119,7 +119,7 @@ var rootCmd = &cobra.Command{
 					return repo, nil
 				},
 				func(pluginID string) error {
-					repo, err := helm.NewHelmRepo(repository.Info{}, helm.Driver(helm.Mem), conf.Tkeel.Namespace)
+					repo, err := helm.NewHelmRepo(repository.Info{}, helm.Mem, conf.Tkeel.Namespace)
 					if err != nil {
 						return fmt.Errorf("error new helm repo: %w", err)
 					}

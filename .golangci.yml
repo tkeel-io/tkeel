@@ -265,6 +265,7 @@ linters:
     - gofumpt
     - nilerr
     - forbidigo
+    - gomoddirectives
 issues:
   exclude:
     # staticcheck
