@@ -11,6 +11,6 @@ on:
       - main
 jobs:
   check:
-    uses: tkeel-io/tkeel/.github/workflows/public_call.yml@main
+    uses: uptutu/tkeel/.github/workflows/public_call.yml@main
     with:
       upload_require: false
