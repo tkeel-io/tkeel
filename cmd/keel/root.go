@@ -63,13 +63,12 @@ var rootCmd = &cobra.Command{
 			Dev:    conf.Log.Dev,
 			Output: conf.Log.Output,
 		}, httpSrv, grpcSrv)
-
 		{
 			// init client.
 			// dapr grpc client.
 			daprGRPCClient, err := t_dapr.NewGPRCClient(10, "5s", conf.Dapr.GRPCPort)
 			if err != nil {
-				log.Fatal("fatal new dapr client: %s", err)
+				log.Fatalf("fatal new dapr client: %s", err)
 				os.Exit(-1)
 			}
 			// dapr http client.

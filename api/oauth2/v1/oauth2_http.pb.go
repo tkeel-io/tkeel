@@ -60,7 +60,7 @@ func (h *Oauth2HTTPHandler) AddPluginWhiteList(req *go_restful.Request, resp *go
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *Oauth2HTTPHandler) IssueAdminToken(req *go_restful.Request, resp *go_restful.Response) {
@@ -83,7 +83,7 @@ func (h *Oauth2HTTPHandler) IssueAdminToken(req *go_restful.Request, resp *go_re
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *Oauth2HTTPHandler) IssuePluginToken(req *go_restful.Request, resp *go_restful.Response) {
@@ -106,7 +106,7 @@ func (h *Oauth2HTTPHandler) IssuePluginToken(req *go_restful.Request, resp *go_r
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func RegisterOauth2HTTPServer(container *go_restful.Container, srv Oauth2HTTPServer) {

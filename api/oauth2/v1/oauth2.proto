@@ -146,7 +146,7 @@ message AddPluginWhiteListRequest {
 }
 
 message IssueAdminTokenRequest {
-  string password = 2
+  string password = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "admin password"
       } ];

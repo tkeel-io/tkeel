@@ -76,7 +76,7 @@ func (h *PluginHTTPHandler) BindTenants(req *go_restful.Request, resp *go_restfu
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.Response) {
@@ -104,7 +104,7 @@ func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) InstallPlugin(req *go_restful.Request, resp *go_restful.Response) {
@@ -137,7 +137,7 @@ func (h *PluginHTTPHandler) InstallPlugin(req *go_restful.Request, resp *go_rest
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) ListBindTenants(req *go_restful.Request, resp *go_restful.Response) {
@@ -165,7 +165,7 @@ func (h *PluginHTTPHandler) ListBindTenants(req *go_restful.Request, resp *go_re
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful.Response) {
@@ -188,7 +188,7 @@ func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_restful.Response) {
@@ -221,7 +221,7 @@ func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_res
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) UnbindTenants(req *go_restful.Request, resp *go_restful.Response) {
@@ -249,7 +249,7 @@ func (h *PluginHTTPHandler) UnbindTenants(req *go_restful.Request, resp *go_rest
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) UninstallPlugin(req *go_restful.Request, resp *go_restful.Response) {
@@ -277,7 +277,7 @@ func (h *PluginHTTPHandler) UninstallPlugin(req *go_restful.Request, resp *go_re
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) UnregisterPlugin(req *go_restful.Request, resp *go_restful.Response) {
@@ -305,7 +305,7 @@ func (h *PluginHTTPHandler) UnregisterPlugin(req *go_restful.Request, resp *go_r
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPServer) {

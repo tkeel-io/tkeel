@@ -58,7 +58,7 @@ func (h *EntryHTTPHandler) GetEntries(req *go_restful.Request, resp *go_restful.
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func RegisterEntryHTTPServer(container *go_restful.Container, srv EntryHTTPServer) {

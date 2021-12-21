@@ -293,7 +293,7 @@ func (o *DaprStateOprator) List(ctx context.Context) ([]*repository.Info, error)
 	}
 	pluginProxyMap := make(model.PluginRepoMap)
 	if item.Etag == "" {
-		return nil, ErrPluginRepoNotExsist
+		return nil, nil
 	}
 	err = json.Unmarshal(item.Value, &pluginProxyMap)
 	if err != nil {

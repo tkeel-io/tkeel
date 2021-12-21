@@ -52,10 +52,10 @@ import (
 )
 
 var (
-	configFile string
-
-	conf      *config.Configuration
-	rudderApp *app.App
+	configFile      string
+	initServiceFunc []func() error
+	conf            *config.Configuration
+	rudderApp       *app.App
 )
 
 var rootCmd = &cobra.Command{
@@ -171,6 +171,12 @@ var rootCmd = &cobra.Command{
 		if err := rudderApp.Run(context.TODO()); err != nil {
 			log.Fatal("fatal rudder app run: %s", err)
 			os.Exit(-2)
+		}
+		for _, v := range initServiceFunc {
+			if err := v(); err != nil {
+				log.Fatalf("init service: %s", err)
+				os.Exit(-2)
+			}
 		}
 
 		stop := make(chan os.Signal, 1)

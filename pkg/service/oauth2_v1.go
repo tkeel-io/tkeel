@@ -22,10 +22,10 @@ var ErrSecretNotMatch = errors.New("secret not match")
 type Oauth2ServiceV1 struct {
 	pb.UnimplementedOauth2Server
 
-	kvOp           kv.Operator
-	whiteList      []string
-	pluginOp       plugin.Operator
-	secretProvider token.Provider
+	kvOp              kv.Operator
+	pluginIDWhiteList []string
+	pluginOp          plugin.Operator
+	secretProvider    token.Provider
 }
 
 func NewOauth2ServiceV1(adminPasswd string, kvOp kv.Operator, pOp plugin.Operator) *Oauth2ServiceV1 {
@@ -35,9 +35,8 @@ func NewOauth2ServiceV1(adminPasswd string, kvOp kv.Operator, pOp plugin.Operato
 		return nil
 	}
 	if ver == "" {
-		values = make([]byte, 0)
-		base64.StdEncoding.Encode(values, []byte(adminPasswd))
-		if err = kvOp.Create(context.TODO(), model.KeyAdminPassword, values); err != nil {
+		if err = kvOp.Create(context.TODO(), model.KeyAdminPassword,
+			[]byte(base64.StdEncoding.EncodeToString([]byte(adminPasswd)))); err != nil {
 			log.Fatalf("error create rudder admin password: %s", err)
 			return nil
 		}
@@ -45,10 +44,10 @@ func NewOauth2ServiceV1(adminPasswd string, kvOp kv.Operator, pOp plugin.Operato
 	log.Debugf("rudder admin password: %s", string(values))
 	secret := util.RandStringBytesMaskImpr(0, 10)
 	return &Oauth2ServiceV1{
-		kvOp:           kvOp,
-		whiteList:      []string{"rudder", "keel", "core"},
-		pluginOp:       pOp,
-		secretProvider: token.InitProvider(secret, "", ""),
+		kvOp:              kvOp,
+		pluginIDWhiteList: []string{"rudder", "keel", "core"},
+		pluginOp:          pOp,
+		secretProvider:    token.InitProvider(secret, "", ""),
 	}
 }
 
@@ -57,7 +56,7 @@ func (s *Oauth2ServiceV1) AddPluginWhiteList(ctx context.Context,
 	if s.checkPluginWhiteList(req.PluginId) {
 		return nil, fmt.Errorf("error duplicate add")
 	}
-	s.whiteList = append(s.whiteList, req.PluginId)
+	s.pluginIDWhiteList = append(s.pluginIDWhiteList, req.PluginId)
 	return &emptypb.Empty{}, nil
 }
 
@@ -147,7 +146,7 @@ func (s *Oauth2ServiceV1) genToken(sub string, tokenKV ...string) (token, jti st
 }
 
 func (s *Oauth2ServiceV1) checkPluginWhiteList(id string) bool {
-	for _, v := range s.whiteList {
+	for _, v := range s.pluginIDWhiteList {
 		if v == id {
 			return true
 		}

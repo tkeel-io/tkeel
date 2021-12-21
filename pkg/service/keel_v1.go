@@ -16,6 +16,7 @@ package service
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -100,6 +101,7 @@ type KeelServiceV1 struct {
 	pluginRouteMap *sync.Map
 	secretProvider token.Provider
 	timeout        time.Duration
+	pathWhiteList  map[string][]string
 }
 
 func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr.Client, op proute.Operator) *KeelServiceV1 {
@@ -118,6 +120,15 @@ func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr
 		pluginRouteMap: new(sync.Map),
 		secretProvider: token.InitProvider(secret, "", ""),
 		timeout:        duration,
+		pathWhiteList: map[string][]string{
+			v1.RudderSubPath: []string{
+				"/apis/rudder/v1/oauth2/plugin",
+				"/apis/rudder/v1/oauth2/admin",
+			},
+			v1.SecuritySubPath: []string{
+				"/apis/security/v1/oauth/token",
+			},
+		},
 	}
 	if _, err := oauth.NewOperator(conf.SecurityConf.OAuth2); err != nil {
 		log.Fatalf("error oauth new operator: %s", err)
@@ -127,10 +138,11 @@ func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr
 		log.Fatalf("error rbac new operator: %s", err)
 		return nil
 	}
-	if err := ksV1.watch(context.TODO()); err != nil {
-		log.Fatalf("error keel watch plugin route map: %s", err)
-		return nil
-	}
+	go func() {
+		if err := ksV1.watch(context.TODO()); err != nil {
+			log.Fatalf("error keel watch plugin route map: %s", err)
+		}
+	}()
 	return ksV1
 }
 
@@ -162,15 +174,43 @@ func (s *KeelServiceV1) watch(ctx context.Context) error {
 	return nil
 }
 
+func setResult(code int, msg string, data interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"code": code,
+		"msg":  msg,
+		"data": data,
+	}
+}
+
+func writeResult(resp http.ResponseWriter, code int, msg string, data interface{}) {
+	resp.WriteHeader(code)
+	b, err := json.Marshal(setResult(code, msg, data))
+	if err != nil {
+		log.Errorf("error marshal result: %w", err)
+	}
+	resp.Write(b)
+}
+
 func (s *KeelServiceV1) Filter() restful.FilterFunction {
 	return func(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+		// white path.
+		for k, vs := range s.pathWhiteList {
+			for _, v := range vs {
+				if req.Request.URL.Path == v {
+					log.Debugf("path(%s) in white(%s) list", req.Request.URL.Path, k)
+					chain.ProcessFilter(req, resp)
+					return
+				}
+			}
+		}
 		ctx, cancel := context.WithTimeout(req.Request.Context(), s.timeout)
 		defer cancel()
 		// with source.
 		pluginID, err := s.getPluginIDFromRequest(req)
 		if err != nil {
 			log.Errorf("error get plugin ID from request: %s", err)
-			resp.WriteErrorString(http.StatusForbidden, "token parse error")
+			resp.WriteHeaderAndJson(http.StatusForbidden,
+				setResult(http.StatusForbidden, "invaild token", nil), "application/json")
 			return
 		}
 		// with user.
@@ -183,7 +223,8 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			user, err1 := s.externalGetUser(req)
 			if err1 != nil {
 				log.Errorf("error external get user: %s", err1)
-				resp.WriteErrorString(http.StatusForbidden, "token parse error")
+				resp.WriteHeaderAndJson(http.StatusForbidden,
+					setResult(http.StatusForbidden, "invaild token", nil), "application/json")
 				return
 			}
 			req.Request.Header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)] = []string{user.Base64Encode()}
@@ -199,13 +240,15 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			pluginRouteInterface, ok := s.pluginRouteMap.Load(pluginID)
 			if !ok {
 				log.Errorf("error source plugin ID(%s) not register", pluginID)
-				resp.WriteErrorString(http.StatusInternalServerError, "internal error")
+				resp.WriteHeaderAndJson(http.StatusInternalServerError,
+					setResult(http.StatusInternalServerError, "internal error", nil), "application/json")
 				return
 			}
 			pluginRoute, ok := pluginRouteInterface.(*model.PluginRoute)
 			if !ok {
 				log.Error("error source plugin route type invaild")
-				resp.WriteErrorString(http.StatusInternalServerError, "internal error")
+				resp.WriteHeaderAndJson(http.StatusInternalServerError,
+					setResult(http.StatusInternalServerError, "internal error", nil), "application/json")
 				return
 			}
 			ctx = withSource(ctx, &source{
@@ -216,18 +259,21 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			tKeelHeader := req.HeaderParameter(http.CanonicalHeaderKey(model.XtKeelAuthHeader))
 			if tKeelHeader == "" {
 				log.Errorf("error internal flow not found x-tKeel-auth")
-				resp.WriteErrorString(http.StatusForbidden, "x-tKeel-auth invaild")
+				resp.WriteHeaderAndJson(http.StatusForbidden,
+					setResult(http.StatusForbidden, "x-tKeel-auth invaild", nil), "application/json")
 				return
 			}
 			user := new(model.User)
 			if err = user.Base64Decode(tKeelHeader); err != nil {
 				log.Errorf("error decode x-tKeel-auth(%s): %s", tKeelHeader, err)
-				resp.WriteErrorString(http.StatusForbidden, "x-tKeel-auth invaild")
+				resp.WriteHeaderAndJson(http.StatusForbidden,
+					setResult(http.StatusForbidden, "x-tKeel-auth invaild", nil), "application/json")
 				return
 			}
 			ctx = withUser(ctx, user)
 		}
 		req.Request = req.Request.WithContext(ctx)
+		chain.ProcessFilter(req, resp)
 	}
 }
 
@@ -241,7 +287,7 @@ func (s *KeelServiceV1) getPluginIDFromRequest(req *restful.Request) (string, er
 		return "", fmt.Errorf("error parse plugin token(%s): %w", pluginToken, err)
 	}
 	if !ok {
-		return "", fmt.Errorf("plugin token invaild(%s)", pluginToken)
+		return "", fmt.Errorf("plugin invaild token(%s)", pluginToken)
 	}
 	pluginIDInterface, ok := payload["plugin_id"]
 	if !ok {
@@ -273,6 +319,7 @@ func (s *KeelServiceV1) externalGetUser(req *restful.Request) (*model.User, erro
 		user.User = tKeelToken.GetUserID()
 		user.Tenant = tenant
 		// TODO: RBAC.
+		user.Role = model.AdminRole
 	} else {
 		// manager platform.
 		user.User = model.TKeelUser
@@ -284,7 +331,7 @@ func (s *KeelServiceV1) externalGetUser(req *restful.Request) (*model.User, erro
 }
 
 func (s *KeelServiceV1) isManagerToken(token string) (bool, error) {
-	payload, valid, err := s.secretProvider.Parse(token)
+	payload, valid, err := s.secretProvider.Parse(strings.TrimPrefix(token, "Bearer "))
 	if err != nil {
 		return false, fmt.Errorf("error parse token(%s): %w", token, err)
 	}
@@ -304,21 +351,17 @@ func (s *KeelServiceV1) ProxyAddons(
 	up, err := s.getAddonsUpstream(req)
 	if err != nil {
 		if errors.Is(err, ErrNotFoundUpstream) {
-			resp.WriteHeader(http.StatusNotFound)
-			resp.Write([]byte("not found"))
+			writeResult(resp, http.StatusNotFound, "method not found", nil)
 		} else {
-			resp.WriteHeader(http.StatusBadRequest)
-			resp.Write([]byte("invail addons"))
+			writeResult(resp, http.StatusBadRequest, "invail addons", nil)
 		}
 		return fmt.Errorf("error get addons upstream: %w", err)
 	}
 	if err = up.Verify(req); err != nil {
 		if errors.Is(err, ErrNotActiveUpstream) {
-			resp.WriteHeader(http.StatusForbidden)
-			resp.Write([]byte("not active"))
+			writeResult(resp, http.StatusForbidden, "not active", nil)
 		} else {
-			resp.WriteHeader(http.StatusInternalServerError)
-			resp.Write([]byte("internal error"))
+			writeResult(resp, http.StatusInternalServerError, "internal error", nil)
 		}
 		return fmt.Errorf("error upstream verify validity: %w", err)
 	}
@@ -326,8 +369,7 @@ func (s *KeelServiceV1) ProxyAddons(
 	if req.ContentLength != 0 {
 		b, err1 := io.ReadAll(req.Body)
 		if err1 != nil {
-			resp.WriteHeader(http.StatusBadRequest)
-			resp.Write([]byte(err1.Error()))
+			writeResult(resp, http.StatusBadRequest, err1.Error(), nil)
 			return fmt.Errorf("error read body: %w", err1)
 		}
 		bodyByte = b
@@ -343,8 +385,7 @@ func (s *KeelServiceV1) ProxyAddons(
 		Body:       bodyByte,
 	})
 	if err != nil {
-		resp.WriteHeader(http.StatusBadRequest)
-		resp.Write([]byte(err.Error()))
+		writeResult(resp, http.StatusBadRequest, err.Error(), nil)
 		return fmt.Errorf("error plugin client call: %w", err)
 	}
 	if err = proxyHTTPResponse2RestfulResponse(dstResp, resp); err != nil {
@@ -359,21 +400,17 @@ func (s *KeelServiceV1) ProxyPlugin(
 	up, err := s.getPluginUpstream(req)
 	if err != nil {
 		if errors.Is(err, ErrNotFoundUpstream) {
-			resp.WriteHeader(http.StatusNotFound)
-			resp.Write([]byte("not found"))
+			writeResult(resp, http.StatusNotFound, "upstream not found", nil)
 		} else {
-			resp.WriteHeader(http.StatusBadRequest)
-			resp.Write([]byte("invail upstream"))
+			writeResult(resp, http.StatusBadRequest, "invail upstream", nil)
 		}
 		return fmt.Errorf("error get plugin upstream: %w", err)
 	}
 	if err = up.Verify(req); err != nil {
 		if errors.Is(err, ErrNotActiveUpstream) {
-			resp.WriteHeader(http.StatusForbidden)
-			resp.Write([]byte("not active"))
+			writeResult(resp, http.StatusForbidden, "not active", nil)
 		} else {
-			resp.WriteHeader(http.StatusInternalServerError)
-			resp.Write([]byte("internal error"))
+			writeResult(resp, http.StatusInternalServerError, "internal error", nil)
 		}
 		return fmt.Errorf("error upstream verify validity: %w", err)
 	}
@@ -381,8 +418,7 @@ func (s *KeelServiceV1) ProxyPlugin(
 	if req.ContentLength != 0 {
 		b, err1 := io.ReadAll(req.Body)
 		if err1 != nil {
-			resp.WriteHeader(http.StatusBadRequest)
-			resp.Write([]byte(err1.Error()))
+			writeResult(resp, http.StatusBadRequest, err1.Error(), nil)
 			return fmt.Errorf("error read body: %w", err1)
 		}
 		bodyByte = b
@@ -398,8 +434,7 @@ func (s *KeelServiceV1) ProxyPlugin(
 		Body:       bodyByte,
 	})
 	if err != nil {
-		resp.WriteHeader(http.StatusBadRequest)
-		resp.Write([]byte(err.Error()))
+		writeResult(resp, http.StatusBadRequest, err.Error(), nil)
 		return fmt.Errorf("error plugin client call: %w", err)
 	}
 	if err = proxyHTTPResponse2RestfulResponse(dstResp, resp); err != nil {
@@ -428,17 +463,24 @@ func (s *KeelServiceV1) ProxySecurity(resp http.ResponseWriter, req *http.Reques
 
 func (s *KeelServiceV1) ProxyRudder(resp http.ResponseWriter, req *http.Request) error {
 	log.Debugf("proxy call rudder %s", req.RequestURI)
-	user, ok := getUser(req.Context())
-	if !ok {
-		resp.WriteHeader(http.StatusBadRequest)
-		resp.Write([]byte("invaild user"))
-		return errors.New("error invaild user")
+	inWhiteList := false
+	for _, v := range s.pathWhiteList[v1.RudderSubPath] {
+		if v == req.URL.Path {
+			inWhiteList = true
+			break
+		}
 	}
-	if user.User != "_tKeel" {
-		if user.Role != model.AdminRole {
-			resp.WriteHeader(http.StatusForbidden)
-			resp.Write([]byte("invaild role"))
-			return errors.New("error invaild role")
+	if !inWhiteList {
+		user, ok := getUser(req.Context())
+		if !ok {
+			writeResult(resp, http.StatusForbidden, "invaild user", nil)
+			return errors.New("error invaild user")
+		}
+		if user.User != "_tKeel" {
+			if user.Role != model.AdminRole {
+				writeResult(resp, http.StatusForbidden, "invaild role", nil)
+				return errors.New("error invaild role")
+			}
 		}
 	}
 	dstPath := strings.TrimPrefix(req.URL.Path, v1.ApisRootPath+v1.RudderSubPath)
@@ -512,7 +554,7 @@ func proxyHTTP(ctx context.Context, host, dstPath string,
 	resp http.ResponseWriter, req *http.Request) error {
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		http.Error(resp, err.Error(), http.StatusInternalServerError)
+		writeResult(resp, http.StatusInternalServerError, err.Error(), nil)
 		return fmt.Errorf("error read request body: %w", err)
 	}
 	url := fmt.Sprintf("http://%s%s", host, dstPath)
@@ -521,7 +563,7 @@ func proxyHTTP(ctx context.Context, host, dstPath string,
 	}
 	proxyReq, err := http.NewRequestWithContext(req.Context(), req.Method, url, bytes.NewReader(body))
 	if err != nil {
-		http.Error(resp, err.Error(), http.StatusInternalServerError)
+		writeResult(resp, http.StatusInternalServerError, err.Error(), nil)
 		return fmt.Errorf("error new proxy request: %w", err)
 	}
 	// proxyReq.Header = req.Header.
@@ -533,8 +575,7 @@ func proxyHTTP(ctx context.Context, host, dstPath string,
 	log.Debugf("proxy (%s --> %s)", req.URL.String(), url)
 	doResp, err := http.DefaultClient.Do(proxyReq)
 	if err != nil {
-		resp.WriteHeader(http.StatusBadRequest)
-		resp.Write([]byte(err.Error()))
+		writeResult(resp, http.StatusBadRequest, err.Error(), nil)
 		return fmt.Errorf("error proxy call: %w", err)
 	}
 	if err = proxyHTTPResponse2RestfulResponse(doResp, resp); err != nil {
@@ -555,17 +596,14 @@ func proxyHTTPResponse2RestfulResponse(dstResp *http.Response, resp http.Respons
 	dstBody, err := io.ReadAll(dstResp.Body)
 	defer dstResp.Body.Close()
 	if err != nil {
-		resp.WriteHeader(http.StatusBadRequest)
-		resp.Write([]byte(err.Error()))
+		writeResult(resp, http.StatusBadRequest, err.Error(), nil)
 		return fmt.Errorf("error read dst response body: %w", err)
 	}
-	resp.WriteHeader(dstResp.StatusCode)
-	if len(dstBody) == 0 {
-		if _, err = resp.Write([]byte(dstResp.Status)); err != nil {
-			return fmt.Errorf("error write: %w", err)
-		}
-	}
 
+	resp.WriteHeader(dstResp.StatusCode)
+	if dstResp.ContentLength == 0 {
+		return nil
+	}
 	var remain int
 	for {
 		dstBody = dstBody[remain:]
@@ -577,7 +615,6 @@ func proxyHTTPResponse2RestfulResponse(dstResp *http.Response, resp http.Respons
 			break
 		}
 	}
-
 	return nil
 }
 

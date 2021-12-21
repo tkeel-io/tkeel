@@ -5,13 +5,45 @@ app = Flask(__name__)
 @app.route('/v1/identify', methods=['GET'])
 def identify():
     print("identify", flush=True)
-    return jsonify({"res": {"ret": 0, "msg": "ok"}, "plugin_id": "keel-echo", "verison": "v0.2.0", "tkeel_version": "v0.2.0"})
+    return jsonify(
+        {
+            "res": {
+                "ret": 0,
+                "msg": "ok"
+            },
+            "plugin_id": "keel-echo",
+            "verison": "v0.3.0",
+            "tkeel_version": "v0.3.0",
+            "entries": [
+                {
+                    "id": "echo-test-users",
+                    "name": "echo-users",
+                    "path": "/users",
+                    "entry": "https://tkeel-console-plugin-users.pek3b.qingstor.com/index.html",
+                    "menu": [
+                        "echo",
+                        "test-user"
+                    ]
+                },
+                {
+                    "id": "echo-test-plugins",
+                    "name": "echo-plugins",
+                    "path": "/plugins",
+                    "entry": "https://tkeel-console-plugin-plugins.pek3b.qingstor.com/index.html",
+                    "menu": [
+                        "echo",
+                        "test-plugins"
+                    ]
+                }
+            ]
+        }
+    )
 
 
 @app.route('/v1/status', methods=['GET'])
 def status():
     print("status", flush=True)
-    return jsonify({"res": {"ret": 0, "msg": "ok"}, "status": 2})
+    return jsonify({"res": {"ret": 0, "msg": "ok"}, "status": 3})
 
 
 @app.route('/echo', methods=['GET', 'POST', 'DELETE', 'OPTION', 'PUT'])

@@ -36,7 +36,7 @@ spec:
             - name: TKEEL_DAPR_PUBLIC_STATE_NAME
               value: {{ printf "%s-redis-public-store" .Values.middleware.name }}
             - name: TKEEL_ADMIN_PASSWD
-              value: {{ .Values.secret | quote }}
+              value: {{ .Values.adminPassword | quote }}
             - name: TKEEL_POD_NAMESPACE
               valueFrom:
                 fieldRef:

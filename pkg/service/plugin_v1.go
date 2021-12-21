@@ -185,7 +185,7 @@ func (s *PluginServiceV1) RegisterPlugin(ctx context.Context,
 	// get plugin.
 	mp, err := s.pluginOp.Get(timeoutCtx, req.GetId())
 	if err != nil {
-		log.Errorf("error get plugin: %w", err)
+		log.Errorf("error get plugin: %s", err)
 		if errors.Is(err, plugin.ErrPluginNotExsist) {
 			return nil, pb.PluginErrPluginNotFound()
 		}

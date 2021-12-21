@@ -72,7 +72,7 @@ func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.R
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.Response) {
@@ -100,7 +100,7 @@ func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.R
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *RepoHTTPHandler) GetRepoInstaller(req *go_restful.Request, resp *go_restful.Response) {
@@ -128,7 +128,7 @@ func (h *RepoHTTPHandler) GetRepoInstaller(req *go_restful.Request, resp *go_res
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *RepoHTTPHandler) ListRepo(req *go_restful.Request, resp *go_restful.Response) {
@@ -151,7 +151,7 @@ func (h *RepoHTTPHandler) ListRepo(req *go_restful.Request, resp *go_restful.Res
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func (h *RepoHTTPHandler) ListRepoInstaller(req *go_restful.Request, resp *go_restful.Response) {
@@ -179,7 +179,7 @@ func (h *RepoHTTPHandler) ListRepoInstaller(req *go_restful.Request, resp *go_re
 	}
 
 	resp.WriteHeaderAndJson(http.StatusOK,
-		setResult(http.StatusOK, "", out), "application/json")
+		setResult(http.StatusOK, "ok", out), "application/json")
 }
 
 func RegisterRepoHTTPServer(container *go_restful.Container, srv RepoHTTPServer) {

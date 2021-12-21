@@ -166,7 +166,7 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	intVar(&c.SecurityConf.OAuth2.Redis.DB, "security.oauth2.redis.db", getEnvInt("TKEEL_SECURITY_OAUTH2_REDIS_DB", 0), "db of auth`s redis")
 	strVar(&c.SecurityConf.OAuth2.AuthType, "security.oauth2.auth_type", getEnvStr("TKEEL_SECURITY_OAUTH2_AUTH_TYPE", ""), "security auth type of auth`s access type,if type == demo sikp auth filter.")
 	strVar(&c.SecurityConf.OAuth2.AccessGenerate.SecurityKey, "security.oauth2.access.sk", getEnvStr("TKEEL_SECURITY_ACCESS_SK", "eixn27adg3"), "security key of auth`s access generate")
-	strVar(&c.SecurityConf.OAuth2.AccessGenerate.AccessTokenExp, "security.oauth2.access.access_token_exp", getEnvStr("TKEEL_SECURITY_ACCESS_TOKEN_EXP", "1000h"), "security token of auth`s access exp")
+	strVar(&c.SecurityConf.OAuth2.AccessGenerate.AccessTokenExp, "security.oauth2.access.access_token_exp", getEnvStr("TKEEL_SECURITY_ACCESS_TOKEN_EXP", "30m"), "security token of auth`s access exp")
 	strVar(&c.SecurityConf.Entity.SecurityKey, "security.entity.sk", getEnvStr("TKEEL_SECURITY_ENTITY_SK", "i5s2x3nov894"), "security  key auth`s entity token access")
 }
 
