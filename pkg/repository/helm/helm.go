@@ -39,7 +39,7 @@ var (
 	ErrNoChartInfoSet = errors.New("no chart info set in installer")
 )
 
-// Driver is a short way define for Helm Store Status
+// Driver is a short way define for Helm Store Status.
 type Driver string
 
 func (d Driver) String() string {
