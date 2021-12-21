@@ -121,11 +121,11 @@ func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr
 		secretProvider: token.InitProvider(secret, "", ""),
 		timeout:        duration,
 		pathWhiteList: map[string][]string{
-			v1.RudderSubPath: []string{
+			v1.RudderSubPath: {
 				"/apis/rudder/v1/oauth2/plugin",
 				"/apis/rudder/v1/oauth2/admin",
 			},
-			v1.SecuritySubPath: []string{
+			v1.SecuritySubPath: {
 				"/apis/security/v1/oauth/token",
 			},
 		},
