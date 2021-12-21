@@ -8,7 +8,7 @@ on:
         type: string
       go_version:
         description: go version in action
-        default: 1.17.3
+        default: ^1.17.5
         required: false
         type: string
       upload_require:
@@ -38,7 +38,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macOS-latest ]
-        go: [ 1.17.3 ]
+        go: ${{inputs.go_version}}
         target_arch: [ amd64 ]
         include:
           - os: ubuntu-latest
