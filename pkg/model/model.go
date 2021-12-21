@@ -21,13 +21,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 )
 
-<<<<<<< HEAD
 type Secret struct {
 	Data string `json:"data,omitempty"` // data.
 }
@@ -37,7 +37,7 @@ type Installer struct {
 	Name    string `json:"name,omitempty"`    // installer name.
 	Version string `json:"version,omitempty"` // installer version.
 }
-=======
+
 const (
 	TKeelUser   = "_tKeel"
 	TKeelTenant = "_tKeel_system"
@@ -46,8 +46,10 @@ const (
 
 	XPluginJwtHeader = "x-plugin-jwt"
 	XtKeelAuthHeader = "x-tKeel-auth"
+
+	KeyAdminPassword    = "Admin_Passwd"
+	KeyTenantBindPlugin = "tenant_%s_bind"
 )
->>>>>>> 7dca103 (feat: add tenant control)
 
 type Plugin struct {
 	ID                string                          `json:"id,omitempty"`                 // plugin id.
@@ -56,6 +58,7 @@ type Plugin struct {
 	TkeelVersion      string                          `json:"tkeel_version,omitempty"`      // plugin depend tkeel version.
 	AddonsPoint       []*openapi_v1.AddonsPoint       `json:"addons_point,omitempty"`       // plugin declares addons.
 	ImplementedPlugin []*openapi_v1.ImplementedPlugin `json:"implemented_plugin,omitempty"` // plugin implemented plugin list.
+	ConsoleEntries    []*openapi_v1.ConsoleEntry      `json:"console_entries,omitempty"`    // plugin console entries.
 	Secret            *Secret                         `json:"secret,omitempty"`             // plugin registered secret.
 	RegisterTimestamp int64                           `json:"register_timestamp,omitempty"` // register timestamp.
 	Version           string                          `json:"version,omitempty"`            // model version.
@@ -107,6 +110,22 @@ func (p *Plugin) Clone() *Plugin {
 					}(),
 				}
 				ret = append(ret, tmp)
+			}
+			return ret
+		}(),
+		ConsoleEntries: func() []*openapi_v1.ConsoleEntry {
+			ret := make([]*openapi_v1.ConsoleEntry, 0, len(p.ConsoleEntries))
+			for _, v := range p.ConsoleEntries {
+				ret = append(ret, &openapi_v1.ConsoleEntry{
+					Id:   v.Id,
+					Name: v.Name,
+					Path: v.Path,
+					Menu: func() []string {
+						t := make([]string, 0, len(v.Menu))
+						copy(t, v.Menu)
+						return t
+					}(),
+				})
 			}
 			return ret
 		}(),
@@ -186,6 +205,7 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret *Secret) {
 	p.TkeelVersion = resp.TkeelVersion
 	p.AddonsPoint = resp.AddonsPoint
 	p.ImplementedPlugin = resp.ImplementedPlugin
+	p.ConsoleEntries = resp.Entries
 	p.Secret = secret
 	p.RegisterTimestamp = time.Now().Unix()
 }
@@ -193,11 +213,7 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret *Secret) {
 func NewPluginRoute(resp *openapi_v1.IdentifyResponse) *PluginRoute {
 	return &PluginRoute{
 		ID:           resp.PluginId,
-<<<<<<< HEAD
 		Status:       openapi_v1.PluginStatus_UNREGISTER,
-=======
-		Status:       openapi_v1.PluginStatus_RUNNING,
->>>>>>> 7dca103 (feat: add tenant control)
 		TkeelVersion: resp.TkeelVersion,
 		ImplementedPlugin: func() []string {
 			ret := make([]string, 0, len(resp.ImplementedPlugin))
@@ -318,4 +334,22 @@ func (u *User) Base64Decode(s string) error {
 	}
 	u.Role = rs[0]
 	return nil
+}
+
+func GetTenantBindKey(tenantID string) string {
+	return fmt.Sprintf(KeyTenantBindPlugin, tenantID)
+}
+
+func ParseTenantBind(bindByte []byte) []string {
+	if bindByte == nil || string(bindByte) == "" {
+		return []string{}
+	}
+	return strings.Split(string(bindByte), ",")
+}
+
+func EncodeTenantBind(tenants []string) []byte {
+	if tenants == nil {
+		return []byte{}
+	}
+	return []byte(strings.Join(tenants, ","))
 }

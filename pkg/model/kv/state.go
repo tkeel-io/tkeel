@@ -11,20 +11,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package passwd
+package kv
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/tkeel-io/kit/log"
-	"github.com/tkeel-io/tkeel/pkg/model"
-
 	dapr "github.com/dapr/go-sdk/client"
-)
-
-const (
-	KeyAdminPassword = "admin_password"
 )
 
 type DaprStateOprator struct {
@@ -40,37 +33,42 @@ func NewDaprStateOperator(storeName string, c dapr.Client) *DaprStateOprator {
 	}
 }
 
-func (o *DaprStateOprator) Create(ctx context.Context, p string) error {
-	e := model.Base64Encode(p)
-	log.Debugf("admin pass encode: %s", e)
-	if err := o.daprClient.SaveState(ctx, o.storeName,
-		KeyAdminPassword, []byte(e)); err != nil {
+func (o *DaprStateOprator) Create(ctx context.Context, key string, value []byte) error {
+	if err := o.daprClient.SaveState(ctx, o.storeName, key, value,
+		dapr.WithConcurrency(dapr.StateConcurrencyLastWrite), dapr.WithConsistency(dapr.StateConsistencyStrong)); err != nil {
 		return fmt.Errorf("error save admin password: %w", err)
 	}
 	return nil
 }
 
-func (o *DaprStateOprator) Update(ctx context.Context, p string) error {
-	e := model.Base64Encode(p)
-	log.Debugf("admin pass encode: %s", e)
-	if err := o.daprClient.SaveState(ctx, o.storeName,
-		KeyAdminPassword, []byte(e)); err != nil {
+func (o *DaprStateOprator) Update(ctx context.Context, key string, value []byte, version string) error {
+	if err := o.daprClient.SaveBulkState(ctx, o.storeName, &dapr.SetStateItem{
+		Key:   key,
+		Value: value,
+		Etag: &dapr.ETag{
+			Value: version,
+		},
+		Options: &dapr.StateOptions{
+			Concurrency: dapr.StateConcurrencyLastWrite,
+			Consistency: dapr.StateConsistencyStrong,
+		},
+	}); err != nil {
 		return fmt.Errorf("error save admin password: %w", err)
 	}
 	return nil
 }
 
-func (o *DaprStateOprator) Get(ctx context.Context) (string, error) {
-	i, err := o.daprClient.GetState(ctx, o.storeName, KeyAdminPassword)
+func (o *DaprStateOprator) Get(ctx context.Context, key string) ([]byte, string, error) {
+	i, err := o.daprClient.GetState(ctx, o.storeName, key)
 	if err != nil {
-		return "", fmt.Errorf("error get admin password: %w", err)
+		return nil, "", fmt.Errorf("error get admin password: %w", err)
 	}
-	return string(i.Value), nil
+	return i.Value, i.Etag, nil
 }
 
-func (o *DaprStateOprator) Delete(ctx context.Context) error {
+func (o *DaprStateOprator) Delete(ctx context.Context, key string) error {
 	if err := o.daprClient.DeleteState(ctx, o.storeName,
-		KeyAdminPassword); err != nil {
+		key); err != nil {
 		return fmt.Errorf("error delete admin password: %w", err)
 	}
 	return nil

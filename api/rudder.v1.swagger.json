@@ -896,6 +896,30 @@
       ],
       "default": "JSON"
     },
+    "v1ConsoleEntry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "entry": {
+          "type": "string"
+        },
+        "menu": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "plugin console entry."
+    },
     "v1DeleteRepoResponse": {
       "type": "object",
       "properties": {
@@ -905,41 +929,13 @@
         }
       }
     },
-    "v1EntryObject": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "entry corresponding plugin id"
-        },
-        "name": {
-          "type": "string",
-          "description": "entry name"
-        },
-        "path": {
-          "type": "string",
-          "description": "entry name"
-        },
-        "entry": {
-          "type": "string",
-          "description": "entry url"
-        },
-        "menu": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "entry sub menu"
-        }
-      }
-    },
     "v1GetEntriesResponse": {
       "type": "object",
       "properties": {
         "entries": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/v1EntryObject"
+            "$ref": "#/definitions/v1ConsoleEntry"
           },
           "description": "tenant entries"
         }
@@ -1213,6 +1209,13 @@
         "brief_installer_info": {
           "$ref": "#/definitions/v1Installer",
           "description": "brief installer info only has name,verison,repo_name and installed field."
+        },
+        "console_entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ConsoleEntry"
+          },
+          "description": "plugin console entries"
         }
       },
       "description": "*\nplugin object."

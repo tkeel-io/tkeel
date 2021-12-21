@@ -1594,8 +1594,8 @@ github.com/tkeel-io/kit v0.0.0-20211122161648-31b3986683f2 h1:BDxx9F7wxGGOoyo9SH
 github.com/tkeel-io/kit v0.0.0-20211122161648-31b3986683f2/go.mod h1:j4xnjUXkc44InMNhGX7z5MbRf164ILLYZhWJL1ykW7I=
 github.com/tkeel-io/security v0.0.0-20211215034416-d2df3b9ba024 h1:0SvhghzOYxlqvvlOOpTQzq+rvW6EN61aYceEn+t79zs=
 github.com/tkeel-io/security v0.0.0-20211215034416-d2df3b9ba024/go.mod h1:G67iw9b8odzcVhMDM9icNr7wdKzlo3B90OJzqrqJSJ0=
-github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211210095632-655aeeef3a5a h1:8kEHwK2Yw9ngQHUknY0YX++TC7y0OaUb3i/gVeCWFbA=
-github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211210095632-655aeeef3a5a/go.mod h1:tjJgHPar2pFjydhnOCLspww8tSOvcKch241PeP9OL8E=
+github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211221075227-279ba1983f61 h1:hKiMIgUs22wSfd92ysXjLgD4vYIkikI7LMkLKqB+Xs8=
+github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211221075227-279ba1983f61/go.mod h1:tjJgHPar2pFjydhnOCLspww8tSOvcKch241PeP9OL8E=
 github.com/tklauser/go-sysconf v0.3.6/go.mod h1:MkWzOF4RMCshBAMXuhXJs64Rte09mITnppBXY/rYEFI=
 github.com/tklauser/numcpus v0.2.2/go.mod h1:x3qojaO3uyYt0i56EW/VUYs7uBvdl2fkfZFu0T9wgjM=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=

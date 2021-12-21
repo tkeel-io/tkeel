@@ -40,11 +40,8 @@ import (
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
-<<<<<<< HEAD
 	"github.com/tkeel-io/tkeel/pkg/hub"
-=======
-	"github.com/tkeel-io/tkeel/pkg/model/passwd"
->>>>>>> 7dca103 (feat: add tenant control)
+	"github.com/tkeel-io/tkeel/pkg/model/kv"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/prepo"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
@@ -97,11 +94,11 @@ var rootCmd = &cobra.Command{
 			// init operator.
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			prOp := proute.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
-<<<<<<< HEAD
 			riOp := prepo.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
+			kvOp := kv.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 
 			// init repo hub.
-			hub.Init(conf.Tkeel.WatchPluginRouteInterval, riOp,
+			hub.Init(conf.Tkeel.WatchInterval, riOp,
 				func(connectInfo *repository.Info,
 					args ...interface{}) (repository.Repository, error) {
 					if len(args) != 2 {
@@ -132,30 +129,24 @@ var rootCmd = &cobra.Command{
 					}
 					return nil
 				}, helm.Mem, conf.Tkeel.Namespace)
-=======
-			passwdOp := passwd.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
->>>>>>> 7dca103 (feat: add tenant control)
 
 			// init service.
 			// plugin service.
-			PluginSrvV1 := service.NewPluginServiceV1(conf.Tkeel, pOp, prOp, openapiCli)
+			PluginSrvV1 := service.NewPluginServiceV1(conf.Tkeel, kvOp, pOp, prOp, openapiCli)
 			plugin_v1.RegisterPluginHTTPServer(httpSrv.Container, PluginSrvV1)
 			plugin_v1.RegisterPluginServer(grpcSrv.GetServe(), PluginSrvV1)
 			// oauth2 service.
-			Oauth2SrvV1 := service.NewOauth2ServiceV1(passwdOp, pOp)
+			Oauth2SrvV1 := service.NewOauth2ServiceV1(conf.Tkeel.AdminPassword, kvOp, pOp)
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
-<<<<<<< HEAD
 			// repo service.
 			repoSrv := service.NewRepoService()
 			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
 			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
-=======
 			// entries service.
-			EntriesSrvV1 := service.NewEntryService()
+			EntriesSrvV1 := service.NewEntryService(kvOp, pOp)
 			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, EntriesSrvV1)
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), EntriesSrvV1)
->>>>>>> 7dca103 (feat: add tenant control)
 			{
 				// copy mysql configuration.
 				conf.SecurityConf.RBAC.Adapter = conf.SecurityConf.Mysql

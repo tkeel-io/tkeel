@@ -6,19 +6,17 @@ package v1
 
 import (
 	context "context"
-	json "encoding/json"
 	go_restful "github.com/emicklei/go-restful"
 	errors "github.com/tkeel-io/kit/errors"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
-	reflect "reflect"
 )
 
 import transportHTTP "github.com/tkeel-io/kit/transport/http"
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the tkeel package it is being compiled against.
-// import package.context.http.reflect.go_restful.json.errors.emptypb.
+// import package.context.http.go_restful.errors.emptypb.
 
 type PluginHTTPServer interface {
 	BindTenants(context.Context, *BindTenantsRequest) (*emptypb.Empty, error)
@@ -40,18 +38,29 @@ func newPluginHTTPHandler(s PluginHTTPServer) *PluginHTTPHandler {
 	return &PluginHTTPHandler{srv: s}
 }
 
+func setResult(code int, msg string, data interface{}) map[string]interface{} {
+	return map[string]interface{}{
+		"code": code,
+		"msg":  msg,
+		"data": data,
+	}
+}
+
 func (h *PluginHTTPHandler) BindTenants(req *go_restful.Request, resp *go_restful.Response) {
 	in := BindTenantsRequest{}
 	if err := transportHTTP.GetBody(req, &in.Extra); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -61,33 +70,25 @@ func (h *PluginHTTPHandler) BindTenants(req *go_restful.Request, resp *go_restfu
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			setResult(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
+
+	resp.WriteHeaderAndJson(http.StatusOK,
+		setResult(http.StatusOK, "", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := GetPluginRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -97,37 +98,30 @@ func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			setResult(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
+
+	resp.WriteHeaderAndJson(http.StatusOK,
+		setResult(http.StatusOK, "", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) InstallPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := InstallPluginRequest{}
 	if err := transportHTTP.GetBody(req, &in.InstallerInfo); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -137,33 +131,25 @@ func (h *PluginHTTPHandler) InstallPlugin(req *go_restful.Request, resp *go_rest
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			setResult(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
+
+	resp.WriteHeaderAndJson(http.StatusOK,
+		setResult(http.StatusOK, "", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) ListBindTenants(req *go_restful.Request, resp *go_restful.Response) {
 	in := ListBindTenantsRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -173,29 +159,20 @@ func (h *PluginHTTPHandler) ListBindTenants(req *go_restful.Request, resp *go_re
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			setResult(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
+
+	resp.WriteHeaderAndJson(http.StatusOK,
+		setResult(http.StatusOK, "", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := emptypb.Empty{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -205,37 +182,30 @@ func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			setResult(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
+
+	resp.WriteHeaderAndJson(http.StatusOK,
+		setResult(http.StatusOK, "", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := RegisterPluginRequest{}
 	if err := transportHTTP.GetBody(req, &in.Secret); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -245,33 +215,25 @@ func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_res
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			setResult(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
+
+	resp.WriteHeaderAndJson(http.StatusOK,
+		setResult(http.StatusOK, "", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) UnbindTenants(req *go_restful.Request, resp *go_restful.Response) {
 	in := UnbindTenantsRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -281,33 +243,25 @@ func (h *PluginHTTPHandler) UnbindTenants(req *go_restful.Request, resp *go_rest
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			setResult(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
+
+	resp.WriteHeaderAndJson(http.StatusOK,
+		setResult(http.StatusOK, "", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) UninstallPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := UninstallPluginRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -317,33 +271,25 @@ func (h *PluginHTTPHandler) UninstallPlugin(req *go_restful.Request, resp *go_re
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			setResult(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
+
+	resp.WriteHeaderAndJson(http.StatusOK,
+		setResult(http.StatusOK, "", out), "application/json")
 }
 
 func (h *PluginHTTPHandler) UnregisterPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := UnregisterPluginRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			setResult(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -353,23 +299,13 @@ func (h *PluginHTTPHandler) UnregisterPlugin(req *go_restful.Request, resp *go_r
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			setResult(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	_, err = resp.Write(result)
-	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
+
+	resp.WriteHeaderAndJson(http.StatusOK,
+		setResult(http.StatusOK, "", out), "application/json")
 }
 
 func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPServer) {

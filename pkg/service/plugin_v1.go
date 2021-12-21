@@ -20,11 +20,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-<<<<<<< HEAD
-	"time"
-=======
 	"net/http"
->>>>>>> 7dca103 (feat: add tenant control)
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
@@ -35,6 +32,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/hub"
 	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/tkeel-io/tkeel/pkg/model/kv"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
 	"github.com/tkeel-io/tkeel/pkg/repository"
@@ -52,17 +50,19 @@ type PluginServiceV1 struct {
 	pb.UnimplementedPluginServer
 
 	tkeelConf     *config.TkeelConf
+	kvOp          kv.Operator
 	pluginOp      plugin.Operator
 	pluginRouteOp proute.Operator
 	openapiClient openapi.Client
 }
 
-func NewPluginServiceV1(conf *config.TkeelConf, pluginOperator plugin.Operator,
-	prouteOperator proute.Operator, openapi openapi.Client) *PluginServiceV1 {
+func NewPluginServiceV1(conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Operator,
+	prOp proute.Operator, openapi openapi.Client) *PluginServiceV1 {
 	return &PluginServiceV1{
 		tkeelConf:     conf,
-		pluginOp:      pluginOperator,
-		pluginRouteOp: prouteOperator,
+		kvOp:          kvOp,
+		pluginOp:      pOp,
+		pluginRouteOp: prOp,
 		openapiClient: openapi,
 	}
 }
@@ -299,6 +299,8 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 
 func (s *PluginServiceV1) BindTenants(ctx context.Context,
 	req *pb.BindTenantsRequest) (*emptypb.Empty, error) {
+	rbStack := util.NewRollbackStack()
+	defer rbStack.Run()
 	header := transport_http.HeaderFromContext(ctx)
 	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
 	if !ok {
@@ -315,6 +317,7 @@ func (s *PluginServiceV1) BindTenants(ctx context.Context,
 		log.Errorf("error get plugin route: %s", err)
 		return nil, pb.PluginErrInternalStore()
 	}
+	tmpPr := pr.Clone()
 	for _, v := range pr.ActiveTenantes {
 		if v == user.Tenant {
 			log.Errorf("error plugin(%s) duplicat tenant tenant(%s)", req.Id, v)
@@ -326,11 +329,46 @@ func (s *PluginServiceV1) BindTenants(ctx context.Context,
 		log.Errorf("error bind tenant(%s) update plugin(%s) route", user.Tenant, req.Id)
 		return nil, pb.PluginErrInternalStore()
 	}
+	rbStack = append(rbStack, func() error {
+		log.Debugf("roll back bind tenant: %s --> %s", pr, tmpPr)
+		if _, err = s.pluginRouteOp.Delete(ctx, tmpPr.ID); err != nil {
+			log.Errorf("error roll back update plugin(%s) route delete: %s", tmpPr, err)
+			return fmt.Errorf("error pr delete: %w", err)
+		}
+		if err = s.pluginRouteOp.Create(ctx, tmpPr); err != nil {
+			log.Errorf("error roll back update plugin(%s) route create: %s", tmpPr, err)
+			return fmt.Errorf("error pr create: %w", err)
+		}
+		return nil
+	})
+	tbKey := model.GetTenantBindKey(user.Tenant)
+	vsb, ver, err := s.kvOp.Get(ctx, tbKey)
+	if err != nil {
+		log.Errorf("error get tenant(%s) bind: %s", user.Tenant, err)
+		return nil, pb.PluginErrInternalStore()
+	}
+	tbBinds := model.ParseTenantBind(vsb)
+	tbBinds = append(tbBinds, req.Id)
+	newValue := model.EncodeTenantBind(tbBinds)
+	if ver == "" {
+		if err = s.kvOp.Create(ctx, tbKey, newValue); err != nil {
+			log.Errorf("error create new(%s) tenant bind(%s): %s", tbKey, string(newValue), err)
+			return nil, pb.PluginErrInternalStore()
+		}
+	} else {
+		if err = s.kvOp.Update(ctx, tbKey, newValue, ver); err != nil {
+			log.Errorf("error update new(%s) tenant bind(%s): %s", tbKey, string(newValue), err)
+			return nil, pb.PluginErrInternalStore()
+		}
+	}
+	rbStack = util.NewRollbackStack()
 	return &emptypb.Empty{}, nil
 }
 
 func (s *PluginServiceV1) UnbindTenants(ctx context.Context,
 	req *pb.UnbindTenantsRequest) (*emptypb.Empty, error) {
+	rbStack := util.NewRollbackStack()
+	defer rbStack.Run()
 	header := transport_http.HeaderFromContext(ctx)
 	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
 	if !ok {
@@ -360,7 +398,39 @@ func (s *PluginServiceV1) UnbindTenants(ctx context.Context,
 			log.Errorf("error unbind tenant(%s) update plugin(%s) route", user.Tenant, req.Id)
 			return nil, pb.PluginErrInternalStore()
 		}
+		tmpPr := pr.Clone()
+		rbStack = append(rbStack, func() error {
+			log.Debugf("roll back unbind tenant: %s --> %s", pr, tmpPr)
+			if _, err = s.pluginRouteOp.Delete(ctx, tmpPr.ID); err != nil {
+				log.Errorf("error roll back update plugin(%s) route delete: %s", tmpPr, err)
+				return fmt.Errorf("error pr delete: %w", err)
+			}
+			if err = s.pluginRouteOp.Create(ctx, tmpPr); err != nil {
+				log.Errorf("error roll back update plugin(%s) route create: %s", tmpPr, err)
+				return fmt.Errorf("error pr create: %w", err)
+			}
+			return nil
+		})
+		tbKey := model.GetTenantBindKey(user.Tenant)
+		vsb, ver, err := s.kvOp.Get(ctx, tbKey)
+		if err != nil {
+			log.Errorf("error get tenant(%s) bind: %s", user.Tenant, err)
+			return nil, pb.PluginErrInternalStore()
+		}
+		tbBinds := model.ParseTenantBind(vsb)
+		for i, v := range tbBinds {
+			if v == req.Id {
+				tbBinds = append(tbBinds[:i], tbBinds[i+1:]...)
+				break
+			}
+		}
+		newValue := model.EncodeTenantBind(tbBinds)
+		if err = s.kvOp.Update(ctx, tbKey, newValue, ver); err != nil {
+			log.Errorf("error update new(%s) tenant bind(%s): %s", tbKey, string(newValue), err)
+			return nil, pb.PluginErrInternalStore()
+		}
 	}
+	rbStack = util.NewRollbackStack()
 	return &emptypb.Empty{}, nil
 }
 

@@ -287,6 +287,7 @@ type PluginObject struct {
 	RegisterAddons     []*RegisterAddons       `protobuf:"bytes,9,rep,name=register_addons,json=registerAddons,proto3" json:"register_addons,omitempty"`                // register addons router.
 	Status             v1.PluginStatus         `protobuf:"varint,10,opt,name=status,proto3,enum=openapi.v1.PluginStatus" json:"status,omitempty"`                       // register plugin status.
 	BriefInstallerInfo *Installer              `protobuf:"bytes,11,opt,name=brief_installer_info,json=briefInstallerInfo,proto3" json:"brief_installer_info,omitempty"` // register plugin status.
+	ConsoleEntries     []*v1.ConsoleEntry      `protobuf:"bytes,12,rep,name=console_entries,json=consoleEntries,proto3" json:"console_entries,omitempty"`
 }
 
 func (x *PluginObject) Reset() {
@@ -394,6 +395,13 @@ func (x *PluginObject) GetStatus() v1.PluginStatus {
 func (x *PluginObject) GetBriefInstallerInfo() *Installer {
 	if x != nil {
 		return x.BriefInstallerInfo
+	}
+	return nil
+}
+
+func (x *PluginObject) GetConsoleEntries() []*v1.ConsoleEntry {
+	if x != nil {
+		return x.ConsoleEntries
 	}
 	return nil
 }
@@ -1124,7 +1132,7 @@ var file_api_plugin_v1_plugin_proto_rawDesc = []byte{
 	0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x54,
 	0x79, 0x70, 0x65, 0x42, 0x17, 0x92, 0x41, 0x14, 0x32, 0x12, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67,
 	0x75, 0x72, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x20, 0x74, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79,
-	0x70, 0x65, 0x22, 0xab, 0x07, 0x0a, 0x0c, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x4f, 0x62, 0x6a,
+	0x70, 0x65, 0x22, 0x8b, 0x08, 0x0a, 0x0c, 0x50, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x4f, 0x62, 0x6a,
 	0x65, 0x63, 0x74, 0x12, 0x1e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x42,
 	0x0e, 0x92, 0x41, 0x0b, 0x32, 0x09, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x20, 0x69, 0x64, 0x52,
 	0x02, 0x69, 0x64, 0x12, 0x3a, 0x0a, 0x0e, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e, 0x5f, 0x76, 0x65,
@@ -1183,6 +1191,12 @@ var file_api_plugin_v1_plugin_proto_rawDesc = []byte{
 	0x70, 0x6f, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x20, 0x61, 0x6e, 0x64, 0x20, 0x69, 0x6e, 0x73, 0x74,
 	0x61, 0x6c, 0x6c, 0x65, 0x64, 0x20, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x2e, 0x52, 0x12, 0x62, 0x72,
 	0x69, 0x65, 0x66, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x65, 0x72, 0x49, 0x6e, 0x66, 0x6f,
+	0x12, 0x5e, 0x0a, 0x0f, 0x63, 0x6f, 0x6e, 0x73, 0x6f, 0x6c, 0x65, 0x5f, 0x65, 0x6e, 0x74, 0x72,
+	0x69, 0x65, 0x73, 0x18, 0x0c, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x6f, 0x70, 0x65, 0x6e,
+	0x61, 0x70, 0x69, 0x2e, 0x76, 0x31, 0x2e, 0x43, 0x6f, 0x6e, 0x73, 0x6f, 0x6c, 0x65, 0x45, 0x6e,
+	0x74, 0x72, 0x79, 0x42, 0x1b, 0x92, 0x41, 0x18, 0x32, 0x16, 0x70, 0x6c, 0x75, 0x67, 0x69, 0x6e,
+	0x20, 0x63, 0x6f, 0x6e, 0x73, 0x6f, 0x6c, 0x65, 0x20, 0x65, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73,
+	0x52, 0x0e, 0x63, 0x6f, 0x6e, 0x73, 0x6f, 0x6c, 0x65, 0x45, 0x6e, 0x74, 0x72, 0x69, 0x65, 0x73,
 	0x22, 0x94, 0x01, 0x0a, 0x14, 0x49, 0x6e, 0x73, 0x74, 0x61, 0x6c, 0x6c, 0x50, 0x6c, 0x75, 0x67,
 	0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x26, 0x0a, 0x02, 0x69, 0x64, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x09, 0x42, 0x16, 0x92, 0x41, 0x13, 0x32, 0x11, 0x69, 0x6e, 0x73, 0x74,
@@ -1460,7 +1474,8 @@ var file_api_plugin_v1_plugin_proto_goTypes = []interface{}{
 	(*v1.AddonsPoint)(nil),           // 19: openapi.v1.AddonsPoint
 	(*v1.ImplementedPlugin)(nil),     // 20: openapi.v1.ImplementedPlugin
 	(v1.PluginStatus)(0),             // 21: openapi.v1.PluginStatus
-	(*emptypb.Empty)(nil),            // 22: google.protobuf.Empty
+	(*v1.ConsoleEntry)(nil),          // 22: openapi.v1.ConsoleEntry
+	(*emptypb.Empty)(nil),            // 23: google.protobuf.Empty
 }
 var file_api_plugin_v1_plugin_proto_depIdxs = []int32{
 	0,  // 0: api.plugin.v1.Installer.type:type_name -> api.plugin.v1.ConfigurationType
@@ -1470,36 +1485,37 @@ var file_api_plugin_v1_plugin_proto_depIdxs = []int32{
 	1,  // 4: api.plugin.v1.PluginObject.register_addons:type_name -> api.plugin.v1.RegisterAddons
 	21, // 5: api.plugin.v1.PluginObject.status:type_name -> openapi.v1.PluginStatus
 	3,  // 6: api.plugin.v1.PluginObject.brief_installer_info:type_name -> api.plugin.v1.Installer
-	3,  // 7: api.plugin.v1.InstallPluginRequest.installer_info:type_name -> api.plugin.v1.Installer
-	4,  // 8: api.plugin.v1.InstallPluginResponse.plugin:type_name -> api.plugin.v1.PluginObject
-	4,  // 9: api.plugin.v1.UninstallPluginResponse.plugin:type_name -> api.plugin.v1.PluginObject
-	4,  // 10: api.plugin.v1.UnregisterPluginResponse.plugin:type_name -> api.plugin.v1.PluginObject
-	2,  // 11: api.plugin.v1.RegisterPluginRequest.secret:type_name -> api.plugin.v1.Secret
-	4,  // 12: api.plugin.v1.GetPluginResponse.plugin:type_name -> api.plugin.v1.PluginObject
-	4,  // 13: api.plugin.v1.ListPluginResponse.plugin_list:type_name -> api.plugin.v1.PluginObject
-	5,  // 14: api.plugin.v1.Plugin.InstallPlugin:input_type -> api.plugin.v1.InstallPluginRequest
-	7,  // 15: api.plugin.v1.Plugin.UninstallPlugin:input_type -> api.plugin.v1.UninstallPluginRequest
-	11, // 16: api.plugin.v1.Plugin.RegisterPlugin:input_type -> api.plugin.v1.RegisterPluginRequest
-	9,  // 17: api.plugin.v1.Plugin.UnregisterPlugin:input_type -> api.plugin.v1.UnregisterPluginRequest
-	12, // 18: api.plugin.v1.Plugin.GetPlugin:input_type -> api.plugin.v1.GetPluginRequest
-	22, // 19: api.plugin.v1.Plugin.ListPlugin:input_type -> google.protobuf.Empty
-	15, // 20: api.plugin.v1.Plugin.BindTenants:input_type -> api.plugin.v1.BindTenantsRequest
-	16, // 21: api.plugin.v1.Plugin.UnbindTenants:input_type -> api.plugin.v1.UnbindTenantsRequest
-	17, // 22: api.plugin.v1.Plugin.ListBindTenants:input_type -> api.plugin.v1.ListBindTenantsRequest
-	6,  // 23: api.plugin.v1.Plugin.InstallPlugin:output_type -> api.plugin.v1.InstallPluginResponse
-	8,  // 24: api.plugin.v1.Plugin.UninstallPlugin:output_type -> api.plugin.v1.UninstallPluginResponse
-	22, // 25: api.plugin.v1.Plugin.RegisterPlugin:output_type -> google.protobuf.Empty
-	10, // 26: api.plugin.v1.Plugin.UnregisterPlugin:output_type -> api.plugin.v1.UnregisterPluginResponse
-	13, // 27: api.plugin.v1.Plugin.GetPlugin:output_type -> api.plugin.v1.GetPluginResponse
-	14, // 28: api.plugin.v1.Plugin.ListPlugin:output_type -> api.plugin.v1.ListPluginResponse
-	22, // 29: api.plugin.v1.Plugin.BindTenants:output_type -> google.protobuf.Empty
-	22, // 30: api.plugin.v1.Plugin.UnbindTenants:output_type -> google.protobuf.Empty
-	18, // 31: api.plugin.v1.Plugin.ListBindTenants:output_type -> api.plugin.v1.ListBindTenantsResponse
-	23, // [23:32] is the sub-list for method output_type
-	14, // [14:23] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	22, // 7: api.plugin.v1.PluginObject.console_entries:type_name -> openapi.v1.ConsoleEntry
+	3,  // 8: api.plugin.v1.InstallPluginRequest.installer_info:type_name -> api.plugin.v1.Installer
+	4,  // 9: api.plugin.v1.InstallPluginResponse.plugin:type_name -> api.plugin.v1.PluginObject
+	4,  // 10: api.plugin.v1.UninstallPluginResponse.plugin:type_name -> api.plugin.v1.PluginObject
+	4,  // 11: api.plugin.v1.UnregisterPluginResponse.plugin:type_name -> api.plugin.v1.PluginObject
+	2,  // 12: api.plugin.v1.RegisterPluginRequest.secret:type_name -> api.plugin.v1.Secret
+	4,  // 13: api.plugin.v1.GetPluginResponse.plugin:type_name -> api.plugin.v1.PluginObject
+	4,  // 14: api.plugin.v1.ListPluginResponse.plugin_list:type_name -> api.plugin.v1.PluginObject
+	5,  // 15: api.plugin.v1.Plugin.InstallPlugin:input_type -> api.plugin.v1.InstallPluginRequest
+	7,  // 16: api.plugin.v1.Plugin.UninstallPlugin:input_type -> api.plugin.v1.UninstallPluginRequest
+	11, // 17: api.plugin.v1.Plugin.RegisterPlugin:input_type -> api.plugin.v1.RegisterPluginRequest
+	9,  // 18: api.plugin.v1.Plugin.UnregisterPlugin:input_type -> api.plugin.v1.UnregisterPluginRequest
+	12, // 19: api.plugin.v1.Plugin.GetPlugin:input_type -> api.plugin.v1.GetPluginRequest
+	23, // 20: api.plugin.v1.Plugin.ListPlugin:input_type -> google.protobuf.Empty
+	15, // 21: api.plugin.v1.Plugin.BindTenants:input_type -> api.plugin.v1.BindTenantsRequest
+	16, // 22: api.plugin.v1.Plugin.UnbindTenants:input_type -> api.plugin.v1.UnbindTenantsRequest
+	17, // 23: api.plugin.v1.Plugin.ListBindTenants:input_type -> api.plugin.v1.ListBindTenantsRequest
+	6,  // 24: api.plugin.v1.Plugin.InstallPlugin:output_type -> api.plugin.v1.InstallPluginResponse
+	8,  // 25: api.plugin.v1.Plugin.UninstallPlugin:output_type -> api.plugin.v1.UninstallPluginResponse
+	23, // 26: api.plugin.v1.Plugin.RegisterPlugin:output_type -> google.protobuf.Empty
+	10, // 27: api.plugin.v1.Plugin.UnregisterPlugin:output_type -> api.plugin.v1.UnregisterPluginResponse
+	13, // 28: api.plugin.v1.Plugin.GetPlugin:output_type -> api.plugin.v1.GetPluginResponse
+	14, // 29: api.plugin.v1.Plugin.ListPlugin:output_type -> api.plugin.v1.ListPluginResponse
+	23, // 30: api.plugin.v1.Plugin.BindTenants:output_type -> google.protobuf.Empty
+	23, // 31: api.plugin.v1.Plugin.UnbindTenants:output_type -> google.protobuf.Empty
+	18, // 32: api.plugin.v1.Plugin.ListBindTenants:output_type -> api.plugin.v1.ListBindTenantsResponse
+	24, // [24:33] is the sub-list for method output_type
+	15, // [15:24] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_api_plugin_v1_plugin_proto_init() }

@@ -395,6 +395,10 @@ message PluginObject {
                     "installed field."
     }
   ]; // register plugin status.
+  repeated openapi.v1.ConsoleEntry console_entries = 12
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin console entries"
+      } ];
 }
 
 message InstallPluginRequest {

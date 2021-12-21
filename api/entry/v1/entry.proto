@@ -17,6 +17,7 @@ syntax = "proto3";
 
 package api.entry.v1;
 
+import "openapi/v1/openapi.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
@@ -53,31 +54,8 @@ service entry {
   };
 }
 
-message EntryObject {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "entry corresponding plugin id"
-      } ];
-  string name = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "entry name"
-      } ];
-  string path = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "entry name"
-      } ];
-  string entry = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "entry url"
-      } ];
-  repeated string menu = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "entry sub menu"
-      } ];
-}
-
 message GetEntriesResponse {
-  repeated EntryObject entries = 1
+  repeated openapi.v1.ConsoleEntry entries = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "tenant entries"
       } ];

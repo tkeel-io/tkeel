@@ -11,7 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package passwd
+package kv
 
 import (
 	"context"
@@ -19,19 +19,19 @@ import (
 )
 
 var (
-	ErrPasswordExsist          = errors.New("error Password existed")
-	ErrPasswordNotExsist       = errors.New("error Password not existed")
-	ErrPasswordVersionMismatch = errors.New("error Password version mismatch")
+	ErrKVExsist          = errors.New("error KV existed")
+	ErrKVNotExsist       = errors.New("error KV not existed")
+	ErrKVVersionMismatch = errors.New("error KV version mismatch")
 )
 
-// Operator contains all operations to Password.
+// Operator contains all operations to KV.
 type Operator interface {
-	// Create Password.
-	Create(context.Context, string) error
-	// Update Password.
-	Update(context.Context, string) error
-	// Get Password.
-	Get(ctx context.Context) (string, error)
-	// Delete Password.
-	Delete(ctx context.Context) error
+	// Create KV.
+	Create(ctx context.Context, key string, value []byte) error
+	// Update KV.
+	Update(ctx context.Context, key string, value []byte, version string) error
+	// Get KV.
+	Get(ctx context.Context, key string) (value []byte, version string, err error)
+	// Delete KV.
+	Delete(ctx context.Context, key string) error
 }

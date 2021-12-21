@@ -8,7 +8,7 @@ middleware:
   name: tkeel-middleware
 replicaCount: 1
 appPort: 31234
-secret: changeme
+adminPassword: tKeelAdmin
 nodePort: 30777
 image:
   repository: tkeelio/rudder

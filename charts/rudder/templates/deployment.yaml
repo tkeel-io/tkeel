@@ -31,9 +31,13 @@ spec:
           ports:
             - containerPort: {{ .Values.appPort }}
           env:
-            - name: KEEL_PRIVATE_STORE
+            - name: TKEEL_DAPR_PRIVATE_STATE_NAME
               value: {{ printf "%s-redis-private-store" .Values.middleware.name }}
-            - name: KEEL_PUBLIC_STORE
+            - name: TKEEL_DAPR_PUBLIC_STATE_NAME
               value: {{ printf "%s-redis-public-store" .Values.middleware.name }}
-            - name: PLUGIN_TOKEN_SECRET
+            - name: TKEEL_ADMIN_PASSWD
               value: {{ .Values.secret | quote }}
+            - name: TKEEL_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name

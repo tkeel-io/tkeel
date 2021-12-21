@@ -2,13 +2,15 @@ package service
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/tkeel-io/kit/log"
 	pb "github.com/tkeel-io/tkeel/api/oauth2/v1"
-	"github.com/tkeel-io/tkeel/pkg/model/passwd"
+	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/tkeel-io/tkeel/pkg/model/kv"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/token"
 	"github.com/tkeel-io/tkeel/pkg/util"
@@ -20,16 +22,30 @@ var ErrSecretNotMatch = errors.New("secret not match")
 type Oauth2ServiceV1 struct {
 	pb.UnimplementedOauth2Server
 
-	passwdOp       passwd.Operator
+	kvOp           kv.Operator
 	whiteList      []string
 	pluginOp       plugin.Operator
 	secretProvider token.Provider
 }
 
-func NewOauth2ServiceV1(passwdOp passwd.Operator, pOp plugin.Operator) *Oauth2ServiceV1 {
+func NewOauth2ServiceV1(adminPasswd string, kvOp kv.Operator, pOp plugin.Operator) *Oauth2ServiceV1 {
+	values, ver, err := kvOp.Get(context.TODO(), model.KeyAdminPassword)
+	if err != nil {
+		log.Fatalf("error init rudder admin password: %s", err)
+		return nil
+	}
+	if ver == "" {
+		values = make([]byte, 0)
+		base64.StdEncoding.Encode(values, []byte(adminPasswd))
+		if err = kvOp.Create(context.TODO(), model.KeyAdminPassword, values); err != nil {
+			log.Fatalf("error create rudder admin password: %s", err)
+			return nil
+		}
+	}
+	log.Debugf("rudder admin password: %s", string(values))
 	secret := util.RandStringBytesMaskImpr(0, 10)
 	return &Oauth2ServiceV1{
-		passwdOp:       passwdOp,
+		kvOp:           kvOp,
 		whiteList:      []string{"rudder", "keel", "core"},
 		pluginOp:       pOp,
 		secretProvider: token.InitProvider(secret, "", ""),
@@ -76,11 +92,12 @@ func (s *Oauth2ServiceV1) IssuePluginToken(ctx context.Context, req *pb.IssuePlu
 
 func (s *Oauth2ServiceV1) IssueAdminToken(ctx context.Context,
 	req *pb.IssueAdminTokenRequest) (*pb.IssueTokenResponse, error) {
-	password, err := s.passwdOp.Get(ctx)
+	passwordByte, _, err := s.kvOp.Get(ctx, model.KeyAdminPassword)
 	if err != nil {
 		log.Errorf("error get admin password: %s", err)
 		return nil, pb.Oauth2ErrInternalStore()
 	}
+	password := string(passwordByte)
 	if password != req.Password {
 		log.Errorf("error admin password not match(%s -- %s)", password, req.Password)
 		return nil, pb.Oauth2ErrPasswordNotMatch()

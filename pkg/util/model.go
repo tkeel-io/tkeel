@@ -48,6 +48,7 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 				RepoName: p.Installer.Repo,
 			}
 		}(),
+		ConsoleEntries: p.ConsoleEntries,
 	}
 }
 
