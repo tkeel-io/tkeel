@@ -1,9 +1,12 @@
 /*
 Copyright 2021 The tKeel Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
 	http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -97,10 +100,32 @@ func proxyPlugin(srv proxy.PluginProxyServer) http.HandlerFunc {
 			return
 		}
 		if pRoute.Status != v1.PluginStatus_RUNNING {
-			log.Errorf("error plugin(%s) status(%s) not running", pluginID, pRoute.Status)
-			responseWrite.WriteHeader(http.StatusForbidden)
-			responseWrite.Write([]byte("plugin cannot provide services"))
-			return
+			if pRoute.Status != v1.PluginStatus_UNREGISTER {
+				log.Errorf("error plugin(%s) status(%s) not running", pluginID, pRoute.Status)
+				responseWrite.WriteHeader(http.StatusForbidden)
+				responseWrite.Write([]byte("plugin cannot provide services"))
+				return
+			}
+			srcIDIn := req.Context().Value(ContextPluginIDKey)
+			srcID, ok := srcIDIn.(string)
+			if !ok {
+				log.Errorf("error plugin(%s) status(%s) not running", pluginID, pRoute.Status)
+				responseWrite.WriteHeader(http.StatusForbidden)
+				responseWrite.Write([]byte("plugin cannot provide services"))
+				return
+			}
+			in := false
+			for _, v := range pRoute.ImplementedPlugin {
+				if v == srcID {
+					in = true
+				}
+			}
+			if !in {
+				log.Errorf("error plugin(%s) status(%s) not running", pluginID, pRoute.Status)
+				responseWrite.WriteHeader(http.StatusForbidden)
+				responseWrite.Write([]byte("plugin cannot provide services"))
+				return
+			}
 		}
 		proxyReq := &proxy.Reqeust{
 			ID:         pluginID,

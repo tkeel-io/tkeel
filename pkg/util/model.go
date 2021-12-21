@@ -1,8 +1,10 @@
 package util
 
 import (
+	v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	pb "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/tkeel-io/tkeel/pkg/repository"
 )
 
 func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.PluginObject {
@@ -12,10 +14,15 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 		TkeelVersion:      p.TkeelVersion,
 		AddonsPoint:       p.AddonsPoint,
 		ImplementedPlugin: p.ImplementedPlugin,
-		Secret:            p.Secret,
+		Secret: &pb.Secret{
+			Data: p.Secret.Data,
+		},
 		RegisterTimestamp: p.RegisterTimestamp,
 		ActiveTenantes:    p.ActiveTenantes,
 		RegisterAddons: func() []*pb.RegisterAddons {
+			if pr == nil {
+				return nil
+			}
 			ret := make([]*pb.RegisterAddons, 0, len(pr.RegisterAddons))
 			for k, v := range pr.RegisterAddons {
 				ret = append(ret, &pb.RegisterAddons{
@@ -25,6 +32,30 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 			}
 			return ret
 		}(),
-		Status: pr.Status,
+		Status: func() v1.PluginStatus {
+			if pr == nil {
+				return v1.PluginStatus_UNREGISTER
+			}
+			return pr.Status
+		}(),
+		BriefInstallerInfo: func() *pb.Installer {
+			if p.Installer == nil {
+				return nil
+			}
+			return &pb.Installer{
+				Name:     p.Installer.Name,
+				Version:  p.Installer.Version,
+				RepoName: p.Installer.Repo,
+			}
+		}(),
+	}
+}
+
+func ConvertModel2RepositoryInstallerObject(i *model.Installer) *repository.InstallerBrief {
+	return &repository.InstallerBrief{
+		Repo:      i.Repo,
+		Name:      i.Name,
+		Version:   i.Version,
+		Installed: true,
 	}
 }

@@ -1,0 +1,296 @@
+syntax = "proto3";
+
+package api.repo.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/tkeel-io/tkeel/api/repo/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.repo.v1";
+
+service Repo {
+  rpc CreateRepo(CreateRepoRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/repos/{name}"
+      body : "url"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "创建仓库接口"
+      operation_id : "CreateRepo"
+      tags : "Repo"
+      responses : [
+        {
+          key : "200"
+          value : {description : "SUCC"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "409"
+          value : {description : "ALREADY_EXISTS"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
+  };
+
+  rpc DeleteRepo(DeleteRepoRequest) returns (DeleteRepoResponse) {
+    option (google.api.http) = {
+      delete : "/repos/{name}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "删除仓库接口"
+      operation_id : "DeleteRepo"
+      tags : "Repo"
+      responses : [
+        {
+          key : "200"
+          value : {description : "SUCC"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "404"
+          value : {description : "REPO_NOT_FOUND"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
+  };
+
+  rpc ListRepo(google.protobuf.Empty) returns (ListRepoResponse) {
+    option (google.api.http) = {
+      get : "/repos"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "获取仓库列表接口"
+      operation_id : "ListRepo"
+      tags : "Repo"
+      responses : [
+        {
+          key : "200"
+          value : {description : "SUCC"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
+  };
+
+  rpc ListRepoInstaller(ListRepoInstallerRequest)
+      returns (ListRepoInstallerResponse) {
+    option (google.api.http) = {
+      get : "/repos/{repo_name}/installers"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "获取仓库中安装包列表接口"
+      operation_id : "ListRepoInstaller"
+      tags : "Repo"
+      responses : [
+        {
+          key : "200"
+          value : {description : "SUCC"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "404"
+          value : {description : "REPO_NOT_FOUND"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
+  };
+
+  rpc GetRepoInstaller(GetRepoInstallerRequest)
+      returns (GetRepoInstallerResponse) {
+    option (google.api.http) = {
+      get : "/repos/{repo_name}/installers/{installer_name}/{installer_version}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "获取仓库中指定安装包"
+      operation_id : "GetRepoInstaller"
+      tags : "Repo"
+      responses : [
+        {
+          key : "200"
+          value : {description : "SUCC"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "404"
+          value : {description : "REPO_NOT_FOUND"}
+        },
+        {
+          key : "404"
+          value : {description : "INSTALLER_NOT_FOUND"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
+  };
+};
+
+message RepoObject {
+  string name = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo name"
+      } ];
+  string url = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo url"
+      } ];
+  bytes annotations = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo annotations"
+      } ];
+}
+
+enum ConfigurationSchemaType {
+  JSON = 0;
+  YAML = 1;
+}
+
+message InstallerObject {
+  string name = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer name"
+      } ];
+  string version = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer version"
+      } ];
+  string repo = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer repo"
+      } ];
+  bytes annotations = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo annotations"
+      } ];
+  bytes readme = 5
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "readme file"
+      } ];
+  bytes configuration_schema = 6
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "configuration schema file"
+      } ];
+  ConfigurationSchemaType schema_type = 7
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "configuration schema type"
+      } ];
+  bytes configuration = 8
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "configuration file"
+      } ];
+  bool installed = 9
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "whether the installer has been installed"
+      } ];
+}
+
+message CreateRepoRequest {
+  string name = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo name"
+      } ];
+  string url = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo url"
+      } ];
+}
+
+message CreateRepoResponse {
+  RepoObject repo = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo"
+      } ];
+}
+
+message DeleteRepoRequest {
+  string name = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo name"
+      } ];
+}
+
+message DeleteRepoResponse {
+  RepoObject repo = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo"
+      } ];
+}
+
+message ListRepoResponse {
+  repeated RepoObject repos = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo list"
+      } ];
+}
+
+message ListRepoInstallerRequest {
+  string repo_name = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo name"
+      } ];
+}
+
+message ListRepoInstallerResponse {
+  repeated InstallerObject brief_installers = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "brief installer info list,only has name and version"
+      } ];
+}
+
+message GetRepoInstallerRequest {
+  string repo_name = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo name"
+      } ];
+  string installer_name = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer name"
+      } ];
+  string installer_version = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer version"
+      } ];
+}
+
+message GetRepoInstallerResponse {
+  InstallerObject installer = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer"
+      } ];
+  ;
+}

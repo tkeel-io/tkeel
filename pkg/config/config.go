@@ -1,9 +1,12 @@
 /*
 Copyright 2021 The tKeel Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
 	http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +29,8 @@ import (
 
 // TkeelConf tkeel platform configuration.
 type TkeelConf struct {
+	// tkeel platform namespace.
+	Namespace string `json:"namespace" yaml:"namespace"`
 	// tkeel platform secret. set up when installing the platform.
 	Secret string `json:"secret" yaml:"secret"`
 	// tkeel platform version.
@@ -145,6 +150,7 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.Dapr.PrivateStateName, "dapr.private_state_name", getEnvStr("TKEEL_DAPR_PRIVATE_STATE_NAME", "tkeel-middleware-redis-private-store"), "dapr private store name(default keel-private-store).")
 	strVar(&c.Dapr.PublicStateName, "dapr.public_state_name", getEnvStr("TKEEL_DAPR_PUBLIC_STATE_NAME", "tkeel-middleware-redis-public-store"), "dapr public store name(default keel-public-store).")
 	strVar(&c.Tkeel.Secret, "tkeel.secret", getEnvStr("TKEEL_SECRET", "changeme"), "tkeel secret.(default changeme)")
+	strVar(&c.Tkeel.Namespace, "tkeel.namespace", getEnvStr("TKEEL_POD_NAMESPACE", "tkeel-system"), "tkeel pod namespace.(default tkeel-system)")
 	strVar(&c.Tkeel.Version, "tkeel.version", getEnvStr("TKEEL_VERSION", "v0.2.0"), "tkeel version.(default v0.2.0)")
 	strVar(&c.Tkeel.WatchPluginRouteInterval, "tkeel.watch_plugin_route_interval", getEnvStr("TKEEL_WATCH_PLUGIN_ROUTE_INTERVAL", "10s"), "tkeel watch plugin route change interval.(default 10s)")
 	strVar(&c.SecurityConf.Mysql.DBName, "security.mysql.dbname", getEnvStr("TKEEL_SECURITY_MYSQL_DBNAME", "tkeelauth"), "database name of auth`s mysql config")

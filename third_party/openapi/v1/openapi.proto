@@ -22,9 +22,9 @@ enum Retcode {
  **/
 enum PluginStatus {
   ERROR = 0;
-  STARTING = 1;
-  RUNNING = 2;
-  STOPPING = 3;
+  UNREGISTER = 1;
+  REGISTER = 2;
+  RUNNING = 3;
   STOPPED = 4;
 }
 
