@@ -30,24 +30,10 @@ var (
 // Annotations is a json object. Any data you want it attach on.
 type Annotations map[string]interface{}
 
-func (a *Annotations) Check() error {
-	if _, err := json.Marshal(a); err != nil {
-		return ErrInvalidAnnotations
-	}
-	return nil
-}
-
 // Option key and value.
 type Option struct {
 	Key   string      `json:"key"`
 	Value interface{} `json:"value"`
-}
-
-func (o *Option) Check() error {
-	if _, err := json.Marshal(o); err != nil {
-		return ErrInvalidAnnotations
-	}
-	return nil
 }
 
 // InstallerBrief installer brief information.

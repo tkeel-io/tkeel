@@ -13,3 +13,4 @@ image:
   repository: tkeelio/keel
   tag: 0.2.0
   pullPolicy: Always
+watchInterval: 5s

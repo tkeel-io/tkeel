@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -96,8 +95,6 @@ func (h *Hub) Init(interval string) error {
 
 // updateRepoSet watch call back func.
 func (h *Hub) updateRepoSet(newInfo, updateInfo, deleteInfo []*repository.Info) error {
-	log.Debugf("update hub repo set, news: %s, updates: %s, deletes: %s",
-		infoSliStr(newInfo), infoSliStr(updateInfo), infoSliStr(deleteInfo))
 	// create new repo.
 	for _, v := range newInfo {
 		newRepo, err := h.constructor(v, h.constructorArgs...)
@@ -185,12 +182,12 @@ func (h *Hub) Get(name string) (repository.Repository, error) {
 		defer cancel()
 		modelInfo, err := h.infoOperator.Get(ctx, name)
 		if err != nil {
-			log.Errorf("error repo operator find %s: %w", name, err)
+			log.Errorf("error repo operator find %s: %s", name, err)
 			return nil, ErrRepoNotFound
 		}
 		repo, err := h.constructor(modelInfo, h.constructorArgs...)
 		if err != nil {
-			log.Errorf("error constructor(%s) repo: %w", modelInfo, err)
+			log.Errorf("error constructor(%s) repo: %s", modelInfo, err)
 			return nil, ErrInternalError
 		}
 		h.repoSet.Store(name, repo)
@@ -250,15 +247,4 @@ func (h *Hub) Uninstall(pluginID string, brief *repository.InstallerBrief) error
 		return fmt.Errorf("error destroy plugin(%s): %w", pluginID, err)
 	}
 	return nil
-}
-
-func infoSliStr(is []*repository.Info) string {
-	// TODO: It may be better to use buffer.
-	ret := make([]string, 0, len(is)+2)
-	ret = append(ret, "[")
-	for _, v := range is {
-		ret = append(ret, v.String())
-	}
-	ret = append(ret, "]")
-	return strings.Join(ret, ", ")
 }

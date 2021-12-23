@@ -104,7 +104,7 @@ var rootCmd = &cobra.Command{
 					if len(args) != 2 {
 						return nil, errors.New("invalid arguments")
 					}
-					drive, ok := args[0].(string)
+					drive, ok := args[0].(helm.Driver)
 					if !ok {
 						return nil, errors.New("invaild argument type")
 					}
@@ -112,14 +112,14 @@ var rootCmd = &cobra.Command{
 					if !ok {
 						return nil, errors.New("invaild argument type")
 					}
-					repo, err := helm.NewHelmRepo(*connectInfo, helm.Driver(drive), namespace)
+					repo, err := helm.NewHelmRepo(*connectInfo, drive, namespace)
 					if err != nil {
 						return nil, fmt.Errorf("error new helm repo: %w", err)
 					}
 					return repo, nil
 				},
 				func(pluginID string) error {
-					repo, err := helm.NewHelmRepo(repository.Info{}, helm.Mem, conf.Tkeel.Namespace)
+					repo, err := helm.NewHelmRepo(repository.Info{}, helm.Secret, conf.Tkeel.Namespace)
 					if err != nil {
 						return fmt.Errorf("error new helm repo: %w", err)
 					}
@@ -128,7 +128,7 @@ var rootCmd = &cobra.Command{
 						return fmt.Errorf("error uninstall(%s) err: %w", pluginID, err)
 					}
 					return nil
-				}, helm.Mem, conf.Tkeel.Namespace)
+				}, helm.Secret, conf.Tkeel.Namespace)
 
 			// init service.
 			// plugin service.
@@ -157,7 +157,7 @@ var rootCmd = &cobra.Command{
 				// oauth2.
 				oauth_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.OAuth2)
 				// rbac.
-				rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.RBAC, conf.SecurityConf.OAuth2)
+				rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.RBAC)
 				// entity token.
 				entityTokenOperator := entity.NewEntityTokenOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 				if entityTokenOperator == nil {

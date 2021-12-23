@@ -24,7 +24,7 @@ import (
 
 	security_conf "github.com/tkeel-io/security/apiserver/config"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // TkeelConf tkeel platform configuration.
@@ -145,7 +145,7 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.Log.Level, "log.level", getEnvStr("TKEEL_LOG_LEVEL", "debug"), "log level(default debug).")
 	strVar(&c.HTTPAddr, "http.addr", getEnvStr("TKEEL_HTTP_ADDR", ":31234"), "http listen address(default :31234).")
 	strVar(&c.GRPCAddr, "grpc.addr", getEnvStr("TKEEL_GRPC_ADDR", ":31233"), "grpc listen address(default :31233).")
-	strVar(&c.Proxy.Timeout, "proxy.timeout", getEnvStr("TKEEL_PROXY_TIMEOUT", "10s"), "proxy timeout(default 10s).")
+	strVar(&c.Proxy.Timeout, "proxy.timeout", getEnvStr("TKEEL_PROXY_TIMEOUT", "30s"), "proxy timeout(default 10s).")
 	strVar(&c.Proxy.CoreAddr, "proxy.core_addr", getEnvStr("TKEEL_PROXY_CORE_ADDR", "core:6789"), "core listen address(default core:6789).")
 	strVar(&c.Proxy.RudderAddr, "proxy.rudder_addr", getEnvStr("TKEEL_PROXY_RUDDER_ADDR", "rudder:31234"), "rudder listen address(default rudder:31234).")
 	strVar(&c.Dapr.GRPCPort, "dapr.grpc.port", getEnvStr("DAPR_GRPC_PORT", "50001"), "dapr grpc listen address(default 50001).")
@@ -153,8 +153,8 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.Dapr.PrivateStateName, "dapr.private_state_name", getEnvStr("TKEEL_DAPR_PRIVATE_STATE_NAME", "tkeel-middleware-redis-private-store"), "dapr private store name(default keel-private-store).")
 	strVar(&c.Dapr.PublicStateName, "dapr.public_state_name", getEnvStr("TKEEL_DAPR_PUBLIC_STATE_NAME", "tkeel-middleware-redis-public-store"), "dapr public store name(default keel-public-store).")
 	strVar(&c.Tkeel.Namespace, "tkeel.namespace", getEnvStr("TKEEL_POD_NAMESPACE", "tkeel-system"), "tkeel pod namespace.(default tkeel-system)")
-	strVar(&c.Tkeel.AdminPassword, "tkeel.admin_password", getEnvStr("TKEEL_ADMIN_PASSWD", "v0.2.0"), "tkeel version.(default v0.2.0)")
-	strVar(&c.Tkeel.Version, "tkeel.version", getEnvStr("TKEEL_VERSION", "v0.2.0"), "tkeel version.(default v0.2.0)")
+	strVar(&c.Tkeel.AdminPassword, "tkeel.admin_password", getEnvStr("TKEEL_ADMIN_PASSWD", "changeme"), "tkeel admin password.(default env TKEEL_ADMIN_PASSWD)")
+	strVar(&c.Tkeel.Version, "tkeel.version", getEnvStr("TKEEL_VERSION", "v0.3.0"), "tkeel version.(default v0.3.0)")
 	strVar(&c.Tkeel.WatchInterval, "tkeel.watch_interval", getEnvStr("TKEEL_WATCH_INTERVAL", "10s"), "tkeel watch change interval.(default 10s)")
 	strVar(&c.SecurityConf.Mysql.DBName, "security.mysql.dbname", getEnvStr("TKEEL_SECURITY_MYSQL_DBNAME", "tkeelauth"), "database name of auth`s mysql config")
 	strVar(&c.SecurityConf.Mysql.User, "security.mysql.user", getEnvStr("TKEEL_SECURITY_MYSQL_USER", "root"), "user name of auth`s mysql config")

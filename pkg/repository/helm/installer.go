@@ -17,6 +17,8 @@ limitations under the License.
 package helm
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"helm.sh/helm/v3/pkg/cli"
@@ -35,6 +37,8 @@ import (
 const (
 	ReadmeFileNameKey = "README"
 	ValuesSchemaKey   = "VALUES.SCHEMA"
+	ValuesKey         = "VALUES"
+	ValuesFileName    = "values.yaml"
 )
 
 var _ repository.Installer = &Installer{}
@@ -57,13 +61,16 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 		namespace:  namespace,
 		annotations: func() repository.Annotations {
 			a := make(repository.Annotations)
-			for _, v := range ch.Files {
+			for _, v := range ch.Raw {
 				if strings.HasPrefix(v.Name, ReadmeFileNameKey) {
 					a[ReadmeFileNameKey] = v.Data
 				}
-				if ch.Schema != nil {
-					a[ValuesSchemaKey] = ch.Schema
+				if v.Name == ValuesFileName {
+					a[ValuesKey] = v.Data
 				}
+			}
+			if ch.Schema != nil {
+				a[ValuesSchemaKey] = ch.Schema
 			}
 			return a
 		}(),
@@ -128,11 +135,9 @@ func (h Installer) Install(ops ...*repository.Option) error {
 			h.options[v.Key] = v.Value
 		}
 	}
-
-	for i := 0; i < len(ops); i++ {
-		if err := ops[i].Check(); err != nil {
-			return errors.Wrap(err, "check option failed")
-		}
+	_, err := json.Marshal(h.options)
+	if err != nil {
+		return fmt.Errorf("error check opthion: %w", err)
 	}
 
 	installer := action.NewInstall(h.helmConfig)

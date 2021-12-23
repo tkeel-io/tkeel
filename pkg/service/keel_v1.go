@@ -43,8 +43,8 @@ const (
 )
 
 var (
-	contextUserKey       = struct{}{}
-	contextSourceKey     = struct{}{}
+	contextUserKey       = struct{ K int }{K: 0}
+	contextSourceKey     = struct{ K int }{K: 1}
 	ErrNotFoundUpstream  = errors.New("not found upstream plugin")
 	ErrNotActiveUpstream = errors.New("not active upstream plugin")
 	ErrNotFoundAddons    = errors.New("not found addons")
@@ -215,10 +215,6 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 		}
 		// with user.
 		if pluginID == "" {
-			ctx = withSource(ctx, &source{
-				ID:           model.TKeelUser,
-				TKeelDepened: s.tKeelVersion,
-			})
 			log.Debugf("external flow")
 			user, err1 := s.externalGetUser(req)
 			if err1 != nil {
@@ -229,6 +225,10 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			}
 			req.Request.Header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)] = []string{user.Base64Encode()}
 			ctx = withUser(ctx, user)
+			ctx = withSource(ctx, &source{
+				ID:           model.TKeelUser,
+				TKeelDepened: s.tKeelVersion,
+			})
 		} else if pluginID == "rudder" || pluginID == "keel" {
 			user := new(model.User)
 			user.Tenant = model.TKeelTenant
@@ -236,6 +236,10 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			user.Role = model.AdminRole
 			req.Request.Header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)] = []string{user.Base64Encode()}
 			ctx = withUser(ctx, user)
+			ctx = withSource(ctx, &source{
+				ID:           model.TKeelUser,
+				TKeelDepened: s.tKeelVersion,
+			})
 		} else {
 			pluginRouteInterface, ok := s.pluginRouteMap.Load(pluginID)
 			if !ok {
@@ -251,10 +255,6 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 					setResult(http.StatusInternalServerError, "internal error", nil), "application/json")
 				return
 			}
-			ctx = withSource(ctx, &source{
-				ID:           pluginID,
-				TKeelDepened: pluginRoute.TkeelVersion,
-			})
 			log.Debugf("internal flow")
 			tKeelHeader := req.HeaderParameter(http.CanonicalHeaderKey(model.XtKeelAuthHeader))
 			if tKeelHeader == "" {
@@ -271,6 +271,10 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 				return
 			}
 			ctx = withUser(ctx, user)
+			ctx = withSource(ctx, &source{
+				ID:           pluginID,
+				TKeelDepened: pluginRoute.TkeelVersion,
+			})
 		}
 		req.Request = req.Request.WithContext(ctx)
 		chain.ProcessFilter(req, resp)
@@ -303,6 +307,9 @@ func (s *KeelServiceV1) getPluginIDFromRequest(req *restful.Request) (string, er
 
 func (s *KeelServiceV1) externalGetUser(req *restful.Request) (*model.User, error) {
 	token := req.HeaderParameter(http.CanonicalHeaderKey(AuthorizationHeader))
+	if token == "" {
+		return nil, errors.New("invaild token")
+	}
 	isManager, err := s.isManagerToken(token)
 	if err != nil {
 		return nil, fmt.Errorf("error manager token(%s) check: %w", token, err)
@@ -331,7 +338,7 @@ func (s *KeelServiceV1) externalGetUser(req *restful.Request) (*model.User, erro
 }
 
 func (s *KeelServiceV1) isManagerToken(token string) (bool, error) {
-	payload, valid, err := s.secretProvider.Parse(strings.TrimPrefix(token, "Bearer "))
+	payload, err := s.secretProvider.ParseUnverified(strings.TrimPrefix(token, "Bearer "))
 	if err != nil {
 		return false, fmt.Errorf("error parse token(%s): %w", token, err)
 	}
@@ -339,7 +346,14 @@ func (s *KeelServiceV1) isManagerToken(token string) (bool, error) {
 	if !ok {
 		return false, nil
 	}
-	if iss == "rudder" && valid {
+	if iss == "rudder" {
+		_, valid, err := s.secretProvider.Parse(strings.TrimPrefix(token, "Bearer "))
+		if err != nil {
+			return true, fmt.Errorf("error parse token(%s): %w", token, err)
+		}
+		if !valid {
+			return true, fmt.Errorf("error token(%s) is invaild", token)
+		}
 		return true, nil
 	}
 	return false, nil
@@ -396,7 +410,6 @@ func (s *KeelServiceV1) ProxyAddons(
 
 func (s *KeelServiceV1) ProxyPlugin(
 	resp http.ResponseWriter, req *http.Request) error {
-	log.Debugf("proxy call plugin %s", req)
 	up, err := s.getPluginUpstream(req)
 	if err != nil {
 		if errors.Is(err, ErrNotFoundUpstream) {
@@ -406,6 +419,7 @@ func (s *KeelServiceV1) ProxyPlugin(
 		}
 		return fmt.Errorf("error get plugin upstream: %w", err)
 	}
+	log.Debugf("proxy call plugin %s", up)
 	if err = up.Verify(req); err != nil {
 		if errors.Is(err, ErrNotActiveUpstream) {
 			writeResult(resp, http.StatusForbidden, "not active", nil)
@@ -477,7 +491,7 @@ func (s *KeelServiceV1) ProxyRudder(resp http.ResponseWriter, req *http.Request)
 			return errors.New("error invaild user")
 		}
 		if user.User != "_tKeel" {
-			if user.Role != model.AdminRole {
+			if req.URL.Path != "/apis/rudder/v1/entries" && user.Role != model.AdminRole {
 				writeResult(resp, http.StatusForbidden, "invaild role", nil)
 				return errors.New("error invaild role")
 			}
@@ -496,6 +510,7 @@ func (s *KeelServiceV1) getPluginUpstream(req *http.Request) (*upstream, error) 
 	if pluginID == "" {
 		return nil, fmt.Errorf("get(%s) invalid plugin id", req.URL.Path)
 	}
+	log.Debugf("pluginID: %s,pluginMethod: %s", pluginID, pluginMethod)
 	upstreamRouteInterface, ok := s.pluginRouteMap.Load(pluginID)
 	if !ok {
 		return nil, ErrNotFoundUpstream
@@ -619,19 +634,19 @@ func proxyHTTPResponse2RestfulResponse(dstResp *http.Response, resp http.Respons
 }
 
 func getPluginIDFromApisPath(pluginPath string) string {
-	ss := strings.SplitN(pluginPath, "/", 3)
-	if len(ss) != 3 {
+	ss := strings.SplitN(pluginPath, "/", 4)
+	if len(ss) != 4 {
 		return ""
 	}
-	return ss[1]
+	return ss[2]
 }
 
 func getMethodApisPath(apisPath string) string {
-	ss := strings.SplitN(apisPath, "/", 3)
-	if len(ss) != 3 {
+	ss := strings.SplitN(apisPath, "/", 4)
+	if len(ss) != 4 {
 		return ""
 	}
-	return strings.Split(ss[2], "?")[0]
+	return strings.Split(ss[3], "?")[0]
 }
 
 func withUser(ctx context.Context, user *model.User) context.Context {

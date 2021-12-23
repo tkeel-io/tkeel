@@ -96,6 +96,17 @@ func (idp *BasicJWTIdentityProvider) Token(sub, jti string, d time.Duration, m m
 	return
 }
 
+func (idp *BasicJWTIdentityProvider) ParseUnverified(tokenStr string) (map[string]interface{}, error) {
+	token, _, err := new(jwt.Parser).ParseUnverified(tokenStr, &jwt.MapClaims{})
+	if err != nil {
+		return nil, fmt.Errorf("error parse(%s) unverified: %w", tokenStr, err)
+	}
+	if claims, ok := token.Claims.(*jwt.MapClaims); ok {
+		return *claims, nil
+	}
+	return nil, ErrUnauthorizedAccess
+}
+
 func (idp *BasicJWTIdentityProvider) Parse(tokenStr string) (map[string]interface{}, bool, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if idp.rsapub != nil {

@@ -72,9 +72,10 @@ message ImplementedPlugin {
 message ConsoleEntry {
   string id = 1;
   string name = 2;
-  string path = 3;
-  string entry = 4;
-  repeated string menu = 5;
+  string icon = 3;
+  string path = 4;
+  string entry = 5;
+  repeated ConsoleEntry children = 6;
 }
 
 /**

@@ -304,16 +304,6 @@ message RegisterAddons {
       } ]; // upstream path.
 }
 
-/**
- * Secret.
- **/
-message Secret {
-  string data = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin registered secret data"
-      } ];
-}
-
 enum ConfigurationType {
   JSON = 0;
   YAML = 1;
@@ -369,7 +359,7 @@ message PluginObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin implemented plugin list"
       } ]; // plugin implemented plugin list.
-  Secret secret = 6
+  string secret = 6
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin registered secret"
       } ]; // plugin registered secret.
@@ -450,7 +440,7 @@ message RegisterPluginRequest {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
       } ];
-  Secret secret = 2
+  string secret = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin register secret"
       } ];
@@ -481,7 +471,7 @@ message BindTenantsRequest {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
       } ];
-  string extra = 2
+  bytes extra = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "extra data"
       } ];
@@ -491,6 +481,10 @@ message UnbindTenantsRequest {
   string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
+      } ];
+  bytes extra = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "extra data"
       } ];
 }
 

@@ -17,6 +17,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+const (
+	expires = 1 * time.Hour
+)
+
 var ErrSecretNotMatch = errors.New("secret not match")
 
 type Oauth2ServiceV1 struct {
@@ -72,7 +76,7 @@ func (s *Oauth2ServiceV1) IssuePluginToken(ctx context.Context, req *pb.IssuePlu
 			log.Errorf("error issue(%s) oauth2 token: %w", pluginID, err)
 			return nil, pb.Oauth2ErrInternalStore()
 		}
-		if err = s.checkPluginSecret(plugin.Secret.Data, req.ClientSecret); err != nil {
+		if err = s.checkPluginSecret(plugin.Secret, req.ClientSecret); err != nil {
 			log.Errorf("error issue(%s) oauth2 token: %w", pluginID, err)
 			return nil, pb.Oauth2ErrSecretNotMatch()
 		}
@@ -84,8 +88,9 @@ func (s *Oauth2ServiceV1) IssuePluginToken(ctx context.Context, req *pb.IssuePlu
 	}
 	log.Debugf("issue(%s) oauth2 token: %s", pluginID, token)
 	return &pb.IssueTokenResponse{
+		TokenType:   "Bearer",
 		AccessToken: token,
-		ExpiresIn:   int32((24 * time.Hour).Seconds()),
+		ExpiresIn:   int32(expires.Seconds()),
 	}, nil
 }
 
@@ -108,8 +113,9 @@ func (s *Oauth2ServiceV1) IssueAdminToken(ctx context.Context,
 	}
 	log.Debugf("issue(admin) oauth2 token: %s", token)
 	return &pb.IssueTokenResponse{
+		TokenType:   "Bearer",
 		AccessToken: token,
-		ExpiresIn:   int32((24 * time.Hour).Seconds()),
+		ExpiresIn:   int32(expires.Seconds()),
 	}, nil
 }
 
@@ -131,7 +137,7 @@ func (s *Oauth2ServiceV1) genToken(sub string, tokenKV ...string) (token, jti st
 			m[tokenKV[i]] = m[tokenKV[i+1]]
 		}
 	}
-	duration := 24 * time.Hour
+	duration := expires
 	token, _, err = s.secretProvider.Token(sub, "", duration, m)
 	if err != nil {
 		err = fmt.Errorf("error token: %w", err)

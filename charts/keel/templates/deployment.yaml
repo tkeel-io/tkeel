@@ -35,6 +35,8 @@ spec:
               value: {{ printf "%s-redis-private-store" .Values.middleware.name }}
             - name: TKEEL_DAPR_PUBLIC_STATE_NAME
               value: {{ printf "%s-redis-public-store" .Values.middleware.name }}
+            - name: TKEEL_WATCH_INTERVAL
+              value: {{ .Values.watchInterval }}
             - name: TKEEL_POD_NAMESPACE
               valueFrom:
                 fieldRef:

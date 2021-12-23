@@ -59,7 +59,7 @@ type Plugin struct {
 	AddonsPoint       []*openapi_v1.AddonsPoint       `json:"addons_point,omitempty"`       // plugin declares addons.
 	ImplementedPlugin []*openapi_v1.ImplementedPlugin `json:"implemented_plugin,omitempty"` // plugin implemented plugin list.
 	ConsoleEntries    []*openapi_v1.ConsoleEntry      `json:"console_entries,omitempty"`    // plugin console entries.
-	Secret            *Secret                         `json:"secret,omitempty"`             // plugin registered secret.
+	Secret            string                          `json:"secret,omitempty"`             // plugin registered secret.
 	RegisterTimestamp int64                           `json:"register_timestamp,omitempty"` // register timestamp.
 	Version           string                          `json:"version,omitempty"`            // model version.
 	State             openapi_v1.PluginStatus         `json:"state,omitempty"`              // plugin state.
@@ -116,25 +116,32 @@ func (p *Plugin) Clone() *Plugin {
 		ConsoleEntries: func() []*openapi_v1.ConsoleEntry {
 			ret := make([]*openapi_v1.ConsoleEntry, 0, len(p.ConsoleEntries))
 			for _, v := range p.ConsoleEntries {
-				ret = append(ret, &openapi_v1.ConsoleEntry{
-					Id:   v.Id,
-					Name: v.Name,
-					Path: v.Path,
-					Menu: func() []string {
-						t := make([]string, 0, len(v.Menu))
-						copy(t, v.Menu)
-						return t
-					}(),
-				})
+				new := &openapi_v1.ConsoleEntry{}
+				consoleEntryClone(new, v)
+				ret = append(ret, new)
 			}
 			return ret
 		}(),
-		Secret: &Secret{
-			Data: p.Secret.Data,
-		},
+		Secret:            p.Secret,
 		RegisterTimestamp: p.RegisterTimestamp,
 		Version:           p.Version,
 	}
+}
+
+func consoleEntryClone(dst, src *openapi_v1.ConsoleEntry) {
+	dst.Id = src.Id
+	dst.Name = src.Name
+	dst.Path = src.Path
+	dst.Icon = src.Icon
+	dst.Children = func() []*openapi_v1.ConsoleEntry {
+		ret := make([]*openapi_v1.ConsoleEntry, 0, len(src.Children))
+		for _, v := range src.Children {
+			new := &openapi_v1.ConsoleEntry{}
+			consoleEntryClone(new, v)
+			ret = append(ret, new)
+		}
+		return ret
+	}()
 }
 
 type PluginProxyRouteMap map[string]*PluginRoute
@@ -200,7 +207,7 @@ func NewPlugin(pluginID string, installer *Installer) *Plugin {
 	}
 }
 
-func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret *Secret) {
+func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.PluginVersion = resp.Version
 	p.TkeelVersion = resp.TkeelVersion
 	p.AddonsPoint = resp.AddonsPoint

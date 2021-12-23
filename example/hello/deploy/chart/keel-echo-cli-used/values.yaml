@@ -8,5 +8,5 @@ imagePullSecrets: ""
 
 image:
   repository: tkeelio/keel-echo
-  tag: 0.2.0
+  tag: 0.3.0
   pullPolicy: Always

@@ -10,6 +10,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/hub"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/repository/helm"
+	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -110,17 +111,19 @@ func convertRepo2PB(r repository.Repository) *pb.RepoObject {
 	return &pb.RepoObject{
 		Name: r.Info().Name,
 		Url:  r.Info().URL,
-		Annotations: func() []byte {
-			if r.Info().Annotations == nil {
-				return nil
+		Annotations: func() map[string]*anypb.Any {
+			ret := make(map[string]*anypb.Any)
+			for k, v := range r.Info().Annotations {
+				b, err := json.Marshal(v)
+				if err != nil {
+					log.Errorf("error parse installer(%s) annotasions key(%s): %s", r.Info().Name, k, err)
+					continue
+				}
+				ret[k] = &anypb.Any{
+					Value: b,
+				}
 			}
-			b, err := json.Marshal(r.Info().Annotations)
-			if err != nil {
-				log.Errorf("error marshal repo annotasion(%v) err: %s",
-					r.Info().Annotations, err)
-				return nil
-			}
-			return b
+			return ret
 		}(),
 	}
 }
@@ -149,7 +152,11 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 			if inAn == nil {
 				return nil
 			}
-			b, ok := inAn[helm.ReadmeFileNameKey].([]byte)
+			bIn, ok := inAn[helm.ReadmeFileNameKey]
+			if !ok {
+				return nil
+			}
+			b, ok := bIn.([]byte)
 			if !ok {
 				log.Errorf("error installer(%s) readme invaild type", ib)
 				return nil
@@ -161,7 +168,11 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 			if inAn == nil {
 				return nil
 			}
-			b, ok := inAn[helm.ValuesSchemaKey].([]byte)
+			bIn, ok := inAn[helm.ValuesSchemaKey]
+			if !ok {
+				return nil
+			}
+			b, ok := bIn.([]byte)
 			if !ok {
 				log.Errorf("error installer(%s) configuration schema file invaild type", ib)
 				return nil
@@ -173,41 +184,55 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 			if inAn == nil {
 				return pb.ConfigurationSchemaType_JSON
 			}
-			i, ok := inAn["VALUES.SCHEMA.TYPE"].(int)
+			iIn, ok := inAn["VALUES.SCHEMA.TYPE"]
+			if !ok {
+				return pb.ConfigurationSchemaType_JSON
+			}
+			i, ok := iIn.(int)
 			if !ok {
 				log.Errorf("error installer(%s) configuration schema file invaild type", ib)
 				return pb.ConfigurationSchemaType_JSON
 			}
 			return pb.ConfigurationSchemaType(i)
 		}(),
-		Annotations: func() []byte {
+		ConfigurationFile: func() []byte {
 			inAn := i.Annotations()
 			if inAn == nil {
 				return nil
 			}
-			delete(inAn, helm.ReadmeFileNameKey)
-			delete(inAn, helm.ValuesSchemaKey)
-			delete(inAn, "VALUES.SCHEMA.TYPE")
-			b, err := json.Marshal(inAn)
-			if err != nil {
-				log.Errorf("error marshal installer annotasion(%v) err: %s",
-					inAn, err)
+			valueIn, ok := inAn[helm.ValuesKey]
+			if !ok {
 				return nil
 			}
-			return b
+			value, ok := valueIn.([]byte)
+			if !ok {
+				log.Errorf("error installer(%s) configuration file type invaild", i.Brief().Name)
+			}
+			return value
 		}(),
-		Configuration: func() []byte {
-			for _, v := range i.Options() {
-				if v.Key == "Values.yaml" {
-					b, ok := v.Value.([]byte)
-					if !ok {
-						log.Errorf("error installer(%s) values.yaml file invaild type", ib)
-						return nil
-					}
-					return b
+		Annotations: func() map[string]*anypb.Any {
+			inAn := i.Annotations()
+			if inAn == nil {
+				return nil
+			}
+			ret := make(map[string]*anypb.Any)
+			for k, v := range inAn {
+				if k == helm.ReadmeFileNameKey ||
+					k == helm.ValuesSchemaKey ||
+					k == helm.ValuesKey ||
+					k == "VALUES.SCHEMA.TYPE" {
+					continue
+				}
+				b, err := json.Marshal(v)
+				if err != nil {
+					log.Errorf("error parse installer(%s) annotasions key(%s): %s", i.Brief().Name, k, err)
+					continue
+				}
+				ret[k] = &anypb.Any{
+					Value: b,
 				}
 			}
-			return nil
+			return ret
 		}(),
 	}
 }

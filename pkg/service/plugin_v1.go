@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
@@ -38,7 +37,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var (
@@ -94,6 +93,7 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 			}
 		}
 	}
+	log.Debugf("configuration: %v", installerConfiguration)
 	repo, err := hub.GetInstance().Get(req.InstallerInfo.RepoName)
 	if err != nil {
 		log.Errorf("error get repo(%s): %s", req.InstallerInfo.RepoName, err)
@@ -128,14 +128,12 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 		}
 		return nil
 	})
-	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer timeoutCancel()
 	newP := model.NewPlugin(req.Id, &model.Installer{
 		Repo:    installer.Brief().Repo,
 		Name:    installer.Brief().Name,
 		Version: installer.Brief().Version,
 	})
-	if err = s.pluginOp.Create(timeoutCtx, newP); err != nil {
+	if err = s.pluginOp.Create(ctx, newP); err != nil {
 		log.Errorf("error create plugin(%s): %s", newP, err)
 		if errors.Is(err, plugin.ErrPluginExsist) {
 			return nil, pb.PluginErrPluginAlreadyExists()
@@ -150,9 +148,7 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 
 func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 	req *pb.UninstallPluginRequest) (*pb.UninstallPluginResponse, error) {
-	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer timeoutCancel()
-	mp, err := s.pluginOp.Get(timeoutCtx, req.GetId())
+	mp, err := s.pluginOp.Get(ctx, req.GetId())
 	if err != nil {
 		log.Errorf("error plugin operator get: %s", err)
 		if errors.Is(err, plugin.ErrPluginNotExsist) {
@@ -180,10 +176,8 @@ func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 
 func (s *PluginServiceV1) RegisterPlugin(ctx context.Context,
 	req *pb.RegisterPluginRequest) (retResp *emptypb.Empty, err error) {
-	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer timeoutCancel()
 	// get plugin.
-	mp, err := s.pluginOp.Get(timeoutCtx, req.GetId())
+	mp, err := s.pluginOp.Get(ctx, req.GetId())
 	if err != nil {
 		log.Errorf("error get plugin: %s", err)
 		if errors.Is(err, plugin.ErrPluginNotExsist) {
@@ -192,20 +186,18 @@ func (s *PluginServiceV1) RegisterPlugin(ctx context.Context,
 		return nil, pb.PluginErrInternalStore()
 	}
 	// get register plugin identify.
-	resp, err := s.queryIdentify(timeoutCtx, req.GetId())
+	resp, err := s.queryIdentify(ctx, req.GetId())
 	if err != nil {
 		log.Errorf("error query identify: %s", err)
 		return nil, pb.PluginErrInvalidArgument()
 	}
 	// check register plugin identify.
-	if err = s.checkIdentify(timeoutCtx, resp); err != nil {
+	if err = s.checkIdentify(ctx, resp); err != nil {
 		log.Errorf("error check identify: %s", err)
 		return nil, pb.PluginErrInvalidArgument()
 	}
 	// register plugin.
-	if err = s.registerPlugin(timeoutCtx, mp, &model.Secret{
-		Data: req.GetSecret().Data,
-	}, resp); err != nil {
+	if err = s.registerPlugin(ctx, mp, req.GetSecret(), resp); err != nil {
 		log.Errorf("error register plugin: %s", err)
 		if errors.Is(err, ErrPluginRegistered) {
 			return nil, pb.PluginErrPluginAlreadyExists()
@@ -218,12 +210,10 @@ func (s *PluginServiceV1) RegisterPlugin(ctx context.Context,
 
 func (s *PluginServiceV1) UnregisterPlugin(ctx context.Context,
 	req *pb.UnregisterPluginRequest) (*pb.UnregisterPluginResponse, error) {
-	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer timeoutCancel()
 
 	pID := req.Id
 	// check exists.
-	UnregisterPluginRoute, err := s.pluginRouteOp.Get(timeoutCtx, pID)
+	UnregisterPluginRoute, err := s.pluginRouteOp.Get(ctx, pID)
 	if err != nil {
 		log.Errorf("error unregister plugin(%s) route get: %s", pID, err)
 		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
@@ -238,7 +228,7 @@ func (s *PluginServiceV1) UnregisterPlugin(ctx context.Context,
 	}
 
 	// delete plugin.
-	unregisterPlugin, delPluginRoute, err := s.deletePluginRoute(timeoutCtx, pID)
+	unregisterPlugin, delPluginRoute, err := s.deletePluginRoute(ctx, pID)
 	if err != nil {
 		log.Errorf("error delete plugin(%s): %s", pID, err)
 		return nil, pb.PluginErrInternalStore()
@@ -250,10 +240,8 @@ func (s *PluginServiceV1) UnregisterPlugin(ctx context.Context,
 
 func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 	req *pb.GetPluginRequest) (*pb.GetPluginResponse, error) {
-	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer timeoutCancel()
 
-	gPlugin, err := s.pluginOp.Get(timeoutCtx, req.Id)
+	gPlugin, err := s.pluginOp.Get(ctx, req.Id)
 	if err != nil {
 		log.Errorf("error plugin(%s) get: %s", req.Id, err)
 		if errors.Is(err, plugin.ErrPluginNotExsist) {
@@ -261,9 +249,12 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 		}
 		return nil, pb.PluginErrInternalStore()
 	}
-	gPluginRoute, err := s.pluginRouteOp.Get(timeoutCtx, req.Id)
+	gPluginRoute, err := s.pluginRouteOp.Get(ctx, req.Id)
 	if err != nil {
 		log.Errorf("error plugin(%s) route get: %s", req.Id, err)
+		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
+			return nil, pb.PluginErrPluginNotFound()
+		}
 		return nil, pb.PluginErrInternalStore()
 	}
 
@@ -274,17 +265,15 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 
 func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 	req *emptypb.Empty) (*pb.ListPluginResponse, error) {
-	timeoutCtx, timeoutCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer timeoutCancel()
 
-	ps, err := s.pluginOp.List(timeoutCtx)
+	ps, err := s.pluginOp.List(ctx)
 	if err != nil {
 		log.Errorf("error plugin list: %s", err)
 		return nil, pb.PluginErrListPlugin()
 	}
 	retList := make([]*pb.PluginObject, 0, len(ps))
 	for _, p := range ps {
-		pr, err := s.pluginRouteOp.Get(timeoutCtx, p.ID)
+		pr, err := s.pluginRouteOp.Get(ctx, p.ID)
 		if err != nil {
 			log.Errorf("error plugin list get plugin(%s) route: %s", p.ID, err)
 			return nil, pb.PluginErrInternalStore()
@@ -324,6 +313,35 @@ func (s *PluginServiceV1) BindTenants(ctx context.Context,
 			return nil, pb.PluginErrDuplicateActiveTenant()
 		}
 	}
+	// openapi tenant/bind.
+	resp, err := s.openapiClient.TenantBind(ctx, req.Id, &openapi_v1.TenantBindRequst{
+		TenantId: user.Tenant,
+		Extra:    req.GetExtra(),
+	})
+	if err != nil {
+		log.Errorf("error request plugin(%s) tenant bind: %s", req.Id, err)
+		return nil, pb.PluginErrOpenapiBindtenant()
+	}
+	if resp.Res.Ret != openapi_v1.Retcode_OK {
+		log.Errorf("error request plugin(%s) tenant bind: %s", req.Id, resp.Res.Msg)
+		return nil, pb.PluginErrOpenapiBindtenant()
+	}
+	rbStack = append(rbStack, func() error {
+		log.Debugf("roll back bind tenant: request(%s) unbind(%s)", req.Id, user.Tenant)
+		resp, err := s.openapiClient.TenantUnbind(ctx, req.Id, &openapi_v1.TenantUnbindRequst{
+			TenantId: user.Tenant,
+			Extra:    req.Extra,
+		})
+		if err != nil {
+			return fmt.Errorf("error request plugin(%s) tenant unbind: %s", req.Id, err)
+		}
+		if resp.Res.Ret != openapi_v1.Retcode_OK {
+			log.Errorf("error request plugin(%s) tenant bind: %s", req.Id, resp.Res.Msg)
+		}
+		return nil
+	})
+	// TODO: security store.
+	// update plugin route.
 	pr.ActiveTenantes = append(pr.ActiveTenantes, user.Tenant)
 	if err = s.pluginRouteOp.Update(ctx, pr); err != nil {
 		log.Errorf("error bind tenant(%s) update plugin(%s) route", user.Tenant, req.Id)
@@ -341,6 +359,7 @@ func (s *PluginServiceV1) BindTenants(ctx context.Context,
 		}
 		return nil
 	})
+	// tenant bind model.
 	tbKey := model.GetTenantBindKey(user.Tenant)
 	vsb, ver, err := s.kvOp.Get(ctx, tbKey)
 	if err != nil {
@@ -394,6 +413,35 @@ func (s *PluginServiceV1) UnbindTenants(ctx context.Context,
 		}
 	}
 	if update {
+		// openapi tenant/unbind.
+		resp, err := s.openapiClient.TenantUnbind(ctx, req.Id, &openapi_v1.TenantUnbindRequst{
+			TenantId: user.Tenant,
+			Extra:    req.GetExtra(),
+		})
+		if err != nil {
+			log.Errorf("error request plugin(%s) tenant unbind: %s", req.Id, err)
+			return nil, pb.PluginErrOpenapiBindtenant()
+		}
+		if resp.Res.Ret != openapi_v1.Retcode_OK {
+			log.Errorf("error request plugin(%s) tenant unbind: %s", req.Id, resp.Res.Msg)
+			return nil, pb.PluginErrOpenapiBindtenant()
+		}
+		rbStack = append(rbStack, func() error {
+			log.Debugf("roll back bind tenant: request(%s) bind(%s)", req.Id, user.Tenant)
+			resp, err := s.openapiClient.TenantBind(ctx, req.Id, &openapi_v1.TenantBindRequst{
+				TenantId: user.Tenant,
+				Extra:    req.Extra,
+			})
+			if err != nil {
+				return fmt.Errorf("error request plugin(%s) tenant bind: %s", req.Id, err)
+			}
+			if resp.Res.Ret != openapi_v1.Retcode_OK {
+				log.Errorf("error request plugin(%s) tenant bind: %s", req.Id, resp.Res.Msg)
+			}
+			return nil
+		})
+		// TODO: security store.
+		// plugin route update.
 		if err = s.pluginRouteOp.Update(ctx, pr); err != nil {
 			log.Errorf("error unbind tenant(%s) update plugin(%s) route", user.Tenant, req.Id)
 			return nil, pb.PluginErrInternalStore()
@@ -411,6 +459,7 @@ func (s *PluginServiceV1) UnbindTenants(ctx context.Context,
 			}
 			return nil
 		})
+		// tenant bind update.
 		tbKey := model.GetTenantBindKey(user.Tenant)
 		vsb, ver, err := s.kvOp.Get(ctx, tbKey)
 		if err != nil {
@@ -439,6 +488,9 @@ func (s *PluginServiceV1) ListBindTenants(ctx context.Context,
 	pr, err := s.pluginRouteOp.Get(ctx, req.Id)
 	if err != nil {
 		log.Errorf("error get plugin route: %s", err)
+		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
+			return nil, pb.PluginErrPluginNotFound()
+		}
 		return nil, pb.PluginErrInternalStore()
 	}
 	return &pb.ListBindTenantsResponse{
@@ -479,7 +531,7 @@ func (s *PluginServiceV1) checkIdentify(ctx context.Context,
 }
 
 func (s *PluginServiceV1) registerPlugin(ctx context.Context, registerPlugin *model.Plugin,
-	secret *model.Secret, resp *openapi_v1.IdentifyResponse) error {
+	secret string, resp *openapi_v1.IdentifyResponse) error {
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
 	// save register plugin route.
@@ -584,7 +636,7 @@ func (s *PluginServiceV1) registerImplementedPluginRoute(ctx context.Context,
 }
 
 func (s *PluginServiceV1) updateRegisterPlugin(ctx context.Context, resp *openapi_v1.IdentifyResponse,
-	secret *model.Secret, oldPlugin *model.Plugin, tmpPluginRoute *model.PluginRoute) error {
+	secret string, oldPlugin *model.Plugin, tmpPluginRoute *model.PluginRoute) error {
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
 	statusResp, err := s.openapiClient.Status(ctx, resp.PluginId)

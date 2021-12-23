@@ -24,6 +24,7 @@ var pluginErrDuplicateActiveTenant *errors.TError
 var pluginErrInstallerNotFound *errors.TError
 var pluginErrInstallInstaller *errors.TError
 var pluginErrUninstallPlugin *errors.TError
+var pluginErrOpenapiBindtenant *errors.TError
 
 func init() {
 	pluginErrUnknown = errors.New(int(codes.Unknown), "plugin.v1.PLUGIN_ERR_UNKNOWN", Error_PLUGIN_ERR_UNKNOWN.String())
@@ -52,6 +53,8 @@ func init() {
 	errors.Register(pluginErrInstallInstaller)
 	pluginErrUninstallPlugin = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_UNINSTALL_PLUGIN", Error_PLUGIN_ERR_UNINSTALL_PLUGIN.String())
 	errors.Register(pluginErrUninstallPlugin)
+	pluginErrOpenapiBindtenant = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_OPENAPI_BINDTENANT", Error_PLUGIN_ERR_OPENAPI_BINDTENANT.String())
+	errors.Register(pluginErrOpenapiBindtenant)
 }
 
 func PluginErrUnknown() errors.Error {
@@ -104,4 +107,8 @@ func PluginErrInstallInstaller() errors.Error {
 
 func PluginErrUninstallPlugin() errors.Error {
 	return pluginErrUninstallPlugin
+}
+
+func PluginErrOpenapiBindtenant() errors.Error {
+	return pluginErrOpenapiBindtenant
 }

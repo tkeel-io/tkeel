@@ -64,4 +64,7 @@ enum Error {
   // 卸载插件错误
   // @code=INTERNAL
   PLUGIN_ERR_UNINSTALL_PLUGIN = 12;
+  // 租户绑定访问 OPENAPI 错误
+  // @code=INVALID_ARGUMENT
+  PLUGIN_ERR_OPENAPI_BINDTENANT = 13;
 }
