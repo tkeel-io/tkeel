@@ -37,6 +37,8 @@ const (
 	ValuesSchemaKey   = "VALUES.SCHEMA"
 )
 
+var SecretContext = "secret"
+
 var _ repository.Installer = &Installer{}
 
 type Installer struct {
@@ -148,13 +150,17 @@ func (h Installer) Install(ops ...*repository.Option) error {
 	}
 
 	// Add inject dependencies.
-	inject, err := loadComponentChart()
+	injector, err := loadComponentChart()
 	if err != nil {
 		log.Error(err)
 		return errors.Wrap(err, "load component chart err")
 	}
-	failInject(inject, h.id)
-	h.chart.AddDependency(inject)
+	s := SecretContext
+	if secret, ok := h.options["secret"].(string); ok {
+		s = secret
+	}
+	failInjector(injector, h.id, s)
+	h.inject(injector)
 
 	installer.Namespace = h.namespace
 	installer.ReleaseName = h.id
@@ -177,6 +183,11 @@ func (h Installer) Uninstall() error {
 
 func (h Installer) Brief() *repository.InstallerBrief {
 	return &h.brief
+}
+
+func (h *Installer) inject(injector *chart.Chart) {
+	h.chart.Values["daprConfig"] = h.id
+	h.chart.AddDependency(injector)
 }
 
 func loadComponentChart() (*chart.Chart, error) {
@@ -224,6 +235,7 @@ func checkIfInstallable(ch *chart.Chart) error {
 	return errors.Errorf("%s charts are not installable", ch.Metadata.Type)
 }
 
-func failInject(inject *chart.Chart, pluginName string) {
-	inject.Values["pluginID"] = pluginName
+func failInjector(injector *chart.Chart, pluginName string, secret string) {
+	injector.Values["pluginID"] = pluginName
+	injector.Values["secret"] = secret
 }
