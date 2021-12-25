@@ -201,8 +201,8 @@ func (o *DaprStateOprator) Update(ctx context.Context, i *repository.Info) error
 func (o *DaprStateOprator) Get(ctx context.Context, name string) (*repository.Info, error) {
 	prIn, ok := o.cacheRepo.Load(name)
 	if ok {
-		pr, ok := prIn.(*model.PluginRepo)
-		if !ok {
+		pr, ok1 := prIn.(*model.PluginRepo)
+		if !ok1 {
 			return nil, errors.New("plugin repo invaild type")
 		}
 		return o.Model2Info(pr), nil

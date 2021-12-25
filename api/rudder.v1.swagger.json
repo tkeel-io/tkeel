@@ -725,7 +725,7 @@
         ]
       }
     },
-    "/repos/{repo_name}/installers": {
+    "/repos/{repo}/installers": {
       "get": {
         "summary": "获取仓库中安装包列表接口",
         "operationId": "ListRepoInstaller",
@@ -757,7 +757,7 @@
         },
         "parameters": [
           {
-            "name": "repo_name",
+            "name": "repo",
             "description": "repo name",
             "in": "path",
             "required": true,
@@ -769,7 +769,7 @@
         ]
       }
     },
-    "/repos/{repo_name}/installers/{installer_name}/{installer_version}": {
+    "/repos/{repo}/installers/{installer_name}/{installer_version}": {
       "get": {
         "summary": "获取仓库中指定安装包",
         "operationId": "GetRepoInstaller",
@@ -801,7 +801,7 @@
         },
         "parameters": [
           {
-            "name": "repo_name",
+            "name": "repo",
             "description": "repo name",
             "in": "path",
             "required": true,
@@ -1020,7 +1020,7 @@
           "type": "string",
           "description": "installer version"
         },
-        "repo_name": {
+        "repo": {
           "type": "string",
           "description": "repository name"
         },
@@ -1072,7 +1072,7 @@
           "$ref": "#/definitions/v1ConfigurationSchemaType",
           "description": "configuration schema type"
         },
-        "configuration_file": {
+        "configuration": {
           "type": "string",
           "format": "byte",
           "description": "configuration file"

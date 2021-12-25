@@ -46,9 +46,9 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 				return nil
 			}
 			return &pb.Installer{
-				Name:     p.Installer.Name,
-				Version:  p.Installer.Version,
-				RepoName: p.Installer.Repo,
+				Name:    p.Installer.Name,
+				Version: p.Installer.Version,
+				Repo:    p.Installer.Repo,
 			}
 		}(),
 		ConsoleEntries: p.ConsoleEntries,

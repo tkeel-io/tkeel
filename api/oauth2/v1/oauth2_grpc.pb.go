@@ -19,7 +19,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type Oauth2Client interface {
-	// method RAW_DATA_RESPONSE
+	// TKEEL_COMMENT
+	// {"response":{"raw_data":true}}
 	IssuePluginToken(ctx context.Context, in *IssuePluginTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error)
 	AddPluginWhiteList(ctx context.Context, in *AddPluginWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	IssueAdminToken(ctx context.Context, in *IssueAdminTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error)
@@ -64,7 +65,8 @@ func (c *oauth2Client) IssueAdminToken(ctx context.Context, in *IssueAdminTokenR
 // All implementations must embed UnimplementedOauth2Server
 // for forward compatibility
 type Oauth2Server interface {
-	// method RAW_DATA_RESPONSE
+	// TKEEL_COMMENT
+	// {"response":{"raw_data":true}}
 	IssuePluginToken(context.Context, *IssuePluginTokenRequest) (*IssueTokenResponse, error)
 	AddPluginWhiteList(context.Context, *AddPluginWhiteListRequest) (*emptypb.Empty, error)
 	IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error)

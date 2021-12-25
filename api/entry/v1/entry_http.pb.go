@@ -21,6 +21,12 @@ import transportHTTP "github.com/tkeel-io/kit/transport/http"
 // is compatible with the tkeel package it is being compiled against.
 // import package.context.http.anypb.result.protojson.go_restful.errors.emptypb.
 
+var (
+	_ = protojson.MarshalOptions{}
+	_ = anypb.Any{}
+	_ = emptypb.Empty{}
+)
+
 type EntryHTTPServer interface {
 	GetEntries(context.Context, *emptypb.Empty) (*GetEntriesResponse, error)
 }

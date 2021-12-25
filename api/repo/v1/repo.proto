@@ -99,7 +99,7 @@ service Repo {
   rpc ListRepoInstaller(ListRepoInstallerRequest)
       returns (ListRepoInstallerResponse) {
     option (google.api.http) = {
-      get : "/repos/{repo_name}/installers"
+      get : "/repos/{repo}/installers"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "获取仓库中安装包列表接口"
@@ -129,7 +129,7 @@ service Repo {
   rpc GetRepoInstaller(GetRepoInstallerRequest)
       returns (GetRepoInstallerResponse) {
     option (google.api.http) = {
-      get : "/repos/{repo_name}/installers/{installer_name}/{installer_version}"
+      get : "/repos/{repo}/installers/{installer_name}/{installer_version}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "获取仓库中指定安装包"
@@ -210,7 +210,7 @@ message InstallerObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "configuration schema type"
       } ];
-  bytes configuration_file = 8
+  bytes configuration = 8
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "configuration file"
       } ];
@@ -260,7 +260,7 @@ message ListRepoResponse {
 }
 
 message ListRepoInstallerRequest {
-  string repo_name = 1
+  string repo = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo name"
       } ];
@@ -274,7 +274,7 @@ message ListRepoInstallerResponse {
 }
 
 message GetRepoInstallerRequest {
-  string repo_name = 1
+  string repo = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo name"
       } ];

@@ -26,7 +26,8 @@ option java_multiple_files = true;
 option java_package = "api.oauth2.v1";
 
 service Oauth2 {
-  // method RAW_DATA_RESPONSE
+  // TKEEL_COMMENT
+  // {"response":{"raw_data":true}}
   rpc IssuePluginToken(IssuePluginTokenRequest) returns (IssueTokenResponse) {
     option (google.api.http) = {
       post : "/oauth2/plugin"

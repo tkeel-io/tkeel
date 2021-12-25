@@ -28,7 +28,7 @@ service Plugin {
   rpc InstallPlugin(InstallPluginRequest) returns (InstallPluginResponse) {
     option (google.api.http) = {
       post : "/plugins/{id}"
-      body : "installer_info"
+      body : "installer"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "安装插件接口"
@@ -321,7 +321,7 @@ message Installer {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer version"
       } ];
-  string repo_name = 3
+  string repo = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repository name"
       } ];
@@ -396,7 +396,7 @@ message InstallPluginRequest {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "install plugin id"
       } ];
-  Installer installer_info = 2
+  Installer installer = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer info"
       } ];

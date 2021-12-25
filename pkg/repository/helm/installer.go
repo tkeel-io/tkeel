@@ -144,8 +144,8 @@ func (h Installer) Install(ops ...*repository.Option) error {
 
 	installer.Version = h.brief.Version
 
-	if err := checkIfInstallable(h.chart); err != nil {
-		return err
+	if err = checkIfInstallable(h.chart); err != nil {
+		return fmt.Errorf("error installer installable: %w", err)
 	}
 
 	if h.chart.Metadata.Deprecated {

@@ -21,6 +21,12 @@ import transportHTTP "github.com/tkeel-io/kit/transport/http"
 // is compatible with the tkeel package it is being compiled against.
 // import package.context.http.anypb.result.protojson.go_restful.errors.emptypb.
 
+var (
+	_ = protojson.MarshalOptions{}
+	_ = anypb.Any{}
+	_ = emptypb.Empty{}
+)
+
 type RepoHTTPServer interface {
 	CreateRepo(context.Context, *CreateRepoRequest) (*emptypb.Empty, error)
 	DeleteRepo(context.Context, *DeleteRepoRequest) (*DeleteRepoResponse, error)
@@ -344,8 +350,8 @@ func RegisterRepoHTTPServer(container *go_restful.Container, srv RepoHTTPServer)
 		To(handler.DeleteRepo))
 	ws.Route(ws.GET("/repos").
 		To(handler.ListRepo))
-	ws.Route(ws.GET("/repos/{repo_name}/installers").
+	ws.Route(ws.GET("/repos/{repo}/installers").
 		To(handler.ListRepoInstaller))
-	ws.Route(ws.GET("/repos/{repo_name}/installers/{installer_name}/{installer_version}").
+	ws.Route(ws.GET("/repos/{repo}/installers/{installer_name}/{installer_version}").
 		To(handler.GetRepoInstaller))
 }

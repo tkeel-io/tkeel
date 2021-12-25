@@ -21,6 +21,12 @@ import transportHTTP "github.com/tkeel-io/kit/transport/http"
 // is compatible with the tkeel package it is being compiled against.
 // import package.context.http.anypb.result.protojson.go_restful.errors.emptypb.
 
+var (
+	_ = protojson.MarshalOptions{}
+	_ = anypb.Any{}
+	_ = emptypb.Empty{}
+)
+
 type Oauth2HTTPServer interface {
 	AddPluginWhiteList(context.Context, *AddPluginWhiteListRequest) (*emptypb.Empty, error)
 	IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error)

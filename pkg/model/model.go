@@ -116,9 +116,9 @@ func (p *Plugin) Clone() *Plugin {
 		ConsoleEntries: func() []*openapi_v1.ConsoleEntry {
 			ret := make([]*openapi_v1.ConsoleEntry, 0, len(p.ConsoleEntries))
 			for _, v := range p.ConsoleEntries {
-				new := &openapi_v1.ConsoleEntry{}
-				consoleEntryClone(new, v)
-				ret = append(ret, new)
+				n := &openapi_v1.ConsoleEntry{}
+				consoleEntryClone(n, v)
+				ret = append(ret, n)
 			}
 			return ret
 		}(),
@@ -136,9 +136,9 @@ func consoleEntryClone(dst, src *openapi_v1.ConsoleEntry) {
 	dst.Children = func() []*openapi_v1.ConsoleEntry {
 		ret := make([]*openapi_v1.ConsoleEntry, 0, len(src.Children))
 		for _, v := range src.Children {
-			new := &openapi_v1.ConsoleEntry{}
-			consoleEntryClone(new, v)
-			ret = append(ret, new)
+			n := &openapi_v1.ConsoleEntry{}
+			consoleEntryClone(n, v)
+			ret = append(ret, n)
 		}
 		return ret
 	}()
