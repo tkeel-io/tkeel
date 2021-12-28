@@ -19,9 +19,9 @@ import (
 )
 
 var (
-	ErrKVExsist          = errors.New("error KV existed")
-	ErrKVNotExsist       = errors.New("error KV not existed")
-	ErrKVVersionMismatch = errors.New("error KV version mismatch")
+	ErrKVKeyExsist            = errors.New("error Key existed")
+	ErrKVKeyNotExsist         = errors.New("error Key not existed")
+	ErrKVStateVersionMismatch = errors.New("error KV state version mismatch")
 )
 
 // Operator contains all operations to KV.
