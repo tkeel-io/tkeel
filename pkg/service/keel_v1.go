@@ -127,6 +127,9 @@ func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr
 			},
 			v1.SecuritySubPath: {
 				"/apis/security/v1/oauth/token",
+				"/apis/security/v1/oauth/authorize",
+				"/apis/security/v1/oauth/authenticate",
+				"/apis/security/v1/oauth/on_code",
 			},
 		},
 	}
@@ -286,7 +289,7 @@ func (s *KeelServiceV1) getPluginIDFromRequest(req *restful.Request) (string, er
 	if pluginToken == "" {
 		return "", nil
 	}
-	payload, ok, err := s.secretProvider.Parse(pluginToken)
+	payload, ok, err := s.secretProvider.Parse(strings.TrimPrefix(pluginToken, "Bearer "))
 	if err != nil {
 		return "", fmt.Errorf("error parse plugin token(%s): %w", pluginToken, err)
 	}

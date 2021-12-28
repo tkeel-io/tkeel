@@ -257,10 +257,12 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 	}
 	gPluginRoute, err := s.pluginRouteOp.Get(ctx, req.Id)
 	if err != nil {
-		log.Errorf("error plugin(%s) route get: %s", req.Id, err)
 		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
-			return nil, pb.PluginErrPluginNotFound()
+			return &pb.GetPluginResponse{
+				Plugin: util.ConvertModel2PluginObjectPb(gPlugin, nil),
+			}, nil
 		}
+		log.Errorf("error plugin(%s) route get: %s", req.Id, err)
 		return nil, pb.PluginErrInternalStore()
 	}
 
@@ -664,15 +666,19 @@ func (s *PluginServiceV1) updateRegisterPlugin(ctx context.Context, resp *openap
 	secret string, oldPlugin *model.Plugin, tmpPluginRoute *model.PluginRoute) error {
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
+	var state openapi_v1.PluginStatus
 	statusResp, err := s.openapiClient.Status(ctx, resp.PluginId)
 	if err != nil {
 		return fmt.Errorf("error status(%s): %w", resp.PluginId, err)
 	}
 	if statusResp.Res.Ret != openapi_v1.Retcode_OK {
-		return fmt.Errorf("error status(%s): %s", resp.PluginId, statusResp.Res.Msg)
+		state = openapi_v1.PluginStatus_ERROR
+	} else {
+		state = statusResp.Status
 	}
 	tmpPlugin := oldPlugin.Clone()
 	oldPlugin.Register(resp, secret)
+	oldPlugin.State = state
 	err = s.pluginOp.Update(ctx, oldPlugin)
 	if err != nil {
 		return fmt.Errorf("error update plugin(%s): %w", oldPlugin, err)
@@ -689,7 +695,7 @@ func (s *PluginServiceV1) updateRegisterPlugin(ctx context.Context, resp *openap
 		}
 		return nil
 	})
-	tmpPluginRoute.Status = statusResp.Status
+	tmpPluginRoute.Status = state
 	err = s.pluginRouteOp.Update(ctx, tmpPluginRoute)
 	if err != nil {
 		return fmt.Errorf("error update tmp plugin route(%s): %w", tmpPluginRoute, err)

@@ -12,5 +12,5 @@ adminPassword: tKeelAdmin
 nodePort: 30777
 image:
   repository: tkeelio/rudder
-  tag: 0.2.0
+  tag: 0.3.0
   pullPolicy: Always

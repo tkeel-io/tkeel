@@ -134,7 +134,7 @@ func (s *Oauth2ServiceV1) genToken(sub string, tokenKV ...string) (token, jti st
 			return
 		}
 		for i := 0; i < len(tokenKV); i += 2 {
-			m[tokenKV[i]] = m[tokenKV[i+1]]
+			m[tokenKV[i]] = tokenKV[i+1]
 		}
 	}
 	duration := expires
