@@ -8,7 +8,7 @@ on:
         type: string
       go_version:
         description: go version in action
-        default: 1.17.3
+        default: ^1.17.5
         required: false
         type: string
       upload_require:
@@ -28,7 +28,7 @@ jobs:
         with:
           version: v1.42
   test:
-    name: Test in ${{ matrix.target_os }}_${{ matrix.target_arch }} with Go_${{ matrix.go }}
+    name: Test in ${{ matrix.target_os }}_${{ matrix.target_arch }} with Go_${{inputs.go_version}}
     runs-on: ${{ matrix.os }}
     needs: [ lint ]
     env:
@@ -38,7 +38,6 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macOS-latest ]
-        go: [ 1.17.3 ]
         target_arch: [ amd64 ]
         include:
           - os: ubuntu-latest
@@ -49,10 +48,10 @@ jobs:
             target_os: darwin
       fail-fast: false
     steps:
-      - name: Set up Go ${{ matrix.go }}
+      - name: Set up Go ${{inputs.go_version}}
         uses: actions/setup-go@v2.1.4
         with:
-          go-version: ${{ matrix.go }}
+          go-version: ${{inputs.go_version}}
       - name: Check out code
         uses: actions/checkout@v2
       - name: Run make go.mod check-diff

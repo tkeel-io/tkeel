@@ -395,35 +395,61 @@ func Test_initActionConfig(t *testing.T) {
 
 /*
 func TestSearch(t *testing.T) {
+	// Create Repo
 	info := repository.NewInfo("tkeel", _tkeelRepo, nil)
-	repo, err := NewHelmRepo(*info, Mem, "default")
+	repo, err := NewHelmRepo(*info, Secret, "default")
 	assert.Nil(t, err)
 
-	iothub, err := repo.Search("iothub")
+	// Search installable chart list
+	broker, err := repo.Search("core-broker")
 	assert.Nil(t, err)
 
-	assert.False(t, iothub[0].Installed)
-	fmt.Printf("%+v\n", iothub)
+	assert.False(t, broker[0].Installed)
+	fmt.Printf("%+v\n", broker)
 	fmt.Println()
 
-	i, err := repo.Get("iothub", "0.2.0")
+	// Get Detail install info
+	i, err := repo.Get("core-broker", "0.3.0")
 	assert.Nil(t, err)
 	fmt.Printf("%+v\n", i)
 
+	// Start install
 	fmt.Println("=== Run Install === ")
 	i.SetPluginID("test")
 	err = i.Install()
 	assert.Nil(t, err)
 
-	list, err := repo.Search("iothub")
+	// Assert installed status
+	list, err := repo.Search("core-broker")
 	assert.Nil(t, err)
 	fmt.Printf("%+v", list)
 	assert.True(t, list[0].Installed)
 
+	// Delete installed one
 	ti := NewHelmInstallerQuick("test", repo.Namespace(), repo.Config())
 	i = &ti
 	err = i.Uninstall()
 	assert.Nil(t, err)
+	fmt.Println("uninstall done")
+
+	// Try to install again
+	newInstaller, err := repo.Get("core-broker", "0.3.0")
+	assert.Nil(t, err)
+	newInstaller.SetPluginID("test")
+	err = newInstaller.Install()
+	assert.Nil(t, err)
+	fmt.Println("install same ID same chart done")
+	list, err = repo.Search("core-broker")
+	assert.Nil(t, err)
+	fmt.Printf("%+v", list)
+	assert.True(t, list[0].Installed)
+	fmt.Println("uninstall again done")
+	err = newInstaller.Uninstall()
+	assert.Nil(t, err)
+	list, err = repo.Search("core-broker")
+	assert.Nil(t, err)
+	fmt.Printf("%+v", list)
+	assert.False(t, list[0].Installed)
 }
 
 // Test Search / Install / Uninstall / Get.
