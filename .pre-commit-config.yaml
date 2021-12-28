@@ -1,0 +1,43 @@
+repos:
+  # ==========================================================================
+  # Golang Pre-Commit Hooks | https://github.com/tekwizely/pre-commit-golang
+  #
+  # !! ALL Hooks enabled by default - Comment out hooks you are not using
+  #
+  # Visit the project home page to learn more about the available Hooks,
+  # including useful arguments you might want to pass into them.
+  #
+  # NOTE: When passing options to hooks, if your options contain a reference
+  #       to an existing file, then you will need to use a trailing '--'
+  #       argument to separate the hook options from the modified-file list
+  #       that Pre-Commit passes into the hook.
+  #       For repo-based hooks, '--' is not needed.
+  #
+  # Consider adding aliases to longer-named hooks for easier CLI usage.
+  # ==========================================================================
+  -   repo: https://github.com/tekwizely/pre-commit-golang
+      rev: v1.0.0-beta.4
+      hooks:
+      #
+      # Go Tidy
+      -   id: go-mod-tidy
+      #
+      # Go Test
+      #
+      -   id: go-test-mod
+      #
+      # Go Vet
+      #
+      -   id: go-vet-mod
+      #
+      # Formatters
+      #
+      -   id: go-fmt
+      #
+      # GolangCI-Lint
+      # - Fast Multi-Linter
+      # - Can be configured to replace MOST other hooks
+      # - Supports repo config file for configuration
+      # - https://github.com/golangci/golangci-lint
+      #
+      -   id: golangci-lint-mod
