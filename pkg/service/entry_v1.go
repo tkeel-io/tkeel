@@ -33,12 +33,12 @@ func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.
 	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
 	if !ok {
 		log.Error("error get auth")
-		return nil, pb.EntryErrInvaildTenant()
+		return nil, pb.EntryErrInvalidTenant()
 	}
 	user := new(model.User)
 	if err := user.Base64Decode(auths[0]); err != nil {
 		log.Errorf("error decode auth(%s): %s", auths[0], err)
-		return nil, pb.EntryErrInvaildTenant()
+		return nil, pb.EntryErrInvalidTenant()
 	}
 	tbKey := model.GetTenantBindKey(user.Tenant)
 	vsb, _, err := s.kvOp.Get(ctx, tbKey)

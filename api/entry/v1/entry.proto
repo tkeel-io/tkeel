@@ -42,7 +42,7 @@ service entry {
         },
         {
           key : "400"
-          value : {description : "INVAILD_TENANT"}
+          value : {description : "INVALID_TENANT"}
         },
 
         {

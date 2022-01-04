@@ -551,7 +551,7 @@ func (s *PluginServiceV1) checkIdentify(ctx context.Context,
 			resp.PluginId, resp.TkeelVersion, err)
 	}
 	if !ok {
-		return fmt.Errorf("error plugin(%s) depend tkeel version(%s) not invaild",
+		return fmt.Errorf("error plugin(%s) depend tkeel version(%s) not invalid",
 			resp.PluginId, resp.TkeelVersion)
 	}
 	return nil

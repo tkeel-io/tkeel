@@ -30,7 +30,7 @@ enum Error {
   ENTRY_ERR_UNKNOWN = 0;
   // 无效的租户 ID
   // @code=INVALID_ARGUMENT
-  ENTRY_ERR_INVAILD_TENANT = 1;
+  ENTRY_ERR_INVALID_TENANT = 1;
   // 请求后端内部错误
   // @code=INTERNAL
   ENTRY_ERR_INTERNAL_ERROR = 2;

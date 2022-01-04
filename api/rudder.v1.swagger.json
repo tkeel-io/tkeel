@@ -37,7 +37,7 @@
             }
           },
           "400": {
-            "description": "INVAILD_TENANT",
+            "description": "INVALID_TENANT",
             "schema": {}
           },
           "500": {
@@ -108,7 +108,7 @@
             }
           },
           "400": {
-            "description": "INVAILD_PLUGIN_ID",
+            "description": "INVALID_PLUGIN_ID",
             "schema": {}
           },
           "500": {

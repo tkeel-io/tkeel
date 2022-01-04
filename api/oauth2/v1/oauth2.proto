@@ -48,7 +48,7 @@ service Oauth2 {
         },
         {
           key : "400"
-          value : {description : "INVAILD_PLUGIN_ID"}
+          value : {description : "INVALID_PLUGIN_ID"}
         },
 
         {

@@ -148,7 +148,7 @@ func (o *DaprStateOprator) Update(ctx context.Context, i *repository.Info) error
 	}
 	pr, ok := prIn.(*model.PluginRepo)
 	if !ok {
-		return errors.New("plugin repo invaild type")
+		return errors.New("plugin repo invalid type")
 	}
 	// get route map.
 	item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginRepoMap)
@@ -203,7 +203,7 @@ func (o *DaprStateOprator) Get(ctx context.Context, name string) (*repository.In
 	if ok {
 		pr, ok1 := prIn.(*model.PluginRepo)
 		if !ok1 {
-			return nil, errors.New("plugin repo invaild type")
+			return nil, errors.New("plugin repo invalid type")
 		}
 		return o.Model2Info(pr), nil
 	}

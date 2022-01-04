@@ -49,7 +49,7 @@ func newPluginHTTPHandler(s PluginHTTPServer) *PluginHTTPHandler {
 
 func (h *PluginHTTPHandler) BindTenants(req *go_restful.Request, resp *go_restful.Response) {
 	in := BindTenantsRequest{}
-	if err := transportHTTP.GetBody(req, &in); err != nil {
+	if err := transportHTTP.GetBody(req, &in.Extra); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
@@ -168,7 +168,7 @@ func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.
 
 func (h *PluginHTTPHandler) InstallPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := InstallPluginRequest{}
-	if err := transportHTTP.GetBody(req, &in); err != nil {
+	if err := transportHTTP.GetBody(req, &in.Installer); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
@@ -339,7 +339,7 @@ func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful
 
 func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_restful.Response) {
 	in := RegisterPluginRequest{}
-	if err := transportHTTP.GetBody(req, &in); err != nil {
+	if err := transportHTTP.GetBody(req, &in.Secret); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
