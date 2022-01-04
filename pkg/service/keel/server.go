@@ -14,15 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package proxy
+package keel
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
 
-	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/emicklei/go-restful"
 )
 
 type Reqeust struct {
@@ -42,16 +41,17 @@ func (p *Reqeust) String() string {
 	return string(b)
 }
 
-type PluginProxyServer interface {
-	// Watch watch for changes in the plugin proxy route map.
-	// Call the function and pass in the changed plugin proxy route map when it changes.
-	Watch(context.Context, func(model.PluginProxyRouteMap) error) error
+type ProxyServer interface {
+	// ProxyPlugin proxy plugin addons request.
+	ProxyAddons(resp http.ResponseWriter, req *http.Request) error
 	// ProxyPlugin proxy plugin request.
-	ProxyPlugin(ctx context.Context, resp http.ResponseWriter, req *Reqeust) error
+	ProxyPlugin(resp http.ResponseWriter, req *http.Request) error
 	// ProxyCore proxy core request.
-	ProxyCore(ctx context.Context, resp http.ResponseWriter, req *http.Request) error
+	ProxyCore(resp http.ResponseWriter, req *http.Request) error
 	// ProxyRudder proxy rudder request.
-	ProxyRudder(ctx context.Context, resp http.ResponseWriter, req *http.Request) error
+	ProxyRudder(resp http.ResponseWriter, req *http.Request) error
 	// ProxySecurity proxy security request.
-	ProxySecurity(ctx context.Context, resp http.ResponseWriter, req *http.Request) error
+	ProxySecurity(resp http.ResponseWriter, req *http.Request) error
+	// Filter Container filter.
+	Filter() restful.FilterFunction
 }

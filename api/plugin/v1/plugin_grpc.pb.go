@@ -25,6 +25,9 @@ type PluginClient interface {
 	UnregisterPlugin(ctx context.Context, in *UnregisterPluginRequest, opts ...grpc.CallOption) (*UnregisterPluginResponse, error)
 	GetPlugin(ctx context.Context, in *GetPluginRequest, opts ...grpc.CallOption) (*GetPluginResponse, error)
 	ListPlugin(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListPluginResponse, error)
+	BindTenants(ctx context.Context, in *BindTenantsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UnbindTenants(ctx context.Context, in *UnbindTenantsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ListBindTenants(ctx context.Context, in *ListBindTenantsRequest, opts ...grpc.CallOption) (*ListBindTenantsResponse, error)
 }
 
 type pluginClient struct {
@@ -89,6 +92,33 @@ func (c *pluginClient) ListPlugin(ctx context.Context, in *emptypb.Empty, opts .
 	return out, nil
 }
 
+func (c *pluginClient) BindTenants(ctx context.Context, in *BindTenantsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/api.plugin.v1.Plugin/BindTenants", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginClient) UnbindTenants(ctx context.Context, in *UnbindTenantsRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/api.plugin.v1.Plugin/UnbindTenants", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginClient) ListBindTenants(ctx context.Context, in *ListBindTenantsRequest, opts ...grpc.CallOption) (*ListBindTenantsResponse, error) {
+	out := new(ListBindTenantsResponse)
+	err := c.cc.Invoke(ctx, "/api.plugin.v1.Plugin/ListBindTenants", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServer is the server API for Plugin service.
 // All implementations must embed UnimplementedPluginServer
 // for forward compatibility
@@ -99,6 +129,9 @@ type PluginServer interface {
 	UnregisterPlugin(context.Context, *UnregisterPluginRequest) (*UnregisterPluginResponse, error)
 	GetPlugin(context.Context, *GetPluginRequest) (*GetPluginResponse, error)
 	ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error)
+	BindTenants(context.Context, *BindTenantsRequest) (*emptypb.Empty, error)
+	UnbindTenants(context.Context, *UnbindTenantsRequest) (*emptypb.Empty, error)
+	ListBindTenants(context.Context, *ListBindTenantsRequest) (*ListBindTenantsResponse, error)
 	mustEmbedUnimplementedPluginServer()
 }
 
@@ -123,6 +156,15 @@ func (UnimplementedPluginServer) GetPlugin(context.Context, *GetPluginRequest) (
 }
 func (UnimplementedPluginServer) ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPlugin not implemented")
+}
+func (UnimplementedPluginServer) BindTenants(context.Context, *BindTenantsRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BindTenants not implemented")
+}
+func (UnimplementedPluginServer) UnbindTenants(context.Context, *UnbindTenantsRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnbindTenants not implemented")
+}
+func (UnimplementedPluginServer) ListBindTenants(context.Context, *ListBindTenantsRequest) (*ListBindTenantsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListBindTenants not implemented")
 }
 func (UnimplementedPluginServer) mustEmbedUnimplementedPluginServer() {}
 
@@ -245,6 +287,60 @@ func _Plugin_ListPlugin_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Plugin_BindTenants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BindTenantsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).BindTenants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.plugin.v1.Plugin/BindTenants",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).BindTenants(ctx, req.(*BindTenantsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Plugin_UnbindTenants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnbindTenantsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).UnbindTenants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.plugin.v1.Plugin/UnbindTenants",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).UnbindTenants(ctx, req.(*UnbindTenantsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Plugin_ListBindTenants_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListBindTenantsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).ListBindTenants(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.plugin.v1.Plugin/ListBindTenants",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).ListBindTenants(ctx, req.(*ListBindTenantsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Plugin_ServiceDesc is the grpc.ServiceDesc for Plugin service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -275,6 +371,18 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListPlugin",
 			Handler:    _Plugin_ListPlugin_Handler,
+		},
+		{
+			MethodName: "BindTenants",
+			Handler:    _Plugin_BindTenants_Handler,
+		},
+		{
+			MethodName: "UnbindTenants",
+			Handler:    _Plugin_UnbindTenants_Handler,
+		},
+		{
+			MethodName: "ListBindTenants",
+			Handler:    _Plugin_ListBindTenants_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

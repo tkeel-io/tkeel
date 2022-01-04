@@ -16,6 +16,8 @@ var oauth2ErrSecretNotMatch *errors.TError
 var oauth2ErrClientIdAlreadyExists *errors.TError
 var oauth2ErrInvaildPluginId *errors.TError
 var oauth2ErrInternalStore *errors.TError
+var oauth2ErrInternalError *errors.TError
+var oauth2ErrPasswordNotMatch *errors.TError
 
 func init() {
 	oauth2ErrUnknown = errors.New(int(codes.Unknown), "oauth2.v1.OAUTH2_ERR_UNKNOWN", Error_OAUTH2_ERR_UNKNOWN.String())
@@ -28,6 +30,10 @@ func init() {
 	errors.Register(oauth2ErrInvaildPluginId)
 	oauth2ErrInternalStore = errors.New(int(codes.Internal), "oauth2.v1.OAUTH2_ERR_INTERNAL_STORE", Error_OAUTH2_ERR_INTERNAL_STORE.String())
 	errors.Register(oauth2ErrInternalStore)
+	oauth2ErrInternalError = errors.New(int(codes.Internal), "oauth2.v1.OAUTH2_ERR_INTERNAL_ERROR", Error_OAUTH2_ERR_INTERNAL_ERROR.String())
+	errors.Register(oauth2ErrInternalError)
+	oauth2ErrPasswordNotMatch = errors.New(int(codes.InvalidArgument), "oauth2.v1.OAUTH2_ERR_PASSWORD_NOT_MATCH", Error_OAUTH2_ERR_PASSWORD_NOT_MATCH.String())
+	errors.Register(oauth2ErrPasswordNotMatch)
 }
 
 func Oauth2ErrUnknown() errors.Error {
@@ -48,4 +54,12 @@ func Oauth2ErrInvaildPluginId() errors.Error {
 
 func Oauth2ErrInternalStore() errors.Error {
 	return oauth2ErrInternalStore
+}
+
+func Oauth2ErrInternalError() errors.Error {
+	return oauth2ErrInternalError
+}
+
+func Oauth2ErrPasswordNotMatch() errors.Error {
+	return oauth2ErrPasswordNotMatch
 }

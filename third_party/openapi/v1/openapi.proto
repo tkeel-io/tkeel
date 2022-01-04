@@ -68,6 +68,16 @@ message ImplementedPlugin {
   repeated ImplementedAddons addons = 2; // implemented addons point list.
 }
 
+// plugin console entry.
+message ConsoleEntry {
+  string id = 1;
+  string name = 2;
+  string icon = 3;
+  string path = 4;
+  string entry = 5;
+  repeated ConsoleEntry children = 6;
+}
+
 /**
  * The response value of the GET /v1/identify,
  * used when the plugin registered.
@@ -79,7 +89,8 @@ message IdentifyResponse {
   string tkeel_version = 4; // register plugin depend tkeel version.
   repeated AddonsPoint addons_point = 5; // register plugin declares addons.
   repeated ImplementedPlugin implemented_plugin =
-      6; // register plugin implemented plugin list.
+      6;                             // register plugin implemented plugin list.
+  repeated ConsoleEntry entries = 7; // register entries.
 }
 
 /**

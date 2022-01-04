@@ -4,6 +4,7 @@ package api.repo.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/any.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/repo/v1;v1";
@@ -13,7 +14,7 @@ option java_package = "api.repo.v1";
 service Repo {
   rpc CreateRepo(CreateRepoRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      put : "/repos/{name}"
+      post : "/repos/{name}"
       body : "url"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -98,7 +99,7 @@ service Repo {
   rpc ListRepoInstaller(ListRepoInstallerRequest)
       returns (ListRepoInstallerResponse) {
     option (google.api.http) = {
-      get : "/repos/{repo_name}/installers"
+      get : "/repos/{repo}/installers"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "获取仓库中安装包列表接口"
@@ -128,7 +129,7 @@ service Repo {
   rpc GetRepoInstaller(GetRepoInstallerRequest)
       returns (GetRepoInstallerResponse) {
     option (google.api.http) = {
-      get : "/repos/{repo_name}/installers/{installer_name}/{installer_version}"
+      get : "/repos/{repo}/installers/{installer_name}/{installer_version}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "获取仓库中指定安装包"
@@ -169,7 +170,7 @@ message RepoObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo url"
       } ];
-  bytes annotations = 3
+  map<string, google.protobuf.Any> annotations = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo annotations"
       } ];
@@ -193,7 +194,7 @@ message InstallerObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer repo"
       } ];
-  bytes annotations = 4
+  map<string, google.protobuf.Any> annotations = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo annotations"
       } ];
@@ -259,7 +260,7 @@ message ListRepoResponse {
 }
 
 message ListRepoInstallerRequest {
-  string repo_name = 1
+  string repo = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo name"
       } ];
@@ -273,7 +274,7 @@ message ListRepoInstallerResponse {
 }
 
 message GetRepoInstallerRequest {
-  string repo_name = 1
+  string repo = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo name"
       } ];

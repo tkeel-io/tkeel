@@ -10,6 +10,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/hub"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/repository/helm"
+	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -62,9 +63,9 @@ func (s *RepoService) ListRepo(ctx context.Context, req *emptypb.Empty) (*pb.Lis
 
 func (s *RepoService) ListRepoInstaller(ctx context.Context,
 	req *pb.ListRepoInstallerRequest) (*pb.ListRepoInstallerResponse, error) {
-	repo, err := hub.GetInstance().Get(req.RepoName)
+	repo, err := hub.GetInstance().Get(req.Repo)
 	if err != nil {
-		log.Errorf("error hub get repo(%s): %s", req.RepoName, err)
+		log.Errorf("error hub get repo(%s): %s", req.Repo, err)
 		if errors.Is(err, hub.ErrRepoNotFound) {
 			return nil, pb.ErrRepoNotFound()
 		}
@@ -72,7 +73,7 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 	installers, err := repo.Search("*")
 	if err != nil {
 		log.Errorf("error repo(%s) search * get all installer err: %s",
-			req.RepoName, err)
+			req.Repo, err)
 		return nil, pb.ErrInternalError()
 	}
 	return &pb.ListRepoInstallerResponse{
@@ -88,9 +89,9 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 
 func (s *RepoService) GetRepoInstaller(ctx context.Context,
 	req *pb.GetRepoInstallerRequest) (*pb.GetRepoInstallerResponse, error) {
-	repo, err := hub.GetInstance().Get(req.RepoName)
+	repo, err := hub.GetInstance().Get(req.Repo)
 	if err != nil {
-		log.Errorf("error hub get repo(%s): %s", req.RepoName, err)
+		log.Errorf("error hub get repo(%s): %s", req.Repo, err)
 		if errors.Is(err, hub.ErrRepoNotFound) {
 			return nil, pb.ErrRepoNotFound()
 		}
@@ -110,17 +111,19 @@ func convertRepo2PB(r repository.Repository) *pb.RepoObject {
 	return &pb.RepoObject{
 		Name: r.Info().Name,
 		Url:  r.Info().URL,
-		Annotations: func() []byte {
-			if r.Info().Annotations == nil {
-				return nil
+		Annotations: func() map[string]*anypb.Any {
+			ret := make(map[string]*anypb.Any)
+			for k, v := range r.Info().Annotations {
+				b, err := json.Marshal(v)
+				if err != nil {
+					log.Errorf("error parse installer(%s) annotasions key(%s): %s", r.Info().Name, k, err)
+					continue
+				}
+				ret[k] = &anypb.Any{
+					Value: b,
+				}
 			}
-			b, err := json.Marshal(r.Info().Annotations)
-			if err != nil {
-				log.Errorf("error marshal repo annotasion(%v) err: %s",
-					r.Info().Annotations, err)
-				return nil
-			}
-			return b
+			return ret
 		}(),
 	}
 }
@@ -140,74 +143,106 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 		return nil
 	}
 	return &pb.InstallerObject{
-		Name:      ib.Name,
-		Version:   ib.Version,
-		Repo:      ib.Repo,
-		Installed: ib.Installed,
-		Readme: func() []byte {
-			inAn := i.Annotations()
-			if inAn == nil {
-				return nil
-			}
-			b, ok := inAn[helm.ReadmeFileNameKey].([]byte)
-			if !ok {
-				log.Errorf("error installer(%s) readme invaild type", ib)
-				return nil
-			}
-			return b
-		}(),
-		ConfigurationSchema: func() []byte {
-			inAn := i.Annotations()
-			if inAn == nil {
-				return nil
-			}
-			b, ok := inAn[helm.ValuesSchemaKey].([]byte)
-			if !ok {
-				log.Errorf("error installer(%s) configuration schema file invaild type", ib)
-				return nil
-			}
-			return b
-		}(),
-		SchemaType: func() pb.ConfigurationSchemaType {
-			inAn := i.Annotations()
-			if inAn == nil {
-				return pb.ConfigurationSchemaType_JSON
-			}
-			i, ok := inAn["VALUES.SCHEMA.TYPE"].(int)
-			if !ok {
-				log.Errorf("error installer(%s) configuration schema file invaild type", ib)
-				return pb.ConfigurationSchemaType_JSON
-			}
-			return pb.ConfigurationSchemaType(i)
-		}(),
-		Annotations: func() []byte {
-			inAn := i.Annotations()
-			if inAn == nil {
-				return nil
-			}
-			delete(inAn, helm.ReadmeFileNameKey)
-			delete(inAn, helm.ValuesSchemaKey)
-			delete(inAn, "VALUES.SCHEMA.TYPE")
-			b, err := json.Marshal(inAn)
-			if err != nil {
-				log.Errorf("error marshal installer annotasion(%v) err: %s",
-					inAn, err)
-				return nil
-			}
-			return b
-		}(),
-		Configuration: func() []byte {
-			for _, v := range i.Options() {
-				if v.Key == "Values.yaml" {
-					b, ok := v.Value.([]byte)
-					if !ok {
-						log.Errorf("error installer(%s) values.yaml file invaild type", ib)
-						return nil
-					}
-					return b
-				}
-			}
-			return nil
-		}(),
+		Name:                ib.Name,
+		Version:             ib.Version,
+		Repo:                ib.Repo,
+		Installed:           ib.Installed,
+		Readme:              pbReadme(i),
+		ConfigurationSchema: pbConfigurationSchame(i),
+		SchemaType:          pbConfigurationType(i),
+		Configuration:       pbConfiguration(i),
+		Annotations:         pbAnnotations(i),
 	}
+}
+
+func pbReadme(i repository.Installer) []byte {
+	inAn := i.Annotations()
+	if inAn == nil {
+		return nil
+	}
+	bIn, ok := inAn[helm.ReadmeFileNameKey]
+	if !ok {
+		return nil
+	}
+	b, ok := bIn.([]byte)
+	if !ok {
+		log.Errorf("error installer(%s) readme invaild type", i)
+		return nil
+	}
+	return b
+}
+
+func pbConfigurationSchame(i repository.Installer) []byte {
+	inAn := i.Annotations()
+	if inAn == nil {
+		return nil
+	}
+	bIn, ok := inAn[helm.ValuesSchemaKey]
+	if !ok {
+		return nil
+	}
+	b, ok := bIn.([]byte)
+	if !ok {
+		log.Errorf("error installer(%s) configuration schema file invaild type", i)
+		return nil
+	}
+	return b
+}
+
+func pbConfigurationType(i repository.Installer) pb.ConfigurationSchemaType {
+	inAn := i.Annotations()
+	if inAn == nil {
+		return pb.ConfigurationSchemaType_JSON
+	}
+	iIn, ok := inAn["VALUES.SCHEMA.TYPE"]
+	if !ok {
+		return pb.ConfigurationSchemaType_JSON
+	}
+	ii, ok := iIn.(int)
+	if !ok {
+		log.Errorf("error installer(%s) configuration schema file invaild type", ii)
+		return pb.ConfigurationSchemaType_JSON
+	}
+	return pb.ConfigurationSchemaType(ii)
+}
+
+func pbConfiguration(i repository.Installer) []byte {
+	inAn := i.Annotations()
+	if inAn == nil {
+		return nil
+	}
+	valueIn, ok := inAn[helm.ValuesKey]
+	if !ok {
+		return nil
+	}
+	value, ok := valueIn.([]byte)
+	if !ok {
+		log.Errorf("error installer(%s) configuration file type invaild", i.Brief().Name)
+	}
+	return value
+}
+
+func pbAnnotations(i repository.Installer) map[string]*anypb.Any {
+	inAn := i.Annotations()
+	if inAn == nil {
+		return nil
+	}
+	ret := make(map[string]*anypb.Any)
+	for k, v := range inAn {
+		if k == helm.ReadmeFileNameKey ||
+			k == helm.ValuesSchemaKey ||
+			k == helm.ValuesKey ||
+			k == "VALUES.SCHEMA.TYPE" {
+			continue
+		}
+		b, err := json.Marshal(v)
+		if err != nil {
+			log.Errorf("error parse installer(%s) annotasions key(%s): %s", i.Brief().Name, k, err)
+			continue
+		}
+		ret[k] = &anypb.Any{
+			Value: b,
+		}
+	}
+	return ret
 }

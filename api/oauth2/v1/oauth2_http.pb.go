@@ -6,23 +6,31 @@ package v1
 
 import (
 	context "context"
-	json "encoding/json"
 	go_restful "github.com/emicklei/go-restful"
 	errors "github.com/tkeel-io/kit/errors"
+	result "github.com/tkeel-io/kit/result"
+	protojson "google.golang.org/protobuf/encoding/protojson"
+	anypb "google.golang.org/protobuf/types/known/anypb"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
-	reflect "reflect"
 )
 
 import transportHTTP "github.com/tkeel-io/kit/transport/http"
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the tkeel package it is being compiled against.
-// import package.context.http.reflect.go_restful.json.errors.emptypb.
+// import package.context.http.anypb.result.protojson.go_restful.errors.emptypb.
+
+var (
+	_ = protojson.MarshalOptions{}
+	_ = anypb.Any{}
+	_ = emptypb.Empty{}
+)
 
 type Oauth2HTTPServer interface {
-	AddWhiteList(context.Context, *AddWhiteListRequest) (*emptypb.Empty, error)
-	IssueOauth2Token(context.Context, *IssueOauth2TokenRequest) (*IssueOauth2TokenResponse, error)
+	AddPluginWhiteList(context.Context, *AddPluginWhiteListRequest) (*emptypb.Empty, error)
+	IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error)
+	IssuePluginToken(context.Context, *IssuePluginTokenRequest) (*IssueTokenResponse, error)
 }
 
 type Oauth2HTTPHandler struct {
@@ -33,68 +41,129 @@ func newOauth2HTTPHandler(s Oauth2HTTPServer) *Oauth2HTTPHandler {
 	return &Oauth2HTTPHandler{srv: s}
 }
 
-func (h *Oauth2HTTPHandler) AddWhiteList(req *go_restful.Request, resp *go_restful.Response) {
-	in := AddWhiteListRequest{}
+func (h *Oauth2HTTPHandler) AddPluginWhiteList(req *go_restful.Request, resp *go_restful.Response) {
+	in := AddPluginWhiteListRequest{}
 	if err := transportHTTP.GetBody(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.AddWhiteList(ctx, &in)
+	out, err := h.srv.AddPluginWhiteList(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
+	anyOut, err := anypb.New(out)
 	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
 		return
 	}
-	_, err = resp.Write(result)
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
 	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
 		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
 	}
 }
 
-func (h *Oauth2HTTPHandler) IssueOauth2Token(req *go_restful.Request, resp *go_restful.Response) {
-	in := IssueOauth2TokenRequest{}
-	if err := transportHTTP.GetBody(req, &in); err != nil {
-		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+func (h *Oauth2HTTPHandler) IssueAdminToken(req *go_restful.Request, resp *go_restful.Response) {
+	in := IssueAdminTokenRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.IssueOauth2Token(ctx, &in)
+	out, err := h.srv.IssueAdminToken(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteErrorString(httpCode, tErr.Message)
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
 		return
 	}
-	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
-		resp.WriteHeader(http.StatusNoContent)
-		return
-	}
-	result, err := json.Marshal(out)
+	anyOut, err := anypb.New(out)
 	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
 		return
 	}
-	_, err = resp.Write(result)
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
 	if err != nil {
-		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
 		return
 	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *Oauth2HTTPHandler) IssuePluginToken(req *go_restful.Request, resp *go_restful.Response) {
+	in := IssuePluginTokenRequest{}
+	if err := transportHTTP.GetBody(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.IssuePluginToken(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	resp.WriteHeaderAndJson(http.StatusOK, out, "application/json")
 }
 
 func RegisterOauth2HTTPServer(container *go_restful.Container, srv Oauth2HTTPServer) {
@@ -113,8 +182,10 @@ func RegisterOauth2HTTPServer(container *go_restful.Container, srv Oauth2HTTPSer
 	}
 
 	handler := newOauth2HTTPHandler(srv)
-	ws.Route(ws.POST("/oauth2").
-		To(handler.IssueOauth2Token))
-	ws.Route(ws.POST("/oauth2/white-list").
-		To(handler.AddWhiteList))
+	ws.Route(ws.POST("/oauth2/plugin").
+		To(handler.IssuePluginToken))
+	ws.Route(ws.POST("/oauth2/plugin/white-list").
+		To(handler.AddPluginWhiteList))
+	ws.Route(ws.GET("/oauth2/admin").
+		To(handler.IssueAdminToken))
 }

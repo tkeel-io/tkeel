@@ -28,7 +28,7 @@ service Plugin {
   rpc InstallPlugin(InstallPluginRequest) returns (InstallPluginResponse) {
     option (google.api.http) = {
       post : "/plugins/{id}"
-      body : "installer_info"
+      body : "installer"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "安装插件接口"
@@ -214,6 +214,80 @@ service Plugin {
       ]
     };
   };
+  rpc BindTenants(BindTenantsRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/plugins/{id}/tenants"
+      body : "extra"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "插件绑定租户接口"
+      operation_id : "BindTenants"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
+  rpc UnbindTenants(UnbindTenantsRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/plugins/{id}/tenants"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "插件绑定租户接口"
+      operation_id : "UnindTenants"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
+  rpc ListBindTenants(ListBindTenantsRequest)
+      returns (ListBindTenantsResponse) {
+    option (google.api.http) = {
+      get : "/plugins/{id}/tenants"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "获取插件绑定租户接口"
+      operation_id : "ListBindTenants"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
 }
 
 /**
@@ -228,16 +302,6 @@ message RegisterAddons {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "upstream path"
       } ]; // upstream path.
-}
-
-/**
- * Secret.
- **/
-message Secret {
-  string data = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin registered secret data"
-      } ];
 }
 
 enum ConfigurationType {
@@ -257,7 +321,7 @@ message Installer {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer version"
       } ];
-  string repo_name = 3
+  string repo = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repository name"
       } ];
@@ -295,7 +359,7 @@ message PluginObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin implemented plugin list"
       } ]; // plugin implemented plugin list.
-  Secret secret = 6
+  string secret = 6
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin registered secret"
       } ]; // plugin registered secret.
@@ -321,6 +385,10 @@ message PluginObject {
                     "installed field."
     }
   ]; // register plugin status.
+  repeated openapi.v1.ConsoleEntry console_entries = 12
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin console entries"
+      } ];
 }
 
 message InstallPluginRequest {
@@ -328,7 +396,7 @@ message InstallPluginRequest {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "install plugin id"
       } ];
-  Installer installer_info = 2
+  Installer installer = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer info"
       } ];
@@ -372,7 +440,7 @@ message RegisterPluginRequest {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
       } ];
-  Secret secret = 2
+  string secret = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin register secret"
       } ];
@@ -395,5 +463,41 @@ message ListPluginResponse {
   repeated PluginObject plugin_list = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin object list"
+      } ];
+}
+
+message BindTenantsRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+  bytes extra = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "extra data"
+      } ];
+}
+
+message UnbindTenantsRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+  bytes extra = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "extra data"
+      } ];
+}
+
+message ListBindTenantsRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin id"
+      } ];
+}
+
+message ListBindTenantsResponse {
+  repeated string tenants = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin bind tenants list"
       } ];
 }

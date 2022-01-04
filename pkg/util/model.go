@@ -14,11 +14,14 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 		TkeelVersion:      p.TkeelVersion,
 		AddonsPoint:       p.AddonsPoint,
 		ImplementedPlugin: p.ImplementedPlugin,
-		Secret: &pb.Secret{
-			Data: p.Secret.Data,
-		},
+		Secret:            p.Secret,
 		RegisterTimestamp: p.RegisterTimestamp,
-		ActiveTenantes:    p.ActiveTenantes,
+		ActiveTenantes: func() []string {
+			if pr == nil {
+				return nil
+			}
+			return pr.ActiveTenantes
+		}(),
 		RegisterAddons: func() []*pb.RegisterAddons {
 			if pr == nil {
 				return nil
@@ -43,11 +46,12 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 				return nil
 			}
 			return &pb.Installer{
-				Name:     p.Installer.Name,
-				Version:  p.Installer.Version,
-				RepoName: p.Installer.Repo,
+				Name:    p.Installer.Name,
+				Version: p.Installer.Version,
+				Repo:    p.Installer.Repo,
 			}
 		}(),
+		ConsoleEntries: p.ConsoleEntries,
 	}
 }
 

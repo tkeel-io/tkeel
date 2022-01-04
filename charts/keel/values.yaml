@@ -11,5 +11,6 @@ appPort: 31234
 nodePort: 30707
 image:
   repository: tkeelio/keel
-  tag: 0.2.0
+  tag: 0.3.0
   pullPolicy: Always
+watchInterval: 5s

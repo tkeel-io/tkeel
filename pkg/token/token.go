@@ -80,9 +80,9 @@ func (idp *BasicJWTIdentityProvider) Token(sub, jti string, d time.Duration, m m
 		jti = uuid.New().String()
 	}
 	m["sub"] = sub
-	m["iss"] = "manager"
+	m["iss"] = "rudder"
 	m["nbf"] = now
-	m["aud"] = "keel"
+	m["aud"] = "tKeel"
 	m["iat"] = now
 	m["exp"] = exp
 	m["jti"] = jti
@@ -96,7 +96,18 @@ func (idp *BasicJWTIdentityProvider) Token(sub, jti string, d time.Duration, m m
 	return
 }
 
-func (idp *BasicJWTIdentityProvider) Validate(tokenStr string) (map[string]interface{}, error) {
+func (idp *BasicJWTIdentityProvider) ParseUnverified(tokenStr string) (map[string]interface{}, error) {
+	token, _, err := new(jwt.Parser).ParseUnverified(tokenStr, &jwt.MapClaims{})
+	if err != nil {
+		return nil, fmt.Errorf("error parse(%s) unverified: %w", tokenStr, err)
+	}
+	if claims, ok := token.Claims.(*jwt.MapClaims); ok {
+		return *claims, nil
+	}
+	return nil, ErrUnauthorizedAccess
+}
+
+func (idp *BasicJWTIdentityProvider) Parse(tokenStr string) (map[string]interface{}, bool, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if idp.rsapub != nil {
 			return idp.rsapub, nil
@@ -104,12 +115,12 @@ func (idp *BasicJWTIdentityProvider) Validate(tokenStr string) (map[string]inter
 		return idp.secret, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error jwt parsh with claims: %w", err)
+		return nil, false, fmt.Errorf("error jwt parsh with claims: %w", err)
 	}
-	if claims, ok := token.Claims.(*jwt.MapClaims); ok && token.Valid {
-		return *claims, nil
+	if claims, ok := token.Claims.(*jwt.MapClaims); ok {
+		return *claims, token.Valid, nil
 	}
-	return nil, ErrUnauthorizedAccess
+	return nil, false, ErrUnauthorizedAccess
 }
 
 func (idp *BasicJWTIdentityProvider) hsGen(claims jwt.MapClaims) (string, error) {

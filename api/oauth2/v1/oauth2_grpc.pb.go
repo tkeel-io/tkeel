@@ -19,8 +19,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type Oauth2Client interface {
-	IssueOauth2Token(ctx context.Context, in *IssueOauth2TokenRequest, opts ...grpc.CallOption) (*IssueOauth2TokenResponse, error)
-	AddWhiteList(ctx context.Context, in *AddWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// TKEEL_COMMENT
+	// {"response":{"raw_data":true}}
+	IssuePluginToken(ctx context.Context, in *IssuePluginTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error)
+	AddPluginWhiteList(ctx context.Context, in *AddPluginWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	IssueAdminToken(ctx context.Context, in *IssueAdminTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error)
 }
 
 type oauth2Client struct {
@@ -31,18 +34,27 @@ func NewOauth2Client(cc grpc.ClientConnInterface) Oauth2Client {
 	return &oauth2Client{cc}
 }
 
-func (c *oauth2Client) IssueOauth2Token(ctx context.Context, in *IssueOauth2TokenRequest, opts ...grpc.CallOption) (*IssueOauth2TokenResponse, error) {
-	out := new(IssueOauth2TokenResponse)
-	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/IssueOauth2Token", in, out, opts...)
+func (c *oauth2Client) IssuePluginToken(ctx context.Context, in *IssuePluginTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error) {
+	out := new(IssueTokenResponse)
+	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/IssuePluginToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *oauth2Client) AddWhiteList(ctx context.Context, in *AddWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *oauth2Client) AddPluginWhiteList(ctx context.Context, in *AddPluginWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/AddWhiteList", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/AddPluginWhiteList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *oauth2Client) IssueAdminToken(ctx context.Context, in *IssueAdminTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error) {
+	out := new(IssueTokenResponse)
+	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/IssueAdminToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -53,8 +65,11 @@ func (c *oauth2Client) AddWhiteList(ctx context.Context, in *AddWhiteListRequest
 // All implementations must embed UnimplementedOauth2Server
 // for forward compatibility
 type Oauth2Server interface {
-	IssueOauth2Token(context.Context, *IssueOauth2TokenRequest) (*IssueOauth2TokenResponse, error)
-	AddWhiteList(context.Context, *AddWhiteListRequest) (*emptypb.Empty, error)
+	// TKEEL_COMMENT
+	// {"response":{"raw_data":true}}
+	IssuePluginToken(context.Context, *IssuePluginTokenRequest) (*IssueTokenResponse, error)
+	AddPluginWhiteList(context.Context, *AddPluginWhiteListRequest) (*emptypb.Empty, error)
+	IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error)
 	mustEmbedUnimplementedOauth2Server()
 }
 
@@ -62,11 +77,14 @@ type Oauth2Server interface {
 type UnimplementedOauth2Server struct {
 }
 
-func (UnimplementedOauth2Server) IssueOauth2Token(context.Context, *IssueOauth2TokenRequest) (*IssueOauth2TokenResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method IssueOauth2Token not implemented")
+func (UnimplementedOauth2Server) IssuePluginToken(context.Context, *IssuePluginTokenRequest) (*IssueTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IssuePluginToken not implemented")
 }
-func (UnimplementedOauth2Server) AddWhiteList(context.Context, *AddWhiteListRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddWhiteList not implemented")
+func (UnimplementedOauth2Server) AddPluginWhiteList(context.Context, *AddPluginWhiteListRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddPluginWhiteList not implemented")
+}
+func (UnimplementedOauth2Server) IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IssueAdminToken not implemented")
 }
 func (UnimplementedOauth2Server) mustEmbedUnimplementedOauth2Server() {}
 
@@ -81,38 +99,56 @@ func RegisterOauth2Server(s grpc.ServiceRegistrar, srv Oauth2Server) {
 	s.RegisterService(&Oauth2_ServiceDesc, srv)
 }
 
-func _Oauth2_IssueOauth2Token_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IssueOauth2TokenRequest)
+func _Oauth2_IssuePluginToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IssuePluginTokenRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(Oauth2Server).IssueOauth2Token(ctx, in)
+		return srv.(Oauth2Server).IssuePluginToken(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.oauth2.v1.Oauth2/IssueOauth2Token",
+		FullMethod: "/api.oauth2.v1.Oauth2/IssuePluginToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(Oauth2Server).IssueOauth2Token(ctx, req.(*IssueOauth2TokenRequest))
+		return srv.(Oauth2Server).IssuePluginToken(ctx, req.(*IssuePluginTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Oauth2_AddWhiteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddWhiteListRequest)
+func _Oauth2_AddPluginWhiteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddPluginWhiteListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(Oauth2Server).AddWhiteList(ctx, in)
+		return srv.(Oauth2Server).AddPluginWhiteList(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.oauth2.v1.Oauth2/AddWhiteList",
+		FullMethod: "/api.oauth2.v1.Oauth2/AddPluginWhiteList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(Oauth2Server).AddWhiteList(ctx, req.(*AddWhiteListRequest))
+		return srv.(Oauth2Server).AddPluginWhiteList(ctx, req.(*AddPluginWhiteListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Oauth2_IssueAdminToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IssueAdminTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Oauth2Server).IssueAdminToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.oauth2.v1.Oauth2/IssueAdminToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Oauth2Server).IssueAdminToken(ctx, req.(*IssueAdminTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -125,12 +161,16 @@ var Oauth2_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*Oauth2Server)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "IssueOauth2Token",
-			Handler:    _Oauth2_IssueOauth2Token_Handler,
+			MethodName: "IssuePluginToken",
+			Handler:    _Oauth2_IssuePluginToken_Handler,
 		},
 		{
-			MethodName: "AddWhiteList",
-			Handler:    _Oauth2_AddWhiteList_Handler,
+			MethodName: "AddPluginWhiteList",
+			Handler:    _Oauth2_AddPluginWhiteList_Handler,
+		},
+		{
+			MethodName: "IssueAdminToken",
+			Handler:    _Oauth2_IssueAdminToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

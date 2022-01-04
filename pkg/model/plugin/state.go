@@ -30,12 +30,12 @@ import (
 
 const (
 	KeyPrefixPlugin = "p_"
-	KeyAllPlugin    = "all_register_plugin"
+	KeyAllPlugin    = "all_plugins"
 )
 
-type AllRegisterPlugins map[string]string
+type AllPlugins map[string]string
 
-func (a *AllRegisterPlugins) String() string {
+func (a *AllPlugins) String() string {
 	b, err := json.Marshal(a)
 	if err != nil {
 		return err.Error()
@@ -64,7 +64,7 @@ func (o *DaprStateOprator) Create(ctx context.Context, p *model.Plugin) error {
 	if err != nil {
 		return fmt.Errorf("error dapr state oprator create(%s) plugin get all plugin: %w", p.ID, err)
 	}
-	allPs := make(AllRegisterPlugins)
+	allPs := make(AllPlugins)
 	if item.Etag != "" {
 		if err = json.Unmarshal(item.Value, &allPs); err != nil {
 			return fmt.Errorf("error dapr state oprator create(%s) plugin unmarshal all plugin(%s): %w", p.ID, item.Value, err)
@@ -176,7 +176,7 @@ func (o *DaprStateOprator) Delete(ctx context.Context, pluginID string) (*model.
 	if err != nil {
 		return nil, fmt.Errorf("error dapr state oprator delete(%s) plugin get all plugin: %w", pluginID, err)
 	}
-	allPs := make(AllRegisterPlugins)
+	allPs := make(AllPlugins)
 	if item.Etag != "" {
 		if err = json.Unmarshal(item.Value, &allPs); err != nil {
 			return nil, fmt.Errorf("error dapr state oprator delete(%s) plugin unmarshal all plugin(%s): %w", pluginID, item.Value, err)
@@ -232,7 +232,7 @@ func (o *DaprStateOprator) List(ctx context.Context) ([]*model.Plugin, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error dapr state oprator list plugin get all plugin: %w", err)
 	}
-	allPs := make(AllRegisterPlugins)
+	allPs := make(AllPlugins)
 	if item.Etag != "" {
 		if err = json.Unmarshal(item.Value, &allPs); err != nil {
 			return nil, fmt.Errorf("error dapr state oprator list plugin unmarshal all plugin(%s): %w", item.Value, err)

@@ -22,5 +22,6 @@ import (
 
 type Provider interface {
 	Token(sub, jti string, d time.Duration, m map[string]interface{}) (string, int64, error)
-	Validate(tokenStr string) (map[string]interface{}, error)
+	Parse(tokenStr string) (map[string]interface{}, bool, error)
+	ParseUnverified(tokenStr string) (map[string]interface{}, error)
 }

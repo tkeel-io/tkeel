@@ -19,11 +19,13 @@ package prepo
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 
@@ -47,51 +49,49 @@ func NewDaprStateOperator(storeName string, c dapr.Client) *DaprStateOprator {
 }
 
 // Model2Info model.PluginRepo convert to repository.Info.
-func (o *DaprStateOprator) Model2Info(p *model.PluginRepo, del bool) *repository.Info {
-	if del {
-		o.cacheRepo.Delete(p.Name)
-	} else {
-		o.cacheRepo.Store(p.Name, p)
-	}
+func (o *DaprStateOprator) Model2Info(p *model.PluginRepo) *repository.Info {
 	return modelConvertInfo(p)
 }
 
 // Info2Model repository.Info convert to model.PluginRepo.
 func (o *DaprStateOprator) Info2Model(i *repository.Info) *model.PluginRepo {
-	mpi, ok := o.cacheRepo.LoadAndDelete(i.Name)
-	if ok {
-		loadMP, ok := mpi.(*model.PluginRepo)
-		if !ok {
-			return model.NewPluginRepo(i)
-		}
-		return &model.PluginRepo{
-			Info:            i,
-			UpsertTimestamp: loadMP.UpsertTimestamp,
-			Version:         loadMP.Version,
-		}
-	}
 	return model.NewPluginRepo(i)
 }
 
 // GetChanges compare the old and the new one and get the new, update and delete.
-func (o *DaprStateOprator) GetChanges(old, curr model.PluginRepoMap) (news, updates, deletes []*model.PluginRepo) {
+func (o *DaprStateOprator) GetChanges(curr model.PluginRepoMap) (news, updates, deletes []*model.PluginRepo) {
 	news = make([]*model.PluginRepo, 0, len(curr))
-	updates = make([]*model.PluginRepo, 0, len(old))
-	deletes = make([]*model.PluginRepo, 0, len(old))
+	updates = make([]*model.PluginRepo, 0)
+	deletes = make([]*model.PluginRepo, 0)
 	for k, v := range curr {
-		oldV, ok := old[k]
+		oldVin, ok := o.cacheRepo.Load(k)
 		if !ok {
 			news = append(news, v)
+			continue
+		}
+		oldV, ok := oldVin.(*model.PluginRepo)
+		if !ok {
+			log.Error("old plugin repo type err")
+			continue
 		}
 		if oldV.Version != v.Version {
 			updates = append(updates, v)
 		}
 	}
-	for k, v := range old {
-		if _, ok := curr[k]; !ok {
-			deletes = append(deletes, v)
+	o.cacheRepo.Range(func(key, value interface{}) bool {
+		k, ok := key.(string)
+		if !ok {
+			return true
 		}
-	}
+		if _, ok := curr[k]; !ok {
+			delV, ok := value.(*model.PluginRepo)
+			if !ok {
+				return true
+			}
+			deletes = append(deletes, delV)
+		}
+		return true
+	})
 	return news, updates, deletes
 }
 
@@ -137,11 +137,19 @@ func (o *DaprStateOprator) Create(ctx context.Context, i *repository.Info) error
 	if err != nil {
 		return fmt.Errorf("error dapr state oprator save(%s): %w", pr, err)
 	}
+	o.cacheRepo.Store(i.Name, pr)
 	return nil
 }
 
 func (o *DaprStateOprator) Update(ctx context.Context, i *repository.Info) error {
-	pr := o.Info2Model(i)
+	prIn, ok := o.cacheRepo.Load(i.Name)
+	if !ok {
+		return ErrPluginRepoNotExsist
+	}
+	pr, ok := prIn.(*model.PluginRepo)
+	if !ok {
+		return errors.New("plugin repo invaild type")
+	}
 	// get route map.
 	item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginRepoMap)
 	if err != nil {
@@ -191,6 +199,14 @@ func (o *DaprStateOprator) Update(ctx context.Context, i *repository.Info) error
 }
 
 func (o *DaprStateOprator) Get(ctx context.Context, name string) (*repository.Info, error) {
+	prIn, ok := o.cacheRepo.Load(name)
+	if ok {
+		pr, ok1 := prIn.(*model.PluginRepo)
+		if !ok1 {
+			return nil, errors.New("plugin repo invaild type")
+		}
+		return o.Model2Info(pr), nil
+	}
 	item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginRepoMap)
 	if err != nil {
 		return nil, fmt.Errorf("error dapr state oprator get(%s): %w", name, err)
@@ -207,7 +223,8 @@ func (o *DaprStateOprator) Get(ctx context.Context, name string) (*repository.In
 	if !ok {
 		return nil, ErrPluginRepoNotExsist
 	}
-	return o.Model2Info(pr, false), nil
+	o.cacheRepo.Store(name, pr)
+	return o.Model2Info(pr), nil
 }
 
 func (o *DaprStateOprator) Delete(ctx context.Context, name string) (*repository.Info, error) {
@@ -250,7 +267,8 @@ func (o *DaprStateOprator) Delete(ctx context.Context, name string) (*repository
 	if err != nil {
 		return nil, fmt.Errorf("error dapr state oprator save(%s): %w", pr, err)
 	}
-	return o.Model2Info(pr, true), nil
+	o.cacheRepo.Delete(name)
+	return o.Model2Info(pr), nil
 }
 
 // Watch Block waiting for plugin proxy route map changes.
@@ -260,58 +278,43 @@ func (o *DaprStateOprator) Watch(ctx context.Context, interval string, callback 
 	if err != nil {
 		return fmt.Errorf("error dapr state oprator watch parse interval(%s): %w", interval, err)
 	}
-	oldMap := make(model.PluginRepoMap)
-	oldTag := ""
 	tick := time.NewTicker(in)
 	for range tick.C {
 		item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginRepoMap)
 		if err != nil {
 			return fmt.Errorf("error dapr state oprator watch get(%s): %w", KeyPluginRepoMap, err)
 		}
-		if item.Etag != oldTag {
-			rMap := make(model.PluginRepoMap)
+		rMap := make(model.PluginRepoMap)
+		if item.Etag != "" {
 			if err = json.Unmarshal(item.Value, &rMap); err != nil {
 				return fmt.Errorf("error dapr state oprator watch unmarshal(%s): %w", string(item.Value), err)
 			}
-			news, updates, deletes := o.GetChanges(oldMap, rMap)
-			if err = callback(o.modelSli2Infos(news),
-				o.modelSli2Infos(updates), o.modelSli2Infos(deletes)); err != nil {
-				return fmt.Errorf("error dapr state oprator watch callback(%s): %w", rMap, err)
-			}
-			oldTag = item.Etag
-			tick.Reset(in)
 		}
+		news, updates, deletes := o.GetChanges(rMap)
+		if err = callback(o.modelSli2Infos(news),
+			o.modelSli2Infos(updates), o.modelSli2Infos(deletes)); err != nil {
+			return fmt.Errorf("error dapr state oprator watch callback(%s): %w", rMap, err)
+		}
+		tick.Reset(in)
 	}
 	return nil
 }
 
 func (o *DaprStateOprator) List(ctx context.Context) ([]*repository.Info, error) {
-	// get route map.
-	item, err := o.daprClient.GetState(ctx, o.storeName, KeyPluginRepoMap)
-	if err != nil {
-		return nil, fmt.Errorf("error dapr state oprator get plugin_repo_map: %w", err)
-	}
-	pluginProxyMap := make(model.PluginRepoMap)
-	if item.Etag == "" {
-		return nil, ErrPluginRepoNotExsist
-	}
-	err = json.Unmarshal(item.Value, &pluginProxyMap)
-	if err != nil {
-		return nil, fmt.Errorf("error dapr state oprator unmarshal plugin_repo_map(%s): %w", item.Value, err)
-	}
-	prSli := make([]*model.PluginRepo, 0, len(pluginProxyMap))
-	for _, v := range pluginProxyMap {
-		prSli = append(prSli, v)
-	}
-	return o.modelSli2Infos(prSli), nil
+	ret := make([]*repository.Info, 0)
+	o.cacheRepo.Range(func(key, value interface{}) bool {
+		pr, ok := value.(*model.PluginRepo)
+		if !ok {
+			return true
+		}
+		ret = append(ret, pr.Info)
+		return true
+	})
+	return ret, nil
 }
 
 func modelConvertInfo(pr *model.PluginRepo) *repository.Info {
-	return &repository.Info{
-		Name:        pr.Name,
-		URL:         pr.URL,
-		Annotations: pr.Annotations,
-	}
+	return pr.Info
 }
 
 func (o *DaprStateOprator) modelSli2Infos(prs []*model.PluginRepo) []*repository.Info {

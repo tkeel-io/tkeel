@@ -21,10 +21,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
-	"github.com/emicklei/go-restful"
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
@@ -32,9 +30,9 @@ import (
 	oauth_v1 "github.com/tkeel-io/security/apirouter/oauth/v1"
 	rbac_v1 "github.com/tkeel-io/security/apirouter/rbac/v1"
 	tenant_v1 "github.com/tkeel-io/security/apirouter/tenant/v1"
-	"github.com/tkeel-io/security/apiserver/filters"
 	security_dao "github.com/tkeel-io/security/models/dao"
 	"github.com/tkeel-io/security/models/entity"
+	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	repo "github.com/tkeel-io/tkeel/api/repo/v1"
@@ -43,6 +41,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/hub"
+	"github.com/tkeel-io/tkeel/pkg/model/kv"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/prepo"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
@@ -53,10 +52,10 @@ import (
 )
 
 var (
-	configFile string
-
-	conf      *config.Configuration
-	rudderApp *app.App
+	configFile      string
+	initServiceFunc []func() error
+	conf            *config.Configuration
+	rudderApp       *app.App
 )
 
 var rootCmd = &cobra.Command{
@@ -96,15 +95,16 @@ var rootCmd = &cobra.Command{
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			prOp := proute.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
 			riOp := prepo.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
+			kvOp := kv.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 
 			// init repo hub.
-			hub.Init(conf.Tkeel.WatchPluginRouteInterval, riOp,
+			hub.Init(conf.Tkeel.WatchInterval, riOp,
 				func(connectInfo *repository.Info,
 					args ...interface{}) (repository.Repository, error) {
 					if len(args) != 2 {
 						return nil, errors.New("invalid arguments")
 					}
-					drive, ok := args[0].(string)
+					drive, ok := args[0].(helm.Driver)
 					if !ok {
 						return nil, errors.New("invaild argument type")
 					}
@@ -112,14 +112,14 @@ var rootCmd = &cobra.Command{
 					if !ok {
 						return nil, errors.New("invaild argument type")
 					}
-					repo, err := helm.NewHelmRepo(*connectInfo, helm.Driver(drive), namespace)
+					repo, err := helm.NewHelmRepo(*connectInfo, drive, namespace)
 					if err != nil {
 						return nil, fmt.Errorf("error new helm repo: %w", err)
 					}
 					return repo, nil
 				},
 				func(pluginID string) error {
-					repo, err := helm.NewHelmRepo(repository.Info{}, helm.Mem, conf.Tkeel.Namespace)
+					repo, err := helm.NewHelmRepo(repository.Info{}, helm.Secret, conf.Tkeel.Namespace)
 					if err != nil {
 						return fmt.Errorf("error new helm repo: %w", err)
 					}
@@ -128,21 +128,25 @@ var rootCmd = &cobra.Command{
 						return fmt.Errorf("error uninstall(%s) err: %w", pluginID, err)
 					}
 					return nil
-				}, helm.Mem, conf.Tkeel.Namespace)
+				}, helm.Secret, conf.Tkeel.Namespace)
 
 			// init service.
 			// plugin service.
-			PluginSrvV1 := service.NewPluginServiceV1(conf.Tkeel, pOp, prOp, openapiCli)
+			PluginSrvV1 := service.NewPluginServiceV1(conf.Tkeel, kvOp, pOp, prOp, openapiCli)
 			plugin_v1.RegisterPluginHTTPServer(httpSrv.Container, PluginSrvV1)
 			plugin_v1.RegisterPluginServer(grpcSrv.GetServe(), PluginSrvV1)
 			// oauth2 service.
-			Oauth2SrvV1 := service.NewOauth2ServiceV1(conf.Tkeel.Secret, pOp)
+			Oauth2SrvV1 := service.NewOauth2ServiceV1(conf.Tkeel.AdminPassword, kvOp, pOp)
 			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
 			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
 			// repo service.
 			repoSrv := service.NewRepoService()
 			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
 			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
+			// entries service.
+			EntriesSrvV1 := service.NewEntryService(kvOp, pOp)
+			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, EntriesSrvV1)
+			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), EntriesSrvV1)
 			{
 				// copy mysql configuration.
 				conf.SecurityConf.RBAC.Adapter = conf.SecurityConf.Mysql
@@ -153,26 +157,13 @@ var rootCmd = &cobra.Command{
 				// oauth2.
 				oauth_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.OAuth2)
 				// rbac.
-				rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.RBAC, conf.SecurityConf.OAuth2)
+				rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.RBAC)
 				// entity token.
 				entityTokenOperator := entity.NewEntityTokenOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 				if entityTokenOperator == nil {
 					os.Exit(-1)
 				}
 				entity_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.Entity, entityTokenOperator)
-				// add auth role filter.
-				tenantAdminRoleFilter := filters.AuthFilter(conf.SecurityConf.OAuth2, "admin")
-				for _, ws := range httpSrv.Container.RegisteredWebServices() {
-					if ws.RootPath() == "/v1/tenants" {
-						ws.Filter(func(r1 *restful.Request, r2 *restful.Response, fc *restful.FilterChain) {
-							if strings.HasPrefix(r1.Request.URL.Path, "/v1/tenants/users") {
-								tenantAdminRoleFilter(r1, r2, fc)
-								return
-							}
-							fc.ProcessFilter(r1, r2)
-						})
-					}
-				}
 			}
 		}
 	},
@@ -180,6 +171,12 @@ var rootCmd = &cobra.Command{
 		if err := rudderApp.Run(context.TODO()); err != nil {
 			log.Fatal("fatal rudder app run: %s", err)
 			os.Exit(-2)
+		}
+		for _, v := range initServiceFunc {
+			if err := v(); err != nil {
+				log.Fatalf("init service: %s", err)
+				os.Exit(-2)
+			}
 		}
 
 		stop := make(chan os.Signal, 1)
