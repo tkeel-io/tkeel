@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/entry/v1/entry.proto",
+    "title": "apis/rudder/v1",
     "version": "version not set"
   },
   "tags": [
