@@ -156,10 +156,15 @@ func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 		}
 		return nil, pb.PluginErrInternalStore()
 	}
+	if mp.State != openapi_v1.PluginStatus_UNREGISTER {
+		log.Errorf("error plugin(%s) state(%s) not unregister", mp.ID, mp.State)
+		return nil, pb.PluginErrPluginNotBeUnregister()
+	}
 	if mp.Installer == nil {
 		log.Errorf("error plugin(%s) installer is nil", mp)
 		return nil, pb.PluginErrInternalStore()
 	}
+	// uninstall plugin.
 	if err = hub.GetInstance().Uninstall(req.GetId(), &repository.InstallerBrief{
 		Name:      mp.Installer.Name,
 		Repo:      mp.Installer.Repo,
@@ -219,7 +224,7 @@ func (s *PluginServiceV1) UnregisterPlugin(ctx context.Context,
 	req *pb.UnregisterPluginRequest) (*pb.UnregisterPluginResponse, error) {
 	pID := req.Id
 	// check exists.
-	UnregisterPluginRoute, err := s.pluginRouteOp.Get(ctx, pID)
+	unregisterPluginRoute, err := s.pluginRouteOp.Get(ctx, pID)
 	if err != nil {
 		log.Errorf("error unregister plugin(%s) route get: %s", pID, err)
 		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
@@ -227,8 +232,14 @@ func (s *PluginServiceV1) UnregisterPlugin(ctx context.Context,
 		}
 		return nil, pb.PluginErrInternalStore()
 	}
+	// check whether the tenant bind.
+	if len(unregisterPluginRoute.ActiveTenantes) != 1 &&
+		unregisterPluginRoute.ActiveTenantes[0] != model.TKeelTenant {
+		log.Errorf("error unregister plugin(%s): tenant(%v) binded", pID, unregisterPluginRoute.ActiveTenantes)
+		return nil, pb.PluginErrPluginHasTenantBinded()
+	}
 	// check whether the extension point is implemented.
-	if len(UnregisterPluginRoute.RegisterAddons) != 0 {
+	if len(unregisterPluginRoute.RegisterAddons) != 0 {
 		log.Errorf("error unregister plugin(%s): other plugins have implemented the extension points of this plugin.", pID)
 		return nil, pb.PluginErrUnregisterPluginHasBeenDepended()
 	}

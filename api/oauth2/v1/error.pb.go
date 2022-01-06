@@ -43,7 +43,7 @@ const (
 	// @code=UNKNOWN
 	Error_OAUTH2_ERR_UNKNOWN Error = 0
 	// Secret 不匹配
-	// @code=INVALID_ARGUMENT
+	// @code=PERMISSION_DENIED
 	Error_OAUTH2_ERR_SECRET_NOT_MATCH Error = 1
 	// 白名单中已存在
 	// @code=ALREADY_EXISTS

@@ -29,7 +29,7 @@ enum Error {
   // @code=UNKNOWN
   OAUTH2_ERR_UNKNOWN = 0;
   // Secret 不匹配
-  // @code=INVALID_ARGUMENT
+  // @code=PERMISSION_DENIED
   OAUTH2_ERR_SECRET_NOT_MATCH = 1;
   // 白名单中已存在
   // @code=ALREADY_EXISTS

@@ -22,7 +22,7 @@ var oauth2ErrPasswordNotMatch *errors.TError
 func init() {
 	oauth2ErrUnknown = errors.New(int(codes.Unknown), "oauth2.v1.OAUTH2_ERR_UNKNOWN", Error_OAUTH2_ERR_UNKNOWN.String())
 	errors.Register(oauth2ErrUnknown)
-	oauth2ErrSecretNotMatch = errors.New(int(codes.InvalidArgument), "oauth2.v1.OAUTH2_ERR_SECRET_NOT_MATCH", Error_OAUTH2_ERR_SECRET_NOT_MATCH.String())
+	oauth2ErrSecretNotMatch = errors.New(int(codes.PermissionDenied), "oauth2.v1.OAUTH2_ERR_SECRET_NOT_MATCH", Error_OAUTH2_ERR_SECRET_NOT_MATCH.String())
 	errors.Register(oauth2ErrSecretNotMatch)
 	oauth2ErrClientIdAlreadyExists = errors.New(int(codes.AlreadyExists), "oauth2.v1.OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS", Error_OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS.String())
 	errors.Register(oauth2ErrClientIdAlreadyExists)

@@ -212,8 +212,8 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 		pluginID, err := s.getPluginIDFromRequest(req)
 		if err != nil {
 			log.Errorf("error get plugin ID from request: %s", err)
-			resp.WriteHeaderAndJson(http.StatusForbidden,
-				setResult(http.StatusForbidden, "invalid token", nil), "application/json")
+			resp.WriteHeaderAndJson(http.StatusUnauthorized,
+				setResult(http.StatusUnauthorized, "invalid token", nil), "application/json")
 			return
 		}
 		// with user.
@@ -222,8 +222,8 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			user, err1 := s.externalGetUser(req)
 			if err1 != nil {
 				log.Errorf("error external get user: %s", err1)
-				resp.WriteHeaderAndJson(http.StatusForbidden,
-					setResult(http.StatusForbidden, "invalid token", nil), "application/json")
+				resp.WriteHeaderAndJson(http.StatusUnauthorized,
+					setResult(http.StatusUnauthorized, "invalid token", nil), "application/json")
 				return
 			}
 			req.Request.Header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)] = []string{user.Base64Encode()}
@@ -247,30 +247,30 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			pluginRouteInterface, ok := s.pluginRouteMap.Load(pluginID)
 			if !ok {
 				log.Errorf("error source plugin ID(%s) not register", pluginID)
-				resp.WriteHeaderAndJson(http.StatusInternalServerError,
-					setResult(http.StatusInternalServerError, "internal error", nil), "application/json")
+				resp.WriteHeaderAndJson(http.StatusUnauthorized,
+					setResult(http.StatusUnauthorized, "internal error", nil), "application/json")
 				return
 			}
 			pluginRoute, ok := pluginRouteInterface.(*model.PluginRoute)
 			if !ok {
 				log.Error("error source plugin route type invalid")
-				resp.WriteHeaderAndJson(http.StatusInternalServerError,
-					setResult(http.StatusInternalServerError, "internal error", nil), "application/json")
+				resp.WriteHeaderAndJson(http.StatusUnauthorized,
+					setResult(http.StatusUnauthorized, "internal error", nil), "application/json")
 				return
 			}
 			log.Debugf("internal flow")
 			tKeelHeader := req.HeaderParameter(http.CanonicalHeaderKey(model.XtKeelAuthHeader))
 			if tKeelHeader == "" {
 				log.Errorf("error internal flow not found x-tKeel-auth")
-				resp.WriteHeaderAndJson(http.StatusForbidden,
-					setResult(http.StatusForbidden, "x-tKeel-auth invalid", nil), "application/json")
+				resp.WriteHeaderAndJson(http.StatusUnauthorized,
+					setResult(http.StatusUnauthorized, "x-tKeel-auth invalid", nil), "application/json")
 				return
 			}
 			user := new(model.User)
 			if err = user.Base64Decode(tKeelHeader); err != nil {
 				log.Errorf("error decode x-tKeel-auth(%s): %s", tKeelHeader, err)
-				resp.WriteHeaderAndJson(http.StatusForbidden,
-					setResult(http.StatusForbidden, "x-tKeel-auth invalid", nil), "application/json")
+				resp.WriteHeaderAndJson(http.StatusUnauthorized,
+					setResult(http.StatusUnauthorized, "x-tKeel-auth invalid", nil), "application/json")
 				return
 			}
 			ctx = withUser(ctx, user)
@@ -376,7 +376,7 @@ func (s *KeelServiceV1) ProxyAddons(
 	}
 	if err = up.Verify(req); err != nil {
 		if errors.Is(err, ErrNotActiveUpstream) {
-			writeResult(resp, http.StatusForbidden, "not active", nil)
+			writeResult(resp, http.StatusUnauthorized, "not active", nil)
 		} else {
 			writeResult(resp, http.StatusInternalServerError, "internal error", nil)
 		}
@@ -425,7 +425,7 @@ func (s *KeelServiceV1) ProxyPlugin(
 	log.Debugf("proxy call plugin %s", up)
 	if err = up.Verify(req); err != nil {
 		if errors.Is(err, ErrNotActiveUpstream) {
-			writeResult(resp, http.StatusForbidden, "not active", nil)
+			writeResult(resp, http.StatusUnauthorized, "not active", nil)
 		} else {
 			writeResult(resp, http.StatusInternalServerError, "internal error", nil)
 		}
@@ -490,12 +490,12 @@ func (s *KeelServiceV1) ProxyRudder(resp http.ResponseWriter, req *http.Request)
 	if !inWhiteList {
 		user, ok := getUser(req.Context())
 		if !ok {
-			writeResult(resp, http.StatusForbidden, "invalid user", nil)
+			writeResult(resp, http.StatusUnauthorized, "invalid user", nil)
 			return errors.New("error invalid user")
 		}
 		if user.User != "_tKeel" {
 			if req.URL.Path != "/apis/rudder/v1/entries" && user.Role != model.AdminRole {
-				writeResult(resp, http.StatusForbidden, "invalid role", nil)
+				writeResult(resp, http.StatusUnauthorized, "invalid role", nil)
 				return errors.New("error invalid role")
 			}
 		}
