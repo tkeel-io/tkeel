@@ -67,8 +67,8 @@ func (s *Oauth2ServiceV1) AddPluginWhiteList(ctx context.Context,
 func (s *Oauth2ServiceV1) IssuePluginToken(ctx context.Context, req *pb.IssuePluginTokenRequest) (*pb.IssueTokenResponse, error) {
 	pluginID := req.ClientId
 	if pluginID == "" {
-		log.Errorf("error invaild plugin id: empty string")
-		return nil, pb.Oauth2ErrInvaildPluginId()
+		log.Errorf("error invalid plugin id: empty string")
+		return nil, pb.Oauth2ErrInvalidPluginId()
 	}
 	if !s.checkPluginWhiteList(pluginID) {
 		plugin, err := s.pluginOp.Get(ctx, pluginID)
@@ -130,7 +130,7 @@ func (s *Oauth2ServiceV1) genToken(sub string, tokenKV ...string) (token, jti st
 	m := make(map[string]interface{})
 	if len(tokenKV) != 0 {
 		if len(tokenKV)%2 != 0 {
-			err = errors.New("invaild token KV")
+			err = errors.New("invalid token KV")
 			return
 		}
 		for i := 0; i < len(tokenKV); i += 2 {

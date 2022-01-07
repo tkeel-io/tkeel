@@ -106,11 +106,11 @@ var rootCmd = &cobra.Command{
 					}
 					drive, ok := args[0].(helm.Driver)
 					if !ok {
-						return nil, errors.New("invaild argument type")
+						return nil, errors.New("invalid argument type")
 					}
 					namespace, ok := args[1].(string)
 					if !ok {
-						return nil, errors.New("invaild argument type")
+						return nil, errors.New("invalid argument type")
 					}
 					repo, err := helm.NewHelmRepo(*connectInfo, drive, namespace)
 					if err != nil {

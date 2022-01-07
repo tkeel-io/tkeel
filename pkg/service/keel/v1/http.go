@@ -37,7 +37,7 @@ const (
 func RegisterPluginProxyHTTPServer(ctx context.Context,
 	container *restful.Container, srv keel.ProxyServer) error {
 	if container == nil {
-		return errors.New("error invaild container: nil")
+		return errors.New("error invalid container: nil")
 	}
 	container.Filter(srv.Filter())
 	// register.

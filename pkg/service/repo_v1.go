@@ -166,7 +166,7 @@ func pbReadme(i repository.Installer) []byte {
 	}
 	b, ok := bIn.([]byte)
 	if !ok {
-		log.Errorf("error installer(%s) readme invaild type", i)
+		log.Errorf("error installer(%s) readme invalid type", i)
 		return nil
 	}
 	return b
@@ -183,7 +183,7 @@ func pbConfigurationSchame(i repository.Installer) []byte {
 	}
 	b, ok := bIn.([]byte)
 	if !ok {
-		log.Errorf("error installer(%s) configuration schema file invaild type", i)
+		log.Errorf("error installer(%s) configuration schema file invalid type", i)
 		return nil
 	}
 	return b
@@ -200,7 +200,7 @@ func pbConfigurationType(i repository.Installer) pb.ConfigurationSchemaType {
 	}
 	ii, ok := iIn.(int)
 	if !ok {
-		log.Errorf("error installer(%s) configuration schema file invaild type", ii)
+		log.Errorf("error installer(%s) configuration schema file invalid type", ii)
 		return pb.ConfigurationSchemaType_JSON
 	}
 	return pb.ConfigurationSchemaType(ii)
@@ -217,7 +217,7 @@ func pbConfiguration(i repository.Installer) []byte {
 	}
 	value, ok := valueIn.([]byte)
 	if !ok {
-		log.Errorf("error installer(%s) configuration file type invaild", i.Brief().Name)
+		log.Errorf("error installer(%s) configuration file type invalid", i.Brief().Name)
 	}
 	return value
 }

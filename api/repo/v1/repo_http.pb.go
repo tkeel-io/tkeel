@@ -45,7 +45,7 @@ func newRepoHTTPHandler(s RepoHTTPServer) *RepoHTTPHandler {
 
 func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.Response) {
 	in := CreateRepoRequest{}
-	if err := transportHTTP.GetBody(req, &in); err != nil {
+	if err := transportHTTP.GetBody(req, &in.Url); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return

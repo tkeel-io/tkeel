@@ -153,7 +153,7 @@ func (h *Hub) Delete(name string) (repository.Repository, error) {
 	}
 	repo, ok := repoIn.(repository.Repository)
 	if !ok {
-		return nil, errors.New("invaild repo type")
+		return nil, errors.New("invalid repo type")
 	}
 	rbStack = append(rbStack, func() error {
 		rbRepo, err1 := h.constructor(repo.Info(), h.constructorArgs...)
@@ -225,7 +225,7 @@ func (h *Hub) Uninstall(pluginID string, brief *repository.InstallerBrief) error
 	if ok {
 		repo, ok := repoIn.(repository.Repository)
 		if !ok {
-			return errors.New("invaild repo type")
+			return errors.New("invalid repo type")
 		}
 		installedList, err := repo.Installed()
 		if err != nil {

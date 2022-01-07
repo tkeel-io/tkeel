@@ -12,14 +12,14 @@ import (
 const _ = errors.SupportPackageIsVersion1
 
 var entryErrUnknown *errors.TError
-var entryErrInvaildTenant *errors.TError
+var entryErrInvalidTenant *errors.TError
 var entryErrInternalError *errors.TError
 
 func init() {
 	entryErrUnknown = errors.New(int(codes.Unknown), "entry.v1.ENTRY_ERR_UNKNOWN", Error_ENTRY_ERR_UNKNOWN.String())
 	errors.Register(entryErrUnknown)
-	entryErrInvaildTenant = errors.New(int(codes.InvalidArgument), "entry.v1.ENTRY_ERR_INVAILD_TENANT", Error_ENTRY_ERR_INVAILD_TENANT.String())
-	errors.Register(entryErrInvaildTenant)
+	entryErrInvalidTenant = errors.New(int(codes.InvalidArgument), "entry.v1.ENTRY_ERR_INVALID_TENANT", Error_ENTRY_ERR_INVALID_TENANT.String())
+	errors.Register(entryErrInvalidTenant)
 	entryErrInternalError = errors.New(int(codes.Internal), "entry.v1.ENTRY_ERR_INTERNAL_ERROR", Error_ENTRY_ERR_INTERNAL_ERROR.String())
 	errors.Register(entryErrInternalError)
 }
@@ -28,8 +28,8 @@ func EntryErrUnknown() errors.Error {
 	return entryErrUnknown
 }
 
-func EntryErrInvaildTenant() errors.Error {
-	return entryErrInvaildTenant
+func EntryErrInvalidTenant() errors.Error {
+	return entryErrInvalidTenant
 }
 
 func EntryErrInternalError() errors.Error {

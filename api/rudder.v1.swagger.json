@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/entry/v1/entry.proto",
-    "version": "version not set"
+    "title": "/apis/rudder",
+    "version": "v1"
   },
   "tags": [
     {
@@ -37,7 +37,7 @@
             }
           },
           "400": {
-            "description": "INVAILD_TENANT",
+            "description": "INVALID_TENANT",
             "schema": {}
           },
           "500": {
@@ -108,7 +108,7 @@
             }
           },
           "400": {
-            "description": "INVAILD_PLUGIN_ID",
+            "description": "INVALID_PLUGIN_ID",
             "schema": {}
           },
           "500": {

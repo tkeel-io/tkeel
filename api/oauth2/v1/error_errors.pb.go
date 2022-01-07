@@ -14,7 +14,7 @@ const _ = errors.SupportPackageIsVersion1
 var oauth2ErrUnknown *errors.TError
 var oauth2ErrSecretNotMatch *errors.TError
 var oauth2ErrClientIdAlreadyExists *errors.TError
-var oauth2ErrInvaildPluginId *errors.TError
+var oauth2ErrInvalidPluginId *errors.TError
 var oauth2ErrInternalStore *errors.TError
 var oauth2ErrInternalError *errors.TError
 var oauth2ErrPasswordNotMatch *errors.TError
@@ -22,12 +22,12 @@ var oauth2ErrPasswordNotMatch *errors.TError
 func init() {
 	oauth2ErrUnknown = errors.New(int(codes.Unknown), "oauth2.v1.OAUTH2_ERR_UNKNOWN", Error_OAUTH2_ERR_UNKNOWN.String())
 	errors.Register(oauth2ErrUnknown)
-	oauth2ErrSecretNotMatch = errors.New(int(codes.InvalidArgument), "oauth2.v1.OAUTH2_ERR_SECRET_NOT_MATCH", Error_OAUTH2_ERR_SECRET_NOT_MATCH.String())
+	oauth2ErrSecretNotMatch = errors.New(int(codes.PermissionDenied), "oauth2.v1.OAUTH2_ERR_SECRET_NOT_MATCH", Error_OAUTH2_ERR_SECRET_NOT_MATCH.String())
 	errors.Register(oauth2ErrSecretNotMatch)
 	oauth2ErrClientIdAlreadyExists = errors.New(int(codes.AlreadyExists), "oauth2.v1.OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS", Error_OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS.String())
 	errors.Register(oauth2ErrClientIdAlreadyExists)
-	oauth2ErrInvaildPluginId = errors.New(int(codes.InvalidArgument), "oauth2.v1.OAUTH2_ERR_INVAILD_PLUGIN_ID", Error_OAUTH2_ERR_INVAILD_PLUGIN_ID.String())
-	errors.Register(oauth2ErrInvaildPluginId)
+	oauth2ErrInvalidPluginId = errors.New(int(codes.InvalidArgument), "oauth2.v1.OAUTH2_ERR_INVALID_PLUGIN_ID", Error_OAUTH2_ERR_INVALID_PLUGIN_ID.String())
+	errors.Register(oauth2ErrInvalidPluginId)
 	oauth2ErrInternalStore = errors.New(int(codes.Internal), "oauth2.v1.OAUTH2_ERR_INTERNAL_STORE", Error_OAUTH2_ERR_INTERNAL_STORE.String())
 	errors.Register(oauth2ErrInternalStore)
 	oauth2ErrInternalError = errors.New(int(codes.Internal), "oauth2.v1.OAUTH2_ERR_INTERNAL_ERROR", Error_OAUTH2_ERR_INTERNAL_ERROR.String())
@@ -48,8 +48,8 @@ func Oauth2ErrClientIdAlreadyExists() errors.Error {
 	return oauth2ErrClientIdAlreadyExists
 }
 
-func Oauth2ErrInvaildPluginId() errors.Error {
-	return oauth2ErrInvaildPluginId
+func Oauth2ErrInvalidPluginId() errors.Error {
+	return oauth2ErrInvalidPluginId
 }
 
 func Oauth2ErrInternalStore() errors.Error {

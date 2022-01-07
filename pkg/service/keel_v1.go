@@ -60,11 +60,11 @@ type upstream struct {
 func (u *upstream) Verify(req *http.Request) error {
 	src, ok := getSource(req.Context())
 	if !ok {
-		return errors.New("invaild source")
+		return errors.New("invalid source")
 	}
 	user, ok := getUser(req.Context())
 	if !ok {
-		return errors.New("invaild user")
+		return errors.New("invalid user")
 	}
 	ok, err := util.CheckRegisterPluginTkeelVersion(u.TKeelDepened, src.TKeelDepened)
 	if err != nil {
@@ -72,7 +72,7 @@ func (u *upstream) Verify(req *http.Request) error {
 			u.TKeelDepened, src.TKeelDepened, err)
 	}
 	if !ok {
-		return errors.New("invaild depende tKeel version")
+		return errors.New("invalid depende tKeel version")
 	}
 	active := false
 	for _, v := range u.ActiveTenants {
@@ -162,7 +162,7 @@ func (s *KeelServiceV1) watch(ctx context.Context) error {
 				pID, ok := key.(string)
 				if !ok {
 					s.pluginRouteMap.Delete(key)
-					log.Errorf("error invaild key type: %v", key)
+					log.Errorf("error invalid key type: %v", key)
 					return true
 				}
 				if _, ok = pprm[pID]; !ok {
@@ -212,8 +212,8 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 		pluginID, err := s.getPluginIDFromRequest(req)
 		if err != nil {
 			log.Errorf("error get plugin ID from request: %s", err)
-			resp.WriteHeaderAndJson(http.StatusForbidden,
-				setResult(http.StatusForbidden, "invaild token", nil), "application/json")
+			resp.WriteHeaderAndJson(http.StatusUnauthorized,
+				setResult(http.StatusUnauthorized, "invalid token", nil), "application/json")
 			return
 		}
 		// with user.
@@ -222,8 +222,8 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			user, err1 := s.externalGetUser(req)
 			if err1 != nil {
 				log.Errorf("error external get user: %s", err1)
-				resp.WriteHeaderAndJson(http.StatusForbidden,
-					setResult(http.StatusForbidden, "invaild token", nil), "application/json")
+				resp.WriteHeaderAndJson(http.StatusUnauthorized,
+					setResult(http.StatusUnauthorized, "invalid token", nil), "application/json")
 				return
 			}
 			req.Request.Header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)] = []string{user.Base64Encode()}
@@ -247,30 +247,30 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			pluginRouteInterface, ok := s.pluginRouteMap.Load(pluginID)
 			if !ok {
 				log.Errorf("error source plugin ID(%s) not register", pluginID)
-				resp.WriteHeaderAndJson(http.StatusInternalServerError,
-					setResult(http.StatusInternalServerError, "internal error", nil), "application/json")
+				resp.WriteHeaderAndJson(http.StatusUnauthorized,
+					setResult(http.StatusUnauthorized, "internal error", nil), "application/json")
 				return
 			}
 			pluginRoute, ok := pluginRouteInterface.(*model.PluginRoute)
 			if !ok {
-				log.Error("error source plugin route type invaild")
-				resp.WriteHeaderAndJson(http.StatusInternalServerError,
-					setResult(http.StatusInternalServerError, "internal error", nil), "application/json")
+				log.Error("error source plugin route type invalid")
+				resp.WriteHeaderAndJson(http.StatusUnauthorized,
+					setResult(http.StatusUnauthorized, "internal error", nil), "application/json")
 				return
 			}
 			log.Debugf("internal flow")
 			tKeelHeader := req.HeaderParameter(http.CanonicalHeaderKey(model.XtKeelAuthHeader))
 			if tKeelHeader == "" {
 				log.Errorf("error internal flow not found x-tKeel-auth")
-				resp.WriteHeaderAndJson(http.StatusForbidden,
-					setResult(http.StatusForbidden, "x-tKeel-auth invaild", nil), "application/json")
+				resp.WriteHeaderAndJson(http.StatusUnauthorized,
+					setResult(http.StatusUnauthorized, "x-tKeel-auth invalid", nil), "application/json")
 				return
 			}
 			user := new(model.User)
 			if err = user.Base64Decode(tKeelHeader); err != nil {
 				log.Errorf("error decode x-tKeel-auth(%s): %s", tKeelHeader, err)
-				resp.WriteHeaderAndJson(http.StatusForbidden,
-					setResult(http.StatusForbidden, "x-tKeel-auth invaild", nil), "application/json")
+				resp.WriteHeaderAndJson(http.StatusUnauthorized,
+					setResult(http.StatusUnauthorized, "x-tKeel-auth invalid", nil), "application/json")
 				return
 			}
 			ctx = withUser(ctx, user)
@@ -294,7 +294,7 @@ func (s *KeelServiceV1) getPluginIDFromRequest(req *restful.Request) (string, er
 		return "", fmt.Errorf("error parse plugin token(%s): %w", pluginToken, err)
 	}
 	if !ok {
-		return "", fmt.Errorf("plugin invaild token(%s)", pluginToken)
+		return "", fmt.Errorf("plugin invalid token(%s)", pluginToken)
 	}
 	pluginIDInterface, ok := payload["plugin_id"]
 	if !ok {
@@ -302,7 +302,7 @@ func (s *KeelServiceV1) getPluginIDFromRequest(req *restful.Request) (string, er
 	}
 	pluginID, ok := pluginIDInterface.(string)
 	if !ok {
-		return "", fmt.Errorf("error plugin token(%s) payload plugin_id(%v) type invaild",
+		return "", fmt.Errorf("error plugin token(%s) payload plugin_id(%v) type invalid",
 			pluginToken, pluginIDInterface)
 	}
 	return pluginID, nil
@@ -311,7 +311,7 @@ func (s *KeelServiceV1) getPluginIDFromRequest(req *restful.Request) (string, er
 func (s *KeelServiceV1) externalGetUser(req *restful.Request) (*model.User, error) {
 	token := req.HeaderParameter(http.CanonicalHeaderKey(AuthorizationHeader))
 	if token == "" {
-		return nil, errors.New("invaild token")
+		return nil, errors.New("invalid token")
 	}
 	isManager, err := s.isManagerToken(token)
 	if err != nil {
@@ -322,7 +322,7 @@ func (s *KeelServiceV1) externalGetUser(req *restful.Request) (*model.User, erro
 		// tKeel platform.
 		tKeelToken, err := oauth.GetOauthOperator().ValidationBearerToken(req.Request)
 		if err != nil {
-			return nil, fmt.Errorf("error vaildation bearer token(%v): %w",
+			return nil, fmt.Errorf("error validation bearer token(%v): %w",
 				req.HeaderParameter(http.CanonicalHeaderKey(AuthorizationHeader)), err)
 		}
 		tenant := strings.Split(tKeelToken.GetUserID(), "-")[1]
@@ -355,7 +355,7 @@ func (s *KeelServiceV1) isManagerToken(token string) (bool, error) {
 			return true, fmt.Errorf("error parse token(%s): %w", token, err)
 		}
 		if !valid {
-			return true, fmt.Errorf("error token(%s) is invaild", token)
+			return true, fmt.Errorf("error token(%s) is invalid", token)
 		}
 		return true, nil
 	}
@@ -376,7 +376,7 @@ func (s *KeelServiceV1) ProxyAddons(
 	}
 	if err = up.Verify(req); err != nil {
 		if errors.Is(err, ErrNotActiveUpstream) {
-			writeResult(resp, http.StatusForbidden, "not active", nil)
+			writeResult(resp, http.StatusUnauthorized, "not active", nil)
 		} else {
 			writeResult(resp, http.StatusInternalServerError, "internal error", nil)
 		}
@@ -425,7 +425,7 @@ func (s *KeelServiceV1) ProxyPlugin(
 	log.Debugf("proxy call plugin %s", up)
 	if err = up.Verify(req); err != nil {
 		if errors.Is(err, ErrNotActiveUpstream) {
-			writeResult(resp, http.StatusForbidden, "not active", nil)
+			writeResult(resp, http.StatusUnauthorized, "not active", nil)
 		} else {
 			writeResult(resp, http.StatusInternalServerError, "internal error", nil)
 		}
@@ -490,13 +490,13 @@ func (s *KeelServiceV1) ProxyRudder(resp http.ResponseWriter, req *http.Request)
 	if !inWhiteList {
 		user, ok := getUser(req.Context())
 		if !ok {
-			writeResult(resp, http.StatusForbidden, "invaild user", nil)
-			return errors.New("error invaild user")
+			writeResult(resp, http.StatusUnauthorized, "invalid user", nil)
+			return errors.New("error invalid user")
 		}
 		if user.User != "_tKeel" {
 			if req.URL.Path != "/apis/rudder/v1/entries" && user.Role != model.AdminRole {
-				writeResult(resp, http.StatusForbidden, "invaild role", nil)
-				return errors.New("error invaild role")
+				writeResult(resp, http.StatusUnauthorized, "invalid role", nil)
+				return errors.New("error invalid role")
 			}
 		}
 	}
@@ -520,7 +520,7 @@ func (s *KeelServiceV1) getPluginUpstream(req *http.Request) (*upstream, error) 
 	}
 	upstreamRoute, ok := upstreamRouteInterface.(*model.PluginRoute)
 	if !ok {
-		return nil, errors.New("invaild plugin route type")
+		return nil, errors.New("invalid plugin route type")
 	}
 	return &upstream{
 		ID:            pluginID,
@@ -533,11 +533,11 @@ func (s *KeelServiceV1) getPluginUpstream(req *http.Request) (*upstream, error) 
 func (s *KeelServiceV1) getAddonsUpstream(req *http.Request) (*upstream, error) {
 	addonsMethod := getMethodApisPath(req.URL.Path)
 	if addonsMethod == "" {
-		return nil, errors.New("invaild addons method")
+		return nil, errors.New("invalid addons method")
 	}
 	src, ok := getSource(req.Context())
 	if !ok {
-		return nil, errors.New("invaild source")
+		return nil, errors.New("invalid source")
 	}
 	srcRouteInterface, ok := s.pluginRouteMap.Load(src.ID)
 	if !ok {
@@ -545,7 +545,7 @@ func (s *KeelServiceV1) getAddonsUpstream(req *http.Request) (*upstream, error) 
 	}
 	srcRoute, ok := srcRouteInterface.(*model.PluginRoute)
 	if !ok {
-		return nil, errors.New("invaild source plugin route type")
+		return nil, errors.New("invalid source plugin route type")
 	}
 	upstreamStr, ok := srcRoute.RegisterAddons[addonsMethod]
 	if !ok {
@@ -558,7 +558,7 @@ func (s *KeelServiceV1) getAddonsUpstream(req *http.Request) (*upstream, error) 
 	}
 	upRoute, ok := upRouteInterface.(*model.PluginRoute)
 	if !ok {
-		return nil, errors.New("invaild upstream plugin route type")
+		return nil, errors.New("invalid upstream plugin route type")
 	}
 	return &upstream{
 		ID:            upID,

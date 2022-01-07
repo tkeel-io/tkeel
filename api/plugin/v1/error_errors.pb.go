@@ -25,6 +25,8 @@ var pluginErrInstallerNotFound *errors.TError
 var pluginErrInstallInstaller *errors.TError
 var pluginErrUninstallPlugin *errors.TError
 var pluginErrOpenapiBindtenant *errors.TError
+var pluginErrPluginNotBeUnregister *errors.TError
+var pluginErrPluginHasTenantBinded *errors.TError
 
 func init() {
 	pluginErrUnknown = errors.New(int(codes.Unknown), "plugin.v1.PLUGIN_ERR_UNKNOWN", Error_PLUGIN_ERR_UNKNOWN.String())
@@ -55,6 +57,10 @@ func init() {
 	errors.Register(pluginErrUninstallPlugin)
 	pluginErrOpenapiBindtenant = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_OPENAPI_BINDTENANT", Error_PLUGIN_ERR_OPENAPI_BINDTENANT.String())
 	errors.Register(pluginErrOpenapiBindtenant)
+	pluginErrPluginNotBeUnregister = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_PLUGIN_NOT_BE_UNREGISTER", Error_PLUGIN_ERR_PLUGIN_NOT_BE_UNREGISTER.String())
+	errors.Register(pluginErrPluginNotBeUnregister)
+	pluginErrPluginHasTenantBinded = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_PLUGIN_HAS_TENANT_BINDED", Error_PLUGIN_ERR_PLUGIN_HAS_TENANT_BINDED.String())
+	errors.Register(pluginErrPluginHasTenantBinded)
 }
 
 func PluginErrUnknown() errors.Error {
@@ -111,4 +117,12 @@ func PluginErrUninstallPlugin() errors.Error {
 
 func PluginErrOpenapiBindtenant() errors.Error {
 	return pluginErrOpenapiBindtenant
+}
+
+func PluginErrPluginNotBeUnregister() errors.Error {
+	return pluginErrPluginNotBeUnregister
+}
+
+func PluginErrPluginHasTenantBinded() errors.Error {
+	return pluginErrPluginHasTenantBinded
 }
