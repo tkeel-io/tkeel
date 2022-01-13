@@ -20,6 +20,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -44,11 +45,15 @@ const (
 
 	AdminRole = "admin"
 
-	XPluginJwtHeader = "x-plugin-jwt"
-	XtKeelAuthHeader = "x-tKeel-auth"
-
 	KeyAdminPassword    = "Admin_Passwd"
 	KeyTenantBindPlugin = "tenant_%s_bind"
+)
+
+var (
+	XPluginJwtHeader = http.CanonicalHeaderKey("x-plugin-jwt")
+	XtKeelAuthHeader = http.CanonicalHeaderKey("x-tKeel-auth")
+
+	AuthorizationHeader = http.CanonicalHeaderKey("Authorization")
 )
 
 type Plugin struct {

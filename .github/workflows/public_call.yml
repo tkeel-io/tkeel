@@ -16,7 +16,6 @@ on:
         default: true
         type: boolean
         required: false
-
 jobs:
   lint:
     name: lint
@@ -30,15 +29,15 @@ jobs:
   test:
     name: Test in ${{ matrix.target_os }}_${{ matrix.target_arch }} with Go_${{inputs.go_version}}
     runs-on: ${{ matrix.os }}
-    needs: [ lint ]
+    needs: [lint]
     env:
       GOOS: ${{ matrix.target_os }}
       GOARCH: ${{ matrix.target_arch }}
       GOPROXY: https://proxy.golang.org
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macOS-latest ]
-        target_arch: [ amd64 ]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        target_arch: [amd64]
         include:
           - os: ubuntu-latest
             target_os: linux
@@ -66,7 +65,7 @@ jobs:
   build:
     name: Build ${{ matrix.target_os }}_${{ matrix.target_arch }} binaries
     runs-on: ${{ matrix.os }}
-    needs: [ lint, test ]
+    needs: [lint, test]
     env:
       GOVER: ${{inputs.go_version}}
       GOOS: ${{ matrix.target_os }}
@@ -75,8 +74,8 @@ jobs:
       ARCHIVE_OUTDIR: ${{ inputs.archive_outdir }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macOS-latest ]
-        target_arch: [ arm, arm64, amd64 ]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        target_arch: [arm, arm64, amd64]
         include:
           - os: ubuntu-latest
             target_os: linux

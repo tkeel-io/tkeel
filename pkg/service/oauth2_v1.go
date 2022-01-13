@@ -5,9 +5,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/tkeel-io/kit/log"
+	transport_http "github.com/tkeel-io/kit/transport/http"
 	pb "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/kv"
@@ -117,6 +119,24 @@ func (s *Oauth2ServiceV1) IssueAdminToken(ctx context.Context,
 		AccessToken: token,
 		ExpiresIn:   int32(expires.Seconds()),
 	}, nil
+}
+
+func (s *Oauth2ServiceV1) VerifyToken(ctx context.Context, empty *emptypb.Empty) (*emptypb.Empty, error) {
+	header := transport_http.HeaderFromContext(ctx)
+	token, ok := header[model.AuthorizationHeader]
+	if !ok {
+		log.Error("error get token \"\"")
+		return nil, pb.Oauth2ErrInvalidToken()
+	}
+	_, valid, err := s.secretProvider.Parse(strings.TrimPrefix(token[0], "Bearer "))
+	if err != nil {
+		log.Errorf("error parse token(%s): %w", token, err)
+		return nil, pb.Oauth2ErrInvalidToken()
+	}
+	if !valid {
+		return nil, pb.Oauth2ErrInvalidToken()
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func (s *Oauth2ServiceV1) checkPluginSecret(ps, os string) error {

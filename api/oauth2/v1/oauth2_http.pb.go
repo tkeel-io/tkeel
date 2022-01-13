@@ -31,6 +31,7 @@ type Oauth2HTTPServer interface {
 	AddPluginWhiteList(context.Context, *AddPluginWhiteListRequest) (*emptypb.Empty, error)
 	IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error)
 	IssuePluginToken(context.Context, *IssuePluginTokenRequest) (*IssueTokenResponse, error)
+	VerifyToken(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 }
 
 type Oauth2HTTPHandler struct {
@@ -166,6 +167,58 @@ func (h *Oauth2HTTPHandler) IssuePluginToken(req *go_restful.Request, resp *go_r
 	resp.WriteHeaderAndJson(http.StatusOK, out, "application/json")
 }
 
+func (h *Oauth2HTTPHandler) VerifyToken(req *go_restful.Request, resp *go_restful.Response) {
+	in := emptypb.Empty{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.VerifyToken(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
 func RegisterOauth2HTTPServer(container *go_restful.Container, srv Oauth2HTTPServer) {
 	var ws *go_restful.WebService
 	for _, v := range container.RegisteredWebServices() {
@@ -188,4 +241,6 @@ func RegisterOauth2HTTPServer(container *go_restful.Container, srv Oauth2HTTPSer
 		To(handler.AddPluginWhiteList))
 	ws.Route(ws.GET("/oauth2/admin").
 		To(handler.IssueAdminToken))
+	ws.Route(ws.GET("/oauth2/authorize").
+		To(handler.VerifyToken))
 }
