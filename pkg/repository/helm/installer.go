@@ -19,9 +19,11 @@ package helm
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/postrender"
 
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
@@ -39,6 +41,13 @@ const (
 	ValuesSchemaKey   = "VALUES.SCHEMA"
 	ValuesKey         = "VALUES"
 	ValuesFileName    = "values.yaml"
+)
+
+const (
+	_daprkustomizeScript      = "kustomize_script.sh"
+	_daprConfigValueName      = "daprConfig"
+	_daprAnnotationEnable     = "dapr_annotation_enable"
+	_daprAnnotationDeployment = "dapr_annotation_deployment"
 )
 
 var SecretContext = "secret"
@@ -146,6 +155,9 @@ func (h Installer) Install(ops ...*repository.Option) error {
 
 	installer.Version = h.brief.Version
 
+	installer.Namespace = h.namespace
+	installer.ReleaseName = h.id
+
 	if err = checkIfInstallable(h.chart); err != nil {
 		return fmt.Errorf("error installer installable: %w", err)
 	}
@@ -155,7 +167,7 @@ func (h Installer) Install(ops ...*repository.Option) error {
 	}
 
 	// Add inject dependencies.
-	injector, err := loadComponentChart()
+	dependencyChart, err := loadComponentChart()
 	if err != nil {
 		log.Error(err)
 		return errors.Wrap(err, "load component chart err")
@@ -164,11 +176,11 @@ func (h Installer) Install(ops ...*repository.Option) error {
 	if secret, ok := h.options["secret"].(string); ok {
 		s = secret
 	}
-	failInjector(injector, h.id, s)
-	h.inject(injector)
+	failInjector(dependencyChart, h.id, s)
+	if err = h.inject(installer, dependencyChart); err != nil {
+		return errors.Wrap(err, "inject err")
+	}
 
-	installer.Namespace = h.namespace
-	installer.ReleaseName = h.id
 	if _, err := installer.Run(h.chart, nil); err != nil {
 		return errors.Wrap(err, "INSTALLATION FAILED")
 	}
@@ -190,9 +202,23 @@ func (h Installer) Brief() *repository.InstallerBrief {
 	return &h.brief
 }
 
-func (h *Installer) inject(injector *chart.Chart) {
-	h.chart.Values["daprConfig"] = h.id
-	h.chart.AddDependency(injector)
+func (h *Installer) inject(installer *action.Install, dependency *chart.Chart) error {
+	h.chart.AddDependency(dependency)
+	if annotationEnable, ok := h.chart.Metadata.Annotations[_daprAnnotationEnable]; ok {
+		enable, err := strconv.ParseBool(annotationEnable)
+		if err != nil {
+			return errors.Wrap(err, "parse annotation enable")
+		}
+		if enable {
+			injectFileName, ok := h.chart.Metadata.Annotations[_daprAnnotationDeployment]
+			if !ok {
+				return errors.New("dapr_annotation_deployment not found")
+			}
+			installer.PostRenderer = postrender.NewExec()
+		}
+	} else {
+		h.chart.Values[_daprConfigValueName] = h.id
+	}
 }
 
 func loadComponentChart() (*chart.Chart, error) {
