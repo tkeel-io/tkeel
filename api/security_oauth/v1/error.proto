@@ -1,0 +1,46 @@
+
+syntax = "proto3";
+
+package api.security_oauth.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "github.com/tkeel-io/tkeel/api/security_oauth/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.security_oauth.v1";
+option java_outer_classname = "OpenapiProtoV1";
+
+// @plugins=protoc-gen-go-errors
+// 错误
+enum Error {
+	// 未知类型
+	// @code=UNKNOWN
+	OAUTH_ERR_UNKNOWN = 0;
+	// 无效请求
+	// @code=INVALID_ARGUMENT
+	OAUTH_ERR_INVALID_REQUEST = 1; //400
+	// 未授权
+	// @code=INVALID_ARGUMENT
+	OAUTH_ERR_UNAUTHORIZED_CLIENT = 2; //401
+	// 限制访问
+	// @code=INVALID_ARGUMENT
+	OAUTH_ERR_ACCESS_DENIED = 3; //403
+	// 不支持的授权返回类型
+	// @code=INVALID_ARGUMENT
+	OAUTH_ERR_UNSUPPORTED_RESPONSE_TYPE = 4; //401
+	// 无效范围
+	// @code=INVALID_ARGUMENT
+	OAUTH_ERR_INVALID_SCOPE = 5; //400
+	// 服务错误
+	// @code=INTERNAL
+	OAUTH_ERR_SERVER_ERROR = 6; //500
+	// 无效客户端
+	// @code=PERMISSION_DENIED
+	OAUTH_ERR_INVALID_CLIENT = 7; //401
+	// 无效授权
+	// @code=INTERNAL
+	OAUTH_ERR_INVALID_GRANT = 8;// 401
+	// 不支持的授予类型
+	// @code=INVALID_ARGUMENT
+	OAUTH_ERR_UNSUPPORTED_GRANT_TYPE = 9; //401
+}

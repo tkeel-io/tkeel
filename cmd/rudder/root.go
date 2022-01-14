@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/tkeel-io/security/gormdb"
 	"os"
 	"os/signal"
 	"syscall"
@@ -26,16 +27,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
-	entity_v1 "github.com/tkeel-io/security/apirouter/entity/v1"
-	oauth_v1 "github.com/tkeel-io/security/apirouter/oauth/v1"
-	rbac_v1 "github.com/tkeel-io/security/apirouter/rbac/v1"
-	tenant_v1 "github.com/tkeel-io/security/apirouter/tenant/v1"
-	security_dao "github.com/tkeel-io/security/models/dao"
-	"github.com/tkeel-io/security/models/entity"
+
 	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	repo "github.com/tkeel-io/tkeel/api/repo/v1"
+	tenant_v1 "github.com/tkeel-io/tkeel/api/tenant/v1"
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
@@ -147,24 +144,13 @@ var rootCmd = &cobra.Command{
 			EntriesSrvV1 := service.NewEntryService(kvOp, pOp)
 			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, EntriesSrvV1)
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), EntriesSrvV1)
-			{
-				// copy mysql configuration.
-				conf.SecurityConf.RBAC.Adapter = conf.SecurityConf.Mysql
-				// init security service.
-				security_dao.SetUp(conf.SecurityConf.Mysql)
-				// tenant.
-				tenant_v1.RegisterToRestContainer(httpSrv.Container)
-				// oauth2.
-				oauth_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.OAuth2)
-				// rbac.
-				rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.RBAC)
-				// entity token.
-				entityTokenOperator := entity.NewEntityTokenOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
-				if entityTokenOperator == nil {
-					os.Exit(-1)
-				}
-				entity_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.Entity, entityTokenOperator)
-			}
+
+			// tenant service.
+			db, err := gormdb.SetUp(gormdb.DBConfig{})
+			TenantSrv := service.NewTenantService(db)
+			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, TenantSrv)
+			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), TenantSrv)
+
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

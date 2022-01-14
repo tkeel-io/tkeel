@@ -1,0 +1,379 @@
+syntax = "proto3";
+
+package tenant.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/empty.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/tkeel-io/tkeel/api/tenant/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.tkeel.rudder.tenant.v1";
+
+
+// The greeting service definition.
+service Tenant {
+  // create a tenant.
+  rpc CreateTenant(CreateTenantRequest) returns (CreateTenantResponse) {
+    option (google.api.http) = {
+      post : "/tenants"
+      body : "body"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "create a tenant"
+      operation_id : "CreateTenant"
+      tags : "Tenant"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "409"
+          value : {description : "ALREADY_EXISTS"}
+        },
+        {
+          key : "500"
+          value : {description : "UNEXPECT_INTERNAL"}
+        }
+      ]
+    };
+  }
+
+  // get a tenant.
+  rpc GetTenant(GetTenantRequest) returns(GetTenantResponse){
+    option (google.api.http) = {
+      get : "/tenants/{tenant_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "get a tenant"
+      operation_id : "GetTenant"
+      tags : "Tenant"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        }
+      ]
+    };
+  }
+
+
+  // list tenant.
+  rpc ListTenant(google.protobuf.Empty) returns(ListTenantResponse){
+    option (google.api.http) = {
+      get : "/tenants"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "tenant list"
+      operation_id : "ListTenant"
+      tags : "Tenant"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        }
+      ]
+    };
+  }
+
+  // delete a tenant.
+  rpc DeleteTenant(DeleteTenantRequest) returns (google.protobuf.Empty){
+    option (google.api.http) = {
+      delete : "/tenants/{tenant_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "delete a tenant"
+      operation_id : "DeleteTenant"
+      tags : "Tenant"
+      responses : [{
+        key : "200"
+        value : {description : "OK"}
+      }]
+    };
+  }
+
+  // create a user.
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse){
+    option (google.api.http) = {
+      post : "/tenants/{tenant_id}/users"
+      body : "body"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "create a  user at tenant"
+      operation_id : "CreateUser"
+      tags : "Tenant"
+      responses : [{
+        key : "200"
+        value : {description : "OK"}
+      }]
+    };
+  }
+
+  //  get user.
+  rpc GetUser(GetUserRequest) returns (GetUserResponse){
+    option (google.api.http) = {
+      get : "/tenants/{tenant_id}/users/{user_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "get a  user"
+      operation_id : "GetUser"
+      tags : "Tenant"
+      responses : [{
+        key : "200"
+        value : {description : "OK"}
+      }]
+    };
+  }
+
+  // list user.
+  rpc ListUser(ListUserRequest)returns(ListUserResponse){
+    option (google.api.http) = {
+      get : "/tenants/{tenant_id}/users"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "list users"
+      operation_id : "ListUser"
+      tags : "Tenant"
+      responses : [{
+        key : "200"
+        value : {description : "OK"}
+      }]
+    };
+  }
+
+  // delete a user.
+  rpc DeleteUser(DeleteUserRequest)returns(google.protobuf.Empty){
+    option (google.api.http) = {
+      delete : "/tenants/{tenant_id}/users/{user_id}"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "delete a user"
+      operation_id : "DeleteUser"
+      tags : "Tenant"
+      responses : [{
+        key : "200"
+        value : {description : "OK"}
+      }]
+    };
+  }
+}
+
+
+
+// The request message.
+message CreateTenantRequest {
+  TenantCreateBody body = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "create tenant body params"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message TenantCreateBody {
+  string title = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant title"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+  string remark = 2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant remark"
+    },
+    (google.api.field_behavior) = OPTIONAL
+  ];
+  string tenant_id = 3 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant id"
+    },
+    (google.api.field_behavior) = OPTIONAL
+  ];
+  TenantAdmin admin = 4 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "set tenant admin"
+    },
+    (google.api.field_behavior) = OPTIONAL
+  ];
+}
+
+message TenantAdmin {
+  string username = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : " Tenant Admin username "
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+  string password =2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : " Tenant Admin password "
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+// The response message containing the greetings
+message CreateTenantResponse {
+  string tenant_id = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "created tenant id"
+    }];
+  string tenant_title = 2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "created tenant title"
+    }];
+  string admin_username = 3 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "created tenant admin username"
+    }];
+}
+
+
+message GetTenantRequest {
+  string tenant_id = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant id"
+    }];
+}
+message GetTenantResponse {
+  string tenant_id = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant id"
+    }];
+  string title = 2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant title"
+    }];
+  string remark = 3 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant remark"
+    }];
+}
+
+
+message ListTenantResponse {
+  repeated TenantDetail tenants = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenants"
+    }];
+
+}
+
+
+message TenantDetail {
+  string tenant_id = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant id"
+    }];
+  string title =2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant id"
+    }];
+  string remark = 3 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant remark"
+    }];;
+  int64 num_user = 4 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "user number in tenant"
+    }];
+}
+
+message DeleteTenantRequest {
+  string tenant_id = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant id"
+    }];
+}
+
+// user
+message CreateUserRequest {
+  string tenant_id = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "tenant id"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+  CreateUserBody body = 2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "create user body params"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message CreateUserBody {
+  string username = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "user name"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  string password = 2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "user password"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message CreateUserResponse {
+  string tenant_id = 1;
+  string user_id = 2;
+  string username = 3;
+}
+
+message GetUserRequest {
+  string tenant_id =1;
+  string user_id =2;
+}
+
+message GetUserResponse {
+  string tenant_id = 1;
+  string user_id = 2;
+  string external_id =3;
+  string username = 4;
+  string email = 5;
+  string nick_name = 6;
+  string avatar = 7;
+}
+
+message ListUserRequest {
+  string tenant_id = 1;
+  int32  page_num = 2;
+  int32  page_size = 3;
+  string order_by = 4;
+  bool is_descending = 5;
+}
+
+
+message ListUserResponse {
+  int64 total = 1;
+  int32 page_num = 2;
+  int32 page_size = 3;
+  repeated UserListData users = 4;
+}
+
+message UserListData {
+  string tenant_id = 1;
+  string user_id = 2;
+  string external_id =3;
+  string username = 4;
+  string email = 5;
+  string nick_name = 6;
+  string avatar = 7;
+}
+
+message DeleteUserRequest {
+  string tenant_id =1;
+  string user_id =2;
+}

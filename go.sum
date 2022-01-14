@@ -1595,8 +1595,6 @@ github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb h1:rFm8sftTfuF1hMen/l
 github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb/go.mod h1:FYeTM+tqf/tdrf2HxUX2wdAAHQM8ggN4+IbZv4b6+wU=
 github.com/tkeel-io/security v0.0.0-20211222041550-1058f6c1ee86 h1:Vj8zHfbpXoBjDxHt/3gpkSitqckam6HGygXmvRp9AxM=
 github.com/tkeel-io/security v0.0.0-20211222041550-1058f6c1ee86/go.mod h1:vBVW3knZe4KF747QeK3Mf19zW/M73JKL8S7zrQtpczU=
-github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211221075227-279ba1983f61 h1:hKiMIgUs22wSfd92ysXjLgD4vYIkikI7LMkLKqB+Xs8=
-github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211221075227-279ba1983f61/go.mod h1:tjJgHPar2pFjydhnOCLspww8tSOvcKch241PeP9OL8E=
 github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211223081012-25aaa61491ab h1:YrGEytN45AYx+/APzXc+rvU16nhuXBYgHOTHQuzecIg=
 github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20211223081012-25aaa61491ab/go.mod h1:tjJgHPar2pFjydhnOCLspww8tSOvcKch241PeP9OL8E=
 github.com/tklauser/go-sysconf v0.3.6/go.mod h1:MkWzOF4RMCshBAMXuhXJs64Rte09mITnppBXY/rYEFI=

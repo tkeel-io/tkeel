@@ -21,10 +21,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
-
-	security_conf "github.com/tkeel-io/security/apiserver/config"
-
-	"gopkg.in/yaml.v3"
 )
 
 // TkeelConf tkeel platform configuration.
@@ -69,18 +65,6 @@ type LogConf struct {
 	Output []string `json:"output" yaml:"output"`
 }
 
-// SecurityConf.
-type SecurityConf struct {
-	// Mysql  mysql config of security.
-	Mysql *security_conf.MysqlConf `json:"mysql" yaml:"mysql"`
-	// RBAC rbac config of security.
-	RBAC *security_conf.RBACConfig `json:"rbac" yaml:"rbac"`
-	// OAuth2Config oauth2 config of security.
-	OAuth2 *security_conf.OAuth2Config `json:"oauth2" yaml:"oauth2"` // nolint
-	// entity entity security config of auth.
-	Entity *security_conf.EntityConfig `json:"entity" yaml:"entity"`
-}
-
 // Configuration.
 type Configuration struct {
 	// HTTPAddr http server listen address.
@@ -96,7 +80,7 @@ type Configuration struct {
 	// Log log configuration.
 	Log *LogConf `json:"log" yaml:"log"`
 	// SecurityConf security auth config.
-	SecurityConf *SecurityConf `json:"security_conf" yaml:"securityConf"`
+	//SecurityConf *SecurityConf `json:"security_conf" yaml:"securityConf"`
 }
 
 // NewDefaultConfiguration returns the empty config.
@@ -106,12 +90,6 @@ func NewDefaultConfiguration() *Configuration {
 		Proxy: &ProxyConf{},
 		Dapr:  &DaprConf{},
 		Log:   &LogConf{},
-		SecurityConf: &SecurityConf{
-			Mysql:  &security_conf.MysqlConf{},
-			RBAC:   &security_conf.RBACConfig{Adapter: &security_conf.MysqlConf{}},
-			OAuth2: &security_conf.OAuth2Config{Redis: &security_conf.RedisConf{}, AccessGenerate: &security_conf.AccessConf{}},
-			Entity: &security_conf.EntityConfig{},
-		},
 	}
 }
 
@@ -156,18 +134,18 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.Tkeel.AdminPassword, "tkeel.admin_password", getEnvStr("TKEEL_ADMIN_PASSWD", "changeme"), "tkeel admin password.(default env TKEEL_ADMIN_PASSWD)")
 	strVar(&c.Tkeel.Version, "tkeel.version", getEnvStr("TKEEL_VERSION", "v0.3.0"), "tkeel version.(default v0.3.0)")
 	strVar(&c.Tkeel.WatchInterval, "tkeel.watch_interval", getEnvStr("TKEEL_WATCH_INTERVAL", "10s"), "tkeel watch change interval.(default 10s)")
-	strVar(&c.SecurityConf.Mysql.DBName, "security.mysql.dbname", getEnvStr("TKEEL_SECURITY_MYSQL_DBNAME", "tkeelauth"), "database name of auth`s mysql config")
-	strVar(&c.SecurityConf.Mysql.User, "security.mysql.user", getEnvStr("TKEEL_SECURITY_MYSQL_USER", "root"), "user name of auth`s mysql config")
-	strVar(&c.SecurityConf.Mysql.Password, "security.mysql.password", getEnvStr("TKEEL_SECURITY_MYSQL_PASSWORD", "a3fks=ixmeb82a"), "password of auth`s mysql config")
-	strVar(&c.SecurityConf.Mysql.Host, "security.mysql.host", getEnvStr("TKEEL_SECURITY_MYSQL_HOST", "tkeel-middleware-mysql"), "host of auth`s mysql config")
-	strVar(&c.SecurityConf.Mysql.Port, "security.mysql.port", getEnvStr("TKEEL_SECURITY_MYSQL_PORT", "3306"), "port of auth`s mysql config")
-	strVar(&c.SecurityConf.OAuth2.Redis.Addr, "security.oauth2.redis.addr", getEnvStr("TKEEL_SECURITY_OAUTH2_REDIS_ADDR", "tkeel-middleware-redis-master:6379"), "address of auth`s redis config")
-	strVar(&c.SecurityConf.OAuth2.Redis.Password, "security.oauth2.redis.password", getEnvStr("TKEEL_SECURITY_OAUTH2_REDIS_PASSWORD", "Biz0P8Xoup"), "password of auth`s redis config")
-	intVar(&c.SecurityConf.OAuth2.Redis.DB, "security.oauth2.redis.db", getEnvInt("TKEEL_SECURITY_OAUTH2_REDIS_DB", 0), "db of auth`s redis")
-	strVar(&c.SecurityConf.OAuth2.AuthType, "security.oauth2.auth_type", getEnvStr("TKEEL_SECURITY_OAUTH2_AUTH_TYPE", ""), "security auth type of auth`s access type,if type == demo sikp auth filter.")
-	strVar(&c.SecurityConf.OAuth2.AccessGenerate.SecurityKey, "security.oauth2.access.sk", getEnvStr("TKEEL_SECURITY_ACCESS_SK", "eixn27adg3"), "security key of auth`s access generate")
-	strVar(&c.SecurityConf.OAuth2.AccessGenerate.AccessTokenExp, "security.oauth2.access.access_token_exp", getEnvStr("TKEEL_SECURITY_ACCESS_TOKEN_EXP", "30m"), "security token of auth`s access exp")
-	strVar(&c.SecurityConf.Entity.SecurityKey, "security.entity.sk", getEnvStr("TKEEL_SECURITY_ENTITY_SK", "i5s2x3nov894"), "security  key auth`s entity token access")
+	//strVar(&c.SecurityConf.Mysql.DBName, "security.mysql.dbname", getEnvStr("TKEEL_SECURITY_MYSQL_DBNAME", "tkeelauth"), "database name of auth`s mysql config")
+	//strVar(&c.SecurityConf.Mysql.User, "security.mysql.user", getEnvStr("TKEEL_SECURITY_MYSQL_USER", "root"), "user name of auth`s mysql config")
+	//strVar(&c.SecurityConf.Mysql.Password, "security.mysql.password", getEnvStr("TKEEL_SECURITY_MYSQL_PASSWORD", "a3fks=ixmeb82a"), "password of auth`s mysql config")
+	//strVar(&c.SecurityConf.Mysql.Host, "security.mysql.host", getEnvStr("TKEEL_SECURITY_MYSQL_HOST", "tkeel-middleware-mysql"), "host of auth`s mysql config")
+	//strVar(&c.SecurityConf.Mysql.Port, "security.mysql.port", getEnvStr("TKEEL_SECURITY_MYSQL_PORT", "3306"), "port of auth`s mysql config")
+	//strVar(&c.SecurityConf.OAuth2.Redis.Addr, "security.oauth2.redis.addr", getEnvStr("TKEEL_SECURITY_OAUTH2_REDIS_ADDR", "tkeel-middleware-redis-master:6379"), "address of auth`s redis config")
+	//strVar(&c.SecurityConf.OAuth2.Redis.Password, "security.oauth2.redis.password", getEnvStr("TKEEL_SECURITY_OAUTH2_REDIS_PASSWORD", "Biz0P8Xoup"), "password of auth`s redis config")
+	//intVar(&c.SecurityConf.OAuth2.Redis.DB, "security.oauth2.redis.db", getEnvInt("TKEEL_SECURITY_OAUTH2_REDIS_DB", 0), "db of auth`s redis")
+	//strVar(&c.SecurityConf.OAuth2.AuthType, "security.oauth2.auth_type", getEnvStr("TKEEL_SECURITY_OAUTH2_AUTH_TYPE", ""), "security auth type of auth`s access type,if type == demo sikp auth filter.")
+	//strVar(&c.SecurityConf.OAuth2.AccessGenerate.SecurityKey, "security.oauth2.access.sk", getEnvStr("TKEEL_SECURITY_ACCESS_SK", "eixn27adg3"), "security key of auth`s access generate")
+	//strVar(&c.SecurityConf.OAuth2.AccessGenerate.AccessTokenExp, "security.oauth2.access.access_token_exp", getEnvStr("TKEEL_SECURITY_ACCESS_TOKEN_EXP", "30m"), "security token of auth`s access exp")
+	//strVar(&c.SecurityConf.Entity.SecurityKey, "security.entity.sk", getEnvStr("TKEEL_SECURITY_ENTITY_SK", "i5s2x3nov894"), "security  key auth`s entity token access")
 }
 
 func getEnvStr(env string, defaultValue string) string {
