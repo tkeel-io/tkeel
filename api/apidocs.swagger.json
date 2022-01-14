@@ -1,16 +1,135 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/tenant/v1/error.proto",
+    "title": "api/security_oauth/v1/oauth.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "Oauth"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/oauth/{tenant_id}/authorize": {
+      "get": {
+        "summary": "oauth authorize code with username and password",
+        "operationId": "OauthAuthorize",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1AuthorizeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "tenantID path param",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "response_type",
+            "description": "authorize response type, this must 'code',query param",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "username",
+            "description": "username query param",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "description": "password query param",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OAuth"
+        ]
+      }
+    },
+    "/oauth/{tenant_id}/token": {
+      "get": {
+        "summary": "oauth token with code or password",
+        "operationId": "OauthToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1TokenResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "tenant_id path param",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "grant_type",
+            "description": "grant_type 'authorize_code','password', query param",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "code",
+            "description": "code with authorize response,query param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "username",
+            "description": "username while grant_type is password ,query param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "description": "password while grant_type is password,query param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OAuth"
+        ]
+      }
+    }
+  },
   "definitions": {
     "protobufAny": {
       "type": "object",
@@ -36,6 +155,32 @@
           "items": {
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1AuthorizeResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TokenResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string"
+        },
+        "refresh_token": {
+          "type": "string"
+        },
+        "expires_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "token_type": {
+          "type": "string"
         }
       }
     }

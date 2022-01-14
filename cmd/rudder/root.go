@@ -19,7 +19,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/tkeel-io/security/gormdb"
+
 	"os"
 	"os/signal"
 	"syscall"
@@ -27,11 +27,13 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/security/gormdb"
 
 	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	repo "github.com/tkeel-io/tkeel/api/repo/v1"
+	oauth_v1 "github.com/tkeel-io/tkeel/api/security_oauth/v1"
 	tenant_v1 "github.com/tkeel-io/tkeel/api/tenant/v1"
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
@@ -150,6 +152,10 @@ var rootCmd = &cobra.Command{
 			TenantSrv := service.NewTenantService(db)
 			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, TenantSrv)
 			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), TenantSrv)
+			// oauth server
+			OauthSrv := service.NewOauthService()
+			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, OauthSrv)
+			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), OauthSrv)
 
 		}
 	},
