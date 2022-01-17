@@ -79,7 +79,7 @@ func (s *Oauth2ServiceV1) IssuePluginToken(ctx context.Context, req *pb.IssuePlu
 			return nil, pb.Oauth2ErrInternalStore()
 		}
 		if err = s.checkPluginSecret(plugin.Secret, req.ClientSecret); err != nil {
-			log.Errorf("error issue(%s) oauth2 token: %w", pluginID, err)
+			log.Errorf("error issue(%s) oauth2 token(%s -- %s): %s", pluginID, plugin.Secret, req.ClientSecret, err)
 			return nil, pb.Oauth2ErrSecretNotMatch()
 		}
 	}
