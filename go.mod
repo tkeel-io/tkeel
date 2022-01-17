@@ -25,7 +25,15 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	helm.sh/helm/v3 v3.7.2
 	k8s.io/cli-runtime v0.23.1
+	sigs.k8s.io/kustomize/api v0.10.2-0.20220110233228-13e26004fd4e
+	sigs.k8s.io/kustomize/kyaml v0.13.0
 	sigs.k8s.io/yaml v1.2.0
 )
 
+exclude sigs.k8s.io/kustomize/api v0.2.0
+
 replace github.com/russross/blackfriday => github.com/russross/blackfriday v1.6.0
+
+replace sigs.k8s.io/kustomize/api => github.com/kubernetes-sigs/kustomize/api v0.10.2-0.20220110233228-13e26004fd4e
+
+replace sigs.k8s.io/kustomize/kyaml => github.com/kubernetes-sigs/kustomize/kyaml v0.10.2-0.20220110233228-13e26004fd4e

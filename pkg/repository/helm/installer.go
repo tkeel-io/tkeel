@@ -19,11 +19,9 @@ package helm
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"helm.sh/helm/v3/pkg/cli"
-	"helm.sh/helm/v3/pkg/postrender"
 
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
@@ -41,13 +39,6 @@ const (
 	ValuesSchemaKey   = "VALUES.SCHEMA"
 	ValuesKey         = "VALUES"
 	ValuesFileName    = "values.yaml"
-)
-
-const (
-	_daprkustomizeScript      = "kustomize_script.sh"
-	_daprConfigValueName      = "daprConfig"
-	_daprAnnotationEnable     = "dapr_annotation_enable"
-	_daprAnnotationDeployment = "dapr_annotation_deployment"
 )
 
 var SecretContext = "secret"
@@ -165,18 +156,15 @@ func (h Installer) Install(ops ...*repository.Option) error {
 	if h.chart.Metadata.Deprecated {
 		log.Warn("This chart is deprecated")
 	}
-
 	// Add inject dependencies.
 	dependencyChart, err := loadComponentChart()
 	if err != nil {
 		log.Error(err)
 		return errors.Wrap(err, "load component chart err")
 	}
-	s := SecretContext
-	if secret, ok := h.options["secret"].(string); ok {
-		s = secret
-	}
-	failInjector(dependencyChart, h.id, s)
+	failInjector(dependencyChart, h.id, _componentSecret)
+	h.chart.AddDependency(dependencyChart)
+	// inject dapr annotation.
 	if err = h.inject(installer, dependencyChart); err != nil {
 		return errors.Wrap(err, "inject err")
 	}
@@ -203,22 +191,16 @@ func (h Installer) Brief() *repository.InstallerBrief {
 }
 
 func (h *Installer) inject(installer *action.Install, dependency *chart.Chart) error {
-	h.chart.AddDependency(dependency)
-	if annotationEnable, ok := h.chart.Metadata.Annotations[_daprAnnotationEnable]; ok {
-		enable, err := strconv.ParseBool(annotationEnable)
-		if err != nil {
-			return errors.Wrap(err, "parse annotation enable")
-		}
-		if enable {
-			injectFileName, ok := h.chart.Metadata.Annotations[_daprAnnotationDeployment]
-			if !ok {
-				return errors.New("dapr_annotation_deployment not found")
-			}
-			installer.PostRenderer = postrender.NewExec()
-		}
-	} else {
-		h.chart.Values[_daprConfigValueName] = h.id
+	if !getBoolAnnotationOrDefault(h.chart.Metadata.Annotations, tKeelPluginEnableKey, false) {
+		return nil
 	}
+	deployment := getStringAnnotation(h.chart.Metadata.Annotations, tKeelPluginDeploymentKey)
+	appPort := getStringAnnotation(h.chart.Metadata.Annotations, tKeelPluginPortKey)
+	if deployment == "" || appPort == "" {
+		return errors.New("get plugin annotations err")
+	}
+	installer.PostRenderer = newKustomizeRender(deployment, h.id, appPort)
+	return nil
 }
 
 func loadComponentChart() (*chart.Chart, error) {
