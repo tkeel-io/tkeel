@@ -28,6 +28,7 @@ var (
 )
 
 type OauthHTTPServer interface {
+	Authenticate(context.Context, *AuthenticateRequest) (*AuthenticateResponse, error)
 	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
 	Token(context.Context, *TokenRequest) (*TokenResponse, error)
 }
@@ -38,6 +39,58 @@ type OauthHTTPHandler struct {
 
 func newOauthHTTPHandler(s OauthHTTPServer) *OauthHTTPHandler {
 	return &OauthHTTPHandler{srv: s}
+}
+
+func (h *OauthHTTPHandler) Authenticate(req *go_restful.Request, resp *go_restful.Response) {
+	in := AuthenticateRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.Authenticate(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
 }
 
 func (h *OauthHTTPHandler) Authorize(req *go_restful.Request, resp *go_restful.Response) {
@@ -174,4 +227,6 @@ func RegisterOauthHTTPServer(container *go_restful.Container, srv OauthHTTPServe
 		To(handler.Authorize))
 	ws.Route(ws.GET("/oauth/{tenant_id}/token").
 		To(handler.Token))
+	ws.Route(ws.GET("/oauth/authenticate").
+		To(handler.Authenticate))
 }

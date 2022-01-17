@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type OauthClient interface {
 	Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error)
 	Token(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
+	Authenticate(ctx context.Context, in *AuthenticateRequest, opts ...grpc.CallOption) (*AuthenticateResponse, error)
 }
 
 type oauthClient struct {
@@ -48,12 +49,22 @@ func (c *oauthClient) Token(ctx context.Context, in *TokenRequest, opts ...grpc.
 	return out, nil
 }
 
+func (c *oauthClient) Authenticate(ctx context.Context, in *AuthenticateRequest, opts ...grpc.CallOption) (*AuthenticateResponse, error) {
+	out := new(AuthenticateResponse)
+	err := c.cc.Invoke(ctx, "/api.security_oauth.v1.Oauth/Authenticate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OauthServer is the server API for Oauth service.
 // All implementations must embed UnimplementedOauthServer
 // for forward compatibility
 type OauthServer interface {
 	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
 	Token(context.Context, *TokenRequest) (*TokenResponse, error)
+	Authenticate(context.Context, *AuthenticateRequest) (*AuthenticateResponse, error)
 	mustEmbedUnimplementedOauthServer()
 }
 
@@ -66,6 +77,9 @@ func (UnimplementedOauthServer) Authorize(context.Context, *AuthorizeRequest) (*
 }
 func (UnimplementedOauthServer) Token(context.Context, *TokenRequest) (*TokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Token not implemented")
+}
+func (UnimplementedOauthServer) Authenticate(context.Context, *AuthenticateRequest) (*AuthenticateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Authenticate not implemented")
 }
 func (UnimplementedOauthServer) mustEmbedUnimplementedOauthServer() {}
 
@@ -116,6 +130,24 @@ func _Oauth_Token_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Oauth_Authenticate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthenticateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OauthServer).Authenticate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.security_oauth.v1.Oauth/Authenticate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OauthServer).Authenticate(ctx, req.(*AuthenticateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Oauth_ServiceDesc is the grpc.ServiceDesc for Oauth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -130,6 +162,10 @@ var Oauth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Token",
 			Handler:    _Oauth_Token_Handler,
+		},
+		{
+			MethodName: "Authenticate",
+			Handler:    _Oauth_Authenticate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

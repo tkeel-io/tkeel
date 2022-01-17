@@ -43,4 +43,8 @@ enum Error {
 	// 不支持的授予类型
 	// @code=INVALID_ARGUMENT
 	OAUTH_ERR_UNSUPPORTED_GRANT_TYPE = 9; //401
+	// 不支持的授予类型
+	// @code=INVALID_ARGUMENT
+	OAUTH_ERR_INVALID_ACCESS_TOKEN = 10; //401
+
 }

@@ -45,6 +45,21 @@ service Oauth {
 			}]
 		};
 	}
+
+	rpc Authenticate(AuthenticateRequest)returns(AuthenticateResponse) {
+		option (google.api.http) = {
+			get : "/oauth/authenticate"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary : "oauth authenticate with header Authorization"
+			operation_id : "OauthAuthenticate"
+			tags : "OAuth"
+			responses : [{
+				key : "200"
+				value : {description : "OK"}
+			}]
+		};
+	}
 }
 
 //
@@ -73,6 +88,18 @@ message AuthorizeRequest {
 		},
 		(google.api.field_behavior) = REQUIRED
 	];
+	string redirect_uri = 5 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "redirect uri with code"
+		},
+		(google.api.field_behavior) = REQUIRED
+	];
+	string state = 6 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "state"
+		},
+		(google.api.field_behavior) = OPTIONAL
+	];
 }
 
 message AuthorizeResponse {
@@ -98,15 +125,28 @@ message TokenRequest {
 		},
 		(google.api.field_behavior) = OPTIONAL
 	];
-	string username= 4 [
+	string redirect_uri = 4 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "redirect_uri while grant_type is code,query param"
+		},
+		(google.api.field_behavior) = OPTIONAL
+	];
+	string username= 5 [
 		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
 			description : "username while grant_type is password ,query param"
 		},
 		(google.api.field_behavior) = OPTIONAL
 	];
-	string password = 5 [
+	string password = 6 [
 		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
 			description : "password while grant_type is password,query param"
+		},
+		(google.api.field_behavior) = OPTIONAL
+	];
+
+	string refresh_token = 7 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "refresh token while grant_type is refresh_token,query param"
 		},
 		(google.api.field_behavior) = OPTIONAL
 	];
@@ -115,7 +155,19 @@ message TokenRequest {
 message TokenResponse {
 	string access_token =1;
 	string refresh_token =2;
-	int64 expires_id =3;
+	int64 expires_in =3;
 	string token_type = 4;
 }
 
+
+message AuthenticateRequest {
+}
+
+message AuthenticateResponse {
+	int64 expires_in = 1;
+	string user_id = 2;
+	string username= 3;
+	string external_id =4;
+	string nick_name =5;
+	string avatar = 6;
+}

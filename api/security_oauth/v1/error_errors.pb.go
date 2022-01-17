@@ -21,6 +21,7 @@ var oauthErrServerError *errors.TError
 var oauthErrInvalidClient *errors.TError
 var oauthErrInvalidGrant *errors.TError
 var oauthErrUnsupportedGrantType *errors.TError
+var oauthErrInvalidAccessToken *errors.TError
 
 func init() {
 	oauthErrUnknown = errors.New(int(codes.Unknown), "api.security_oauth.v1.OAUTH_ERR_UNKNOWN", Error_OAUTH_ERR_UNKNOWN.String())
@@ -43,6 +44,8 @@ func init() {
 	errors.Register(oauthErrInvalidGrant)
 	oauthErrUnsupportedGrantType = errors.New(int(codes.InvalidArgument), "api.security_oauth.v1.OAUTH_ERR_UNSUPPORTED_GRANT_TYPE", Error_OAUTH_ERR_UNSUPPORTED_GRANT_TYPE.String())
 	errors.Register(oauthErrUnsupportedGrantType)
+	oauthErrInvalidAccessToken = errors.New(int(codes.InvalidArgument), "api.security_oauth.v1.OAUTH_ERR_INVALID_ACCESS_TOKEN", Error_OAUTH_ERR_INVALID_ACCESS_TOKEN.String())
+	errors.Register(oauthErrInvalidAccessToken)
 }
 
 func OauthErrUnknown() errors.Error {
@@ -83,4 +86,8 @@ func OauthErrInvalidGrant() errors.Error {
 
 func OauthErrUnsupportedGrantType() errors.Error {
 	return oauthErrUnsupportedGrantType
+}
+
+func OauthErrInvalidAccessToken() errors.Error {
+	return oauthErrInvalidAccessToken
 }

@@ -24,6 +24,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/go-oauth2/oauth2/v4/generates"
+	oredis "github.com/go-oauth2/redis/v4"
+	"github.com/go-redis/redis/v8"
+	"github.com/golang-jwt/jwt"
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
@@ -147,13 +151,20 @@ var rootCmd = &cobra.Command{
 			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, EntriesSrvV1)
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), EntriesSrvV1)
 
-			// tenant service.
+			// tenant service. // todo config
 			db, err := gormdb.SetUp(gormdb.DBConfig{})
 			TenantSrv := service.NewTenantService(db)
 			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, TenantSrv)
 			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), TenantSrv)
-			// oauth server
-			OauthSrv := service.NewOauthService()
+			// oauth server ///todo config
+			tokenConf := &service.TokenConf{}
+			tokenStore := oredis.NewRedisStore(&redis.Options{
+				Addr:     "",
+				DB:       0,
+				Password: "",
+			})
+			tokenGenerator := generates.NewJWTAccessGenerate("", []byte(""), jwt.SigningMethodHS512)
+			OauthSrv := service.NewOauthService(tokenConf, tokenStore, tokenGenerator, nil)
 			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, OauthSrv)
 			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), OauthSrv)
 
