@@ -41,7 +41,7 @@ const (
 	ValuesFileName    = "values.yaml"
 )
 
-var SecretContext = "secret"
+var SecretContext = "changeme"
 
 var _ repository.Installer = &Installer{}
 
