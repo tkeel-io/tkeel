@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/security_oauth/v1/oauth.proto",
+    "title": "api/rbac/v1/rbac.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "Oauth"
+      "name": "Rbac"
     }
   ],
   "consumes": [
@@ -16,15 +16,15 @@
     "application/json"
   ],
   "paths": {
-    "/oauth/{tenant_id}/authorize": {
-      "get": {
-        "summary": "oauth authorize code with username and password",
-        "operationId": "OauthAuthorize",
+    "/rbac/check/tenant/users/permissions": {
+      "post": {
+        "summary": "list user permissions ",
+        "operationId": "ListUserPermissions",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1AuthorizeResponse"
+              "$ref": "#/definitions/v1CheckUserPermissionResponse"
             }
           },
           "default": {
@@ -36,55 +36,28 @@
         },
         "parameters": [
           {
-            "name": "tenant_id",
-            "description": "tenantID path param",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string"
-          },
-          {
-            "name": "response_type",
-            "description": "authorize response type, this must 'code',query param",
-            "in": "query",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "username",
-            "description": "username query param",
-            "in": "query",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "password",
-            "description": "password query param",
-            "in": "query",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "redirect_uri",
-            "description": "redirect uri with code",
-            "in": "query",
-            "required": true,
-            "type": "string"
+            "schema": {
+              "$ref": "#/definitions/v1CheckUserPermissionBody"
+            }
           }
         ],
         "tags": [
-          "OAuth"
+          "rbac"
         ]
       }
     },
-    "/oauth/{tenant_id}/token": {
+    "/rbac/tenant/{tenant_id}/roles": {
       "get": {
-        "summary": "oauth token with code or password",
-        "operationId": "OauthToken",
+        "summary": "list role in tenant ",
+        "operationId": "ListRole",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1TokenResponse"
+              "$ref": "#/definitions/v1ListRolesResponse"
             }
           },
           "default": {
@@ -97,42 +70,298 @@
         "parameters": [
           {
             "name": "tenant_id",
-            "description": "tenant_id path param",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "rbac"
+        ]
+      },
+      "post": {
+        "summary": "create role in tenant ",
+        "operationId": "CreateRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1CreateRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "grant_type",
-            "description": "grant_type 'authorize_code','password', query param",
-            "in": "query",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TenantRole"
+            }
+          }
+        ],
+        "tags": [
+          "rbac"
+        ]
+      }
+    },
+    "/rbac/tenant/{tenant_id}/roles/{role}": {
+      "delete": {
+        "summary": "delete role in tenant ",
+        "operationId": "DeleteRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "code",
-            "description": "code with authorize response,query param",
+            "name": "role",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "rbac"
+        ]
+      }
+    },
+    "/rbac/tenant/{tenant_id}/roles/{role}/permissions": {
+      "delete": {
+        "summary": "delete role permission ",
+        "operationId": "DeleteRolePermission",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRolePermissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "permission_object",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
-            "name": "username",
-            "description": "username while grant_type is password ,query param",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "password",
-            "description": "password while grant_type is password,query param",
+            "name": "permission_action",
             "in": "query",
             "required": false,
             "type": "string"
           }
         ],
         "tags": [
-          "OAuth"
+          "rbac"
+        ]
+      },
+      "post": {
+        "summary": "add role permission ",
+        "operationId": "AddRolePermission",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1AddRolePermissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AddRolePermissionBody"
+            }
+          }
+        ],
+        "tags": [
+          "rbac"
+        ]
+      }
+    },
+    "/rbac/tenant/{tenant_id}/users/roles": {
+      "post": {
+        "summary": "add user roles ",
+        "operationId": "AddUserRoles",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1AddUserRolesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AddUserRolesBody"
+            }
+          }
+        ],
+        "tags": [
+          "rbac"
+        ]
+      }
+    },
+    "/rbac/tenant/{tenant_id}/users/{user_id}/permissions": {
+      "get": {
+        "summary": "list user permissions ",
+        "operationId": "ListUserPermissions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListUserPermissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "rbac"
+        ]
+      }
+    },
+    "/rbac/tenant/{tenant_id}/users/{user_id}/roles/{role}": {
+      "delete": {
+        "summary": "delete user role ",
+        "operationId": "DeleteUserRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteUserRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "rbac"
         ]
       }
     }
@@ -165,28 +394,127 @@
         }
       }
     },
-    "v1AuthorizeResponse": {
+    "v1AddRolePermissionBody": {
       "type": "object",
       "properties": {
-        "code": {
+        "permission_object": {
+          "type": "string"
+        },
+        "permission_action": {
           "type": "string"
         }
       }
     },
-    "v1TokenResponse": {
+    "v1AddRolePermissionResponse": {
       "type": "object",
       "properties": {
-        "access_token": {
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1AddUserRolesBody": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1AddUserRolesResponse": {
+      "type": "object"
+    },
+    "v1CheckUserPermissionBody": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
           "type": "string"
         },
-        "refresh_token": {
+        "user_id": {
           "type": "string"
         },
-        "expires_id": {
-          "type": "string",
-          "format": "int64"
+        "permission_object": {
+          "type": "string"
         },
-        "token_type": {
+        "permission_action": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CheckUserPermissionResponse": {
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1CreateRoleResponse": {
+      "type": "object"
+    },
+    "v1DeleteRolePermissionResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1DeleteRoleResponse": {
+      "type": "object"
+    },
+    "v1DeleteUserRoleResponse": {
+      "type": "object"
+    },
+    "v1ListPermissionDetail": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "permission_object": {
+          "type": "string"
+        },
+        "permission_action": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ListRolesResponse": {
+      "type": "object",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ListUserPermissionResponse": {
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ListPermissionDetail"
+          }
+        }
+      }
+    },
+    "v1TenantRole": {
+      "type": "object",
+      "properties": {
+        "role": {
           "type": "string"
         }
       }

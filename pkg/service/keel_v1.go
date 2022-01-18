@@ -133,7 +133,7 @@ func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr
 			},
 		},
 	}
-	if _, err := oauth.NewOperator(conf.SecurityConf.OAuth2); err != nil {
+	if _, err := oauth.NewOperator(conf.SecurityConf.OAuth); err != nil {
 		log.Fatalf("error oauth new operator: %s", err)
 		return nil
 	}

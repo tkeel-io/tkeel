@@ -19,7 +19,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"os"
 	"os/signal"
 	"syscall"
@@ -31,11 +30,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
+	security_casbin "github.com/tkeel-io/security/authz/casbin"
 	"github.com/tkeel-io/security/gormdb"
 
+	entity_token_v1 "github.com/tkeel-io/tkeel/api/entity/v1"
 	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
+	rbac_v1 "github.com/tkeel-io/tkeel/api/rbac/v1"
 	repo "github.com/tkeel-io/tkeel/api/repo/v1"
 	oauth_v1 "github.com/tkeel-io/tkeel/api/security_oauth/v1"
 	tenant_v1 "github.com/tkeel-io/tkeel/api/tenant/v1"
@@ -151,23 +153,41 @@ var rootCmd = &cobra.Command{
 			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, EntriesSrvV1)
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), EntriesSrvV1)
 
-			// tenant service. // todo config
-			db, err := gormdb.SetUp(gormdb.DBConfig{})
+			// tenant service.
+			db, err := gormdb.SetUp(gormdb.DBConfig{Type: "mysql", Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port,
+				Dbname: conf.SecurityConf.Mysql.DBName, Username: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password})
 			TenantSrv := service.NewTenantService(db)
 			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, TenantSrv)
 			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), TenantSrv)
-			// oauth server ///todo config
-			tokenConf := &service.TokenConf{}
+			// oauth server
+			tokenConf := &service.TokenConf{TokenType: service.TokenTypeBearer, AllowedGrantTypes: service.DefaultGrantType}
 			tokenStore := oredis.NewRedisStore(&redis.Options{
-				Addr:     "",
-				DB:       0,
-				Password: "",
+				Addr:     conf.SecurityConf.OAuth.Redis.Addr,
+				DB:       conf.SecurityConf.OAuth.Redis.DB,
+				Password: conf.SecurityConf.OAuth.Redis.Password,
 			})
 			tokenGenerator := generates.NewJWTAccessGenerate("", []byte(""), jwt.SigningMethodHS512)
 			OauthSrv := service.NewOauthService(tokenConf, tokenStore, tokenGenerator, nil)
 			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, OauthSrv)
 			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), OauthSrv)
 
+			//entity token.
+			tokenOp := service.NewEntityTokenOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
+			EntityTokenSrv := service.NewEntityTokenService(tokenOp)
+			entity_token_v1.RegisterEntityTokenHTTPServer(httpSrv.Container, EntityTokenSrv)
+			entity_token_v1.RegisterEntityTokenServer(grpcSrv.GetServe(), EntityTokenSrv)
+
+			// rbac
+			rbacOp, err := security_casbin.NewRBACOperator(&security_casbin.MysqlConf{DBName: conf.SecurityConf.Mysql.DBName,
+				User: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password,
+				Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port})
+			if err != nil {
+				log.Fatal("fatal new rbac operator", err)
+				os.Exit(-1)
+			}
+			RbacSrv := service.NewRbacService(rbacOp)
+			rbac_v1.RegisterRbacHTTPServer(httpSrv.Container, RbacSrv)
+			rbac_v1.RegisterRbacServer(grpcSrv.GetServe(), RbacSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

@@ -7,6 +7,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/emicklei/go-restful v2.15.0+incompatible
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/go-oauth2/oauth2/v4 v4.4.2 // indirect
 	github.com/go-oauth2/redis/v4 v4.1.1 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.2

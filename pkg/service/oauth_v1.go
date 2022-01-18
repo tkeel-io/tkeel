@@ -25,6 +25,11 @@ const (
 	DefaultClient         = "tkeel"
 	DefaultClientSecurity = "tkeel"
 	DefaultClientDomain   = "tkeel.io"
+	TokenTypeBearer       = "Bearer"
+)
+
+var (
+	DefaultGrantType = []oauth2.GrantType{oauth2.AuthorizationCode, oauth2.Implicit, oauth2.PasswordCredentials, oauth2.Refreshing}
 )
 
 type OauthService struct {
@@ -32,6 +37,14 @@ type OauthService struct {
 	Manager *manage.Manager
 	userDB  *gorm.DB
 	pb.UnimplementedOauthServer
+}
+
+type TokenConf struct {
+	AccessTokenExp  time.Duration
+	RefreshTokenExp time.Duration
+
+	TokenType         string             // token type.
+	AllowedGrantTypes []oauth2.GrantType // allow the grant type.
 }
 
 // AuthorizeRequest authorization request.
@@ -145,14 +158,6 @@ func (s *OauthService) Authenticate(ctx context.Context, req *pb.AuthenticateReq
 		NickName:   users[0].NickName,
 		Avatar:     users[0].Avatar,
 	}, nil
-}
-
-type TokenConf struct {
-	AccessTokenExp  time.Duration
-	RefreshTokenExp time.Duration
-
-	TokenType         string             // token type.
-	AllowedGrantTypes []oauth2.GrantType // allow the grant type.
 }
 
 // getRedirectURI get redirect uri
