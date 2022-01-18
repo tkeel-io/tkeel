@@ -67,7 +67,7 @@
               "$ref": "#/definitions/v1IssueTokenResponse"
             }
           },
-          "400": {
+          "401": {
             "description": "PASSWORD_NOT_MATCH",
             "schema": {}
           },
@@ -96,6 +96,37 @@
         ]
       }
     },
+    "/oauth2/authorize": {
+      "get": {
+        "summary": "Token 验证接口",
+        "operationId": "VerifyToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "401": {
+            "description": "TOKEN_INVALID",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Oauth2"
+        ]
+      }
+    },
     "/oauth2/plugin": {
       "post": {
         "summary": "插件 Token 颁发接口",
@@ -107,7 +138,7 @@
               "$ref": "#/definitions/v1IssueTokenResponse"
             }
           },
-          "400": {
+          "401": {
             "description": "INVALID_PLUGIN_ID",
             "schema": {}
           },

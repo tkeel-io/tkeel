@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/tkeel-io/kit/log"
 	transport_http "github.com/tkeel-io/kit/transport/http"
@@ -30,7 +29,7 @@ func NewEntryService(kvOp kv.Operator, pOp plugin.Operator) *EntryService {
 
 func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.GetEntriesResponse, error) {
 	header := transport_http.HeaderFromContext(ctx)
-	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
+	auths, ok := header[model.XtKeelAuthHeader]
 	if !ok {
 		log.Error("error get auth")
 		return nil, pb.EntryErrInvalidTenant()
