@@ -404,7 +404,7 @@ func Test_PostRenderer(t *testing.T) {
 	assert.Nil(t, err)
 	out, err := kr.Run(bytes.NewBuffer(fb))
 	assert.Nil(t, err)
-	t.Log(string(out.Bytes()))
+	t.Log(out.String())
 }
 
 /*

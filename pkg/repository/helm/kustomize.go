@@ -32,7 +32,7 @@ func kustomizationRenderer(deployment map[string]interface{}, appID, appPort str
 	)
 	m, err := k.Run(fSys, ".")
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "kustomize run")
 	}
 	b, err := m.AsYaml()
 	if err != nil {
