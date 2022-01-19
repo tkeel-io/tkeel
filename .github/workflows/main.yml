@@ -16,7 +16,7 @@ jobs:
       upload_require: false
   upload:
     name: Upload latest docker image
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     needs: [check]
     env:
