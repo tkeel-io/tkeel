@@ -39,11 +39,6 @@ jobs:
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
 
       - name: Push image
-        uses: tkeel-io/tkeel/.github/workflows/push_image.yml@main
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+        uses: tkeel-io/tkeel/.github/workflows/push_image.yaml@main
         with:
           image_tag: ${{ steps.get_version.outputs.VERSION }}
-          dockerhub_name: ${{ env.DOCKERHUB_USERNAME }}
-          dockerhub_password: ${{ env.DOCKERHUB_PASSWORD }}
