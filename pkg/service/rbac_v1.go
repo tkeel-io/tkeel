@@ -33,7 +33,7 @@ func (s *RbacService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest
 		log.Errorf("error decode auth(%s): %s", auths[0], err)
 		return nil, pb.ErrUnknown()
 	}
-	ok, err := s.RBACOperator.AddGroupingPolicy(user.User, req.GetBody().GetRole(), req.GetTenantId())
+	_, err := s.RBACOperator.AddGroupingPolicy(user.User, req.GetBody().GetRole(), req.GetTenantId())
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrInternalError()
@@ -67,7 +67,7 @@ func (s *RbacService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest)
 		log.Errorf("error decode auth(%s): %s", auths[0], err)
 		return nil, pb.ErrUnknown()
 	}
-	ok, err := s.RBACOperator.DeleteRoleForUserInDomain(user.User, req.GetRole(), req.GetTenantId())
+	_, err := s.RBACOperator.DeleteRoleForUserInDomain(user.User, req.GetRole(), req.GetTenantId())
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrInternalError()

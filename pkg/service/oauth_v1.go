@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -97,20 +96,18 @@ func (s *OauthService) Authorize(ctx context.Context, req *pb.AuthorizeRequest) 
 		ClientID:     DefaultClient,
 		State:        req.GetState(),
 	}
-	// user authorization
+	// user authorization.
 	user, err := model.AuthenticateUser(s.userDB, req.GetTenantId(), req.GetUsername(), req.GetPassword())
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return nil, pb.OauthErrInvalidRequest()
 	}
 	authorizeReq.UserID = user.ID
-
 	ti, err := s.GetAuthorizeToken(ctx, authorizeReq)
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return nil, pb.OauthErrUnauthorizedClient()
 	}
-
 	return &pb.AuthorizeResponse{Code: ti.GetCode()}, nil
 }
 func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.TokenResponse, error) {
@@ -120,7 +117,7 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 	}
 	ti, err := s.GetAccessToken(ctx, gt, tgr)
 	if err != nil {
-		return nil, err
+		return nil, pb.OauthErrServerError()
 	}
 
 	return &pb.TokenResponse{
@@ -161,40 +158,10 @@ func (s *OauthService) Authenticate(ctx context.Context, req *pb.AuthenticateReq
 	}, nil
 }
 
-// getRedirectURI get redirect uri
-func (s *OauthService) getRedirectURI(req *AuthorizeRequest, data map[string]interface{}) (string, error) {
-	u, err := url.Parse(req.RedirectURI)
-	if err != nil {
-		return "", err
-	}
-
-	q := u.Query()
-	if req.State != "" {
-		q.Set("state", req.State)
-	}
-
-	for k, v := range data {
-		q.Set(k, fmt.Sprint(v))
-	}
-
-	switch req.ResponseType {
-	case oauth2.Code:
-		u.RawQuery = q.Encode()
-	case oauth2.Token:
-		u.RawQuery = ""
-		fragment, err := url.QueryUnescape(q.Encode())
-		if err != nil {
-			return "", err
-		}
-		u.Fragment = fragment
-	}
-
-	return u.String(), nil
-}
-
-// GetAuthorizeToken get authorization token(code)
+//nolint
+// GetAuthorizeToken get authorization token(code).
 func (s *OauthService) GetAuthorizeToken(ctx context.Context, req *AuthorizeRequest) (oauth2.TokenInfo, error) {
-	// check the client allows the grant type
+	// check the client allows the grant type.
 	tgr := &oauth2.TokenGenerateRequest{
 		ClientID:       req.ClientID,
 		UserID:         req.UserID,
@@ -207,10 +174,14 @@ func (s *OauthService) GetAuthorizeToken(ctx context.Context, req *AuthorizeRequ
 	tgr.CodeChallenge = req.CodeChallenge
 	tgr.CodeChallengeMethod = req.CodeChallengeMethod
 
-	return s.Manager.GenerateAuthToken(ctx, req.ResponseType, tgr)
+	info, err := s.Manager.GenerateAuthToken(ctx, req.ResponseType, tgr)
+	if err != nil {
+		return info, fmt.Errorf("generate %w", err)
+	}
+	return info, nil
 }
 
-// ValidationTokenRequest the token request validation
+// ValidationTokenRequest the token request validation.
 func (s *OauthService) ValidationTokenRequest(r *pb.TokenRequest) (oauth2.GrantType, *oauth2.TokenGenerateRequest, error) {
 	gt := oauth2.GrantType(r.GetGrantType())
 	if gt.String() == "" {
@@ -251,7 +222,7 @@ func (s *OauthService) ValidationTokenRequest(r *pb.TokenRequest) (oauth2.GrantT
 	return gt, tgr, nil
 }
 
-// CheckGrantType check allows grant type
+// CheckGrantType check allows grant type.
 func (s *OauthService) CheckGrantType(gt oauth2.GrantType) bool {
 	for _, agt := range s.Config.AllowedGrantTypes {
 		if agt == gt {
@@ -261,7 +232,8 @@ func (s *OauthService) CheckGrantType(gt oauth2.GrantType) bool {
 	return false
 }
 
-// GetAccessToken access token
+//nolint
+// GetAccessToken access token.
 func (s *OauthService) GetAccessToken(ctx context.Context, gt oauth2.GrantType, tgr *oauth2.TokenGenerateRequest) (oauth2.TokenInfo,
 	error) {
 	if allowed := s.CheckGrantType(gt); !allowed {
@@ -272,23 +244,27 @@ func (s *OauthService) GetAccessToken(ctx context.Context, gt oauth2.GrantType, 
 		ti, err := s.Manager.GenerateAccessToken(ctx, gt, tgr)
 		if err != nil {
 			log.Error(err)
-			return nil, err
+			return nil, fmt.Errorf("generete token %w", err)
 		}
 		return ti, nil
 	case oauth2.PasswordCredentials, oauth2.ClientCredentials:
-		return s.Manager.GenerateAccessToken(ctx, gt, tgr)
+		info, err := s.Manager.GenerateAccessToken(ctx, gt, tgr)
+		if err != nil {
+			return info, fmt.Errorf("%w", err)
+		}
+		return info, nil
 	case oauth2.Refreshing:
 		ti, err := s.Manager.RefreshAccessToken(ctx, tgr)
 		if err != nil {
 			log.Error(err)
-			return nil, err
+			return nil, pb.OauthErrInvalidRequest()
 		}
 		return ti, nil
 	}
 	return nil, pb.OauthErrUnsupportedGrantType()
 }
 
-// bearerAuth parse bearer token
+// bearerAuth parse bearer token.
 func (s *OauthService) bearerAuth(header *http.Header) (string, bool) {
 	auth := header.Get("Authorization")
 	prefix := "Bearer "

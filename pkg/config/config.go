@@ -18,10 +18,11 @@ package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
 	"strconv"
+
+	"gopkg.in/yaml.v3"
 )
 
 // TkeelConf tkeel platform configuration.
@@ -97,7 +98,7 @@ type EntityConf struct {
 	SecurityKey string `json:"security_key" yaml:"securityKey"`
 }
 type MysqlConf struct {
-	DBName   string `json:"dbname" yaml:"dbname"`
+	DBName   string `json:"dbname" yaml:"dbname"` //nolint
 	User     string `json:"user" yaml:"user"`
 	Password string `json:"password" yaml:"password"`
 	Host     string `json:"host" yaml:"host"`

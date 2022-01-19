@@ -86,7 +86,7 @@ func (s *TenantService) ListTenant(ctx context.Context, _ *emptypb.Empty) (*pb.L
 	var (
 		err     error
 		tenant  = &model.Tenant{}
-		tenants = []*model.Tenant{}
+		tenants []*model.Tenant
 		resp    = &pb.ListTenantResponse{}
 	)
 	tenants, err = tenant.List(s.DB, nil)
@@ -99,13 +99,13 @@ func (s *TenantService) ListTenant(ctx context.Context, _ *emptypb.Empty) (*pb.L
 	for _, v := range tenants {
 		userDao := &model.User{}
 		detail := &pb.TenantDetail{TenantId: v.ID, Title: v.Title, Remark: v.Remark}
-		num_user, err := userDao.CountInTenant(s.DB, v.ID)
+		numUser, err := userDao.CountInTenant(s.DB, v.ID)
 		if err != nil {
 			log.Error(err)
 			return nil, pb.ErrListTenant()
 		}
 
-		detail.NumUser = num_user
+		detail.NumUser = numUser
 		resp.Tenants = append(resp.Tenants, detail)
 	}
 
