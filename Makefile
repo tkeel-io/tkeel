@@ -86,6 +86,8 @@ export BINARY_EXT ?= $(BINARY_EXT_LOCAL)
 
 OUT_DIR := ./dist
 
+# docker tag
+DOCKER_TAG ?= latest
 
 ################################################################################
 # Go build details                                                             #
@@ -112,6 +114,7 @@ endif
 
 TKEEL_OUT_DIR := $(OUT_DIR)/$(GOOS)_$(GOARCH)/$(BUILDTYPE_DIR)
 TKEEL_LINUX_OUT_DIR := $(OUT_DIR)/linux_$(GOARCH)/$(BUILDTYPE_DIR)
+TKEEL_LINUX_AMD64_OUT_DIR := $(OUT_DIR)/linux_amd64/$(BUILDTYPE_DIR)
 
 ################################################################################
 # Target: build                                                                #
@@ -239,3 +242,13 @@ gen-rudder-v1-proto:
  	       --openapiv2_opt=logtostderr=true \
  	       --openapiv2_opt=json_names_for_fields=false \
 	       $(RUDDER_V1_PROTO_FILES)
+
+################################################################################
+# Target: build docker image                                                   #
+################################################################################
+.PHONY: build-dev-container
+build-dev-container:
+	docker build -t tkeelio/rudder:$(DOCKER_TAG) -f docker/rudder/Dockerfile $(TKEEL_LINUX_AMD64_OUT_DIR)
+	docker push  tkeelio/rudder:$(DOCKER_TAG)
+	docker build -t tkeelio/keel:$(DOCKER_TAG) -f docker/keel/Dockerfile $(TKEEL_LINUX_AMD64_OUT_DIR)
+	docker push  tkeelio/keel:$(DOCKER_TAG)

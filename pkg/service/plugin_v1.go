@@ -396,6 +396,9 @@ func (s *PluginServiceV1) requestTenantBind(ctx context.Context, pluginID string
 	if err != nil {
 		return nil, pb.PluginErrOpenapiBindtenant()
 	}
+	if resp.Res == nil {
+		return nil, pb.PluginErrOpenapiBindtenant()
+	}
 	if resp.Res.Ret != openapi_v1.Retcode_OK {
 		return nil, pb.PluginErrOpenapiBindtenant()
 	}
@@ -407,6 +410,9 @@ func (s *PluginServiceV1) requestTenantBind(ctx context.Context, pluginID string
 		})
 		if err1 != nil {
 			return fmt.Errorf("error request plugin(%s) tenant unbind: %w", pluginID, err1)
+		}
+		if resp.Res == nil {
+			return fmt.Errorf("error request plugin(%s) tenant unbind: Res is nil", pluginID)
 		}
 		if resp.Res.Ret != openapi_v1.Retcode_OK {
 			log.Errorf("error request plugin(%s) tenant bind: %s", pluginID, resp.Res.Msg)
@@ -500,10 +506,13 @@ func (s *PluginServiceV1) requestTenantUnbind(ctx context.Context, pluginID stri
 		Extra:    extra,
 	})
 	if err != nil {
-		return nil, pb.PluginErrOpenapiBindtenant()
+		return nil, pb.PluginErrOpenapiUnbindtenant()
+	}
+	if resp.Res == nil {
+		return nil, pb.PluginErrOpenapiUnbindtenant()
 	}
 	if resp.Res.Ret != openapi_v1.Retcode_OK {
-		return nil, pb.PluginErrOpenapiBindtenant()
+		return nil, pb.PluginErrOpenapiUnbindtenant()
 	}
 	return func() error {
 		log.Debugf("roll back bind tenant: request(%s) bind(%s)", pluginID, tenantID)
@@ -513,6 +522,9 @@ func (s *PluginServiceV1) requestTenantUnbind(ctx context.Context, pluginID stri
 		})
 		if err1 != nil {
 			return fmt.Errorf("error request plugin(%s) tenant bind: %w", pluginID, err1)
+		}
+		if resp.Res == nil {
+			return fmt.Errorf("error request plugin(%s) tenant bind: Res is nil", pluginID)
 		}
 		if resp.Res.Ret != openapi_v1.Retcode_OK {
 			log.Errorf("error request plugin(%s) tenant bind: %s", pluginID, resp.Res.Msg)
@@ -544,6 +556,9 @@ func (s *PluginServiceV1) queryIdentify(ctx context.Context,
 	identifyResp, err := s.openapiClient.Identify(ctx, pID)
 	if err != nil {
 		return nil, fmt.Errorf("error identify(%s): %w", pID, err)
+	}
+	if identifyResp.Res == nil {
+		return nil, fmt.Errorf("error identify(%s): Res is nil", pID)
 	}
 	if identifyResp.Res.Ret != openapi_v1.Retcode_OK {
 		return nil, fmt.Errorf("error identify(%s): %s", pID, identifyResp.Res.Ret)
@@ -650,6 +665,10 @@ func (s *PluginServiceV1) registerImplementedPluginRoute(ctx context.Context,
 			rbStack.Run()
 			return nil, fmt.Errorf("error addons identify(%s/%s): %w", v.Plugin.Id, addonsReq, err)
 		}
+		if addonsResp.Res == nil {
+			rbStack.Run()
+			return nil, fmt.Errorf("error addons identify(%s/%s): Res is nil", v.Plugin.Id, addonsReq)
+		}
 		if addonsResp.Res.Ret != openapi_v1.Retcode_OK {
 			rbStack.Run()
 			return nil, fmt.Errorf("error addons identify(%s/%s): %s", v.Plugin.Id, addonsReq, addonsResp.Res.Msg)
@@ -681,6 +700,9 @@ func (s *PluginServiceV1) updateRegisterPlugin(ctx context.Context, resp *openap
 	statusResp, err := s.openapiClient.Status(ctx, resp.PluginId)
 	if err != nil {
 		return fmt.Errorf("error status(%s): %w", resp.PluginId, err)
+	}
+	if statusResp.Res == nil {
+		return fmt.Errorf("error status(%s): Res is nil", resp.PluginId)
 	}
 	if statusResp.Res.Ret != openapi_v1.Retcode_OK {
 		state = openapi_v1.PluginStatus_ERROR

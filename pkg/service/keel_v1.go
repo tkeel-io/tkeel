@@ -122,6 +122,7 @@ func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr
 			v1.RudderSubPath: {
 				"/apis/rudder/v1/oauth2/plugin",
 				"/apis/rudder/v1/oauth2/admin",
+				"/apis/rudder/v1/oauth2/authorize",
 			},
 			v1.SecuritySubPath: {
 				"/apis/security/v1/oauth/token",
@@ -224,7 +225,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 					setResult(http.StatusUnauthorized, "invalid token", nil), "application/json")
 				return
 			}
-			req.Request.Header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)] = []string{user.Base64Encode()}
+			req.Request.Header[model.XtKeelAuthHeader] = []string{user.Base64Encode()}
 			ctx = withUser(ctx, user)
 			ctx = withSource(ctx, &source{
 				ID:           model.TKeelUser,
@@ -235,7 +236,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			user.Tenant = model.TKeelTenant
 			user.User = model.TKeelUser
 			user.Role = model.AdminRole
-			req.Request.Header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)] = []string{user.Base64Encode()}
+			req.Request.Header[model.XtKeelAuthHeader] = []string{user.Base64Encode()}
 			ctx = withUser(ctx, user)
 			ctx = withSource(ctx, &source{
 				ID:           model.TKeelUser,
@@ -257,7 +258,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 				return
 			}
 			log.Debugf("internal flow")
-			tKeelHeader := req.HeaderParameter(http.CanonicalHeaderKey(model.XtKeelAuthHeader))
+			tKeelHeader := req.HeaderParameter(model.XtKeelAuthHeader)
 			if tKeelHeader == "" {
 				log.Errorf("error internal flow not found x-tKeel-auth")
 				resp.WriteHeaderAndJson(http.StatusUnauthorized,
@@ -283,7 +284,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 }
 
 func (s *KeelServiceV1) getPluginIDFromRequest(req *restful.Request) (string, error) {
-	pluginToken := req.HeaderParameter(http.CanonicalHeaderKey(model.XPluginJwtHeader))
+	pluginToken := req.HeaderParameter(model.XPluginJwtHeader)
 	if pluginToken == "" {
 		return "", nil
 	}
@@ -307,7 +308,7 @@ func (s *KeelServiceV1) getPluginIDFromRequest(req *restful.Request) (string, er
 }
 
 func (s *KeelServiceV1) externalGetUser(req *restful.Request) (*model.User, error) {
-	token := req.HeaderParameter(http.CanonicalHeaderKey(AuthorizationHeader))
+	token := req.HeaderParameter(model.AuthorizationHeader)
 	if token == "" {
 		return nil, errors.New("invalid token")
 	}

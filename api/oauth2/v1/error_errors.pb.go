@@ -18,6 +18,7 @@ var oauth2ErrInvalidPluginId *errors.TError
 var oauth2ErrInternalStore *errors.TError
 var oauth2ErrInternalError *errors.TError
 var oauth2ErrPasswordNotMatch *errors.TError
+var oauth2ErrInvalidToken *errors.TError
 
 func init() {
 	oauth2ErrUnknown = errors.New(int(codes.Unknown), "oauth2.v1.OAUTH2_ERR_UNKNOWN", Error_OAUTH2_ERR_UNKNOWN.String())
@@ -26,14 +27,16 @@ func init() {
 	errors.Register(oauth2ErrSecretNotMatch)
 	oauth2ErrClientIdAlreadyExists = errors.New(int(codes.AlreadyExists), "oauth2.v1.OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS", Error_OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS.String())
 	errors.Register(oauth2ErrClientIdAlreadyExists)
-	oauth2ErrInvalidPluginId = errors.New(int(codes.InvalidArgument), "oauth2.v1.OAUTH2_ERR_INVALID_PLUGIN_ID", Error_OAUTH2_ERR_INVALID_PLUGIN_ID.String())
+	oauth2ErrInvalidPluginId = errors.New(int(codes.PermissionDenied), "oauth2.v1.OAUTH2_ERR_INVALID_PLUGIN_ID", Error_OAUTH2_ERR_INVALID_PLUGIN_ID.String())
 	errors.Register(oauth2ErrInvalidPluginId)
 	oauth2ErrInternalStore = errors.New(int(codes.Internal), "oauth2.v1.OAUTH2_ERR_INTERNAL_STORE", Error_OAUTH2_ERR_INTERNAL_STORE.String())
 	errors.Register(oauth2ErrInternalStore)
 	oauth2ErrInternalError = errors.New(int(codes.Internal), "oauth2.v1.OAUTH2_ERR_INTERNAL_ERROR", Error_OAUTH2_ERR_INTERNAL_ERROR.String())
 	errors.Register(oauth2ErrInternalError)
-	oauth2ErrPasswordNotMatch = errors.New(int(codes.InvalidArgument), "oauth2.v1.OAUTH2_ERR_PASSWORD_NOT_MATCH", Error_OAUTH2_ERR_PASSWORD_NOT_MATCH.String())
+	oauth2ErrPasswordNotMatch = errors.New(int(codes.PermissionDenied), "oauth2.v1.OAUTH2_ERR_PASSWORD_NOT_MATCH", Error_OAUTH2_ERR_PASSWORD_NOT_MATCH.String())
 	errors.Register(oauth2ErrPasswordNotMatch)
+	oauth2ErrInvalidToken = errors.New(int(codes.PermissionDenied), "oauth2.v1.OAUTH2_ERR_INVALID_TOKEN", Error_OAUTH2_ERR_INVALID_TOKEN.String())
+	errors.Register(oauth2ErrInvalidToken)
 }
 
 func Oauth2ErrUnknown() errors.Error {
@@ -62,4 +65,8 @@ func Oauth2ErrInternalError() errors.Error {
 
 func Oauth2ErrPasswordNotMatch() errors.Error {
 	return oauth2ErrPasswordNotMatch
+}
+
+func Oauth2ErrInvalidToken() errors.Error {
+	return oauth2ErrInvalidToken
 }

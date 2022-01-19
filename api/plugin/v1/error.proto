@@ -73,4 +73,7 @@ enum Error {
   // 插件有租户仍绑定
   // @code=INVALID_ARGUMENT
   PLUGIN_ERR_PLUGIN_HAS_TENANT_BINDED = 15;
+  // 租户解除绑定访问 OPENAPI 错误
+  // @code=INVALID_ARGUMENT
+  PLUGIN_ERR_OPENAPI_UNBINDTENANT = 16;
 }

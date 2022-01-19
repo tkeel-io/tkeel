@@ -27,6 +27,7 @@ var pluginErrUninstallPlugin *errors.TError
 var pluginErrOpenapiBindtenant *errors.TError
 var pluginErrPluginNotBeUnregister *errors.TError
 var pluginErrPluginHasTenantBinded *errors.TError
+var pluginErrOpenapiUnbindtenant *errors.TError
 
 func init() {
 	pluginErrUnknown = errors.New(int(codes.Unknown), "plugin.v1.PLUGIN_ERR_UNKNOWN", Error_PLUGIN_ERR_UNKNOWN.String())
@@ -61,6 +62,8 @@ func init() {
 	errors.Register(pluginErrPluginNotBeUnregister)
 	pluginErrPluginHasTenantBinded = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_PLUGIN_HAS_TENANT_BINDED", Error_PLUGIN_ERR_PLUGIN_HAS_TENANT_BINDED.String())
 	errors.Register(pluginErrPluginHasTenantBinded)
+	pluginErrOpenapiUnbindtenant = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_OPENAPI_UNBINDTENANT", Error_PLUGIN_ERR_OPENAPI_UNBINDTENANT.String())
+	errors.Register(pluginErrOpenapiUnbindtenant)
 }
 
 func PluginErrUnknown() errors.Error {
@@ -125,4 +128,8 @@ func PluginErrPluginNotBeUnregister() errors.Error {
 
 func PluginErrPluginHasTenantBinded() errors.Error {
 	return pluginErrPluginHasTenantBinded
+}
+
+func PluginErrOpenapiUnbindtenant() errors.Error {
+	return pluginErrOpenapiUnbindtenant
 }
