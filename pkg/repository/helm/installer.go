@@ -191,7 +191,10 @@ func (h Installer) Brief() *repository.InstallerBrief {
 }
 
 func (h *Installer) inject(installer *action.Install, dependency *chart.Chart) error {
-	if !getBoolAnnotationOrDefault(h.chart.Metadata.Annotations, tKeelPluginEnableKey, false) {
+	if !getBoolAnnotationOrDefault(h.chart.Metadata.Annotations,
+		tKeelPluginEnableKey, false) {
+		// Compatible with versions prior to 0.4.0.
+		h.chart.Values["daprConfig"] = h.id
 		return nil
 	}
 	deployment := getStringAnnotation(h.chart.Metadata.Annotations, tKeelPluginDeploymentKey)
