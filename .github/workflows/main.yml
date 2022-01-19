@@ -15,7 +15,7 @@ jobs:
     with:
       upload_require: false
   upload:
-    if: github.event.pull_request.types == 'closed'
+    if: github.event_name == 'push'
     needs:
       - check
     uses: tkeel-io/tkeel/.github/workflows/push_image.yaml@main
