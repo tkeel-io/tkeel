@@ -25,8 +25,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/emicklei/go-restful"
-	"github.com/tkeel-io/kit/log"
+	oauth_v1 "github.com/tkeel-io/tkeel/api/security_oauth/v1"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/model"
@@ -34,6 +33,10 @@ import (
 	v1 "github.com/tkeel-io/tkeel/pkg/service/keel/v1"
 	"github.com/tkeel-io/tkeel/pkg/token"
 	"github.com/tkeel-io/tkeel/pkg/util"
+
+	"github.com/emicklei/go-restful"
+	"github.com/tkeel-io/kit/log"
+	transport_http "github.com/tkeel-io/kit/transport/http"
 )
 
 const (
@@ -100,9 +103,10 @@ type KeelServiceV1 struct {
 	secretProvider token.Provider
 	timeout        time.Duration
 	pathWhiteList  map[string][]string
+	oauthService   *OauthService
 }
 
-func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr.Client, op proute.Operator) *KeelServiceV1 {
+func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr.Client, op proute.Operator, oauthService *OauthService) *KeelServiceV1 {
 	secret := util.RandStringBytesMaskImpr(0, 10)
 	duration, err := time.ParseDuration(conf.Proxy.Timeout)
 	if err != nil {
@@ -118,6 +122,7 @@ func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr
 		pluginRouteMap: new(sync.Map),
 		secretProvider: token.InitProvider(secret, "", ""),
 		timeout:        duration,
+		oauthService:   oauthService,
 		pathWhiteList: map[string][]string{
 			v1.RudderSubPath: {
 				"/apis/rudder/v1/oauth2/plugin",
@@ -308,27 +313,27 @@ func (s *KeelServiceV1) getPluginIDFromRequest(req *restful.Request) (string, er
 }
 
 func (s *KeelServiceV1) externalGetUser(req *restful.Request) (*model.User, error) {
-	token := req.HeaderParameter(model.AuthorizationHeader)
-	if token == "" {
-		return nil, errors.New("invalid token")
+	authorization := req.HeaderParameter(model.AuthorizationHeader)
+	if authorization == "" {
+		return nil, errors.New("invalid authorization")
 	}
-	isManager, err := s.isManagerToken(token)
+	isManager, err := s.isManagerToken(authorization)
 	if err != nil {
-		return nil, fmt.Errorf("error manager token(%s) check: %w", token, err)
+		return nil, fmt.Errorf("error manager authorization(%s) check: %w", authorization, err)
 	}
 	user := new(model.User)
 	if !isManager {
 		//	// tKeel platform.
-		//	tKeelToken, err := oauth.GetOauthOperator().ValidationBearerToken(req.Request)
-		//	if err != nil {
-		//		return nil, fmt.Errorf("error validation bearer token(%v): %w",
-		//			req.HeaderParameter(http.CanonicalHeaderKey(AuthorizationHeader)), err)
-		//	}
-		//	tenant := strings.Split(tKeelToken.GetUserID(), "-")[1]
-		//	user.User = tKeelToken.GetUserID()
-		//	user.Tenant = tenant
-		//	// TODO: RBAC.
-		//	user.Role = model.AdminRole
+		ctx := transport_http.ContextWithHeader(req.Request.Context(), req.Request.Header)
+		authenticate, err := s.oauthService.Authenticate(ctx, &oauth_v1.AuthenticateRequest{})
+		if err != nil {
+			return nil, fmt.Errorf("error validation bearer authorization(%v): %w",
+				req.HeaderParameter(http.CanonicalHeaderKey(AuthorizationHeader)), err)
+		}
+		user.User = authenticate.GetUserId()
+		user.Tenant = authenticate.GetTenantId()
+		// TODO: RBAC.
+		user.Role = model.AdminRole
 	} else {
 		// manager platform.
 		user.User = model.TKeelUser
