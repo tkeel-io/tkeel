@@ -7,16 +7,9 @@ on:
         default: latest
         required: false
         type: string
-      dockerhub_name:
-        description: docker hub name
-        default: changeme
-        required: true
-        type: string
-      dockerhub_password:
-        description: docker hub password
-        default: changeme
-        required: true
-        type: string
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
 jobs:
   docker:
     name: build and push latest image
@@ -40,7 +33,7 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
-          username: ${{inputs.dockerhub_name}}
-          password: ${{inputs.dockerhub_password}}
+          username: ${{env.DOCKERHUB_USERNAME}}
+          password: ${{env.DOCKERHUB_PASSWORD}}
       - name: build dev-container DOCKER_TAG=${{inputs.image_tag}}
         run: make build-dev-container
