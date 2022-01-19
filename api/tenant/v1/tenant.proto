@@ -1,3 +1,18 @@
+/*
+Copyright 2021 The tKeel Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 syntax = "proto3";
 
 package tenant.v1;
@@ -10,7 +25,6 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 option go_package = "github.com/tkeel-io/tkeel/api/tenant/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.tkeel.rudder.tenant.v1";
-
 
 // The greeting service definition.
 service Tenant {
@@ -46,7 +60,7 @@ service Tenant {
   }
 
   // get a tenant.
-  rpc GetTenant(GetTenantRequest) returns(GetTenantResponse){
+  rpc GetTenant(GetTenantRequest) returns (GetTenantResponse) {
     option (google.api.http) = {
       get : "/tenants/{tenant_id}"
     };
@@ -54,18 +68,15 @@ service Tenant {
       summary : "get a tenant"
       operation_id : "GetTenant"
       tags : "Tenant"
-      responses : [
-        {
-          key : "200"
-          value : {description : "OK"}
-        }
-      ]
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
     };
   }
 
-
   // list tenant.
-  rpc ListTenant(google.protobuf.Empty) returns(ListTenantResponse){
+  rpc ListTenant(google.protobuf.Empty) returns (ListTenantResponse) {
     option (google.api.http) = {
       get : "/tenants"
     };
@@ -73,17 +84,15 @@ service Tenant {
       summary : "tenant list"
       operation_id : "ListTenant"
       tags : "Tenant"
-      responses : [
-        {
-          key : "200"
-          value : {description : "OK"}
-        }
-      ]
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
     };
   }
 
   // delete a tenant.
-  rpc DeleteTenant(DeleteTenantRequest) returns (google.protobuf.Empty){
+  rpc DeleteTenant(DeleteTenantRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/tenants/{tenant_id}"
     };
@@ -91,15 +100,15 @@ service Tenant {
       summary : "delete a tenant"
       operation_id : "DeleteTenant"
       tags : "Tenant"
-      responses : [{
+      responses : [ {
         key : "200"
         value : {description : "OK"}
-      }]
+      } ]
     };
   }
 
   // create a user.
-  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse){
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
     option (google.api.http) = {
       post : "/tenants/{tenant_id}/users"
       body : "body"
@@ -108,15 +117,15 @@ service Tenant {
       summary : "create a  user at tenant"
       operation_id : "CreateUser"
       tags : "Tenant"
-      responses : [{
+      responses : [ {
         key : "200"
         value : {description : "OK"}
-      }]
+      } ]
     };
   }
 
   //  get user.
-  rpc GetUser(GetUserRequest) returns (GetUserResponse){
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
     option (google.api.http) = {
       get : "/tenants/{tenant_id}/users/{user_id}"
     };
@@ -124,15 +133,15 @@ service Tenant {
       summary : "get a  user"
       operation_id : "GetUser"
       tags : "Tenant"
-      responses : [{
+      responses : [ {
         key : "200"
         value : {description : "OK"}
-      }]
+      } ]
     };
   }
 
   // list user.
-  rpc ListUser(ListUserRequest)returns(ListUserResponse){
+  rpc ListUser(ListUserRequest) returns (ListUserResponse) {
     option (google.api.http) = {
       get : "/tenants/{tenant_id}/users"
     };
@@ -141,15 +150,15 @@ service Tenant {
       summary : "list users"
       operation_id : "ListUser"
       tags : "Tenant"
-      responses : [{
+      responses : [ {
         key : "200"
         value : {description : "OK"}
-      }]
+      } ]
     };
   }
 
   // delete a user.
-  rpc DeleteUser(DeleteUserRequest)returns(google.protobuf.Empty){
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/tenants/{tenant_id}/users/{user_id}"
     };
@@ -158,15 +167,16 @@ service Tenant {
       summary : "delete a user"
       operation_id : "DeleteUser"
       tags : "Tenant"
-      responses : [{
+      responses : [ {
         key : "200"
         value : {description : "OK"}
-      }]
+      } ]
     };
   };
 
   // add a plugin
-  rpc AddTenantPlugin(AddTenantPluginRequest)returns(AddTenantPluginResponse) {
+  rpc AddTenantPlugin(AddTenantPluginRequest)
+      returns (AddTenantPluginResponse) {
     option (google.api.http) = {
       post : "/tenants/{tenant_id}/plugins"
       body : "body"
@@ -176,15 +186,16 @@ service Tenant {
       summary : "add a plugin"
       operation_id : "AddPlugin"
       tags : "Tenant"
-      responses : [{
+      responses : [ {
         key : "200"
         value : {description : "OK"}
-      }]
+      } ]
     };
   }
 
   // list plugin
-  rpc ListTenantPlugin(ListTenantPluginRequest)returns(ListTenantPluginResponse) {
+  rpc ListTenantPlugin(ListTenantPluginRequest)
+      returns (ListTenantPluginResponse) {
     option (google.api.http) = {
       get : "/tenants/{tenant_id}/plugins"
     };
@@ -193,15 +204,16 @@ service Tenant {
       summary : "list tenant plugin"
       operation_id : "ListTenantPlugin"
       tags : "Tenant"
-      responses : [{
+      responses : [ {
         key : "200"
         value : {description : "OK"}
-      }]
+      } ]
     };
   }
 
   // delete plugin
-  rpc DeleteTenantPlugin(DeleteTenantPluginRequest)returns(DeleteTenantPluginResponse) {
+  rpc DeleteTenantPlugin(DeleteTenantPluginRequest)
+      returns (DeleteTenantPluginResponse) {
     option (google.api.http) = {
       delete : "/tenants/{tenant_id}/plugins/{plugin_id}"
     };
@@ -210,14 +222,15 @@ service Tenant {
       summary : "delete tenant plugin"
       operation_id : "DeleteTenantPlugin"
       tags : "Tenant"
-      responses : [{
+      responses : [ {
         key : "200"
         value : {description : "OK"}
-      }]
+      } ]
     };
   };
 
-  rpc TenantPluginPermissible(PluginPermissibleRequest)returns(PluginPermissibleResponse) {
+  rpc TenantPluginPermissible(PluginPermissibleRequest)
+      returns (PluginPermissibleResponse) {
     option (google.api.http) = {
       get : "/tenants/plugins/permissible"
     };
@@ -226,15 +239,13 @@ service Tenant {
       summary : "permissible tenant plugin"
       operation_id : "PermissibleTenantPlugin"
       tags : "Tenant"
-      responses : [{
+      responses : [ {
         key : "200"
         value : {description : "OK"}
-      }]
+      } ]
     };
   }
 }
-
-
 
 // The request message.
 message CreateTenantRequest {
@@ -280,7 +291,7 @@ message TenantAdmin {
     },
     (google.api.field_behavior) = REQUIRED
   ];
-  string password =2 [
+  string password = 2 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       description : " Tenant Admin password "
     },
@@ -290,76 +301,73 @@ message TenantAdmin {
 
 // The response message containing the greetings
 message CreateTenantResponse {
-  string tenant_id = 1 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "created tenant id"
-    }];
-  string tenant_title = 2 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "created tenant title"
-    }];
-  string admin_username = 3 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "created tenant admin username"
-    }];
+  string tenant_id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "created tenant id"
+      } ];
+  string tenant_title = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "created tenant title"
+      } ];
+  string admin_username = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "created tenant admin username"
+      } ];
 }
-
 
 message GetTenantRequest {
-  string tenant_id = 1 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant id"
-    }];
+  string tenant_id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant id"
+      } ];
 }
 message GetTenantResponse {
-  string tenant_id = 1 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant id"
-    }];
-  string title = 2 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant title"
-    }];
-  string remark = 3 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant remark"
-    }];
+  string tenant_id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant id"
+      } ];
+  string title = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant title"
+      } ];
+  string remark = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant remark"
+      } ];
 }
-
 
 message ListTenantResponse {
-  repeated TenantDetail tenants = 1 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenants"
-    }];
-
+  repeated TenantDetail tenants = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenants"
+      } ];
 }
 
-
 message TenantDetail {
-  string tenant_id = 1 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant id"
-    }];
-  string title =2 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant id"
-    }];
-  string remark = 3 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant remark"
-    }];;
-  int64 num_user = 4 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "user number in tenant"
-    }];
+  string tenant_id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant id"
+      } ];
+  string title = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant id"
+      } ];
+  string remark = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant remark"
+      } ];
+  ;
+  int64 num_user = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "user number in tenant"
+      } ];
 }
 
 message DeleteTenantRequest {
-  string tenant_id = 1 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant id"
-    }];
+  string tenant_id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant id"
+      } ];
 }
 
 // user
@@ -401,14 +409,14 @@ message CreateUserResponse {
 }
 
 message GetUserRequest {
-  string tenant_id =1;
-  string user_id =2;
+  string tenant_id = 1;
+  string user_id = 2;
 }
 
 message GetUserResponse {
   string tenant_id = 1;
   string user_id = 2;
-  string external_id =3;
+  string external_id = 3;
   string username = 4;
   string email = 5;
   string nick_name = 6;
@@ -417,12 +425,11 @@ message GetUserResponse {
 
 message ListUserRequest {
   string tenant_id = 1;
-  int32  page_num = 2;
-  int32  page_size = 3;
+  int32 page_num = 2;
+  int32 page_size = 3;
   string order_by = 4;
   bool is_descending = 5;
 }
-
 
 message ListUserResponse {
   int64 total = 1;
@@ -434,7 +441,7 @@ message ListUserResponse {
 message UserListData {
   string tenant_id = 1;
   string user_id = 2;
-  string external_id =3;
+  string external_id = 3;
   string username = 4;
   string email = 5;
   string nick_name = 6;
@@ -442,40 +449,28 @@ message UserListData {
 }
 
 message DeleteUserRequest {
-  string tenant_id =1;
-  string user_id =2;
+  string tenant_id = 1;
+  string user_id = 2;
 }
 
 message AddTenantPluginRequest {
-  string tenant_id =1;
+  string tenant_id = 1;
   AddTenantPluginBody body = 2;
 }
-message AddTenantPluginBody {
-  string plugin_id =1;
-}
+message AddTenantPluginBody { string plugin_id = 1; }
 
-message AddTenantPluginResponse {
-  bool ok =1;
-}
+message AddTenantPluginResponse { bool ok = 1; }
 
-message ListTenantPluginRequest {
-  string tenant_id =1;
-}
-message ListTenantPluginResponse {
-  repeated  string plugins =1;
-}
+message ListTenantPluginRequest { string tenant_id = 1; }
+message ListTenantPluginResponse { repeated string plugins = 1; }
 
 message DeleteTenantPluginRequest {
-  string tenant_id =1;
-  string plugin_id =2;
+  string tenant_id = 1;
+  string plugin_id = 2;
 }
-message DeleteTenantPluginResponse {
-  bool ok =1;
-}
+message DeleteTenantPluginResponse { bool ok = 1; }
 message PluginPermissibleRequest {
-  string tenant_id =1;
-  string plugin_id =2;
+  string tenant_id = 1;
+  string plugin_id = 2;
 }
-message PluginPermissibleResponse {
-  bool allowed =1;
-}
+message PluginPermissibleResponse { bool allowed = 1; }

@@ -1,7 +1,22 @@
 name: push_image
 on:
-  pull_request:
-    types: [closed]
+  workflow_call:
+    inputs:
+      image_tag:
+        description: docker image tags
+        default: latest
+        required: false
+        type: string
+      dockerhub_name:
+        description: docker hub name
+        default: changeme
+        required: true
+        type: string
+      dockerhub_password:
+        description: docker hub password
+        default: changeme
+        required: true
+        type: string
 jobs:
   docker:
     name: build and push latest image
@@ -25,7 +40,7 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: build dev-container
+          username: ${{inputs.dockerhub_name}}
+          password: ${{inputs.dockerhub_password}}
+      - name: build dev-container DOCKER_TAG=${{inputs.image_tag}}
         run: make build-dev-container

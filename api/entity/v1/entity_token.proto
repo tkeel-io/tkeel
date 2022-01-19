@@ -1,3 +1,17 @@
+/*
+Copyright 2021 The tKeel Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 
 syntax = "proto3";
 
@@ -8,116 +22,106 @@ import "google/api/field_behavior.proto";
 import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
-
 option go_package = "github.com/tkeel-io/tkeel/api/entity/v1;v1";
 option java_multiple_files = true;
 option java_package = "api.entity.v1";
 
 service EntityToken {
-	rpc CreateEntityToken (CreateEntityTokenRequest) returns (CreateEntityTokenResponse) {
-		option (google.api.http) = {
-			post : "/entity/token"
-			body : "body"
-		};
-		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-			summary : "create a entity token"
-			operation_id : "CreateEntityToken"
-			tags : "entity token"
-			responses : [
-				{
-					key : "200"
-					value : {description : "OK"}
-				}
-			]
-		};
-	};
-	rpc TokenInfo (TokenInfoRequest) returns (TokenInfoResponse) {
-		option (google.api.http) = {
-			get : "/entity/info/{token}"
-		};
-		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-			summary : "get a entity token info"
-			operation_id : "EntityTokenInfo"
-			tags : "entity token"
-			responses : [
-				{
-					key : "200"
-					value : {description : "OK"}
-				}
-			]
-		};
-	};
-	rpc DeleteEntityToken (TokenInfoRequest) returns (google.protobuf.Empty) {
-		option (google.api.http) = {
-			delete : "/entity/token/{token}"
-		};
-		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-			summary : "delete a entity token"
-			operation_id : "DeleteEntityToken"
-			tags : "entity token"
-			responses : [
-				{
-					key : "200"
-					value : {description : "OK"}
-				}
-			]
-		};
-	};
-
+  rpc CreateEntityToken(CreateEntityTokenRequest)
+      returns (CreateEntityTokenResponse) {
+    option (google.api.http) = {
+      post : "/entity/token"
+      body : "body"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "create a entity token"
+      operation_id : "CreateEntityToken"
+      tags : "entity token"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  };
+  rpc TokenInfo(TokenInfoRequest) returns (TokenInfoResponse) {
+    option (google.api.http) = {
+      get : "/entity/info/{token}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "get a entity token info"
+      operation_id : "EntityTokenInfo"
+      tags : "entity token"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  };
+  rpc DeleteEntityToken(TokenInfoRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete : "/entity/token/{token}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "delete a entity token"
+      operation_id : "DeleteEntityToken"
+      tags : "entity token"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  };
 }
 
 message TokenRequestBody {
-	string entity_type = 1 [
-		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-			description : "entity type  body params"
-		},
-		(google.api.field_behavior) = REQUIRED
-	];
-	string entity_id = 2[
-		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-			description : "entity id  body params"
-		},
-		(google.api.field_behavior) = REQUIRED
-	];
-	string owner = 3 [
-		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-			description : "entity owner  body params"
-		},
-		(google.api.field_behavior) = REQUIRED
-	];
-	int64 expires_in = 4 [
-		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-			description : "entity token expires in  body params"
-		},
-		(google.api.field_behavior) = REQUIRED
-	];
+  string entity_type = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "entity type  body params"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+  string entity_id = 2 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "entity id  body params"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+  string owner = 3 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "entity owner  body params"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
+  int64 expires_in = 4 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "entity token expires in  body params"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 
 message CreateEntityTokenRequest {
-	TokenRequestBody body = 1   [
-		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-			description : "create entity token  body params"
-		},
-		(google.api.field_behavior) = REQUIRED
-	];
+  TokenRequestBody body = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "create entity token  body params"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
-message CreateEntityTokenResponse {
-	string token =1;
-}
+message CreateEntityTokenResponse { string token = 1; }
 
 message TokenInfoRequest {
-	string token = 1 [
-		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-			description : "entity token  path params"
-		},
-		(google.api.field_behavior) = REQUIRED
-	];
+  string token = 1 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "entity token  path params"
+    },
+    (google.api.field_behavior) = REQUIRED
+  ];
 }
 message TokenInfoResponse {
   string entity_id = 1;
-	string entity_type= 2;
-	string owner= 3;
-  int64  created_at= 4;
-	int64  expired_at= 5;
+  string entity_type = 2;
+  string owner = 3;
+  int64 created_at = 4;
+  int64 expired_at = 5;
 }
-

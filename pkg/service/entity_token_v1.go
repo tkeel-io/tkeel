@@ -30,7 +30,12 @@ func NewEntityTokenService(operator TokenOperator) *EntityTokenService {
 
 func (s *EntityTokenService) CreateEntityToken(ctx context.Context, req *pb.CreateEntityTokenRequest) (*pb.CreateEntityTokenResponse, error) {
 	now := time.Now()
-	entity := &EToken{EntityID: req.GetBody().GetEntityId(), EntityType: req.GetBody().GetEntityType(), Owner: req.GetBody().GetOwner(), CreatedAt: now.Unix()}
+	entity := &EToken{
+		EntityID:   req.GetBody().GetEntityId(),
+		EntityType: req.GetBody().GetEntityType(),
+		Owner:      req.GetBody().GetOwner(),
+		CreatedAt:  now.Unix(),
+	}
 	if req.GetBody().GetExpiresIn() == 0 {
 		entity.ExpiredAt = now.Add(time.Hour * 24 * 365).Unix()
 	} else {
@@ -44,6 +49,7 @@ func (s *EntityTokenService) CreateEntityToken(ctx context.Context, req *pb.Crea
 	}
 	return &pb.CreateEntityTokenResponse{Token: token}, nil
 }
+
 func (s *EntityTokenService) TokenInfo(ctx context.Context, req *pb.TokenInfoRequest) (*pb.TokenInfoResponse, error) {
 	entity, err := s.EntityTokenOp.GetEntityInfo(ctx, req.GetToken())
 	if err != nil {
@@ -59,6 +65,7 @@ func (s *EntityTokenService) TokenInfo(ctx context.Context, req *pb.TokenInfoReq
 		CreatedAt:  entity.CreatedAt,
 	}, nil
 }
+
 func (s *EntityTokenService) DeleteEntityToken(ctx context.Context, req *pb.TokenInfoRequest) (*emptypb.Empty, error) {
 	err := s.EntityTokenOp.DeleteToken(ctx, req.GetToken())
 	if err != nil {
@@ -99,8 +106,16 @@ func (e *TokenOp) CreateToken(ctx context.Context, entity *EToken) (token string
 	resultKey := ""
 	var item *dapr.StateItem
 	for item, _ = e.operator.GetState(ctx, e.storeName, key); item.Value == nil && i < 4; key = entity.MD5ID(&i) {
-		err = e.operator.SaveBulkState(ctx, e.storeName, &dapr.SetStateItem{Key: key, Value: value, Etag: &dapr.ETag{Value: item.Etag},
-			Options: &dapr.StateOptions{Concurrency: dapr.StateConcurrencyFirstWrite, Consistency: dapr.StateConsistencyStrong}})
+		err = e.operator.SaveBulkState(ctx, e.storeName,
+			&dapr.SetStateItem{
+				Key:   key,
+				Value: value,
+				Etag:  &dapr.ETag{Value: item.Etag},
+				Options: &dapr.StateOptions{
+					Concurrency: dapr.StateConcurrencyFirstWrite,
+					Consistency: dapr.StateConsistencyStrong,
+				},
+			})
 		if err != nil {
 			return "", fmt.Errorf("create token save state %w", err)
 		}
