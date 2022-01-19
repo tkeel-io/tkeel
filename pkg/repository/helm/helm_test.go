@@ -17,6 +17,9 @@ limitations under the License.
 package helm
 
 import (
+	"bytes"
+	"io"
+	"os"
 	"reflect"
 	"testing"
 
@@ -391,6 +394,17 @@ func Test_initActionConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_PostRenderer(t *testing.T) {
+	file, err := os.Open("./testdata/test.yaml")
+	assert.Nil(t, err)
+	kr := newKustomizeRender("rudder", "aaa", "12134")
+	fb, err := io.ReadAll(file)
+	assert.Nil(t, err)
+	out, err := kr.Run(bytes.NewBuffer(fb))
+	assert.Nil(t, err)
+	t.Log(out.String())
 }
 
 /*

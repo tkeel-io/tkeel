@@ -62,7 +62,7 @@ linters-settings:
     # path to a file containing a list of functions to exclude from checking
     # see https://github.com/kisielk/errcheck#excluding-functions for details
     # exclude:
-  
+
   gosec:
     # To select a subset of rules to run.
     # Available rules: https://github.com/securego/gosec#available-rules
@@ -296,6 +296,8 @@ linters:
     - nilerr
     - forbidigo
     - gomoddirectives
+    - ireturn
+    - varnamelen
 issues:
   exclude:
     # staticcheck

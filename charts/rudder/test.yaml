@@ -1,0 +1,81 @@
+---
+# Source: rudder/templates/deployment.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tkeel-manager
+  # replace with namespace where provisioner is deployed
+  namespace: "keel-system"
+---
+# Source: rudder/templates/deployment.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tkeel-manager
+subjects:
+  - kind: ServiceAccount
+    name: tkeel-manager
+    # replace with namespace where provisioner is deployed
+    namespace: "keel-system"
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: rudder/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: rudder
+  namespace: "keel-system"
+spec:
+  selector:
+    app: rudder
+  ports:
+    - protocol: TCP
+      port: 31234
+      targetPort: 31234
+      nodePort: 30777
+  type: NodePort
+---
+# Source: rudder/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rudder
+  namespace: "keel-system"
+  labels:
+    app: rudder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rudder
+  template:
+    metadata:
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "rudder"
+        dapr.io/app-port: "31234"
+        dapr.io/config: rudder
+      labels:
+        app: rudder
+    spec:
+      serviceAccountName: tkeel-manager
+      containers:
+        - name: rudder
+          image: "tkeelio/rudder:v0.3.0"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 31234
+          env:
+            - name: TKEEL_DAPR_PRIVATE_STATE_NAME
+              value: tkeel-middleware-redis-private-store
+            - name: TKEEL_DAPR_PUBLIC_STATE_NAME
+              value: tkeel-middleware-redis-public-store
+            - name: TKEEL_ADMIN_PASSWD
+              value: "tKeelAdmin"
+            - name: TKEEL_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace

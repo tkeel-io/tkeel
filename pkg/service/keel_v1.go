@@ -132,14 +132,14 @@ func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr
 			},
 		},
 	}
-	//if _, err := oauth.NewOperator(conf.SecurityConf.OAuth); err != nil {
+	// if _, err := oauth.NewOperator(conf.SecurityConf.OAuth); err != nil {
 	//	log.Fatalf("error oauth new operator: %s", err)
 	//	return nil
-	//}
-	//if _, err := rbac.NewRBACOperator(conf.SecurityConf.Mysql); err != nil {
+	// }
+	// if _, err := rbac.NewRBACOperator(conf.SecurityConf.Mysql); err != nil {
 	//	log.Fatalf("error rbac new operator: %s", err)
 	//	return nil
-	//}
+	// }.
 	go func() {
 		if err := ksV1.watch(context.TODO()); err != nil {
 			log.Fatalf("error keel watch plugin route map: %s", err)
@@ -578,7 +578,7 @@ func proxyHTTP(ctx context.Context, host, dstPath string,
 	if req.URL.RawQuery != "" {
 		url += "?" + req.URL.RawQuery
 	}
-	proxyReq, err := http.NewRequestWithContext(req.Context(), req.Method, url, bytes.NewReader(body))
+	proxyReq, err := http.NewRequestWithContext(ctx, req.Method, url, bytes.NewReader(body))
 	if err != nil {
 		writeResult(resp, http.StatusInternalServerError, err.Error(), nil)
 		return fmt.Errorf("error new proxy request: %w", err)

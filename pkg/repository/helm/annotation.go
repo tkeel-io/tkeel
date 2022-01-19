@@ -1,0 +1,27 @@
+package helm
+
+import (
+	"strings"
+)
+
+const (
+	tKeelPluginEnableKey     = "tkeel.io/enable"
+	tKeelPluginDeploymentKey = "tkeel.io/deployment-name"
+	tKeelPluginPortKey       = "tkeel.io/plugin-port"
+
+	trueString = "true"
+)
+
+func getBoolAnnotationOrDefault(annotations map[string]string, key string, defaultValue bool) bool {
+	enabled, ok := annotations[key]
+	if !ok {
+		return defaultValue
+	}
+	s := strings.ToLower(enabled)
+	// trueString is used to silence a lint error.
+	return (s == "y") || (s == "yes") || (s == trueString) || (s == "on") || (s == "1")
+}
+
+func getStringAnnotation(annotations map[string]string, key string) string {
+	return annotations[key]
+}

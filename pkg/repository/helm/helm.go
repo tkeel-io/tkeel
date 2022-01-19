@@ -58,7 +58,18 @@ const (
 	_componentChartName = "tkeel-plugin-components"
 )
 
-var _ repository.Repository = &Repo{}
+var (
+	_                repository.Repository = &Repo{}
+	_componentSecret                       = "changeme"
+)
+
+func SetSecret(s string) {
+	_componentSecret = s
+}
+
+func GetSecret() string {
+	return _componentSecret
+}
 
 // Repo is the impl repository.Repository.
 type Repo struct {

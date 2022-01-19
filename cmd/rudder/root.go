@@ -19,20 +19,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/tkeel-io/security/authz/rbac"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"github.com/go-oauth2/oauth2/v4/generates"
-	oredis "github.com/go-oauth2/redis/v4"
-	"github.com/go-redis/redis/v8"
-	"github.com/golang-jwt/jwt"
-	"github.com/spf13/cobra"
-	"github.com/tkeel-io/kit/app"
-	"github.com/tkeel-io/kit/log"
-	security_casbin "github.com/tkeel-io/security/authz/casbin"
-	"github.com/tkeel-io/security/gormdb"
 
 	entity_token_v1 "github.com/tkeel-io/tkeel/api/entity/v1"
 	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
@@ -55,6 +44,17 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/repository/helm"
 	"github.com/tkeel-io/tkeel/pkg/server"
 	"github.com/tkeel-io/tkeel/pkg/service"
+
+	"github.com/go-oauth2/oauth2/v4/generates"
+	oredis "github.com/go-oauth2/redis/v4"
+	"github.com/go-redis/redis/v8"
+	"github.com/golang-jwt/jwt"
+	"github.com/spf13/cobra"
+	"github.com/tkeel-io/kit/app"
+	"github.com/tkeel-io/kit/log"
+	security_casbin "github.com/tkeel-io/security/authz/casbin"
+	"github.com/tkeel-io/security/authz/rbac"
+	"github.com/tkeel-io/security/gormdb"
 )
 
 var (
@@ -103,7 +103,7 @@ var rootCmd = &cobra.Command{
 			riOp := prepo.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			kvOp := kv.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 
-			// init security operator
+			// init security operator.
 			tokenConf := &service.TokenConf{TokenType: service.TokenTypeBearer, AllowedGrantTypes: service.DefaultGrantType}
 			tokenStore := oredis.NewRedisStore(&redis.Options{
 				Addr:     conf.SecurityConf.OAuth.Redis.Addr,
@@ -113,6 +113,10 @@ var rootCmd = &cobra.Command{
 			tokenGenerator := generates.NewJWTAccessGenerate("", []byte(conf.SecurityConf.OAuth.AccessGenerate.SecurityKey), jwt.SigningMethodHS512)
 			gormdb, err := gormdb.SetUp(gormdb.DBConfig{Type: "mysql", Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port,
 				Dbname: conf.SecurityConf.Mysql.DBName, Username: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password})
+			if err != nil {
+				log.Fatal(err)
+				os.Exit(-1)
+			}
 			rbacOp, err := security_casbin.NewRBACOperator(&security_casbin.MysqlConf{DBName: conf.SecurityConf.Mysql.DBName,
 				User: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password,
 				Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port})
@@ -182,13 +186,13 @@ var rootCmd = &cobra.Command{
 			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, OauthSrv)
 			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), OauthSrv)
 
-			//entity token.
+			// entity token.
 			tokenOp := service.NewEntityTokenOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			EntityTokenSrv := service.NewEntityTokenService(tokenOp)
 			entity_token_v1.RegisterEntityTokenHTTPServer(httpSrv.Container, EntityTokenSrv)
 			entity_token_v1.RegisterEntityTokenServer(grpcSrv.GetServe(), EntityTokenSrv)
 
-			// rbac
+			// rbac service.
 			RbacSrv := service.NewRbacService(rbacOp)
 			rbac_v1.RegisterRbacHTTPServer(httpSrv.Container, RbacSrv)
 			rbac_v1.RegisterRbacServer(grpcSrv.GetServe(), RbacSrv)

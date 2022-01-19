@@ -146,6 +146,9 @@ func (h Installer) Install(ops ...*repository.Option) error {
 
 	installer.Version = h.brief.Version
 
+	installer.Namespace = h.namespace
+	installer.ReleaseName = h.id
+
 	if err = checkIfInstallable(h.chart); err != nil {
 		return fmt.Errorf("error installer installable: %w", err)
 	}
@@ -153,22 +156,19 @@ func (h Installer) Install(ops ...*repository.Option) error {
 	if h.chart.Metadata.Deprecated {
 		log.Warn("This chart is deprecated")
 	}
-
 	// Add inject dependencies.
-	injector, err := loadComponentChart()
+	dependencyChart, err := loadComponentChart()
 	if err != nil {
 		log.Error(err)
 		return errors.Wrap(err, "load component chart err")
 	}
-	s := SecretContext
-	if secret, ok := h.options["secret"].(string); ok {
-		s = secret
+	failInjector(dependencyChart, h.id, _componentSecret)
+	h.chart.AddDependency(dependencyChart)
+	// inject dapr annotation.
+	if err = h.inject(installer, dependencyChart); err != nil {
+		return errors.Wrap(err, "inject err")
 	}
-	failInjector(injector, h.id, s)
-	h.inject(injector)
 
-	installer.Namespace = h.namespace
-	installer.ReleaseName = h.id
 	if _, err := installer.Run(h.chart, nil); err != nil {
 		return errors.Wrap(err, "INSTALLATION FAILED")
 	}
@@ -190,9 +190,20 @@ func (h Installer) Brief() *repository.InstallerBrief {
 	return &h.brief
 }
 
-func (h *Installer) inject(injector *chart.Chart) {
-	h.chart.Values["daprConfig"] = h.id
-	h.chart.AddDependency(injector)
+func (h *Installer) inject(installer *action.Install, dependency *chart.Chart) error {
+	if !getBoolAnnotationOrDefault(h.chart.Metadata.Annotations,
+		tKeelPluginEnableKey, false) {
+		// Compatible with versions prior to 0.4.0.
+		h.chart.Values["daprConfig"] = h.id
+		return nil
+	}
+	deployment := getStringAnnotation(h.chart.Metadata.Annotations, tKeelPluginDeploymentKey)
+	appPort := getStringAnnotation(h.chart.Metadata.Annotations, tKeelPluginPortKey)
+	if deployment == "" || appPort == "" {
+		return errors.New("get plugin annotations err")
+	}
+	installer.PostRenderer = newKustomizeRender(deployment, h.id, appPort)
+	return nil
 }
 
 func loadComponentChart() (*chart.Chart, error) {

@@ -158,8 +158,7 @@ func (s *OauthService) Authenticate(ctx context.Context, req *pb.AuthenticateReq
 	}, nil
 }
 
-//nolint
-// GetAuthorizeToken get authorization token(code).
+// GetAuthorizeToken get authorization token(code). //nolint.
 func (s *OauthService) GetAuthorizeToken(ctx context.Context, req *AuthorizeRequest) (oauth2.TokenInfo, error) {
 	// check the client allows the grant type.
 	tgr := &oauth2.TokenGenerateRequest{
@@ -232,8 +231,7 @@ func (s *OauthService) CheckGrantType(gt oauth2.GrantType) bool {
 	return false
 }
 
-//nolint
-// GetAccessToken access token.
+// GetAccessToken access token. //nolint.
 func (s *OauthService) GetAccessToken(ctx context.Context, gt oauth2.GrantType, tgr *oauth2.TokenGenerateRequest) (oauth2.TokenInfo,
 	error) {
 	if allowed := s.CheckGrantType(gt); !allowed {
