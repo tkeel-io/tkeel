@@ -92,9 +92,9 @@ var rootCmd = &cobra.Command{
 
 			// init service.
 			// proxy service.
-			OauthSrv := service.NewOauthService(tokenConf, tokenStore, tokenGenerator, nil)
+			oauthSrv := service.NewOauthService(tokenConf, tokenStore, tokenGenerator, nil)
 			ProxySrvV1 := service.NewKeelServiceV1(conf.Tkeel.WatchInterval,
-				conf, daprHTTPClient, prOp, OauthSrv)
+				conf, daprHTTPClient, prOp, oauthSrv)
 			keel_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, ProxySrvV1)
 		}
 	},
