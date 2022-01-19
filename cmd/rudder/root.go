@@ -23,19 +23,14 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/spf13/cobra"
-	"github.com/tkeel-io/kit/app"
-	"github.com/tkeel-io/kit/log"
-	entity_v1 "github.com/tkeel-io/security/apirouter/entity/v1"
-	oauth_v1 "github.com/tkeel-io/security/apirouter/oauth/v1"
-	rbac_v1 "github.com/tkeel-io/security/apirouter/rbac/v1"
-	tenant_v1 "github.com/tkeel-io/security/apirouter/tenant/v1"
-	security_dao "github.com/tkeel-io/security/models/dao"
-	"github.com/tkeel-io/security/models/entity"
+	entity_token_v1 "github.com/tkeel-io/tkeel/api/entity/v1"
 	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
+	rbac_v1 "github.com/tkeel-io/tkeel/api/rbac/v1"
 	repo "github.com/tkeel-io/tkeel/api/repo/v1"
+	oauth_v1 "github.com/tkeel-io/tkeel/api/security_oauth/v1"
+	tenant_v1 "github.com/tkeel-io/tkeel/api/tenant/v1"
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
@@ -49,6 +44,17 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/repository/helm"
 	"github.com/tkeel-io/tkeel/pkg/server"
 	"github.com/tkeel-io/tkeel/pkg/service"
+
+	"github.com/go-oauth2/oauth2/v4/generates"
+	oredis "github.com/go-oauth2/redis/v4"
+	"github.com/go-redis/redis/v8"
+	"github.com/golang-jwt/jwt"
+	"github.com/spf13/cobra"
+	"github.com/tkeel-io/kit/app"
+	"github.com/tkeel-io/kit/log"
+	security_casbin "github.com/tkeel-io/security/authz/casbin"
+	"github.com/tkeel-io/security/authz/rbac"
+	"github.com/tkeel-io/security/gormdb"
 )
 
 var (
@@ -96,6 +102,29 @@ var rootCmd = &cobra.Command{
 			prOp := proute.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
 			riOp := prepo.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			kvOp := kv.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
+
+			// init security operator.
+			tokenConf := &service.TokenConf{TokenType: service.TokenTypeBearer, AllowedGrantTypes: service.DefaultGrantType}
+			tokenStore := oredis.NewRedisStore(&redis.Options{
+				Addr:     conf.SecurityConf.OAuth.Redis.Addr,
+				DB:       conf.SecurityConf.OAuth.Redis.DB,
+				Password: conf.SecurityConf.OAuth.Redis.Password,
+			})
+			tokenGenerator := generates.NewJWTAccessGenerate("", []byte(conf.SecurityConf.OAuth.AccessGenerate.SecurityKey), jwt.SigningMethodHS512)
+			gormdb, err := gormdb.SetUp(gormdb.DBConfig{Type: "mysql", Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port,
+				Dbname: conf.SecurityConf.Mysql.DBName, Username: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password})
+			if err != nil {
+				log.Fatal(err)
+				os.Exit(-1)
+			}
+			rbacOp, err := security_casbin.NewRBACOperator(&security_casbin.MysqlConf{DBName: conf.SecurityConf.Mysql.DBName,
+				User: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password,
+				Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port})
+			if err != nil {
+				log.Fatal("fatal new rbac operator", err)
+				os.Exit(-1)
+			}
+			tenantPluginOp := rbac.NewTenantPluginOperator(rbacOp)
 
 			// init repo hub.
 			hub.Init(conf.Tkeel.WatchInterval, riOp,
@@ -147,24 +176,26 @@ var rootCmd = &cobra.Command{
 			EntriesSrvV1 := service.NewEntryService(kvOp, pOp)
 			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, EntriesSrvV1)
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), EntriesSrvV1)
-			{
-				// copy mysql configuration.
-				conf.SecurityConf.RBAC.Adapter = conf.SecurityConf.Mysql
-				// init security service.
-				security_dao.SetUp(conf.SecurityConf.Mysql)
-				// tenant.
-				tenant_v1.RegisterToRestContainer(httpSrv.Container)
-				// oauth2.
-				oauth_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.OAuth2)
-				// rbac.
-				rbac_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.RBAC)
-				// entity token.
-				entityTokenOperator := entity.NewEntityTokenOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
-				if entityTokenOperator == nil {
-					os.Exit(-1)
-				}
-				entity_v1.RegisterToRestContainer(httpSrv.Container, conf.SecurityConf.Entity, entityTokenOperator)
-			}
+
+			// tenant service.
+			TenantSrv := service.NewTenantService(gormdb, tenantPluginOp)
+			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, TenantSrv)
+			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), TenantSrv)
+			// oauth server.
+			OauthSrv := service.NewOauthService(tokenConf, tokenStore, tokenGenerator, nil)
+			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, OauthSrv)
+			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), OauthSrv)
+
+			// entity token.
+			tokenOp := service.NewEntityTokenOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
+			EntityTokenSrv := service.NewEntityTokenService(tokenOp)
+			entity_token_v1.RegisterEntityTokenHTTPServer(httpSrv.Container, EntityTokenSrv)
+			entity_token_v1.RegisterEntityTokenServer(grpcSrv.GetServe(), EntityTokenSrv)
+
+			// rbac service.
+			RbacSrv := service.NewRbacService(rbacOp)
+			rbac_v1.RegisterRbacHTTPServer(httpSrv.Container, RbacSrv)
+			rbac_v1.RegisterRbacServer(grpcSrv.GetServe(), RbacSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

@@ -27,8 +27,6 @@ import (
 
 	"github.com/emicklei/go-restful"
 	"github.com/tkeel-io/kit/log"
-	"github.com/tkeel-io/security/models/oauth"
-	"github.com/tkeel-io/security/models/rbac"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/model"
@@ -134,14 +132,14 @@ func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr
 			},
 		},
 	}
-	if _, err := oauth.NewOperator(conf.SecurityConf.OAuth2); err != nil {
-		log.Fatalf("error oauth new operator: %s", err)
-		return nil
-	}
-	if _, err := rbac.NewRBACOperator(conf.SecurityConf.Mysql); err != nil {
-		log.Fatalf("error rbac new operator: %s", err)
-		return nil
-	}
+	// if _, err := oauth.NewOperator(conf.SecurityConf.OAuth); err != nil {
+	//	log.Fatalf("error oauth new operator: %s", err)
+	//	return nil
+	// }
+	// if _, err := rbac.NewRBACOperator(conf.SecurityConf.Mysql); err != nil {
+	//	log.Fatalf("error rbac new operator: %s", err)
+	//	return nil
+	// }.
 	go func() {
 		if err := ksV1.watch(context.TODO()); err != nil {
 			log.Fatalf("error keel watch plugin route map: %s", err)
@@ -320,17 +318,17 @@ func (s *KeelServiceV1) externalGetUser(req *restful.Request) (*model.User, erro
 	}
 	user := new(model.User)
 	if !isManager {
-		// tKeel platform.
-		tKeelToken, err := oauth.GetOauthOperator().ValidationBearerToken(req.Request)
-		if err != nil {
-			return nil, fmt.Errorf("error validation bearer token(%v): %w",
-				req.HeaderParameter(model.AuthorizationHeader), err)
-		}
-		tenant := strings.Split(tKeelToken.GetUserID(), "-")[1]
-		user.User = tKeelToken.GetUserID()
-		user.Tenant = tenant
-		// TODO: RBAC.
-		user.Role = model.AdminRole
+		//	// tKeel platform.
+		//	tKeelToken, err := oauth.GetOauthOperator().ValidationBearerToken(req.Request)
+		//	if err != nil {
+		//		return nil, fmt.Errorf("error validation bearer token(%v): %w",
+		//			req.HeaderParameter(http.CanonicalHeaderKey(AuthorizationHeader)), err)
+		//	}
+		//	tenant := strings.Split(tKeelToken.GetUserID(), "-")[1]
+		//	user.User = tKeelToken.GetUserID()
+		//	user.Tenant = tenant
+		//	// TODO: RBAC.
+		//	user.Role = model.AdminRole
 	} else {
 		// manager platform.
 		user.User = model.TKeelUser

@@ -1,0 +1,172 @@
+
+syntax = "proto3";
+
+package api.security_oauth.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/tkeel-io/tkeel/api/security_oauth/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.security_oauth.v1";
+
+service Oauth {
+
+	rpc Authorize (AuthorizeRequest) returns (AuthorizeResponse) {
+		option (google.api.http) = {
+			get : "/oauth/{tenant_id}/authorize"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary : "oauth authorize code with username and password"
+			operation_id : "OauthAuthorize"
+			tags : "OAuth"
+			responses : [{
+				key : "200"
+				value : {description : "OK"}
+			}]
+		};
+	}
+
+	rpc Token (TokenRequest) returns (TokenResponse) {
+		option (google.api.http) = {
+			get : "/oauth/{tenant_id}/token"
+		};
+
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary : "oauth token with code or password"
+			operation_id : "OauthToken"
+			tags : "OAuth"
+			responses : [{
+				key : "200"
+				value : {description : "OK"}
+			}]
+		};
+	}
+
+	rpc Authenticate(AuthenticateRequest)returns(AuthenticateResponse) {
+		option (google.api.http) = {
+			get : "/oauth/authenticate"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary : "oauth authenticate with header Authorization"
+			operation_id : "OauthAuthenticate"
+			tags : "OAuth"
+			responses : [{
+				key : "200"
+				value : {description : "OK"}
+			}]
+		};
+	}
+}
+
+//
+message AuthorizeRequest {
+	string tenant_id = 1 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "tenantID path param"
+		},
+		(google.api.field_behavior) = REQUIRED
+	];
+	string response_type = 2 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "authorize response type, this must 'code',query param"
+		},
+		(google.api.field_behavior) = REQUIRED
+	];
+	string username = 3 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "username query param"
+		},
+		(google.api.field_behavior) = REQUIRED
+	];
+	string password =4 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "password query param"
+		},
+		(google.api.field_behavior) = REQUIRED
+	];
+	string redirect_uri = 5 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "redirect uri with code"
+		},
+		(google.api.field_behavior) = REQUIRED
+	];
+	string state = 6 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "state"
+		},
+		(google.api.field_behavior) = OPTIONAL
+	];
+}
+
+message AuthorizeResponse {
+	string code = 1;
+}
+
+message TokenRequest {
+	string tenant_id = 1 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "tenant_id path param"
+		},
+		(google.api.field_behavior) = REQUIRED
+	];
+	string grant_type = 2 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "grant_type 'authorize_code','password', query param"
+		},
+		(google.api.field_behavior) = REQUIRED
+	];
+	string code = 3 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "code with authorize response,query param"
+		},
+		(google.api.field_behavior) = OPTIONAL
+	];
+	string redirect_uri = 4 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "redirect_uri while grant_type is code,query param"
+		},
+		(google.api.field_behavior) = OPTIONAL
+	];
+	string username= 5 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "username while grant_type is password ,query param"
+		},
+		(google.api.field_behavior) = OPTIONAL
+	];
+	string password = 6 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "password while grant_type is password,query param"
+		},
+		(google.api.field_behavior) = OPTIONAL
+	];
+
+	string refresh_token = 7 [
+		(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+			description : "refresh token while grant_type is refresh_token,query param"
+		},
+		(google.api.field_behavior) = OPTIONAL
+	];
+}
+
+message TokenResponse {
+	string access_token =1;
+	string refresh_token =2;
+	int64 expires_in =3;
+	string token_type = 4;
+}
+
+
+message AuthenticateRequest {
+}
+
+message AuthenticateResponse {
+	int64 expires_in = 1;
+	string user_id = 2;
+	string username= 3;
+	string external_id =4;
+	string nick_name =5;
+	string avatar = 6;
+	string tenant_id = 7;
+}
