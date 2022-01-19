@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"sync"
 
 	pb "github.com/tkeel-io/tkeel/api/tenant/v1"
 
@@ -13,6 +14,8 @@ import (
 	"gorm.io/gorm"
 )
 
+var _oncemigrate sync.Once
+
 type TenantService struct {
 	pb.UnimplementedTenantServer
 	DB             *gorm.DB
@@ -20,6 +23,10 @@ type TenantService struct {
 }
 
 func NewTenantService(db *gorm.DB, tenantPluginOp rbac.TenantPluginMgr) *TenantService {
+	_oncemigrate.Do(func() {
+		db.AutoMigrate(new(model.User))
+		db.AutoMigrate(new(model.Tenant))
+	})
 	return &TenantService{DB: db, TenantPluginOp: tenantPluginOp}
 }
 
