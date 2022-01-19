@@ -353,7 +353,7 @@ func GetTenantBindKey(tenantID string) string {
 }
 
 func ParseTenantBind(bindByte []byte) []string {
-	if bindByte == nil || string(bindByte) == "" {
+	if len(bindByte) == 0 {
 		return []string{}
 	}
 	return strings.Split(string(bindByte), ",")

@@ -580,7 +580,7 @@ func proxyHTTP(ctx context.Context, host, dstPath string,
 	if req.URL.RawQuery != "" {
 		url += "?" + req.URL.RawQuery
 	}
-	proxyReq, err := http.NewRequestWithContext(req.Context(), req.Method, url, bytes.NewReader(body))
+	proxyReq, err := http.NewRequestWithContext(ctx, req.Method, url, bytes.NewReader(body))
 	if err != nil {
 		writeResult(resp, http.StatusInternalServerError, err.Error(), nil)
 		return fmt.Errorf("error new proxy request: %w", err)
