@@ -15,7 +15,7 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// EntityTokenClient is the client API for EntityTokenOp service.
+// EntityTokenClient is the client API for EntityToken service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EntityTokenClient interface {
@@ -34,7 +34,7 @@ func NewEntityTokenClient(cc grpc.ClientConnInterface) EntityTokenClient {
 
 func (c *entityTokenClient) CreateEntityToken(ctx context.Context, in *CreateEntityTokenRequest, opts ...grpc.CallOption) (*CreateEntityTokenResponse, error) {
 	out := new(CreateEntityTokenResponse)
-	err := c.cc.Invoke(ctx, "/api.entity.v1.EntityTokenOp/CreateEntityToken", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.entity.v1.EntityToken/CreateEntityToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *entityTokenClient) CreateEntityToken(ctx context.Context, in *CreateEnt
 
 func (c *entityTokenClient) TokenInfo(ctx context.Context, in *TokenInfoRequest, opts ...grpc.CallOption) (*TokenInfoResponse, error) {
 	out := new(TokenInfoResponse)
-	err := c.cc.Invoke(ctx, "/api.entity.v1.EntityTokenOp/TokenInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.entity.v1.EntityToken/TokenInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,14 +52,14 @@ func (c *entityTokenClient) TokenInfo(ctx context.Context, in *TokenInfoRequest,
 
 func (c *entityTokenClient) DeleteEntityToken(ctx context.Context, in *TokenInfoRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.entity.v1.EntityTokenOp/DeleteEntityToken", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/api.entity.v1.EntityToken/DeleteEntityToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// EntityTokenServer is the server API for EntityTokenOp service.
+// EntityTokenServer is the server API for EntityToken service.
 // All implementations must embed UnimplementedEntityTokenServer
 // for forward compatibility
 type EntityTokenServer interface {
@@ -105,7 +105,7 @@ func _EntityToken_CreateEntityToken_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.entity.v1.EntityTokenOp/CreateEntityToken",
+		FullMethod: "/api.entity.v1.EntityToken/CreateEntityToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EntityTokenServer).CreateEntityToken(ctx, req.(*CreateEntityTokenRequest))
@@ -123,7 +123,7 @@ func _EntityToken_TokenInfo_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.entity.v1.EntityTokenOp/TokenInfo",
+		FullMethod: "/api.entity.v1.EntityToken/TokenInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EntityTokenServer).TokenInfo(ctx, req.(*TokenInfoRequest))
@@ -141,7 +141,7 @@ func _EntityToken_DeleteEntityToken_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.entity.v1.EntityTokenOp/DeleteEntityToken",
+		FullMethod: "/api.entity.v1.EntityToken/DeleteEntityToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EntityTokenServer).DeleteEntityToken(ctx, req.(*TokenInfoRequest))
@@ -149,11 +149,11 @@ func _EntityToken_DeleteEntityToken_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-// EntityToken_ServiceDesc is the grpc.ServiceDesc for EntityTokenOp service.
+// EntityToken_ServiceDesc is the grpc.ServiceDesc for EntityToken service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EntityToken_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.entity.v1.EntityTokenOp",
+	ServiceName: "api.entity.v1.EntityToken",
 	HandlerType: (*EntityTokenServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

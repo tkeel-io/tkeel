@@ -67,7 +67,8 @@ func (h *OauthHTTPHandler) Authenticate(req *go_restful.Request, resp *go_restfu
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -124,7 +125,8 @@ func (h *OauthHTTPHandler) Authorize(req *go_restful.Request, resp *go_restful.R
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -181,7 +183,8 @@ func (h *OauthHTTPHandler) Token(req *go_restful.Request, resp *go_restful.Respo
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
