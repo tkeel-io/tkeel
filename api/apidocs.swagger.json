@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/security_oauth/v1/oauth.proto",
+    "title": "api/tenant/v1/tenant.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "Oauth"
+      "name": "Tenant"
     }
   ],
   "consumes": [
@@ -16,15 +16,15 @@
     "application/json"
   ],
   "paths": {
-    "/oauth/authenticate": {
+    "/tenants": {
       "get": {
-        "summary": "oauth authenticate with header Authorization",
-        "operationId": "OauthAuthenticate",
+        "summary": "tenant list",
+        "operationId": "ListTenant",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1AuthenticateResponse"
+              "$ref": "#/definitions/v1ListTenantResponse"
             }
           },
           "default": {
@@ -35,19 +35,64 @@
           }
         },
         "tags": [
-          "OAuth"
+          "Tenant"
         ]
-      }
-    },
-    "/oauth/{tenant_id}/authorize": {
-      "get": {
-        "summary": "oauth authorize code with username and password",
-        "operationId": "OauthAuthorize",
+      },
+      "post": {
+        "summary": "create a tenant",
+        "operationId": "CreateTenant",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1AuthorizeResponse"
+              "$ref": "#/definitions/v1CreateTenantResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "409": {
+            "description": "ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "UNEXPECT_INTERNAL",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "create tenant body params",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TenantCreateBody",
+              "description": "create tenant body params"
+            }
+          }
+        ],
+        "tags": [
+          "Tenant"
+        ]
+      }
+    },
+    "/tenants/plugins/permissible": {
+      "get": {
+        "summary": "permissible tenant plugin",
+        "operationId": "PermissibleTenantPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1PluginPermissibleResponse"
             }
           },
           "default": {
@@ -60,61 +105,31 @@
         "parameters": [
           {
             "name": "tenant_id",
-            "description": "tenantID path param",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "response_type",
-            "description": "authorize response type, this must 'code',query param",
             "in": "query",
-            "required": true,
+            "required": false,
             "type": "string"
           },
           {
-            "name": "username",
-            "description": "username query param",
-            "in": "query",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "password",
-            "description": "password query param",
-            "in": "query",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "redirect_uri",
-            "description": "redirect uri with code",
-            "in": "query",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "state",
-            "description": "state",
+            "name": "plugin_id",
             "in": "query",
             "required": false,
             "type": "string"
           }
         ],
         "tags": [
-          "OAuth"
+          "Tenant"
         ]
       }
     },
-    "/oauth/{tenant_id}/token": {
+    "/tenants/{tenant_id}": {
       "get": {
-        "summary": "oauth token with code or password",
-        "operationId": "OauthToken",
+        "summary": "get a tenant",
+        "operationId": "GetTenant",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1TokenResponse"
+              "$ref": "#/definitions/v1GetTenantResponse"
             }
           },
           "default": {
@@ -127,56 +142,318 @@
         "parameters": [
           {
             "name": "tenant_id",
-            "description": "tenant_id path param",
+            "description": "tenant id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tenant"
+        ]
+      },
+      "delete": {
+        "summary": "delete a tenant",
+        "operationId": "DeleteTenant",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "tenant id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}/plugins": {
+      "get": {
+        "summary": "list tenant plugin",
+        "operationId": "ListTenantPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListTenantPluginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tenant"
+        ]
+      },
+      "post": {
+        "summary": "add a plugin",
+        "operationId": "AddPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1AddTenantPluginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "grant_type",
-            "description": "grant_type 'authorize_code','password', query param",
-            "in": "query",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AddTenantPluginBody"
+            }
+          }
+        ],
+        "tags": [
+          "Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}/plugins/{plugin_id}": {
+      "delete": {
+        "summary": "delete tenant plugin",
+        "operationId": "DeleteTenantPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteTenantPluginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "code",
-            "description": "code with authorize response,query param",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "redirect_uri",
-            "description": "redirect_uri while grant_type is code,query param",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "username",
-            "description": "username while grant_type is password ,query param",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "password",
-            "description": "password while grant_type is password,query param",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "refresh_token",
-            "description": "refresh token while grant_type is refresh_token,query param",
-            "in": "query",
-            "required": false,
+            "name": "plugin_id",
+            "in": "path",
+            "required": true,
             "type": "string"
           }
         ],
         "tags": [
-          "OAuth"
+          "Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}/users": {
+      "get": {
+        "summary": "list users",
+        "operationId": "ListUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "page_num",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Tenant"
+        ]
+      },
+      "post": {
+        "summary": "create a  user at tenant",
+        "operationId": "CreateUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1CreateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "tenant id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "create user body params",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateUserBody",
+              "description": "create user body params"
+            }
+          }
+        ],
+        "tags": [
+          "Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}/users/{user_id}": {
+      "get": {
+        "summary": "get a  user",
+        "operationId": "GetUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tenant"
+        ]
+      },
+      "delete": {
+        "summary": "delete a user",
+        "operationId": "DeleteUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tenant"
         ]
       }
     }
@@ -209,20 +486,118 @@
         }
       }
     },
-    "v1AuthenticateResponse": {
+    "v1AddTenantPluginBody": {
       "type": "object",
       "properties": {
-        "expires_in": {
+        "plugin_id": {
+          "type": "string"
+        }
+      }
+    },
+    "v1AddTenantPluginResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1CreateTenantResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
           "type": "string",
-          "format": "int64"
+          "description": "created tenant id"
+        },
+        "tenant_title": {
+          "type": "string",
+          "description": "created tenant title"
+        },
+        "admin_username": {
+          "type": "string",
+          "description": "created tenant admin username"
+        }
+      },
+      "title": "The response message containing the greetings"
+    },
+    "v1CreateUserBody": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "user name",
+          "required": [
+            "username"
+          ]
+        },
+        "password": {
+          "type": "string",
+          "description": "user password",
+          "required": [
+            "password"
+          ]
+        }
+      },
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "v1CreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
         },
         "user_id": {
           "type": "string"
         },
         "username": {
           "type": "string"
+        }
+      }
+    },
+    "v1DeleteTenantPluginResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1GetTenantResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "tenant id"
+        },
+        "title": {
+          "type": "string",
+          "description": "tenant title"
+        },
+        "remark": {
+          "type": "string",
+          "description": "tenant remark"
+        }
+      }
+    },
+    "v1GetUserResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
         },
         "external_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
           "type": "string"
         },
         "nick_name": {
@@ -230,34 +605,157 @@
         },
         "avatar": {
           "type": "string"
-        },
-        "tenant_id": {
-          "type": "string"
         }
       }
     },
-    "v1AuthorizeResponse": {
+    "v1ListTenantPluginResponse": {
       "type": "object",
       "properties": {
-        "code": {
-          "type": "string"
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
-    "v1TokenResponse": {
+    "v1ListTenantResponse": {
       "type": "object",
       "properties": {
-        "access_token": {
-          "type": "string"
-        },
-        "refresh_token": {
-          "type": "string"
-        },
-        "expires_in": {
+        "tenants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TenantDetail"
+          },
+          "description": "tenants"
+        }
+      }
+    },
+    "v1ListUserResponse": {
+      "type": "object",
+      "properties": {
+        "total": {
           "type": "string",
           "format": "int64"
         },
-        "token_type": {
+        "page_num": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1UserListData"
+          }
+        }
+      }
+    },
+    "v1PluginPermissibleResponse": {
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1TenantAdmin": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": " Tenant Admin username ",
+          "required": [
+            "username"
+          ]
+        },
+        "password": {
+          "type": "string",
+          "description": " Tenant Admin password ",
+          "required": [
+            "password"
+          ]
+        }
+      },
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "v1TenantCreateBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "tenant title",
+          "required": [
+            "title"
+          ]
+        },
+        "remark": {
+          "type": "string",
+          "description": "tenant remark"
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "tenant id"
+        },
+        "admin": {
+          "$ref": "#/definitions/v1TenantAdmin",
+          "description": "set tenant admin"
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "v1TenantDetail": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "tenant id"
+        },
+        "title": {
+          "type": "string",
+          "description": "tenant id"
+        },
+        "remark": {
+          "type": "string",
+          "description": "tenant remark"
+        },
+        "num_user": {
+          "type": "string",
+          "format": "int64",
+          "description": "user number in tenant"
+        }
+      }
+    },
+    "v1UserListData": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "nick_name": {
+          "type": "string"
+        },
+        "avatar": {
           "type": "string"
         }
       }

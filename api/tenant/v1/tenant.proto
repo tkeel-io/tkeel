@@ -163,6 +163,74 @@ service Tenant {
         value : {description : "OK"}
       }]
     };
+  };
+
+  // add a plugin
+  rpc AddTenantPlugin(AddTenantPluginRequest)returns(AddTenantPluginResponse) {
+    option (google.api.http) = {
+      post : "/tenants/{tenant_id}/plugins"
+      body : "body"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "add a plugin"
+      operation_id : "AddPlugin"
+      tags : "Tenant"
+      responses : [{
+        key : "200"
+        value : {description : "OK"}
+      }]
+    };
+  }
+
+  // list plugin
+  rpc ListTenantPlugin(ListTenantPluginRequest)returns(ListTenantPluginResponse) {
+    option (google.api.http) = {
+      get : "/tenants/{tenant_id}/plugins"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "list tenant plugin"
+      operation_id : "ListTenantPlugin"
+      tags : "Tenant"
+      responses : [{
+        key : "200"
+        value : {description : "OK"}
+      }]
+    };
+  }
+
+  // delete plugin
+  rpc DeleteTenantPlugin(DeleteTenantPluginRequest)returns(DeleteTenantPluginResponse) {
+    option (google.api.http) = {
+      delete : "/tenants/{tenant_id}/plugins/{plugin_id}"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "delete tenant plugin"
+      operation_id : "DeleteTenantPlugin"
+      tags : "Tenant"
+      responses : [{
+        key : "200"
+        value : {description : "OK"}
+      }]
+    };
+  };
+
+  rpc TenantPluginPermissible(PluginPermissibleRequest)returns(PluginPermissibleResponse) {
+    option (google.api.http) = {
+      get : "/tenants/plugins/permissible"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "permissible tenant plugin"
+      operation_id : "PermissibleTenantPlugin"
+      tags : "Tenant"
+      responses : [{
+        key : "200"
+        value : {description : "OK"}
+      }]
+    };
   }
 }
 
@@ -376,4 +444,38 @@ message UserListData {
 message DeleteUserRequest {
   string tenant_id =1;
   string user_id =2;
+}
+
+message AddTenantPluginRequest {
+  string tenant_id =1;
+  AddTenantPluginBody body = 2;
+}
+message AddTenantPluginBody {
+  string plugin_id =1;
+}
+
+message AddTenantPluginResponse {
+  bool ok =1;
+}
+
+message ListTenantPluginRequest {
+  string tenant_id =1;
+}
+message ListTenantPluginResponse {
+  repeated  string plugins =1;
+}
+
+message DeleteTenantPluginRequest {
+  string tenant_id =1;
+  string plugin_id =2;
+}
+message DeleteTenantPluginResponse {
+  bool ok =1;
+}
+message PluginPermissibleRequest {
+  string tenant_id =1;
+  string plugin_id =2;
+}
+message PluginPermissibleResponse {
+  bool allowed =1;
 }

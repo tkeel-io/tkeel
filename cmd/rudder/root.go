@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/tkeel-io/security/authz/rbac"
 	"os"
 	"os/signal"
 	"syscall"
@@ -102,6 +103,25 @@ var rootCmd = &cobra.Command{
 			riOp := prepo.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			kvOp := kv.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 
+			// init security operator
+			tokenConf := &service.TokenConf{TokenType: service.TokenTypeBearer, AllowedGrantTypes: service.DefaultGrantType}
+			tokenStore := oredis.NewRedisStore(&redis.Options{
+				Addr:     conf.SecurityConf.OAuth.Redis.Addr,
+				DB:       conf.SecurityConf.OAuth.Redis.DB,
+				Password: conf.SecurityConf.OAuth.Redis.Password,
+			})
+			tokenGenerator := generates.NewJWTAccessGenerate("", []byte(conf.SecurityConf.OAuth.AccessGenerate.SecurityKey), jwt.SigningMethodHS512)
+			gormdb, err := gormdb.SetUp(gormdb.DBConfig{Type: "mysql", Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port,
+				Dbname: conf.SecurityConf.Mysql.DBName, Username: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password})
+			rbacOp, err := security_casbin.NewRBACOperator(&security_casbin.MysqlConf{DBName: conf.SecurityConf.Mysql.DBName,
+				User: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password,
+				Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port})
+			if err != nil {
+				log.Fatal("fatal new rbac operator", err)
+				os.Exit(-1)
+			}
+			tenantPluginOp := rbac.NewTenantPluginOperator(rbacOp)
+
 			// init repo hub.
 			hub.Init(conf.Tkeel.WatchInterval, riOp,
 				func(connectInfo *repository.Info,
@@ -154,19 +174,10 @@ var rootCmd = &cobra.Command{
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), EntriesSrvV1)
 
 			// tenant service.
-			db, err := gormdb.SetUp(gormdb.DBConfig{Type: "mysql", Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port,
-				Dbname: conf.SecurityConf.Mysql.DBName, Username: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password})
-			TenantSrv := service.NewTenantService(db)
+			TenantSrv := service.NewTenantService(gormdb, tenantPluginOp)
 			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, TenantSrv)
 			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), TenantSrv)
-			// oauth server
-			tokenConf := &service.TokenConf{TokenType: service.TokenTypeBearer, AllowedGrantTypes: service.DefaultGrantType}
-			tokenStore := oredis.NewRedisStore(&redis.Options{
-				Addr:     conf.SecurityConf.OAuth.Redis.Addr,
-				DB:       conf.SecurityConf.OAuth.Redis.DB,
-				Password: conf.SecurityConf.OAuth.Redis.Password,
-			})
-			tokenGenerator := generates.NewJWTAccessGenerate("", []byte(""), jwt.SigningMethodHS512)
+			// oauth server.
 			OauthSrv := service.NewOauthService(tokenConf, tokenStore, tokenGenerator, nil)
 			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, OauthSrv)
 			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), OauthSrv)
@@ -178,13 +189,6 @@ var rootCmd = &cobra.Command{
 			entity_token_v1.RegisterEntityTokenServer(grpcSrv.GetServe(), EntityTokenSrv)
 
 			// rbac
-			rbacOp, err := security_casbin.NewRBACOperator(&security_casbin.MysqlConf{DBName: conf.SecurityConf.Mysql.DBName,
-				User: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password,
-				Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port})
-			if err != nil {
-				log.Fatal("fatal new rbac operator", err)
-				os.Exit(-1)
-			}
 			RbacSrv := service.NewRbacService(rbacOp)
 			rbac_v1.RegisterRbacHTTPServer(httpSrv.Container, RbacSrv)
 			rbac_v1.RegisterRbacServer(grpcSrv.GetServe(), RbacSrv)

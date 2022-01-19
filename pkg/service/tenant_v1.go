@@ -6,6 +6,7 @@ import (
 	pb "github.com/tkeel-io/tkeel/api/tenant/v1"
 
 	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/security/authz/rbac"
 	"github.com/tkeel-io/security/model"
 	"github.com/tkeel-io/security/utils"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -14,11 +15,12 @@ import (
 
 type TenantService struct {
 	pb.UnimplementedTenantServer
-	DB *gorm.DB
+	DB             *gorm.DB
+	TenantPluginOp rbac.TenantPluginMgr
 }
 
-func NewTenantService(db *gorm.DB) *TenantService {
-	return &TenantService{DB: db}
+func NewTenantService(db *gorm.DB, tenantPluginOp rbac.TenantPluginMgr) *TenantService {
+	return &TenantService{DB: db, TenantPluginOp: tenantPluginOp}
 }
 
 func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRequest) (*pb.CreateTenantResponse, error) {
@@ -52,6 +54,7 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 		}
 		resp.AdminUsername = user.UserName
 	}
+	s.TenantPluginOp.OnCreateTenant(tenant.ID)
 	return resp, nil
 }
 
@@ -240,4 +243,36 @@ func (s *TenantService) DeleteUser(ctx context.Context, req *pb.DeleteUserReques
 		return nil, pb.ErrInternalStore()
 	}
 	return &emptypb.Empty{}, nil
+}
+
+func (s *TenantService) AddTenantPlugin(ctx context.Context, req *pb.AddTenantPluginRequest) (*pb.AddTenantPluginResponse, error) {
+	ok, err := s.TenantPluginOp.AddTenantPlugin(req.GetTenantId(), req.GetBody().GetPluginId())
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalError()
+	}
+	return &pb.AddTenantPluginResponse{Ok: ok}, nil
+}
+
+func (s *TenantService) ListTenantPlugin(ctx context.Context, req *pb.ListTenantPluginRequest) (*pb.ListTenantPluginResponse, error) {
+	plugins := s.TenantPluginOp.ListTenantPlugins(req.GetTenantId())
+	return &pb.ListTenantPluginResponse{Plugins: plugins}, nil
+}
+
+func (s *TenantService) DeleteTenantPlugin(ctx context.Context, req *pb.DeleteTenantPluginRequest) (*pb.DeleteTenantPluginResponse, error) {
+	ok, err := s.TenantPluginOp.DeleteTenantPlugin(req.GetTenantId(), req.GetPluginId())
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalError()
+	}
+	return &pb.DeleteTenantPluginResponse{Ok: ok}, nil
+}
+
+func (s *TenantService) TenantPluginPermissible(ctx context.Context, req *pb.PluginPermissibleRequest) (*pb.PluginPermissibleResponse, error) {
+	allowed, err := s.TenantPluginOp.TenantPluginPermissible(req.GetTenantId(), req.GetPluginId())
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalError()
+	}
+	return &pb.PluginPermissibleResponse{Allowed: allowed}, nil
 }

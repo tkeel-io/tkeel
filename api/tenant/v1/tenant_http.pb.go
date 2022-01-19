@@ -28,14 +28,18 @@ var (
 )
 
 type TenantHTTPServer interface {
+	AddTenantPlugin(context.Context, *AddTenantPluginRequest) (*AddTenantPluginResponse, error)
 	CreateTenant(context.Context, *CreateTenantRequest) (*CreateTenantResponse, error)
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
 	DeleteTenant(context.Context, *DeleteTenantRequest) (*emptypb.Empty, error)
+	DeleteTenantPlugin(context.Context, *DeleteTenantPluginRequest) (*DeleteTenantPluginResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
 	GetTenant(context.Context, *GetTenantRequest) (*GetTenantResponse, error)
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
 	ListTenant(context.Context, *emptypb.Empty) (*ListTenantResponse, error)
+	ListTenantPlugin(context.Context, *ListTenantPluginRequest) (*ListTenantPluginResponse, error)
 	ListUser(context.Context, *ListUserRequest) (*ListUserResponse, error)
+	TenantPluginPermissible(context.Context, *PluginPermissibleRequest) (*PluginPermissibleResponse, error)
 }
 
 type TenantHTTPHandler struct {
@@ -44,6 +48,68 @@ type TenantHTTPHandler struct {
 
 func newTenantHTTPHandler(s TenantHTTPServer) *TenantHTTPHandler {
 	return &TenantHTTPHandler{srv: s}
+}
+
+func (h *TenantHTTPHandler) AddTenantPlugin(req *go_restful.Request, resp *go_restful.Response) {
+	in := AddTenantPluginRequest{}
+	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.AddTenantPlugin(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
 }
 
 func (h *TenantHTTPHandler) CreateTenant(req *go_restful.Request, resp *go_restful.Response) {
@@ -181,6 +247,63 @@ func (h *TenantHTTPHandler) DeleteTenant(req *go_restful.Request, resp *go_restf
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
 	out, err := h.srv.DeleteTenant(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *TenantHTTPHandler) DeleteTenantPlugin(req *go_restful.Request, resp *go_restful.Response) {
+	in := DeleteTenantPluginRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.DeleteTenantPlugin(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -445,6 +568,63 @@ func (h *TenantHTTPHandler) ListTenant(req *go_restful.Request, resp *go_restful
 	}
 }
 
+func (h *TenantHTTPHandler) ListTenantPlugin(req *go_restful.Request, resp *go_restful.Response) {
+	in := ListTenantPluginRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.ListTenantPlugin(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
 func (h *TenantHTTPHandler) ListUser(req *go_restful.Request, resp *go_restful.Response) {
 	in := ListUserRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
@@ -461,6 +641,58 @@ func (h *TenantHTTPHandler) ListUser(req *go_restful.Request, resp *go_restful.R
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
 	out, err := h.srv.ListUser(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *TenantHTTPHandler) TenantPluginPermissible(req *go_restful.Request, resp *go_restful.Response) {
+	in := PluginPermissibleRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.TenantPluginPermissible(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -534,4 +766,12 @@ func RegisterTenantHTTPServer(container *go_restful.Container, srv TenantHTTPSer
 		To(handler.ListUser))
 	ws.Route(ws.DELETE("/tenants/{tenant_id}/users/{user_id}").
 		To(handler.DeleteUser))
+	ws.Route(ws.POST("/tenants/{tenant_id}/plugins").
+		To(handler.AddTenantPlugin))
+	ws.Route(ws.GET("/tenants/{tenant_id}/plugins").
+		To(handler.ListTenantPlugin))
+	ws.Route(ws.DELETE("/tenants/{tenant_id}/plugins/{plugin_id}").
+		To(handler.DeleteTenantPlugin))
+	ws.Route(ws.GET("/tenants/plugins/permissible").
+		To(handler.TenantPluginPermissible))
 }

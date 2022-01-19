@@ -35,6 +35,13 @@ type TenantClient interface {
 	ListUser(ctx context.Context, in *ListUserRequest, opts ...grpc.CallOption) (*ListUserResponse, error)
 	// delete a user.
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// add a plugin
+	AddTenantPlugin(ctx context.Context, in *AddTenantPluginRequest, opts ...grpc.CallOption) (*AddTenantPluginResponse, error)
+	// list plugin
+	ListTenantPlugin(ctx context.Context, in *ListTenantPluginRequest, opts ...grpc.CallOption) (*ListTenantPluginResponse, error)
+	// delete plugin
+	DeleteTenantPlugin(ctx context.Context, in *DeleteTenantPluginRequest, opts ...grpc.CallOption) (*DeleteTenantPluginResponse, error)
+	TenantPluginPermissible(ctx context.Context, in *PluginPermissibleRequest, opts ...grpc.CallOption) (*PluginPermissibleResponse, error)
 }
 
 type tenantClient struct {
@@ -117,6 +124,42 @@ func (c *tenantClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, op
 	return out, nil
 }
 
+func (c *tenantClient) AddTenantPlugin(ctx context.Context, in *AddTenantPluginRequest, opts ...grpc.CallOption) (*AddTenantPluginResponse, error) {
+	out := new(AddTenantPluginResponse)
+	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/AddTenantPlugin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tenantClient) ListTenantPlugin(ctx context.Context, in *ListTenantPluginRequest, opts ...grpc.CallOption) (*ListTenantPluginResponse, error) {
+	out := new(ListTenantPluginResponse)
+	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/ListTenantPlugin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tenantClient) DeleteTenantPlugin(ctx context.Context, in *DeleteTenantPluginRequest, opts ...grpc.CallOption) (*DeleteTenantPluginResponse, error) {
+	out := new(DeleteTenantPluginResponse)
+	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/DeleteTenantPlugin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tenantClient) TenantPluginPermissible(ctx context.Context, in *PluginPermissibleRequest, opts ...grpc.CallOption) (*PluginPermissibleResponse, error) {
+	out := new(PluginPermissibleResponse)
+	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/TenantPluginPermissible", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TenantServer is the server API for Tenant service.
 // All implementations must embed UnimplementedTenantServer
 // for forward compatibility
@@ -137,6 +180,13 @@ type TenantServer interface {
 	ListUser(context.Context, *ListUserRequest) (*ListUserResponse, error)
 	// delete a user.
 	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
+	// add a plugin
+	AddTenantPlugin(context.Context, *AddTenantPluginRequest) (*AddTenantPluginResponse, error)
+	// list plugin
+	ListTenantPlugin(context.Context, *ListTenantPluginRequest) (*ListTenantPluginResponse, error)
+	// delete plugin
+	DeleteTenantPlugin(context.Context, *DeleteTenantPluginRequest) (*DeleteTenantPluginResponse, error)
+	TenantPluginPermissible(context.Context, *PluginPermissibleRequest) (*PluginPermissibleResponse, error)
 	mustEmbedUnimplementedTenantServer()
 }
 
@@ -167,6 +217,18 @@ func (UnimplementedTenantServer) ListUser(context.Context, *ListUserRequest) (*L
 }
 func (UnimplementedTenantServer) DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
+}
+func (UnimplementedTenantServer) AddTenantPlugin(context.Context, *AddTenantPluginRequest) (*AddTenantPluginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddTenantPlugin not implemented")
+}
+func (UnimplementedTenantServer) ListTenantPlugin(context.Context, *ListTenantPluginRequest) (*ListTenantPluginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTenantPlugin not implemented")
+}
+func (UnimplementedTenantServer) DeleteTenantPlugin(context.Context, *DeleteTenantPluginRequest) (*DeleteTenantPluginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTenantPlugin not implemented")
+}
+func (UnimplementedTenantServer) TenantPluginPermissible(context.Context, *PluginPermissibleRequest) (*PluginPermissibleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TenantPluginPermissible not implemented")
 }
 func (UnimplementedTenantServer) mustEmbedUnimplementedTenantServer() {}
 
@@ -325,6 +387,78 @@ func _Tenant_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Tenant_AddTenantPlugin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddTenantPluginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServer).AddTenantPlugin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tenant.v1.Tenant/AddTenantPlugin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServer).AddTenantPlugin(ctx, req.(*AddTenantPluginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Tenant_ListTenantPlugin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTenantPluginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServer).ListTenantPlugin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tenant.v1.Tenant/ListTenantPlugin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServer).ListTenantPlugin(ctx, req.(*ListTenantPluginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Tenant_DeleteTenantPlugin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteTenantPluginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServer).DeleteTenantPlugin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tenant.v1.Tenant/DeleteTenantPlugin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServer).DeleteTenantPlugin(ctx, req.(*DeleteTenantPluginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Tenant_TenantPluginPermissible_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PluginPermissibleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServer).TenantPluginPermissible(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tenant.v1.Tenant/TenantPluginPermissible",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServer).TenantPluginPermissible(ctx, req.(*PluginPermissibleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Tenant_ServiceDesc is the grpc.ServiceDesc for Tenant service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -363,6 +497,22 @@ var Tenant_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteUser",
 			Handler:    _Tenant_DeleteUser_Handler,
+		},
+		{
+			MethodName: "AddTenantPlugin",
+			Handler:    _Tenant_AddTenantPlugin_Handler,
+		},
+		{
+			MethodName: "ListTenantPlugin",
+			Handler:    _Tenant_ListTenantPlugin_Handler,
+		},
+		{
+			MethodName: "DeleteTenantPlugin",
+			Handler:    _Tenant_DeleteTenantPlugin_Handler,
+		},
+		{
+			MethodName: "TenantPluginPermissible",
+			Handler:    _Tenant_TenantPluginPermissible_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
