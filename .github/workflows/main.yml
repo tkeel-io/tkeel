@@ -15,7 +15,30 @@ jobs:
     with:
       upload_require: false
   upload:
-    if: github.event_name == 'push'
-    needs:
-      - check
-    uses: tkeel-io/tkeel/.github/workflows/push_image.yaml@main
+    name: Upload latest docker image
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    needs: [check]
+    env:
+      GOVER: ^1.17.5
+    steps:
+      - name: Set up Go ${{env.GOVER}}
+        uses: actions/setup-go@v2.1.4
+        with:
+          go-version: ${{ env.GOVER }}
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+      - name: Run make go.mod check-diff
+        run: git diff --exit-code ./go.mod
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{secrets.DOCKERHUB_USERNAME}}
+          password: ${{secrets.DOCKERHUB_TOKEN}}
+      - name: Codecov
+        uses: codecov/codecov-action@v1
+      - name: Run make release
+        run: |
+          make release GOOS=linux GOARCH=amd64
+      - name: build dev-container
+        run: make build-dev-container
