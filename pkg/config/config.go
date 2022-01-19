@@ -94,9 +94,11 @@ type SecurityConf struct {
 	// entity entity security config of auth.
 	Entity *EntityConf `json:"entity" yaml:"entity"`
 }
+
 type EntityConf struct {
 	SecurityKey string `json:"security_key" yaml:"securityKey"`
 }
+
 type MysqlConf struct {
 	DBName   string `json:"dbname" yaml:"dbname"` //nolint
 	User     string `json:"user" yaml:"user"`
@@ -104,11 +106,13 @@ type MysqlConf struct {
 	Host     string `json:"host" yaml:"host"`
 	Port     string `json:"port" yaml:"port"`
 }
+
 type RedisConf struct {
 	Addr     string `json:"addr" yaml:"addr"`
 	DB       int    `json:"db" yaml:"db"`
 	Password string `json:"password" yaml:"password"`
 }
+
 type OauthConfig struct {
 	AuthType       string      `json:"auth_type" yaml:"authType"`
 	Redis          *RedisConf  `json:"redis" yaml:"redis"`
@@ -123,11 +127,18 @@ type AccessConf struct {
 // NewDefaultConfiguration returns the empty config.
 func NewDefaultConfiguration() *Configuration {
 	return &Configuration{
-		Tkeel:        &TkeelConf{},
-		Proxy:        &ProxyConf{},
-		Dapr:         &DaprConf{},
-		Log:          &LogConf{},
-		SecurityConf: &SecurityConf{Mysql: &MysqlConf{}, OAuth: &OauthConfig{}, Entity: &EntityConf{}},
+		Tkeel: &TkeelConf{},
+		Proxy: &ProxyConf{},
+		Dapr:  &DaprConf{},
+		Log:   &LogConf{},
+		SecurityConf: &SecurityConf{
+			Mysql: &MysqlConf{},
+			OAuth: &OauthConfig{
+				Redis:          &RedisConf{},
+				AccessGenerate: &AccessConf{},
+			},
+			Entity: &EntityConf{},
+		},
 	}
 }
 
