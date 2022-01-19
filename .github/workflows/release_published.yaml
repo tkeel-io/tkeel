@@ -4,7 +4,6 @@ on:
     types: [published]
 jobs:
   check:
-    name: Run lint test and build
     uses: tkeel-io/tkeel/.github/workflows/public_call.yml@main
     with:
       archive_outdir: dist/archivers
