@@ -35,7 +35,7 @@ enum Error {
   // @code=ALREADY_EXISTS
   OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS = 2;
   // 无效的插件ID
-  // @code=INVALID_ARGUMENT
+  // @code=PERMISSION_DENIED
   OAUTH2_ERR_INVALID_PLUGIN_ID = 3;
   // 请求后端存储错误
   // @code=INTERNAL
@@ -44,6 +44,9 @@ enum Error {
   // @code=INTERNAL
   OAUTH2_ERR_INTERNAL_ERROR = 5;
   // password 不匹配
-  // @code=INVALID_ARGUMENT
+  // @code=PERMISSION_DENIED
   OAUTH2_ERR_PASSWORD_NOT_MATCH = 6;
+  // token 无效
+  // @code=PERMISSION_DENIED
+  OAUTH2_ERR_INVALID_TOKEN = 7;
 }

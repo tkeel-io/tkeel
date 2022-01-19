@@ -24,6 +24,7 @@ type Oauth2Client interface {
 	IssuePluginToken(ctx context.Context, in *IssuePluginTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error)
 	AddPluginWhiteList(ctx context.Context, in *AddPluginWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	IssueAdminToken(ctx context.Context, in *IssueAdminTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error)
+	VerifyToken(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type oauth2Client struct {
@@ -61,6 +62,15 @@ func (c *oauth2Client) IssueAdminToken(ctx context.Context, in *IssueAdminTokenR
 	return out, nil
 }
 
+func (c *oauth2Client) VerifyToken(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/VerifyToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Oauth2Server is the server API for Oauth2 service.
 // All implementations must embed UnimplementedOauth2Server
 // for forward compatibility
@@ -70,6 +80,7 @@ type Oauth2Server interface {
 	IssuePluginToken(context.Context, *IssuePluginTokenRequest) (*IssueTokenResponse, error)
 	AddPluginWhiteList(context.Context, *AddPluginWhiteListRequest) (*emptypb.Empty, error)
 	IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error)
+	VerifyToken(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	mustEmbedUnimplementedOauth2Server()
 }
 
@@ -85,6 +96,9 @@ func (UnimplementedOauth2Server) AddPluginWhiteList(context.Context, *AddPluginW
 }
 func (UnimplementedOauth2Server) IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IssueAdminToken not implemented")
+}
+func (UnimplementedOauth2Server) VerifyToken(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VerifyToken not implemented")
 }
 func (UnimplementedOauth2Server) mustEmbedUnimplementedOauth2Server() {}
 
@@ -153,6 +167,24 @@ func _Oauth2_IssueAdminToken_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Oauth2_VerifyToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Oauth2Server).VerifyToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.oauth2.v1.Oauth2/VerifyToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Oauth2Server).VerifyToken(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Oauth2_ServiceDesc is the grpc.ServiceDesc for Oauth2 service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -171,6 +203,10 @@ var Oauth2_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IssueAdminToken",
 			Handler:    _Oauth2_IssueAdminToken_Handler,
+		},
+		{
+			MethodName: "VerifyToken",
+			Handler:    _Oauth2_VerifyToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
