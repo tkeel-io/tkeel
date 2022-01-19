@@ -4,12 +4,12 @@ import (
 	"context"
 	"net/http"
 
+	pb "github.com/tkeel-io/tkeel/api/rbac/v1"
+	"github.com/tkeel-io/tkeel/pkg/model"
+
 	"github.com/casbin/casbin/v2"
 	"github.com/tkeel-io/kit/log"
 	transport_http "github.com/tkeel-io/kit/transport/http"
-
-	pb "github.com/tkeel-io/tkeel/api/rbac/v1"
-	"github.com/tkeel-io/tkeel/pkg/model"
 )
 
 type RbacService struct {

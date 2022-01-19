@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tkeel-io/kit/log"
 	pb "github.com/tkeel-io/tkeel/api/security_oauth/v1"
 
 	"github.com/go-oauth2/oauth2/v4"
@@ -16,6 +15,7 @@ import (
 	"github.com/go-oauth2/oauth2/v4/manage"
 	"github.com/go-oauth2/oauth2/v4/models"
 	"github.com/go-oauth2/oauth2/v4/store"
+	"github.com/tkeel-io/kit/log"
 	transportHTTP "github.com/tkeel-io/kit/transport/http"
 	"github.com/tkeel-io/security/model"
 	"gorm.io/gorm"
@@ -157,6 +157,7 @@ func (s *OauthService) Authenticate(ctx context.Context, req *pb.AuthenticateReq
 		ExternalId: users[0].ExternalID,
 		NickName:   users[0].NickName,
 		Avatar:     users[0].Avatar,
+		TenantId:   users[0].TenantID,
 	}, nil
 }
 

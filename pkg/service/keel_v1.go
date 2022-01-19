@@ -27,8 +27,6 @@ import (
 
 	"github.com/emicklei/go-restful"
 	"github.com/tkeel-io/kit/log"
-	"github.com/tkeel-io/security/models/oauth"
-	"github.com/tkeel-io/security/models/rbac"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/model"

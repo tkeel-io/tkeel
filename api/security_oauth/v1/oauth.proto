@@ -3,7 +3,6 @@ syntax = "proto3";
 
 package api.security_oauth.v1;
 
-
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
@@ -28,7 +27,6 @@ service Oauth {
 			}]
 		};
 	}
-
 
 	rpc Token (TokenRequest) returns (TokenResponse) {
 		option (google.api.http) = {
@@ -170,4 +168,5 @@ message AuthenticateResponse {
 	string external_id =4;
 	string nick_name =5;
 	string avatar = 6;
+	string tenant_id = 7;
 }
