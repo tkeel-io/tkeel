@@ -6,7 +6,6 @@ jobs:
   docker:
     name: build and push latest image
     runs-on: ubuntu-latest
-    needs: check
     env:
       GOVER: ^1.17.5
     steps:
