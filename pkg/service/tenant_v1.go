@@ -6,6 +6,7 @@ import (
 
 	pb "github.com/tkeel-io/tkeel/api/tenant/v1"
 
+	"github.com/casbin/casbin/v2"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/security/authz/rbac"
 	"github.com/tkeel-io/security/model"
@@ -20,9 +21,10 @@ type TenantService struct {
 	pb.UnimplementedTenantServer
 	DB             *gorm.DB
 	TenantPluginOp rbac.TenantPluginMgr
+	RBACOp         *casbin.SyncedEnforcer
 }
 
-func NewTenantService(db *gorm.DB, tenantPluginOp rbac.TenantPluginMgr) *TenantService {
+func NewTenantService(db *gorm.DB, tenantPluginOp rbac.TenantPluginMgr, rbacOp *casbin.SyncedEnforcer) *TenantService {
 	_oncemigrate.Do(func() {
 		db.AutoMigrate(new(model.User))
 		db.AutoMigrate(new(model.Tenant))
@@ -57,9 +59,14 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 		err = user.Create(s.DB)
 		if err != nil {
 			log.Error(err)
-			return resp, pb.ErrUnknown()
+			return resp, pb.ErrStoreCreatAdmin()
 		}
 		resp.AdminUsername = user.UserName
+		_, err = s.RBACOp.AddGroupingPolicy(user.ID, "admin", tenant.ID)
+		if err != nil {
+			log.Error(err)
+			return resp, pb.ErrStoreCreatAdminRole()
+		}
 	}
 	s.TenantPluginOp.OnCreateTenant(tenant.ID)
 	return resp, nil
@@ -103,7 +110,7 @@ func (s *TenantService) ListTenant(ctx context.Context, _ *emptypb.Empty) (*pb.L
 	}
 
 	resp.Tenants = make([]*pb.TenantDetail, len(tenants))
-	for _, v := range tenants {
+	for i, v := range tenants {
 		userDao := &model.User{}
 		detail := &pb.TenantDetail{TenantId: v.ID, Title: v.Title, Remark: v.Remark}
 		numUser, err := userDao.CountInTenant(s.DB, v.ID)
@@ -113,7 +120,7 @@ func (s *TenantService) ListTenant(ctx context.Context, _ *emptypb.Empty) (*pb.L
 		}
 
 		detail.NumUser = numUser
-		resp.Tenants = append(resp.Tenants, detail)
+		resp.Tenants[i] = detail
 	}
 
 	return resp, nil
@@ -126,10 +133,6 @@ func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRe
 		resp   = &emptypb.Empty{}
 	)
 	tenant.ID = req.TenantId
-	if !tenant.Existed(s.DB) {
-		return nil, pb.ErrInvalidArgument()
-	}
-
 	err = tenant.Delete(s.DB)
 	if err != nil {
 		log.Error(err)
@@ -147,24 +150,14 @@ func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRe
 
 func (s *TenantService) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	var (
-		err     error
-		existed bool
-		resp    *pb.CreateUserResponse
-		user    = &model.User{}
+		err  error
+		resp *pb.CreateUserResponse
+		user = &model.User{}
 	)
 
 	user.TenantID = req.GetTenantId()
 	user.UserName = req.GetBody().GetUsername()
 	user.Password = req.GetBody().GetPassword()
-	existed, err = user.Existed(s.DB)
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalStore()
-	}
-	if existed {
-		return nil, pb.ErrAlreadyExistedUser()
-	}
-
 	err = user.Create(s.DB)
 	if err != nil {
 		log.Error(err)
@@ -184,9 +177,12 @@ func (s *TenantService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*p
 	condition["id"] = req.GetUserId()
 	condition["tenant_id"] = req.GetTenantId()
 	_, users, err := user.QueryByCondition(s.DB, condition, nil)
-	if err != nil || len(users) != 1 {
+	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
+	}
+	if len(users) == 0 {
+		return nil, pb.ErrResourceNotFound()
 	}
 	resp = &pb.GetUserResponse{
 		TenantId:   users[0].TenantID,

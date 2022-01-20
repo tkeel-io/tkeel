@@ -42,7 +42,7 @@ enum Error {
   // 内部错误
   // @code=INTERNAL
   ERR_INTERNAL_ERROR = 5;
-  // 创建租户管理员错误
+  // 创建租户错误
   // @code=INTERNAL
   ERR_STORE_CREAT_TENANT = 6;
   // 创建已存在的用户
@@ -51,4 +51,10 @@ enum Error {
   // 资源不存在
   // @code=INTERNAL
   ERR_RESOURCE_NOT_FOUND = 8;
+  // 创建租户管理员用户错误
+  // @code=INTERNAL
+  ERR_STORE_CREAT_ADMIN = 9;
+  // 创建租户管理员角色错误
+  // @code=INTERNAL
+  ERR_STORE_CREAT_ADMIN_ROLE = 10;
 }

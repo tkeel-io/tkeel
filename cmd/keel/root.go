@@ -36,6 +36,7 @@ import (
 	oredis "github.com/go-oauth2/redis/v4"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
+	"github.com/tkeel-io/security/gormdb"
 )
 
 var (
@@ -89,10 +90,15 @@ var rootCmd = &cobra.Command{
 				Password: conf.SecurityConf.OAuth.Redis.Password,
 			})
 			tokenGenerator := generates.NewJWTAccessGenerate("", []byte(conf.SecurityConf.OAuth.AccessGenerate.SecurityKey), jwt.SigningMethodHS512)
-
+			gormdb, err := gormdb.SetUp(gormdb.DBConfig{Type: "mysql", Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port,
+				Dbname: conf.SecurityConf.Mysql.DBName, Username: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password})
+			if err != nil {
+				log.Fatal(err)
+				os.Exit(-1)
+			}
 			// init service.
 			// proxy service.
-			oauthSrv := service.NewOauthService(tokenConf, tokenStore, tokenGenerator, nil)
+			oauthSrv := service.NewOauthService(gormdb, tokenConf, tokenStore, tokenGenerator, nil)
 			ProxySrvV1 := service.NewKeelServiceV1(conf.Tkeel.WatchInterval,
 				conf, daprHTTPClient, prOp, oauthSrv)
 			keel_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, ProxySrvV1)
