@@ -29,7 +29,7 @@ func NewTenantService(db *gorm.DB, tenantPluginOp rbac.TenantPluginMgr, rbacOp *
 		db.AutoMigrate(new(model.User))
 		db.AutoMigrate(new(model.Tenant))
 	})
-	return &TenantService{DB: db, TenantPluginOp: tenantPluginOp}
+	return &TenantService{DB: db, TenantPluginOp: tenantPluginOp, RBACOp: rbacOp}
 }
 
 func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRequest) (*pb.CreateTenantResponse, error) {
