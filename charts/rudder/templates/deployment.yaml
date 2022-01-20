@@ -38,7 +38,7 @@ spec:
       annotations:
         dapr.io/enabled: "true"
         dapr.io/app-id: {{ include "rudder.name" . | quote }}
-        dapr.io/app-port: {{ .Values.appPort | quote }}
+        dapr.io/app-port: {{ .Values.httpPort | quote }}
         dapr.io/config: {{ .Values.daprConfig }}
       labels:
         app: {{ include "rudder.name" . }}
@@ -53,14 +53,48 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.appPort }}
+            - containerPort: {{ .Values.httpPort }}
           env:
+            - name: TKEEL_DEBUG
+              value: {{ .Values.debug }}
+            - name: TKEEL_LOG_LEVEL
+              value: {{ .Values.logLevel }}
+            - name: TKEEL_HTTP_ADDR
+              value: {{ printf ":%s" .Values.httpPort }}
+            - name: TKEEL_GRPC_ADDR
+              value: {{ printf ":%s" .Values.grpcPort }}
             - name: TKEEL_DAPR_PRIVATE_STATE_NAME
-              value: {{ printf "%s-redis-private-store" .Values.middleware.name }}
+              value: {{ .Values.dapr.state.privateName }}
             - name: TKEEL_DAPR_PUBLIC_STATE_NAME
-              value: {{ printf "%s-redis-public-store" .Values.middleware.name }}
+              value: {{ .Values.dapr.state.publicName }}
             - name: TKEEL_ADMIN_PASSWD
-              value: {{ .Values.adminPassword | quote }}
+              value: {{ .Values.adminPassword }}
+            - name: TKEEL_WATCH_INTERVAL
+              value: {{ .Values.watchInterval }}
+            - name: TKEEL_SECURITY_MYSQL_DBNAME
+              value: {{ .Value.middleware.mysql.dbname }}
+            - name: TKEEL_SECURITY_MYSQL_USER
+              value: {{ .Values.middleware.mysql.user }}
+            - name: TKEEL_SECURITY_MYSQL_PASSWORD
+              value: {{ .Values.middleware.mysql.password }}
+            - name: TKEEL_SECURITY_MYSQL_HOST
+              value: {{ .Values.middleware.mysql.host }}
+            - name: TKEEL_SECURITY_MYSQL_PORT
+              value: {{ .Values.middleware.mysql.port }}
+            - name: TKEEL_SECURITY_OAUTH2_REDIS_ADDR
+              value: {{ .Values.middleware.redis.addr }}
+            - name: TKEEL_SECURITY_OAUTH2_REDIS_PASSWORD
+              value: {{ .Values.middleware.redis.password }}
+            - name: TKEEL_SECURITY_OAUTH2_REDIS_DB
+              value: {{ .Values.middleware.redis.db }}
+            - name: TKEEL_SECURITY_ACCESS_SK
+              value: {{ .Values.oauth2.access.sk }}
+            - name: TKEEL_SECURITY_OAUTH2_AUTH_TYPE
+              value: {{ .Values.oauth2.type }}
+            - name: TKEEL_SECURITY_ACCESS_TOKEN_EXP
+              value: {{ .Values.oauth2.access.tokenExp }}
+            - name: TKEEL_SECURITY_ENTITY_SK
+              value: {{ .Values.entity.sk }}
             - name: TKEEL_POD_NAMESPACE
               valueFrom:
                 fieldRef:

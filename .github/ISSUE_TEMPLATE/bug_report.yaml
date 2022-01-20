@@ -27,6 +27,8 @@ body:
         - 0.1.0 (Default)
         - 0.1.x (Edge)
         - 0.2.x (Edge)
+        - 0.3.x (Edge)
+        - latest (main)
     validations:
       required: true
   - type: input

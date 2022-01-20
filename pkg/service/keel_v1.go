@@ -33,6 +33,7 @@ import (
 	v1 "github.com/tkeel-io/tkeel/pkg/service/keel/v1"
 	"github.com/tkeel-io/tkeel/pkg/token"
 	"github.com/tkeel-io/tkeel/pkg/util"
+	"github.com/tkeel-io/tkeel/pkg/version"
 
 	"github.com/emicklei/go-restful"
 	"github.com/tkeel-io/kit/log"
@@ -95,7 +96,6 @@ type source struct {
 
 type KeelServiceV1 struct {
 	watchInterval  string
-	tKeelVersion   string
 	conf           *config.ProxyConf
 	httpDaprClient t_dapr.Client
 	pluginRouteOp  proute.Operator
@@ -114,7 +114,6 @@ func NewKeelServiceV1(interval string, conf *config.Configuration, client t_dapr
 		duration = 10 * time.Second
 	}
 	ksV1 := &KeelServiceV1{
-		tKeelVersion:   conf.Tkeel.Version,
 		watchInterval:  interval,
 		conf:           conf.Proxy,
 		httpDaprClient: client,
@@ -234,7 +233,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			ctx = withUser(ctx, user)
 			ctx = withSource(ctx, &source{
 				ID:           model.TKeelUser,
-				TKeelDepened: s.tKeelVersion,
+				TKeelDepened: version.Version,
 			})
 		} else if pluginID == "rudder" || pluginID == "keel" {
 			user := new(model.User)
@@ -245,7 +244,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			ctx = withUser(ctx, user)
 			ctx = withSource(ctx, &source{
 				ID:           model.TKeelUser,
-				TKeelDepened: s.tKeelVersion,
+				TKeelDepened: version.Version,
 			})
 		} else {
 			pluginRouteInterface, ok := s.pluginRouteMap.Load(pluginID)

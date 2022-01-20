@@ -4,13 +4,58 @@ daprConfig: rudder
 # < tkeel platform values
 
 # rudder custom values
-middleware:
-  name: tkeel-middleware
 replicaCount: 1
-appPort: 31234
-adminPassword: tKeelAdmin
 nodePort: 30777
 image:
   repository: tkeelio/rudder
   tag: v0.3.0
   pullPolicy: Always
+
+# rudder debug mod
+debug: false
+
+# rudder log level
+logLevel: debug
+
+# rudder http port and dapr app port
+httpPort: 32134
+
+# rudder grpc port
+grpcPort: 32133
+
+# rudder admin initial password
+# ignored if password already exists in storage
+adminPassword: tKeelAdmin
+
+# rudder goroutine watch interval
+watchInterval: 10s
+
+# oauth2 configuration
+oauth2:
+  type: ""
+  access:
+    sk: eixn27adg3
+    tokenExp: 30m
+
+# entity configuration
+entity:
+  sk: i5s2x3nov894
+
+# dapr component
+dapr:
+  state:
+    privateName: tkeel-middleware-redis-private-store
+    publicName: tkeel-middleware-redis-public-store
+
+# middleware configuration
+middleware:
+  mysql:
+    host: tkeel-middleware-mysql
+    port: 3306
+    dbname: tkeelauth
+    user: root
+    password: a3fks=ixmeb82a
+  redis:
+    addr: tkeel-middleware-redis-master:6379
+    db: 0
+    password: Biz0P8Xoup

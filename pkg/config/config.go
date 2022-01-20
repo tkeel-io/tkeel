@@ -29,8 +29,6 @@ import (
 type TkeelConf struct {
 	// tkeel platform namespace.
 	Namespace string `json:"namespace" yaml:"namespace"`
-	// tkeel platform version.
-	Version string `json:"version" yaml:"version"`
 	// AdminPassword admin password.
 	AdminPassword string `json:"admin_password" yaml:"adminPassword"`
 	// watch interval.
@@ -181,7 +179,6 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.Dapr.PublicStateName, "dapr.public_state_name", getEnvStr("TKEEL_DAPR_PUBLIC_STATE_NAME", "tkeel-middleware-redis-public-store"), "dapr public store name(default keel-public-store).")
 	strVar(&c.Tkeel.Namespace, "tkeel.namespace", getEnvStr("TKEEL_POD_NAMESPACE", "tkeel-system"), "tkeel pod namespace.(default tkeel-system)")
 	strVar(&c.Tkeel.AdminPassword, "tkeel.admin_password", getEnvStr("TKEEL_ADMIN_PASSWD", "changeme"), "tkeel admin password.(default env TKEEL_ADMIN_PASSWD)")
-	strVar(&c.Tkeel.Version, "tkeel.version", getEnvStr("TKEEL_VERSION", "v0.3.0"), "tkeel version.(default v0.3.0)")
 	strVar(&c.Tkeel.WatchInterval, "tkeel.watch_interval", getEnvStr("TKEEL_WATCH_INTERVAL", "10s"), "tkeel watch change interval.(default 10s)")
 	strVar(&c.SecurityConf.Mysql.DBName, "security.mysql.dbname", getEnvStr("TKEEL_SECURITY_MYSQL_DBNAME", "tkeelauth"), "database name of auth`s mysql config")
 	strVar(&c.SecurityConf.Mysql.User, "security.mysql.user", getEnvStr("TKEEL_SECURITY_MYSQL_USER", "root"), "user name of auth`s mysql config")

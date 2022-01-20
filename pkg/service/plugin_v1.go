@@ -35,6 +35,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/util"
+	"github.com/tkeel-io/tkeel/pkg/version"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gopkg.in/yaml.v3"
 )
@@ -233,7 +234,7 @@ func (s *PluginServiceV1) UnregisterPlugin(ctx context.Context,
 		return nil, pb.PluginErrInternalStore()
 	}
 	// check whether the tenant bind.
-	if len(unregisterPluginRoute.ActiveTenantes) != 1 &&
+	if len(unregisterPluginRoute.ActiveTenantes) > 1 &&
 		unregisterPluginRoute.ActiveTenantes[0] != model.TKeelTenant {
 		log.Errorf("error unregister plugin(%s): tenant(%v) binded", pID, unregisterPluginRoute.ActiveTenantes)
 		return nil, pb.PluginErrPluginHasTenantBinded()
@@ -571,7 +572,7 @@ func (s *PluginServiceV1) queryIdentify(ctx context.Context,
 
 func (s *PluginServiceV1) checkIdentify(ctx context.Context,
 	resp *openapi_v1.IdentifyResponse) error {
-	ok, err := util.CheckRegisterPluginTkeelVersion(resp.TkeelVersion, s.tkeelConf.Version)
+	ok, err := util.CheckRegisterPluginTkeelVersion(resp.TkeelVersion, version.Version)
 	if err != nil {
 		return fmt.Errorf("error check register plugin(%s) depend tkeel version(%s): %w",
 			resp.PluginId, resp.TkeelVersion, err)

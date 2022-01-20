@@ -34,7 +34,7 @@ PROTOC ?=protoc
 ifdef REL_VERSION
 	TKEEL_VERSION := $(REL_VERSION)
 else
-	TKEEL_VERSION := edge
+	TKEEL_VERSION := $(shell git describe --abbrev=0 --tags)
 endif
 
 LOCAL_ARCH := $(shell uname -m)
