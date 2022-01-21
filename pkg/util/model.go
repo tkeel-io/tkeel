@@ -16,11 +16,16 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 		ImplementedPlugin: p.ImplementedPlugin,
 		Secret:            p.Secret,
 		RegisterTimestamp: p.RegisterTimestamp,
-		ActiveTenantes: func() []string {
-			if pr == nil {
-				return nil
+		EnableTenantes: func() []*pb.EnabledTenant {
+			ret := make([]*pb.EnabledTenant, 0, len(p.EnableTenantes))
+			for _, v := range p.EnableTenantes {
+				ret = append(ret, &pb.EnabledTenant{
+					TenantId:        v.TenantID,
+					OperatorId:      v.OperatorID,
+					EnableTimestamp: v.EnableTimestamp,
+				})
 			}
-			return pr.ActiveTenantes
+			return ret
 		}(),
 		RegisterAddons: func() []*pb.RegisterAddons {
 			if pr == nil {
@@ -36,10 +41,7 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 			return ret
 		}(),
 		Status: func() v1.PluginStatus {
-			if pr == nil {
-				return v1.PluginStatus_UNREGISTER
-			}
-			return pr.Status
+			return p.Status
 		}(),
 		BriefInstallerInfo: func() *pb.Installer {
 			if p.Installer == nil {

@@ -19,15 +19,14 @@ var pluginErrListPlugin *errors.TError
 var pluginErrInvalidArgument *errors.TError
 var pluginErrInternalQueryPluginOpenapi *errors.TError
 var pluginErrInternalStore *errors.TError
-var pluginErrUnregisterPluginHasBeenDepended *errors.TError
-var pluginErrDuplicateActiveTenant *errors.TError
+var pluginErrUninstallPluginHasBeenDepended *errors.TError
+var pluginErrDuplicateEnableTenant *errors.TError
 var pluginErrInstallerNotFound *errors.TError
 var pluginErrInstallInstaller *errors.TError
 var pluginErrUninstallPlugin *errors.TError
-var pluginErrOpenapiBindtenant *errors.TError
-var pluginErrPluginNotBeUnregister *errors.TError
-var pluginErrPluginHasTenantBinded *errors.TError
-var pluginErrOpenapiUnbindtenant *errors.TError
+var pluginErrOpenapiEnabletenant *errors.TError
+var pluginErrPluginHasTenantEnabled *errors.TError
+var pluginErrOpenapiDisableTenant *errors.TError
 
 func init() {
 	pluginErrUnknown = errors.New(int(codes.Unknown), "plugin.v1.PLUGIN_ERR_UNKNOWN", Error_PLUGIN_ERR_UNKNOWN.String())
@@ -46,24 +45,22 @@ func init() {
 	errors.Register(pluginErrInternalQueryPluginOpenapi)
 	pluginErrInternalStore = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_INTERNAL_STORE", Error_PLUGIN_ERR_INTERNAL_STORE.String())
 	errors.Register(pluginErrInternalStore)
-	pluginErrUnregisterPluginHasBeenDepended = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_UNREGISTER_PLUGIN_HAS_BEEN_DEPENDED", Error_PLUGIN_ERR_UNREGISTER_PLUGIN_HAS_BEEN_DEPENDED.String())
-	errors.Register(pluginErrUnregisterPluginHasBeenDepended)
-	pluginErrDuplicateActiveTenant = errors.New(int(codes.AlreadyExists), "plugin.v1.PLUGIN_ERR_DUPLICATE_ACTIVE_TENANT", Error_PLUGIN_ERR_DUPLICATE_ACTIVE_TENANT.String())
-	errors.Register(pluginErrDuplicateActiveTenant)
+	pluginErrUninstallPluginHasBeenDepended = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_UNINSTALL_PLUGIN_HAS_BEEN_DEPENDED", Error_PLUGIN_ERR_UNINSTALL_PLUGIN_HAS_BEEN_DEPENDED.String())
+	errors.Register(pluginErrUninstallPluginHasBeenDepended)
+	pluginErrDuplicateEnableTenant = errors.New(int(codes.AlreadyExists), "plugin.v1.PLUGIN_ERR_DUPLICATE_ENABLE_TENANT", Error_PLUGIN_ERR_DUPLICATE_ENABLE_TENANT.String())
+	errors.Register(pluginErrDuplicateEnableTenant)
 	pluginErrInstallerNotFound = errors.New(int(codes.NotFound), "plugin.v1.PLUGIN_ERR_INSTALLER_NOT_FOUND", Error_PLUGIN_ERR_INSTALLER_NOT_FOUND.String())
 	errors.Register(pluginErrInstallerNotFound)
 	pluginErrInstallInstaller = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_INSTALL_INSTALLER", Error_PLUGIN_ERR_INSTALL_INSTALLER.String())
 	errors.Register(pluginErrInstallInstaller)
 	pluginErrUninstallPlugin = errors.New(int(codes.Internal), "plugin.v1.PLUGIN_ERR_UNINSTALL_PLUGIN", Error_PLUGIN_ERR_UNINSTALL_PLUGIN.String())
 	errors.Register(pluginErrUninstallPlugin)
-	pluginErrOpenapiBindtenant = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_OPENAPI_BINDTENANT", Error_PLUGIN_ERR_OPENAPI_BINDTENANT.String())
-	errors.Register(pluginErrOpenapiBindtenant)
-	pluginErrPluginNotBeUnregister = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_PLUGIN_NOT_BE_UNREGISTER", Error_PLUGIN_ERR_PLUGIN_NOT_BE_UNREGISTER.String())
-	errors.Register(pluginErrPluginNotBeUnregister)
-	pluginErrPluginHasTenantBinded = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_PLUGIN_HAS_TENANT_BINDED", Error_PLUGIN_ERR_PLUGIN_HAS_TENANT_BINDED.String())
-	errors.Register(pluginErrPluginHasTenantBinded)
-	pluginErrOpenapiUnbindtenant = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_OPENAPI_UNBINDTENANT", Error_PLUGIN_ERR_OPENAPI_UNBINDTENANT.String())
-	errors.Register(pluginErrOpenapiUnbindtenant)
+	pluginErrOpenapiEnabletenant = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_OPENAPI_ENABLETENANT", Error_PLUGIN_ERR_OPENAPI_ENABLETENANT.String())
+	errors.Register(pluginErrOpenapiEnabletenant)
+	pluginErrPluginHasTenantEnabled = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_PLUGIN_HAS_TENANT_ENABLED", Error_PLUGIN_ERR_PLUGIN_HAS_TENANT_ENABLED.String())
+	errors.Register(pluginErrPluginHasTenantEnabled)
+	pluginErrOpenapiDisableTenant = errors.New(int(codes.InvalidArgument), "plugin.v1.PLUGIN_ERR_OPENAPI_DISABLE_TENANT", Error_PLUGIN_ERR_OPENAPI_DISABLE_TENANT.String())
+	errors.Register(pluginErrOpenapiDisableTenant)
 }
 
 func PluginErrUnknown() errors.Error {
@@ -98,12 +95,12 @@ func PluginErrInternalStore() errors.Error {
 	return pluginErrInternalStore
 }
 
-func PluginErrUnregisterPluginHasBeenDepended() errors.Error {
-	return pluginErrUnregisterPluginHasBeenDepended
+func PluginErrUninstallPluginHasBeenDepended() errors.Error {
+	return pluginErrUninstallPluginHasBeenDepended
 }
 
-func PluginErrDuplicateActiveTenant() errors.Error {
-	return pluginErrDuplicateActiveTenant
+func PluginErrDuplicateEnableTenant() errors.Error {
+	return pluginErrDuplicateEnableTenant
 }
 
 func PluginErrInstallerNotFound() errors.Error {
@@ -118,18 +115,14 @@ func PluginErrUninstallPlugin() errors.Error {
 	return pluginErrUninstallPlugin
 }
 
-func PluginErrOpenapiBindtenant() errors.Error {
-	return pluginErrOpenapiBindtenant
+func PluginErrOpenapiEnabletenant() errors.Error {
+	return pluginErrOpenapiEnabletenant
 }
 
-func PluginErrPluginNotBeUnregister() errors.Error {
-	return pluginErrPluginNotBeUnregister
+func PluginErrPluginHasTenantEnabled() errors.Error {
+	return pluginErrPluginHasTenantEnabled
 }
 
-func PluginErrPluginHasTenantBinded() errors.Error {
-	return pluginErrPluginHasTenantBinded
-}
-
-func PluginErrOpenapiUnbindtenant() errors.Error {
-	return pluginErrOpenapiUnbindtenant
+func PluginErrOpenapiDisableTenant() errors.Error {
+	return pluginErrOpenapiDisableTenant
 }

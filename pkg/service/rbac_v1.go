@@ -6,6 +6,7 @@ import (
 
 	pb "github.com/tkeel-io/tkeel/api/rbac/v1"
 	"github.com/tkeel-io/tkeel/pkg/model"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/tkeel-io/kit/log"
@@ -21,7 +22,7 @@ func NewRbacService(rbacOperator *casbin.SyncedEnforcer) *RbacService {
 	return &RbacService{RBACOperator: rbacOperator}
 }
 
-func (s *RbacService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest) (*pb.CreateRoleResponse, error) {
+func (s *RbacService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest) (*emptypb.Empty, error) {
 	header := transport_http.HeaderFromContext(ctx)
 	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
 	if !ok {
@@ -38,7 +39,7 @@ func (s *RbacService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest
 		log.Error(err)
 		return nil, pb.ErrInternalError()
 	}
-	return &pb.CreateRoleResponse{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *RbacService) ListRole(ctx context.Context, req *pb.ListRolesRequest) (*pb.ListRolesResponse, error) {
@@ -57,7 +58,7 @@ func (s *RbacService) ListRole(ctx context.Context, req *pb.ListRolesRequest) (*
 	return &pb.ListRolesResponse{Roles: roles}, nil
 }
 
-func (s *RbacService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest) (*pb.DeleteRoleResponse, error) {
+func (s *RbacService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest) (*emptypb.Empty, error) {
 	header := transport_http.HeaderFromContext(ctx)
 	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
 	if !ok {
@@ -74,7 +75,7 @@ func (s *RbacService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest)
 		log.Error(err)
 		return nil, pb.ErrInternalError()
 	}
-	return &pb.DeleteRoleResponse{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *RbacService) AddRolePermission(ctx context.Context, req *pb.AddRolePermissionRequest) (*pb.AddRolePermissionResponse, error) {
@@ -97,7 +98,7 @@ func (s *RbacService) DeleteRolePermission(ctx context.Context, req *pb.DeleteRo
 	return &pb.DeleteRolePermissionResponse{Ok: ok}, nil
 }
 
-func (s *RbacService) AddUserRoles(ctx context.Context, req *pb.AddUserRolesRequest) (*pb.AddUserRolesResponse, error) {
+func (s *RbacService) AddUserRoles(ctx context.Context, req *pb.AddUserRolesRequest) (*emptypb.Empty, error) {
 	groupingPolices := make([][]string,
 		len(req.GetBody().GetRoles())*len(req.GetBody().GetUserIds()))
 	for i := range req.GetBody().GetUserIds() {
@@ -110,16 +111,16 @@ func (s *RbacService) AddUserRoles(ctx context.Context, req *pb.AddUserRolesRequ
 		log.Error(err)
 		return nil, pb.ErrInternalError()
 	}
-	return &pb.AddUserRolesResponse{}, nil
+	return &emptypb.Empty{}, nil
 }
 
-func (s *RbacService) DeleteUserRole(ctx context.Context, req *pb.DeleteUserRoleRequest) (*pb.DeleteUserRoleResponse, error) {
+func (s *RbacService) DeleteUserRole(ctx context.Context, req *pb.DeleteUserRoleRequest) (*emptypb.Empty, error) {
 	_, err := s.RBACOperator.DeleteRoleForUserInDomain(req.GetUserId(), req.GetRole(), req.GetTenantId())
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrInternalError()
 	}
-	return &pb.DeleteUserRoleResponse{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *RbacService) ListUserPermissions(ctx context.Context, req *pb.ListUserPermissionRequest) (*pb.ListUserPermissionResponse, error) {

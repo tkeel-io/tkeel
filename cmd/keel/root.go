@@ -31,11 +31,6 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/server"
 	"github.com/tkeel-io/tkeel/pkg/service"
 	keel_v1 "github.com/tkeel-io/tkeel/pkg/service/keel/v1"
-
-	"github.com/go-oauth2/oauth2/v4/generates"
-	oredis "github.com/go-oauth2/redis/v4"
-	"github.com/go-redis/redis/v8"
-	"github.com/golang-jwt/jwt"
 )
 
 var (
@@ -78,24 +73,13 @@ var rootCmd = &cobra.Command{
 			}
 			// dapr http client.
 			daprHTTPClient := t_dapr.NewHTTPClient(conf.Dapr.HTTPPort)
-
 			// init operator.
 			prOp := proute.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
-
-			tokenConf := &service.TokenConf{TokenType: service.TokenTypeBearer, AllowedGrantTypes: service.DefaultGrantType}
-			tokenStore := oredis.NewRedisStore(&redis.Options{
-				Addr:     conf.SecurityConf.OAuth.Redis.Addr,
-				DB:       conf.SecurityConf.OAuth.Redis.DB,
-				Password: conf.SecurityConf.OAuth.Redis.Password,
-			})
-			tokenGenerator := generates.NewJWTAccessGenerate("", []byte(conf.SecurityConf.OAuth.AccessGenerate.SecurityKey), jwt.SigningMethodHS512)
-
 			// init service.
 			// proxy service.
-			oauthSrv := service.NewOauthService(tokenConf, tokenStore, tokenGenerator, nil)
-			ProxySrvV1 := service.NewKeelServiceV1(conf.Tkeel.WatchInterval,
-				conf, daprHTTPClient, prOp, oauthSrv)
-			keel_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, ProxySrvV1)
+			proxySrvV1 := service.NewKeelServiceV1(conf.Tkeel.WatchInterval,
+				conf, daprHTTPClient, prOp)
+			keel_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, proxySrvV1)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

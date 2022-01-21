@@ -8,6 +8,7 @@ import (
 	"time"
 
 	pb "github.com/tkeel-io/tkeel/api/security_oauth/v1"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/generates"
@@ -27,9 +28,7 @@ const (
 	TokenTypeBearer       = "Bearer"
 )
 
-var (
-	DefaultGrantType = []oauth2.GrantType{oauth2.AuthorizationCode, oauth2.Implicit, oauth2.PasswordCredentials, oauth2.Refreshing}
-)
+var DefaultGrantType = []oauth2.GrantType{oauth2.AuthorizationCode, oauth2.Implicit, oauth2.PasswordCredentials, oauth2.Refreshing}
 
 type OauthService struct {
 	Config  *TokenConf
@@ -110,6 +109,7 @@ func (s *OauthService) Authorize(ctx context.Context, req *pb.AuthorizeRequest) 
 	}
 	return &pb.AuthorizeResponse{Code: ti.GetCode()}, nil
 }
+
 func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.TokenResponse, error) {
 	gt, tgr, err := s.ValidationTokenRequest(req)
 	if err != nil {
@@ -128,7 +128,7 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 	}, nil
 }
 
-func (s *OauthService) Authenticate(ctx context.Context, req *pb.AuthenticateRequest) (*pb.AuthenticateResponse, error) {
+func (s *OauthService) Authenticate(ctx context.Context, empty *emptypb.Empty) (*pb.AuthenticateResponse, error) {
 	header := transportHTTP.HeaderFromContext(ctx)
 	accessToken, ok := s.bearerAuth(&header)
 	if !ok {

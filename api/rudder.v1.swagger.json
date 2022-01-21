@@ -661,123 +661,15 @@
         ]
       }
     },
-    "/plugins/{id}/register": {
-      "delete": {
-        "summary": "注销插件接口",
-        "operationId": "UnregisterPlugin",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1UnregisterPluginResponse"
-            }
-          },
-          "204": {
-            "description": "SUCC_AND_NO_CONTENT",
-            "schema": {}
-          },
-          "400": {
-            "description": "INVALID_ARGUMENT",
-            "schema": {}
-          },
-          "404": {
-            "description": "PLUGIN_NOT_FOUND",
-            "schema": {}
-          },
-          "500": {
-            "description": "INTERNAL_STORE",
-            "schema": {}
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "description": "plugin id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "Plugin"
-        ]
-      },
-      "post": {
-        "summary": "注册插件接口",
-        "operationId": "RegisterPlugin",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "properties": {}
-            }
-          },
-          "204": {
-            "description": "SUCC_AND_NO_CONTENT",
-            "schema": {}
-          },
-          "400": {
-            "description": "INVALID_ARGUMENT",
-            "schema": {}
-          },
-          "404": {
-            "description": "PLUGIN_NOT_FOUND",
-            "schema": {}
-          },
-          "409": {
-            "description": "ALREADY_EXISTS",
-            "schema": {}
-          },
-          "500": {
-            "description": "INTERNAL_STORE",
-            "schema": {}
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "description": "plugin id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "description": "plugin register secret",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "description": "plugin register secret"
-            }
-          }
-        ],
-        "tags": [
-          "Plugin"
-        ]
-      }
-    },
     "/plugins/{id}/tenants": {
       "get": {
         "summary": "获取插件绑定租户接口",
-        "operationId": "ListBindTenants",
+        "operationId": "ListenableTenants",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1ListBindTenantsResponse"
+              "$ref": "#/definitions/v1ListEnabledTenantsResponse"
             }
           },
           "400": {
@@ -809,8 +701,8 @@
         ]
       },
       "delete": {
-        "summary": "插件绑定租户接口",
-        "operationId": "UnindTenants",
+        "summary": "插件租户停用接口",
+        "operationId": "TenantDisable",
         "responses": {
           "200": {
             "description": "OK",
@@ -855,8 +747,8 @@
         ]
       },
       "post": {
-        "summary": "插件绑定租户接口",
-        "operationId": "BindTenants",
+        "summary": "插件租户启用接口",
+        "operationId": "TenantEnable",
         "responses": {
           "200": {
             "description": "OK",
@@ -974,7 +866,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1CreateRoleResponse"
+              "properties": {}
             }
           },
           "default": {
@@ -1013,7 +905,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1DeleteRoleResponse"
+              "properties": {}
             }
           },
           "default": {
@@ -1142,7 +1034,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1AddUserRolesResponse"
+              "properties": {}
             }
           },
           "default": {
@@ -1218,7 +1110,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1DeleteUserRoleResponse"
+              "properties": {}
             }
           },
           "default": {
@@ -2015,9 +1907,6 @@
         }
       }
     },
-    "v1AddUserRolesResponse": {
-      "type": "object"
-    },
     "v1AddonsPoint": {
       "type": "object",
       "properties": {
@@ -2153,9 +2042,6 @@
         }
       }
     },
-    "v1CreateRoleResponse": {
-      "type": "object"
-    },
     "v1CreateTenantResponse": {
       "type": "object",
       "properties": {
@@ -2228,9 +2114,6 @@
         }
       }
     },
-    "v1DeleteRoleResponse": {
-      "type": "object"
-    },
     "v1DeleteTenantPluginResponse": {
       "type": "object",
       "properties": {
@@ -2239,8 +2122,23 @@
         }
       }
     },
-    "v1DeleteUserRoleResponse": {
-      "type": "object"
+    "v1EnabledTenant": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "enable tenant id"
+        },
+        "operator_id": {
+          "type": "string",
+          "description": "operator user id"
+        },
+        "enable_timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "enable timestamp"
+        }
+      }
     },
     "v1GetEntriesResponse": {
       "type": "object",
@@ -2460,15 +2358,15 @@
         }
       }
     },
-    "v1ListBindTenantsResponse": {
+    "v1ListEnabledTenantsResponse": {
       "type": "object",
       "properties": {
         "tenants": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/v1EnabledTenant"
           },
-          "description": "plugin bind tenants list"
+          "description": "plugin enable tenants list"
         }
       }
     },
@@ -2628,12 +2526,12 @@
           "format": "int64",
           "description": "register timestamp"
         },
-        "active_tenantes": {
+        "enable_tenantes": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/v1EnabledTenant"
           },
-          "description": "active tenant's id list"
+          "description": "enable tenant's id list"
         },
         "register_addons": {
           "type": "array",
@@ -2671,13 +2569,12 @@
     "v1PluginStatus": {
       "type": "string",
       "enum": [
-        "ERROR",
-        "UNREGISTER",
-        "REGISTER",
-        "RUNNING",
-        "STOPPED"
+        "UNKNOWN",
+        "WAIT_RUNNING",
+        "ERR_REGISTER",
+        "RUNNING"
       ],
-      "default": "ERROR",
+      "default": "UNKNOWN",
       "description": "*\nplugin state enum."
     },
     "v1RegisterAddons": {
@@ -2875,15 +2772,6 @@
       }
     },
     "v1UninstallPluginResponse": {
-      "type": "object",
-      "properties": {
-        "plugin": {
-          "$ref": "#/definitions/v1PluginObject",
-          "description": "plugin object"
-        }
-      }
-    },
-    "v1UnregisterPluginResponse": {
       "type": "object",
       "properties": {
         "plugin": {

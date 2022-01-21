@@ -20,41 +20,60 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 
+	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/util"
-
-	dapr "github.com/dapr/go-sdk/client"
 )
 
 const contentTypeJSON = "application/json"
 
-func DaprInvokeJSON(ctx context.Context, c dapr.Client, appID, methodName, verb string, req, resp interface{}) error {
+func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, reqJSON, respJSON interface{}) ([]byte, error) {
 	var (
-		out []byte
-		err error
+		resp *http.Response
+		err  error
 	)
-	if !util.IsNil(req) && req != nil {
-		reqBody, err1 := json.Marshal(req)
+	request.Header.Set("Content-Type", contentTypeJSON)
+	if !util.IsNil(reqJSON) && reqJSON != nil {
+		reqBody, err1 := json.Marshal(reqJSON)
 		if err1 != nil {
-			return fmt.Errorf("error marshal dapr invoke(%s/%s/%s) request: %w", appID, methodName, verb, err1)
+			return nil, fmt.Errorf("error marshal dapr invoke(%s) request: %w", request, err1)
 		}
-		out, err = c.InvokeMethodWithContent(ctx, appID, methodName, verb, &dapr.DataContent{
-			Data:        reqBody,
-			ContentType: contentTypeJSON,
-		})
+		request.Body = reqBody
+		resp, err = c.Call(ctx, request)
+		defer func() {
+			if err = resp.Body.Close(); err != nil {
+				return
+			}
+		}()
 	} else {
-		out, err = c.InvokeMethod(ctx, appID, methodName, verb)
+		resp, err = c.Call(ctx, request)
+		defer func() {
+			if err = resp.Body.Close(); err != nil {
+				return
+			}
+		}()
 	}
-
 	if err != nil {
-		return fmt.Errorf("error invoke app(%s) method(%s/%s): %w", appID, methodName, verb, err)
+		return nil, fmt.Errorf("error invoke requst(%s): %w", request, err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error invoke request(%s): %s", request, resp.Status)
+	}
+	if resp.ContentLength == 0 {
+		return nil, nil
+	}
+	out, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error read resp body err: %w", err)
 	}
 
 	if !util.IsNil(resp) && resp != nil {
 		err = json.Unmarshal(out, resp)
 		if err != nil {
-			return fmt.Errorf("error unmarshal app(%s) method(%s/%s): %w", appID, methodName, verb, err)
+			return nil, fmt.Errorf("error unmarshal out(%s): %w", string(out), err)
 		}
 	}
-	return nil
+	return out, nil
 }

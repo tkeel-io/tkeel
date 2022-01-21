@@ -42,16 +42,8 @@ func (p *Reqeust) String() string {
 }
 
 type ProxyServer interface {
-	// ProxyPlugin proxy plugin addons request.
-	ProxyAddons(resp http.ResponseWriter, req *http.Request) error
 	// ProxyPlugin proxy plugin request.
 	ProxyPlugin(resp http.ResponseWriter, req *http.Request) error
-	// ProxyCore proxy core request.
-	ProxyCore(resp http.ResponseWriter, req *http.Request) error
-	// ProxyRudder proxy rudder request.
-	ProxyRudder(resp http.ResponseWriter, req *http.Request) error
-	// ProxySecurity proxy security request.
-	ProxySecurity(resp http.ResponseWriter, req *http.Request) error
 	// Filter Container filter.
 	Filter() restful.FilterFunction
 }

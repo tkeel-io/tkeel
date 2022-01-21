@@ -7,6 +7,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -20,7 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 type OauthClient interface {
 	Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error)
 	Token(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
-	Authenticate(ctx context.Context, in *AuthenticateRequest, opts ...grpc.CallOption) (*AuthenticateResponse, error)
+	Authenticate(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AuthenticateResponse, error)
 }
 
 type oauthClient struct {
@@ -49,7 +50,7 @@ func (c *oauthClient) Token(ctx context.Context, in *TokenRequest, opts ...grpc.
 	return out, nil
 }
 
-func (c *oauthClient) Authenticate(ctx context.Context, in *AuthenticateRequest, opts ...grpc.CallOption) (*AuthenticateResponse, error) {
+func (c *oauthClient) Authenticate(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AuthenticateResponse, error) {
 	out := new(AuthenticateResponse)
 	err := c.cc.Invoke(ctx, "/api.security_oauth.v1.Oauth/Authenticate", in, out, opts...)
 	if err != nil {
@@ -64,7 +65,7 @@ func (c *oauthClient) Authenticate(ctx context.Context, in *AuthenticateRequest,
 type OauthServer interface {
 	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
 	Token(context.Context, *TokenRequest) (*TokenResponse, error)
-	Authenticate(context.Context, *AuthenticateRequest) (*AuthenticateResponse, error)
+	Authenticate(context.Context, *emptypb.Empty) (*AuthenticateResponse, error)
 	mustEmbedUnimplementedOauthServer()
 }
 
@@ -78,7 +79,7 @@ func (UnimplementedOauthServer) Authorize(context.Context, *AuthorizeRequest) (*
 func (UnimplementedOauthServer) Token(context.Context, *TokenRequest) (*TokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Token not implemented")
 }
-func (UnimplementedOauthServer) Authenticate(context.Context, *AuthenticateRequest) (*AuthenticateResponse, error) {
+func (UnimplementedOauthServer) Authenticate(context.Context, *emptypb.Empty) (*AuthenticateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Authenticate not implemented")
 }
 func (UnimplementedOauthServer) mustEmbedUnimplementedOauthServer() {}
@@ -131,7 +132,7 @@ func _Oauth_Token_Handler(srv interface{}, ctx context.Context, dec func(interfa
 }
 
 func _Oauth_Authenticate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AuthenticateRequest)
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -143,7 +144,7 @@ func _Oauth_Authenticate_Handler(srv interface{}, ctx context.Context, dec func(
 		FullMethod: "/api.security_oauth.v1.Oauth/Authenticate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OauthServer).Authenticate(ctx, req.(*AuthenticateRequest))
+		return srv.(OauthServer).Authenticate(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -28,15 +28,13 @@ var (
 )
 
 type PluginHTTPServer interface {
-	BindTenants(context.Context, *BindTenantsRequest) (*emptypb.Empty, error)
 	GetPlugin(context.Context, *GetPluginRequest) (*GetPluginResponse, error)
 	InstallPlugin(context.Context, *InstallPluginRequest) (*InstallPluginResponse, error)
-	ListBindTenants(context.Context, *ListBindTenantsRequest) (*ListBindTenantsResponse, error)
+	ListEnabledTenants(context.Context, *ListEnabledTenantsRequest) (*ListEnabledTenantsResponse, error)
 	ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error)
-	RegisterPlugin(context.Context, *RegisterPluginRequest) (*emptypb.Empty, error)
-	UnbindTenants(context.Context, *UnbindTenantsRequest) (*emptypb.Empty, error)
+	TenantDisable(context.Context, *TenantDisableRequest) (*emptypb.Empty, error)
+	TenantEnable(context.Context, *TenantEnableRequest) (*emptypb.Empty, error)
 	UninstallPlugin(context.Context, *UninstallPluginRequest) (*UninstallPluginResponse, error)
-	UnregisterPlugin(context.Context, *UnregisterPluginRequest) (*UnregisterPluginResponse, error)
 }
 
 type PluginHTTPHandler struct {
@@ -45,69 +43,6 @@ type PluginHTTPHandler struct {
 
 func newPluginHTTPHandler(s PluginHTTPServer) *PluginHTTPHandler {
 	return &PluginHTTPHandler{srv: s}
-}
-
-func (h *PluginHTTPHandler) BindTenants(req *go_restful.Request, resp *go_restful.Response) {
-	in := BindTenantsRequest{}
-	if err := transportHTTP.GetBody(req, &in.Extra); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-
-	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
-
-	out, err := h.srv.BindTenants(ctx, &in)
-	if err != nil {
-		tErr := errors.FromError(err)
-		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
-		return
-	}
-	anyOut, err := anypb.New(out)
-	if err != nil {
-		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
-		return
-	}
-
-	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
-	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
-		Data: anyOut,
-	})
-	if err != nil {
-		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
-		return
-	}
-	resp.WriteHeader(http.StatusOK)
-
-	var remain int
-	for {
-		outB = outB[remain:]
-		remain, err = resp.Write(outB)
-		if err != nil {
-			return
-		}
-		if remain == 0 {
-			break
-		}
-	}
 }
 
 func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.Response) {
@@ -231,8 +166,8 @@ func (h *PluginHTTPHandler) InstallPlugin(req *go_restful.Request, resp *go_rest
 	}
 }
 
-func (h *PluginHTTPHandler) ListBindTenants(req *go_restful.Request, resp *go_restful.Response) {
-	in := ListBindTenantsRequest{}
+func (h *PluginHTTPHandler) ListEnabledTenants(req *go_restful.Request, resp *go_restful.Response) {
+	in := ListEnabledTenantsRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
@@ -246,7 +181,7 @@ func (h *PluginHTTPHandler) ListBindTenants(req *go_restful.Request, resp *go_re
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.ListBindTenants(ctx, &in)
+	out, err := h.srv.ListEnabledTenants(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -342,13 +277,8 @@ func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful
 	}
 }
 
-func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_restful.Response) {
-	in := RegisterPluginRequest{}
-	if err := transportHTTP.GetBody(req, &in.Secret); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
+func (h *PluginHTTPHandler) TenantDisable(req *go_restful.Request, resp *go_restful.Response) {
+	in := TenantDisableRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
@@ -362,7 +292,7 @@ func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_res
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.RegisterPlugin(ctx, &in)
+	out, err := h.srv.TenantDisable(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -405,8 +335,13 @@ func (h *PluginHTTPHandler) RegisterPlugin(req *go_restful.Request, resp *go_res
 	}
 }
 
-func (h *PluginHTTPHandler) UnbindTenants(req *go_restful.Request, resp *go_restful.Response) {
-	in := UnbindTenantsRequest{}
+func (h *PluginHTTPHandler) TenantEnable(req *go_restful.Request, resp *go_restful.Response) {
+	in := TenantEnableRequest{}
+	if err := transportHTTP.GetBody(req, &in.Extra); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
@@ -420,7 +355,7 @@ func (h *PluginHTTPHandler) UnbindTenants(req *go_restful.Request, resp *go_rest
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.UnbindTenants(ctx, &in)
+	out, err := h.srv.TenantEnable(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -521,64 +456,6 @@ func (h *PluginHTTPHandler) UninstallPlugin(req *go_restful.Request, resp *go_re
 	}
 }
 
-func (h *PluginHTTPHandler) UnregisterPlugin(req *go_restful.Request, resp *go_restful.Response) {
-	in := UnregisterPluginRequest{}
-	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-
-	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
-
-	out, err := h.srv.UnregisterPlugin(ctx, &in)
-	if err != nil {
-		tErr := errors.FromError(err)
-		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
-		return
-	}
-	anyOut, err := anypb.New(out)
-	if err != nil {
-		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
-		return
-	}
-
-	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
-	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
-		Data: anyOut,
-	})
-	if err != nil {
-		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
-		return
-	}
-	resp.WriteHeader(http.StatusOK)
-
-	var remain int
-	for {
-		outB = outB[remain:]
-		remain, err = resp.Write(outB)
-		if err != nil {
-			return
-		}
-		if remain == 0 {
-			break
-		}
-	}
-}
-
 func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPServer) {
 	var ws *go_restful.WebService
 	for _, v := range container.RegisteredWebServices() {
@@ -599,18 +476,14 @@ func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPSer
 		To(handler.InstallPlugin))
 	ws.Route(ws.DELETE("/plugins/{id}").
 		To(handler.UninstallPlugin))
-	ws.Route(ws.POST("/plugins/{id}/register").
-		To(handler.RegisterPlugin))
-	ws.Route(ws.DELETE("/plugins/{id}/register").
-		To(handler.UnregisterPlugin))
 	ws.Route(ws.GET("/plugins/{id}").
 		To(handler.GetPlugin))
 	ws.Route(ws.GET("/plugins").
 		To(handler.ListPlugin))
 	ws.Route(ws.POST("/plugins/{id}/tenants").
-		To(handler.BindTenants))
+		To(handler.TenantEnable))
 	ws.Route(ws.DELETE("/plugins/{id}/tenants").
-		To(handler.UnbindTenants))
+		To(handler.TenantDisable))
 	ws.Route(ws.GET("/plugins/{id}/tenants").
-		To(handler.ListBindTenants))
+		To(handler.ListEnabledTenants))
 }

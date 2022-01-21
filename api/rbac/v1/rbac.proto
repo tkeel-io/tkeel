@@ -18,6 +18,7 @@ syntax = "proto3";
 package api.rbac.v1;
 
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/rbac/v1;v1";
@@ -26,7 +27,7 @@ option java_package = "api.rbac.v1";
 
 service Rbac {
 
-  rpc CreateRoles(CreateRoleRequest) returns (CreateRoleResponse) {
+  rpc CreateRoles(CreateRoleRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/rbac/tenant/{tenant_id}/roles"
       body : "body"
@@ -57,7 +58,7 @@ service Rbac {
     };
   };
 
-  rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleResponse) {
+  rpc DeleteRole(DeleteRoleRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/rbac/tenant/{tenant_id}/roles/{role}"
     };
@@ -105,7 +106,7 @@ service Rbac {
     };
   };
 
-  rpc AddUserRoles(AddUserRolesRequest) returns (AddUserRolesResponse) {
+  rpc AddUserRoles(AddUserRolesRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/rbac/tenant/{tenant_id}/users/roles"
       body : "body"
@@ -121,7 +122,7 @@ service Rbac {
     };
   };
 
-  rpc DeleteUserRole(DeleteUserRoleRequest) returns (DeleteUserRoleResponse) {
+  rpc DeleteUserRole(DeleteUserRoleRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/rbac/tenant/{tenant_id}/users/{user_id}/roles/{role}"
     };
@@ -176,19 +177,16 @@ message CreateRoleRequest {
   string tenant_id = 1;
   TenantRole body = 2;
 }
-message CreateRoleResponse {}
 
 message UpdateRbacRequest {
   TenantRole obj = 1;
   string uid = 2;
 }
-message UpdateRbacResponse {}
 
 message DeleteRoleRequest {
   string tenant_id = 1;
   string role = 2;
 }
-message DeleteRoleResponse {}
 
 message ListRolesRequest { string tenant_id = 1; }
 message ListRolesResponse { repeated string roles = 1; }
@@ -222,15 +220,11 @@ message AddUserRolesBody {
   repeated string roles = 2;
 }
 
-message AddUserRolesResponse {}
-
 message DeleteUserRoleRequest {
   string tenant_id = 1;
   string user_id = 2;
   string role = 3;
 }
-
-message DeleteUserRoleResponse {}
 
 message ListUserPermissionRequest {
   string tenant_id = 1;

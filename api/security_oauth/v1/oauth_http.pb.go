@@ -28,7 +28,7 @@ var (
 )
 
 type OauthHTTPServer interface {
-	Authenticate(context.Context, *AuthenticateRequest) (*AuthenticateResponse, error)
+	Authenticate(context.Context, *emptypb.Empty) (*AuthenticateResponse, error)
 	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
 	Token(context.Context, *TokenRequest) (*TokenResponse, error)
 }
@@ -42,7 +42,7 @@ func newOauthHTTPHandler(s OauthHTTPServer) *OauthHTTPHandler {
 }
 
 func (h *OauthHTTPHandler) Authenticate(req *go_restful.Request, resp *go_restful.Response) {
-	in := AuthenticateRequest{}
+	in := emptypb.Empty{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")

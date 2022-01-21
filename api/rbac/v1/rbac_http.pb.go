@@ -29,12 +29,12 @@ var (
 
 type RbacHTTPServer interface {
 	AddRolePermission(context.Context, *AddRolePermissionRequest) (*AddRolePermissionResponse, error)
-	AddUserRoles(context.Context, *AddUserRolesRequest) (*AddUserRolesResponse, error)
+	AddUserRoles(context.Context, *AddUserRolesRequest) (*emptypb.Empty, error)
 	CheckUserPermission(context.Context, *CheckUserPermissionRequest) (*CheckUserPermissionResponse, error)
-	CreateRoles(context.Context, *CreateRoleRequest) (*CreateRoleResponse, error)
-	DeleteRole(context.Context, *DeleteRoleRequest) (*DeleteRoleResponse, error)
+	CreateRoles(context.Context, *CreateRoleRequest) (*emptypb.Empty, error)
+	DeleteRole(context.Context, *DeleteRoleRequest) (*emptypb.Empty, error)
 	DeleteRolePermission(context.Context, *DeleteRolePermissionRequest) (*DeleteRolePermissionResponse, error)
-	DeleteUserRole(context.Context, *DeleteUserRoleRequest) (*DeleteUserRoleResponse, error)
+	DeleteUserRole(context.Context, *DeleteUserRoleRequest) (*emptypb.Empty, error)
 	ListRole(context.Context, *ListRolesRequest) (*ListRolesResponse, error)
 	ListUserPermissions(context.Context, *ListUserPermissionRequest) (*ListUserPermissionResponse, error)
 }
