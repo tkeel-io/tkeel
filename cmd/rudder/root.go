@@ -182,11 +182,11 @@ var rootCmd = &cobra.Command{
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), entriesSrvV1)
 
 			// tenant service.
-			tenantSrv := service.NewTenantService(gormdb, tenantPluginOp)
+			tenantSrv := service.NewTenantService(gormdb, tenantPluginOp, rbacOp)
 			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, tenantSrv)
 			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), tenantSrv)
 			// oauth server.
-			oauthSrv := service.NewOauthService(tokenConf, tokenStore, tokenGenerator, nil)
+			oauthSrv := service.NewOauthService(gormdb, tokenConf, tokenStore, tokenGenerator, nil)
 			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, oauthSrv)
 			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), oauthSrv)
 

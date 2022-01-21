@@ -20,6 +20,8 @@ var errInternalError *errors.TError
 var errStoreCreatTenant *errors.TError
 var errAlreadyExistedUser *errors.TError
 var errResourceNotFound *errors.TError
+var errStoreCreatAdmin *errors.TError
+var errStoreCreatAdminRole *errors.TError
 
 func init() {
 	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.tenant.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
@@ -40,6 +42,10 @@ func init() {
 	errors.Register(errAlreadyExistedUser)
 	errResourceNotFound = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_RESOURCE_NOT_FOUND", Error_ERR_RESOURCE_NOT_FOUND.String())
 	errors.Register(errResourceNotFound)
+	errStoreCreatAdmin = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_STORE_CREAT_ADMIN", Error_ERR_STORE_CREAT_ADMIN.String())
+	errors.Register(errStoreCreatAdmin)
+	errStoreCreatAdminRole = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_STORE_CREAT_ADMIN_ROLE", Error_ERR_STORE_CREAT_ADMIN_ROLE.String())
+	errors.Register(errStoreCreatAdminRole)
 }
 
 func ErrUnknown() errors.Error {
@@ -76,4 +82,12 @@ func ErrAlreadyExistedUser() errors.Error {
 
 func ErrResourceNotFound() errors.Error {
 	return errResourceNotFound
+}
+
+func ErrStoreCreatAdmin() errors.Error {
+	return errStoreCreatAdmin
+}
+
+func ErrStoreCreatAdminRole() errors.Error {
+	return errStoreCreatAdminRole
 }

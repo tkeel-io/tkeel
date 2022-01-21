@@ -33,7 +33,7 @@ var DefaultGrantType = []oauth2.GrantType{oauth2.AuthorizationCode, oauth2.Impli
 type OauthService struct {
 	Config  *TokenConf
 	Manager *manage.Manager
-	userDB  *gorm.DB
+	UserDB  *gorm.DB
 	pb.UnimplementedOauthServer
 }
 
@@ -59,14 +59,15 @@ type AuthorizeRequest struct {
 	Request             *http.Request
 }
 
-func NewOauthService(conf *TokenConf, tokenStore oauth2.TokenStore, generator oauth2.AccessGenerate, client oauth2.ClientInfo) *OauthService {
+func NewOauthService(userDB *gorm.DB, conf *TokenConf, tokenStore oauth2.TokenStore, generator oauth2.AccessGenerate, client oauth2.ClientInfo) *OauthService {
 	manager := manage.NewDefaultManager()
 	tokenConf := manage.DefaultAuthorizeCodeTokenCfg
-	if conf != nil {
+	if conf.AccessTokenExp != 0 && conf.RefreshTokenExp != 0 {
 		tokenConf.AccessTokenExp = conf.AccessTokenExp
 		tokenConf.RefreshTokenExp = conf.RefreshTokenExp
 	}
 
+	log.Info(tokenConf)
 	clientStore := store.NewClientStore()
 	if client == nil {
 		client = &models.Client{ID: DefaultClient, Secret: DefaultClientSecurity, Domain: DefaultClientDomain}
@@ -83,8 +84,11 @@ func NewOauthService(conf *TokenConf, tokenStore oauth2.TokenStore, generator oa
 	manager.MapClientStorage(clientStore)
 	manager.MapTokenStorage(tokenStore)
 	manager.MapAccessGenerate(generator)
-
-	oauthServer := &OauthService{Config: conf, Manager: manager}
+	if userDB == nil {
+		log.Error("nil db")
+		panic("nil db")
+	}
+	oauthServer := &OauthService{UserDB: userDB, Config: conf, Manager: manager}
 	return oauthServer
 }
 
@@ -96,7 +100,7 @@ func (s *OauthService) Authorize(ctx context.Context, req *pb.AuthorizeRequest) 
 		State:        req.GetState(),
 	}
 	// user authorization.
-	user, err := model.AuthenticateUser(s.userDB, req.GetTenantId(), req.GetUsername(), req.GetPassword())
+	user, err := model.AuthenticateUser(s.UserDB, req.GetTenantId(), req.GetUsername(), req.GetPassword())
 	if err != nil {
 		log.Error(err)
 		return nil, pb.OauthErrInvalidRequest()
@@ -119,6 +123,8 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 	if err != nil {
 		return nil, pb.OauthErrServerError()
 	}
+	log.Info(ti.GetAccessExpiresIn())
+	log.Info(ti.GetAccessExpiresIn() / time.Second)
 
 	return &pb.TokenResponse{
 		AccessToken:  ti.GetAccess(),
@@ -141,7 +147,7 @@ func (s *OauthService) Authenticate(ctx context.Context, empty *emptypb.Empty) (
 	}
 	userID := token.GetUserID()
 	user := &model.User{}
-	_, users, err := user.QueryByCondition(s.userDB, map[string]interface{}{"id": userID}, nil)
+	_, users, err := user.QueryByCondition(s.UserDB, map[string]interface{}{"id": userID}, nil)
 	if err != nil || len(users) != 1 {
 		log.Error(err)
 		return nil, pb.OauthErrServerError()
@@ -206,7 +212,7 @@ func (s *OauthService) ValidationTokenRequest(r *pb.TokenRequest) (oauth2.GrantT
 		if username == "" || password == "" {
 			return "", nil, pb.OauthErrInvalidRequest()
 		}
-		user, err := model.AuthenticateUser(s.userDB, r.GetTenantId(),
+		user, err := model.AuthenticateUser(s.UserDB, r.GetTenantId(),
 			r.GetUsername(), r.GetPassword())
 		if err != nil {
 			return "", nil, pb.OauthErrInvalidRequest()
