@@ -178,28 +178,26 @@ func writeResult(resp http.ResponseWriter, code int, msg string) {
 
 func (s *KeelServiceV1) Filter() restful.FilterFunction {
 	return func(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
-		// white path.
-		if s.matchRegExpWhiteList(req.Request.URL.Path) {
-			chain.ProcessFilter(req, resp)
-			return
-		}
 		ctx, cancel := context.WithTimeout(req.Request.Context(), s.timeout)
 		defer cancel()
 		sess := new(session)
-		// src and user session.
-		if err := s.setSrcAndUserSession(ctx, sess, resp, req.Request.Header); err != nil {
-			log.Errorf("error set source and user session: %s", err)
-			return
-		}
 		// dst and method.
 		if err := s.setDstAndMethod(ctx, sess, resp, req); err != nil {
 			log.Errorf("error set dst and method session: %s", err)
 			return
 		}
-		// check sess.
-		if err := s.checkSession(ctx, sess, resp); err != nil {
-			log.Errorf("error check session: %s", err)
-			return
+		// white path.
+		if !s.matchRegExpWhiteList(req.Request.URL.Path) {
+			// src and user session.
+			if err := s.setSrcAndUserSession(ctx, sess, resp, req.Request.Header); err != nil {
+				log.Errorf("error set source and user session: %s", err)
+				return
+			}
+			// check sess.
+			if err := s.checkSession(ctx, sess, resp); err != nil {
+				log.Errorf("error check session: %s", err)
+				return
+			}
 		}
 		// set header and context.
 		req.Request.Header[model.XtKeelAuthHeader] = []string{sess.User.Base64Encode()}
@@ -502,16 +500,20 @@ func (s *KeelServiceV1) getPluginDstAndMethod(sess *session, req *http.Request) 
 		return fmt.Errorf("get(%s) invalid plugin id", req.URL.Path)
 	}
 	log.Debugf("pluginID: %s,pluginMethod: %s", pluginID, pluginMethod)
-	upstreamRouteInterface, ok := s.pluginRouteMap.Load(pluginID)
-	if !ok {
-		return ErrNotFoundUpstream
-	}
-	upstreamRoute, ok := upstreamRouteInterface.(*model.PluginRoute)
-	if !ok {
-		return errors.New("invalid plugin route type")
+	if pluginID == "core" || pluginID == "keel" || pluginID == "rudder" {
+		sess.Dst.TKeelDepened = version.Version
+	} else {
+		upstreamRouteInterface, ok := s.pluginRouteMap.Load(pluginID)
+		if !ok {
+			return ErrNotFoundUpstream
+		}
+		upstreamRoute, ok := upstreamRouteInterface.(*model.PluginRoute)
+		if !ok {
+			return errors.New("invalid plugin route type")
+		}
+		sess.Dst.TKeelDepened = upstreamRoute.TkeelVersion
 	}
 	sess.Dst.ID = pluginID
-	sess.Dst.TKeelDepened = upstreamRoute.TkeelVersion
 	sess.RequestMethod = pluginMethod
 	return nil
 }
