@@ -13,7 +13,7 @@ limitations under the License.
 
 syntax = "proto3";
 
-package api.plugin.v1;
+package io.tkeel.rudder.api.plugin.v1;
 
 import "openapi/v1/openapi.proto";
 import "google/protobuf/empty.proto";
@@ -22,7 +22,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/plugin/v1;v1";
 option java_multiple_files = true;
-option java_package = "api.plugin.v1";
+option java_package = "io.tkeel.rudder.api.plugin.v1";
 
 service Plugin {
   rpc InstallPlugin(InstallPluginRequest) returns (InstallPluginResponse) {

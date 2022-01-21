@@ -37,7 +37,7 @@ func NewOauth2Client(cc grpc.ClientConnInterface) Oauth2Client {
 
 func (c *oauth2Client) IssuePluginToken(ctx context.Context, in *IssuePluginTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error) {
 	out := new(IssueTokenResponse)
-	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/IssuePluginToken", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.oauth2.v1.Oauth2/IssuePluginToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *oauth2Client) IssuePluginToken(ctx context.Context, in *IssuePluginToke
 
 func (c *oauth2Client) AddPluginWhiteList(ctx context.Context, in *AddPluginWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/AddPluginWhiteList", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.oauth2.v1.Oauth2/AddPluginWhiteList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (c *oauth2Client) AddPluginWhiteList(ctx context.Context, in *AddPluginWhit
 
 func (c *oauth2Client) IssueAdminToken(ctx context.Context, in *IssueAdminTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error) {
 	out := new(IssueTokenResponse)
-	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/IssueAdminToken", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.oauth2.v1.Oauth2/IssueAdminToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (c *oauth2Client) IssueAdminToken(ctx context.Context, in *IssueAdminTokenR
 
 func (c *oauth2Client) VerifyToken(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.oauth2.v1.Oauth2/VerifyToken", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.oauth2.v1.Oauth2/VerifyToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +123,7 @@ func _Oauth2_IssuePluginToken_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.oauth2.v1.Oauth2/IssuePluginToken",
+		FullMethod: "/io.tkeel.rudder.api.oauth2.v1.Oauth2/IssuePluginToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(Oauth2Server).IssuePluginToken(ctx, req.(*IssuePluginTokenRequest))
@@ -141,7 +141,7 @@ func _Oauth2_AddPluginWhiteList_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.oauth2.v1.Oauth2/AddPluginWhiteList",
+		FullMethod: "/io.tkeel.rudder.api.oauth2.v1.Oauth2/AddPluginWhiteList",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(Oauth2Server).AddPluginWhiteList(ctx, req.(*AddPluginWhiteListRequest))
@@ -159,7 +159,7 @@ func _Oauth2_IssueAdminToken_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.oauth2.v1.Oauth2/IssueAdminToken",
+		FullMethod: "/io.tkeel.rudder.api.oauth2.v1.Oauth2/IssueAdminToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(Oauth2Server).IssueAdminToken(ctx, req.(*IssueAdminTokenRequest))
@@ -177,7 +177,7 @@ func _Oauth2_VerifyToken_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.oauth2.v1.Oauth2/VerifyToken",
+		FullMethod: "/io.tkeel.rudder.api.oauth2.v1.Oauth2/VerifyToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(Oauth2Server).VerifyToken(ctx, req.(*emptypb.Empty))
@@ -189,7 +189,7 @@ func _Oauth2_VerifyToken_Handler(srv interface{}, ctx context.Context, dec func(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Oauth2_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.oauth2.v1.Oauth2",
+	ServiceName: "io.tkeel.rudder.api.oauth2.v1.Oauth2",
 	HandlerType: (*Oauth2Server)(nil),
 	Methods: []grpc.MethodDesc{
 		{

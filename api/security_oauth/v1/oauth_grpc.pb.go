@@ -34,7 +34,7 @@ func NewOauthClient(cc grpc.ClientConnInterface) OauthClient {
 
 func (c *oauthClient) Authorize(ctx context.Context, in *AuthorizeRequest, opts ...grpc.CallOption) (*AuthorizeResponse, error) {
 	out := new(AuthorizeResponse)
-	err := c.cc.Invoke(ctx, "/api.security_oauth.v1.Oauth/Authorize", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.oauth.v1.Oauth/Authorize", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *oauthClient) Authorize(ctx context.Context, in *AuthorizeRequest, opts 
 
 func (c *oauthClient) Token(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error) {
 	out := new(TokenResponse)
-	err := c.cc.Invoke(ctx, "/api.security_oauth.v1.Oauth/Token", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.oauth.v1.Oauth/Token", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (c *oauthClient) Token(ctx context.Context, in *TokenRequest, opts ...grpc.
 
 func (c *oauthClient) Authenticate(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AuthenticateResponse, error) {
 	out := new(AuthenticateResponse)
-	err := c.cc.Invoke(ctx, "/api.security_oauth.v1.Oauth/Authenticate", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.oauth.v1.Oauth/Authenticate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func _Oauth_Authorize_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.security_oauth.v1.Oauth/Authorize",
+		FullMethod: "/io.tkeel.security.api.oauth.v1.Oauth/Authorize",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OauthServer).Authorize(ctx, req.(*AuthorizeRequest))
@@ -123,7 +123,7 @@ func _Oauth_Token_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.security_oauth.v1.Oauth/Token",
+		FullMethod: "/io.tkeel.security.api.oauth.v1.Oauth/Token",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OauthServer).Token(ctx, req.(*TokenRequest))
@@ -141,7 +141,7 @@ func _Oauth_Authenticate_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.security_oauth.v1.Oauth/Authenticate",
+		FullMethod: "/io.tkeel.security.api.oauth.v1.Oauth/Authenticate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(OauthServer).Authenticate(ctx, req.(*emptypb.Empty))
@@ -153,7 +153,7 @@ func _Oauth_Authenticate_Handler(srv interface{}, ctx context.Context, dec func(
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Oauth_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.security_oauth.v1.Oauth",
+	ServiceName: "io.tkeel.security.api.oauth.v1.Oauth",
 	HandlerType: (*OauthServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

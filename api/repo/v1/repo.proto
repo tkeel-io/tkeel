@@ -15,7 +15,7 @@ limitations under the License.
 
 syntax = "proto3";
 
-package api.repo.v1;
+package io.tkeel.plugin.api.repo.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
@@ -24,7 +24,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/repo/v1;v1";
 option java_multiple_files = true;
-option java_package = "api.repo.v1";
+option java_package = "io.tkeel.plugin.api.repo.v1";
 
 service Repo {
   rpc CreateRepo(CreateRepoRequest) returns (google.protobuf.Empty) {

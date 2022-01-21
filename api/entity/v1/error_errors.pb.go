@@ -18,15 +18,15 @@ var errInternalError *errors.TError
 var errResourceNotFound *errors.TError
 
 func init() {
-	errUnknown = errors.New(int(codes.Unknown), "entity.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
+	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.entity.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
 	errors.Register(errUnknown)
-	errInvalidArgument = errors.New(int(codes.InvalidArgument), "entity.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
+	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.entity.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
 	errors.Register(errInvalidArgument)
-	errInternalStore = errors.New(int(codes.Internal), "entity.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
+	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.security.api.entity.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
 	errors.Register(errInternalStore)
-	errInternalError = errors.New(int(codes.Internal), "entity.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
+	errInternalError = errors.New(int(codes.Internal), "io.tkeel.security.api.entity.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
 	errors.Register(errInternalError)
-	errResourceNotFound = errors.New(int(codes.Internal), "entity.v1.ERR_RESOURCE_NOT_FOUND", Error_ERR_RESOURCE_NOT_FOUND.String())
+	errResourceNotFound = errors.New(int(codes.Internal), "io.tkeel.security.api.entity.v1.ERR_RESOURCE_NOT_FOUND", Error_ERR_RESOURCE_NOT_FOUND.String())
 	errors.Register(errResourceNotFound)
 }
 

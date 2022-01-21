@@ -22,23 +22,23 @@ var errAlreadyExistedUser *errors.TError
 var errResourceNotFound *errors.TError
 
 func init() {
-	errUnknown = errors.New(int(codes.Unknown), "tenant.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
+	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.tenant.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
 	errors.Register(errUnknown)
-	errTenantAlreadyExisted = errors.New(int(codes.Internal), "tenant.v1.ERR_TENANT_ALREADY_EXISTED", Error_ERR_TENANT_ALREADY_EXISTED.String())
+	errTenantAlreadyExisted = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_TENANT_ALREADY_EXISTED", Error_ERR_TENANT_ALREADY_EXISTED.String())
 	errors.Register(errTenantAlreadyExisted)
-	errListTenant = errors.New(int(codes.Internal), "tenant.v1.ERR_LIST_TENANT", Error_ERR_LIST_TENANT.String())
+	errListTenant = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_LIST_TENANT", Error_ERR_LIST_TENANT.String())
 	errors.Register(errListTenant)
-	errInvalidArgument = errors.New(int(codes.InvalidArgument), "tenant.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
+	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.tenant.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
 	errors.Register(errInvalidArgument)
-	errInternalStore = errors.New(int(codes.Internal), "tenant.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
+	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
 	errors.Register(errInternalStore)
-	errInternalError = errors.New(int(codes.Internal), "tenant.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
+	errInternalError = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
 	errors.Register(errInternalError)
-	errStoreCreatTenant = errors.New(int(codes.Internal), "tenant.v1.ERR_STORE_CREAT_TENANT", Error_ERR_STORE_CREAT_TENANT.String())
+	errStoreCreatTenant = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_STORE_CREAT_TENANT", Error_ERR_STORE_CREAT_TENANT.String())
 	errors.Register(errStoreCreatTenant)
-	errAlreadyExistedUser = errors.New(int(codes.Internal), "tenant.v1.ERR_ALREADY_EXISTED_USER_", Error_ERR_ALREADY_EXISTED_USER_.String())
+	errAlreadyExistedUser = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_ALREADY_EXISTED_USER_", Error_ERR_ALREADY_EXISTED_USER_.String())
 	errors.Register(errAlreadyExistedUser)
-	errResourceNotFound = errors.New(int(codes.Internal), "tenant.v1.ERR_RESOURCE_NOT_FOUND", Error_ERR_RESOURCE_NOT_FOUND.String())
+	errResourceNotFound = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_RESOURCE_NOT_FOUND", Error_ERR_RESOURCE_NOT_FOUND.String())
 	errors.Register(errResourceNotFound)
 }
 

@@ -19,17 +19,17 @@ var errInternalStore *errors.TError
 var errInternalError *errors.TError
 
 func init() {
-	errUnknown = errors.New(int(codes.Unknown), "repo.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
+	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.plugin.api.repo.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
 	errors.Register(errUnknown)
-	errRepoNotFound = errors.New(int(codes.NotFound), "repo.v1.ERR_REPO_NOT_FOUND", Error_ERR_REPO_NOT_FOUND.String())
+	errRepoNotFound = errors.New(int(codes.NotFound), "io.tkeel.plugin.api.repo.v1.ERR_REPO_NOT_FOUND", Error_ERR_REPO_NOT_FOUND.String())
 	errors.Register(errRepoNotFound)
-	errListPlugin = errors.New(int(codes.Internal), "repo.v1.ERR_LIST_PLUGIN", Error_ERR_LIST_PLUGIN.String())
+	errListPlugin = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_LIST_PLUGIN", Error_ERR_LIST_PLUGIN.String())
 	errors.Register(errListPlugin)
-	errInvalidArgument = errors.New(int(codes.InvalidArgument), "repo.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
+	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.plugin.api.repo.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
 	errors.Register(errInvalidArgument)
-	errInternalStore = errors.New(int(codes.Internal), "repo.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
+	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
 	errors.Register(errInternalStore)
-	errInternalError = errors.New(int(codes.Internal), "repo.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
+	errInternalError = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
 	errors.Register(errInternalError)
 }
 

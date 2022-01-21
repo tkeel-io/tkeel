@@ -16,11 +16,11 @@ var entryErrInvalidTenant *errors.TError
 var entryErrInternalError *errors.TError
 
 func init() {
-	entryErrUnknown = errors.New(int(codes.Unknown), "entry.v1.ENTRY_ERR_UNKNOWN", Error_ENTRY_ERR_UNKNOWN.String())
+	entryErrUnknown = errors.New(int(codes.Unknown), "io.tkeel.rudder.api.entry.v1.ENTRY_ERR_UNKNOWN", Error_ENTRY_ERR_UNKNOWN.String())
 	errors.Register(entryErrUnknown)
-	entryErrInvalidTenant = errors.New(int(codes.InvalidArgument), "entry.v1.ENTRY_ERR_INVALID_TENANT", Error_ENTRY_ERR_INVALID_TENANT.String())
+	entryErrInvalidTenant = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.entry.v1.ENTRY_ERR_INVALID_TENANT", Error_ENTRY_ERR_INVALID_TENANT.String())
 	errors.Register(entryErrInvalidTenant)
-	entryErrInternalError = errors.New(int(codes.Internal), "entry.v1.ENTRY_ERR_INTERNAL_ERROR", Error_ENTRY_ERR_INTERNAL_ERROR.String())
+	entryErrInternalError = errors.New(int(codes.Internal), "io.tkeel.rudder.api.entry.v1.ENTRY_ERR_INTERNAL_ERROR", Error_ENTRY_ERR_INTERNAL_ERROR.String())
 	errors.Register(entryErrInternalError)
 }
 

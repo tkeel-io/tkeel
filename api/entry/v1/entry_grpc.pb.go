@@ -32,7 +32,7 @@ func NewEntryClient(cc grpc.ClientConnInterface) EntryClient {
 
 func (c *entryClient) GetEntries(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetEntriesResponse, error) {
 	out := new(GetEntriesResponse)
-	err := c.cc.Invoke(ctx, "/api.entry.v1.entry/GetEntries", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.entry.v1.entry/GetEntries", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func _Entry_GetEntries_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.entry.v1.entry/GetEntries",
+		FullMethod: "/io.tkeel.rudder.api.entry.v1.entry/GetEntries",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EntryServer).GetEntries(ctx, req.(*emptypb.Empty))
@@ -89,7 +89,7 @@ func _Entry_GetEntries_Handler(srv interface{}, ctx context.Context, dec func(in
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Entry_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.entry.v1.entry",
+	ServiceName: "io.tkeel.rudder.api.entry.v1.entry",
 	HandlerType: (*EntryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

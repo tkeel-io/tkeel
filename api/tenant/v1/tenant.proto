@@ -15,7 +15,7 @@ limitations under the License.
 
 syntax = "proto3";
 
-package tenant.v1;
+package io.tkeel.security.api.tenant.v1;
 
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
@@ -24,7 +24,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/tenant/v1;v1";
 option java_multiple_files = true;
-option java_package = "api.tkeel.rudder.tenant.v1";
+option java_package = "io.tkeel.security.api.tenant.v1";
 
 // The greeting service definition.
 service Tenant {

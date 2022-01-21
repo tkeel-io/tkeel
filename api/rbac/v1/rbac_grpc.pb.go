@@ -40,7 +40,7 @@ func NewRbacClient(cc grpc.ClientConnInterface) RbacClient {
 
 func (c *rbacClient) CreateRoles(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.rbac.v1.Rbac/CreateRoles", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/CreateRoles", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (c *rbacClient) CreateRoles(ctx context.Context, in *CreateRoleRequest, opt
 
 func (c *rbacClient) ListRole(ctx context.Context, in *ListRolesRequest, opts ...grpc.CallOption) (*ListRolesResponse, error) {
 	out := new(ListRolesResponse)
-	err := c.cc.Invoke(ctx, "/api.rbac.v1.Rbac/ListRole", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/ListRole", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (c *rbacClient) ListRole(ctx context.Context, in *ListRolesRequest, opts ..
 
 func (c *rbacClient) DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.rbac.v1.Rbac/DeleteRole", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/DeleteRole", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (c *rbacClient) DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts
 
 func (c *rbacClient) AddRolePermission(ctx context.Context, in *AddRolePermissionRequest, opts ...grpc.CallOption) (*AddRolePermissionResponse, error) {
 	out := new(AddRolePermissionResponse)
-	err := c.cc.Invoke(ctx, "/api.rbac.v1.Rbac/AddRolePermission", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/AddRolePermission", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (c *rbacClient) AddRolePermission(ctx context.Context, in *AddRolePermissio
 
 func (c *rbacClient) DeleteRolePermission(ctx context.Context, in *DeleteRolePermissionRequest, opts ...grpc.CallOption) (*DeleteRolePermissionResponse, error) {
 	out := new(DeleteRolePermissionResponse)
-	err := c.cc.Invoke(ctx, "/api.rbac.v1.Rbac/DeleteRolePermission", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/DeleteRolePermission", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (c *rbacClient) DeleteRolePermission(ctx context.Context, in *DeleteRolePer
 
 func (c *rbacClient) AddUserRoles(ctx context.Context, in *AddUserRolesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.rbac.v1.Rbac/AddUserRoles", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/AddUserRoles", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (c *rbacClient) AddUserRoles(ctx context.Context, in *AddUserRolesRequest, 
 
 func (c *rbacClient) DeleteUserRole(ctx context.Context, in *DeleteUserRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.rbac.v1.Rbac/DeleteUserRole", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/DeleteUserRole", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (c *rbacClient) DeleteUserRole(ctx context.Context, in *DeleteUserRoleReque
 
 func (c *rbacClient) ListUserPermissions(ctx context.Context, in *ListUserPermissionRequest, opts ...grpc.CallOption) (*ListUserPermissionResponse, error) {
 	out := new(ListUserPermissionResponse)
-	err := c.cc.Invoke(ctx, "/api.rbac.v1.Rbac/ListUserPermissions", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/ListUserPermissions", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (c *rbacClient) ListUserPermissions(ctx context.Context, in *ListUserPermis
 
 func (c *rbacClient) CheckUserPermission(ctx context.Context, in *CheckUserPermissionRequest, opts ...grpc.CallOption) (*CheckUserPermissionResponse, error) {
 	out := new(CheckUserPermissionResponse)
-	err := c.cc.Invoke(ctx, "/api.rbac.v1.Rbac/CheckUserPermission", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/CheckUserPermission", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func _Rbac_CreateRoles_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.rbac.v1.Rbac/CreateRoles",
+		FullMethod: "/io.tkeel.security.api.rbac.v1.Rbac/CreateRoles",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).CreateRoles(ctx, req.(*CreateRoleRequest))
@@ -207,7 +207,7 @@ func _Rbac_ListRole_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.rbac.v1.Rbac/ListRole",
+		FullMethod: "/io.tkeel.security.api.rbac.v1.Rbac/ListRole",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).ListRole(ctx, req.(*ListRolesRequest))
@@ -225,7 +225,7 @@ func _Rbac_DeleteRole_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.rbac.v1.Rbac/DeleteRole",
+		FullMethod: "/io.tkeel.security.api.rbac.v1.Rbac/DeleteRole",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).DeleteRole(ctx, req.(*DeleteRoleRequest))
@@ -243,7 +243,7 @@ func _Rbac_AddRolePermission_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.rbac.v1.Rbac/AddRolePermission",
+		FullMethod: "/io.tkeel.security.api.rbac.v1.Rbac/AddRolePermission",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).AddRolePermission(ctx, req.(*AddRolePermissionRequest))
@@ -261,7 +261,7 @@ func _Rbac_DeleteRolePermission_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.rbac.v1.Rbac/DeleteRolePermission",
+		FullMethod: "/io.tkeel.security.api.rbac.v1.Rbac/DeleteRolePermission",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).DeleteRolePermission(ctx, req.(*DeleteRolePermissionRequest))
@@ -279,7 +279,7 @@ func _Rbac_AddUserRoles_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.rbac.v1.Rbac/AddUserRoles",
+		FullMethod: "/io.tkeel.security.api.rbac.v1.Rbac/AddUserRoles",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).AddUserRoles(ctx, req.(*AddUserRolesRequest))
@@ -297,7 +297,7 @@ func _Rbac_DeleteUserRole_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.rbac.v1.Rbac/DeleteUserRole",
+		FullMethod: "/io.tkeel.security.api.rbac.v1.Rbac/DeleteUserRole",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).DeleteUserRole(ctx, req.(*DeleteUserRoleRequest))
@@ -315,7 +315,7 @@ func _Rbac_ListUserPermissions_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.rbac.v1.Rbac/ListUserPermissions",
+		FullMethod: "/io.tkeel.security.api.rbac.v1.Rbac/ListUserPermissions",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).ListUserPermissions(ctx, req.(*ListUserPermissionRequest))
@@ -333,7 +333,7 @@ func _Rbac_CheckUserPermission_Handler(srv interface{}, ctx context.Context, dec
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.rbac.v1.Rbac/CheckUserPermission",
+		FullMethod: "/io.tkeel.security.api.rbac.v1.Rbac/CheckUserPermission",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).CheckUserPermission(ctx, req.(*CheckUserPermissionRequest))
@@ -345,7 +345,7 @@ func _Rbac_CheckUserPermission_Handler(srv interface{}, ctx context.Context, dec
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Rbac_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.rbac.v1.Rbac",
+	ServiceName: "io.tkeel.security.api.rbac.v1.Rbac",
 	HandlerType: (*RbacServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
