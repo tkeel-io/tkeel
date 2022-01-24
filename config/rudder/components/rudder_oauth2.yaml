@@ -14,7 +14,7 @@ spec:
     - name: scopes
       value: "http://keel.com"
     - name: tokenURL
-      value: "http://rudder:31234/oauth2/token"
+      value: "http://rudder:31234/oauth2/plugin"
     - name: headerName
       value: "x-plugin-jwt"
     - name: authStyle

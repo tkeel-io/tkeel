@@ -8,7 +8,7 @@ spec:
     app: {{ include "keel.name" . }}
   ports:
     - protocol: TCP
-      port: {{ .Values.appPort }}
-      targetPort: {{ .Values.appPort }}
+      port: {{ .Values.httpPort }}
+      targetPort: {{ .Values.httpPort }}
       nodePort: {{ .Values.nodePort }}
   type: NodePort

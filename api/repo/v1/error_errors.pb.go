@@ -17,6 +17,7 @@ var errListPlugin *errors.TError
 var errInvalidArgument *errors.TError
 var errInternalStore *errors.TError
 var errInternalError *errors.TError
+var errRepoExist *errors.TError
 
 func init() {
 	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.plugin.api.repo.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
@@ -31,6 +32,8 @@ func init() {
 	errors.Register(errInternalStore)
 	errInternalError = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
 	errors.Register(errInternalError)
+	errRepoExist = errors.New(int(codes.InvalidArgument), "io.tkeel.plugin.api.repo.v1.ERR_REPO_EXIST", Error_ERR_REPO_EXIST.String())
+	errors.Register(errRepoExist)
 }
 
 func ErrUnknown() errors.Error {
@@ -55,4 +58,8 @@ func ErrInternalStore() errors.Error {
 
 func ErrInternalError() errors.Error {
 	return errInternalError
+}
+
+func ErrRepoExist() errors.Error {
+	return errRepoExist
 }

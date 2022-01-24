@@ -8,6 +8,8 @@ const (
 	tKeelPluginEnableKey     = "tkeel.io/enable"
 	tKeelPluginDeploymentKey = "tkeel.io/deployment-name"
 	tKeelPluginPortKey       = "tkeel.io/plugin-port"
+	tKeelPluginTypeTag       = "tkeel.io/tag"
+	tKeelPluginVersion       = "tkeel.io/version"
 
 	trueString = "true"
 )
@@ -24,4 +26,12 @@ func getBoolAnnotationOrDefault(annotations map[string]string, key string, defau
 
 func getStringAnnotation(annotations map[string]string, key string) string {
 	return annotations[key]
+}
+
+func getTagAnnotations(annotations map[string]string) string {
+	s := strings.ToLower(getStringAnnotation(annotations, tKeelPluginTypeTag))
+	if s == "manager" {
+		return s
+	}
+	return "user"
 }

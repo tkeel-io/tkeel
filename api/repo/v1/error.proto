@@ -43,4 +43,7 @@ enum Error {
   // 内部错误
   // @code=INTERNAL
   ERR_INTERNAL_ERROR = 5;
+  // REPO 已存在
+  // @code=INVALID_ARGUMENT
+  ERR_REPO_EXIST = 6;
 }

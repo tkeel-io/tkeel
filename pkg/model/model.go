@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
@@ -45,8 +44,7 @@ const (
 
 	AdminRole = "admin"
 
-	KeyAdminPassword    = "Admin_Passwd"
-	KeyTenantBindPlugin = "tenant_%s_bind"
+	KeyAdminPassword = "Admin_Passwd"
 )
 
 var (
@@ -54,6 +52,8 @@ var (
 	XtKeelAuthHeader = http.CanonicalHeaderKey("x-tKeel-auth")
 
 	AuthorizationHeader = http.CanonicalHeaderKey("Authorization")
+
+	TKeelComponents = []string{"rudder", "core", "keel", "security"}
 )
 
 type EnableTenant struct {
@@ -371,22 +371,4 @@ func (u *User) Base64Decode(s string) error {
 	}
 	u.Role = rs[0]
 	return nil
-}
-
-func GetTenantBindKey(tenantID string) string {
-	return fmt.Sprintf(KeyTenantBindPlugin, tenantID)
-}
-
-func ParseTenantBind(bindByte []byte) []string {
-	if len(bindByte) == 0 {
-		return []string{}
-	}
-	return strings.Split(string(bindByte), ",")
-}
-
-func EncodeTenantBind(tenants []string) []byte {
-	if tenants == nil {
-		return []byte{}
-	}
-	return []byte(strings.Join(tenants, ","))
 }

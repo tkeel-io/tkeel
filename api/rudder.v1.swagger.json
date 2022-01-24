@@ -1309,6 +1309,13 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "installed",
+            "description": "installed option",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
@@ -1991,14 +1998,6 @@
         }
       }
     },
-    "v1ConfigurationSchemaType": {
-      "type": "string",
-      "enum": [
-        "JSON",
-        "YAML"
-      ],
-      "default": "JSON"
-    },
     "v1ConfigurationType": {
       "type": "string",
       "enum": [
@@ -2291,31 +2290,12 @@
           "type": "string",
           "description": "installer repo"
         },
-        "annotations": {
+        "metadata": {
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/protobufAny"
           },
-          "description": "repo annotations"
-        },
-        "readme": {
-          "type": "string",
-          "format": "byte",
-          "description": "readme file"
-        },
-        "configuration_schema": {
-          "type": "string",
-          "format": "byte",
-          "description": "configuration schema file"
-        },
-        "schema_type": {
-          "$ref": "#/definitions/v1ConfigurationSchemaType",
-          "description": "configuration schema type"
-        },
-        "configuration": {
-          "type": "string",
-          "format": "byte",
-          "description": "configuration file"
+          "description": "repo metadata"
         },
         "installed": {
           "type": "boolean",

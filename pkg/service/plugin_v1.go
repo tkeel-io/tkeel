@@ -61,6 +61,18 @@ type PluginServiceV1 struct {
 
 func NewPluginServiceV1(conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Operator,
 	prOp proute.Operator, tpOp rbac.TenantPluginMgr, openapi openapi.Client) *PluginServiceV1 {
+	ok, err := tpOp.OnCreateTenant(model.TKeelTenant)
+	if err != nil {
+		log.Fatalf("error create tenant %s: %s", model.TKeelTenant, err)
+	}
+	log.Debugf("tKeel create tenant %s %v", model.TKeelTenant, ok)
+	for _, v := range model.TKeelComponents {
+		ok, err = tpOp.AddTenantPlugin(model.TKeelTenant, v)
+		if err != nil {
+			log.Fatalf("error %s enable %s: %s", model.TKeelTenant, v, err)
+		}
+		log.Debugf("tKeel enable %s %v", v, ok)
+	}
 	return &PluginServiceV1{
 		tkeelConf:      conf,
 		kvOp:           kvOp,
@@ -100,6 +112,9 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 	installer.SetPluginID(req.Id)
 	if err = installer.Install(convertConfiguration2Option(installerConfiguration)...); err != nil {
 		log.Errorf("error install installer(%s) err: %s", installer.Brief(), err)
+		if errors.Is(err, repository.ErrInvalidOptions) {
+			return nil, pb.PluginErrInvalidArgument()
+		}
 		return nil, pb.PluginErrInstallInstaller()
 	}
 	rbStack = append(rbStack, func() error {

@@ -4,13 +4,13 @@ import (
 	"context"
 	"sync"
 
-	pb "github.com/tkeel-io/tkeel/api/tenant/v1"
-
 	"github.com/casbin/casbin/v2"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/security/authz/rbac"
 	"github.com/tkeel-io/security/model"
 	"github.com/tkeel-io/security/utils"
+	pb "github.com/tkeel-io/tkeel/api/tenant/v1"
+	t_model "github.com/tkeel-io/tkeel/pkg/model"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
 )
@@ -69,6 +69,10 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 		}
 	}
 	s.TenantPluginOp.OnCreateTenant(tenant.ID)
+	for _, v := range t_model.TKeelComponents {
+		s.TenantPluginOp.AddTenantPlugin(tenant.ID, v)
+	}
+
 	return resp, nil
 }
 
@@ -145,6 +149,9 @@ func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRe
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
 	}
+	for _, v := range s.TenantPluginOp.ListTenantPlugins(tenant.ID) {
+		s.TenantPluginOp.DeleteTenantPlugin(tenant.ID, v)
+	}
 	return resp, nil
 }
 
@@ -216,8 +223,10 @@ func (s *TenantService) ListUser(ctx context.Context, req *pb.ListUserRequest) (
 	}
 	userList := make([]*pb.UserListData, len(users))
 	for i, v := range users {
-		detail := &pb.UserListData{TenantId: v.TenantID, UserId: v.ID, Username: v.UserName,
-			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName}
+		detail := &pb.UserListData{
+			TenantId: v.TenantID, UserId: v.ID, Username: v.UserName,
+			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName,
+		}
 		userList[i] = detail
 	}
 	resp = &pb.ListUserResponse{Total: total, PageSize: int32(page.PageSize), PageNum: int32(page.PageNum), Users: userList}

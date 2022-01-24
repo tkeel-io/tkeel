@@ -50,9 +50,9 @@ import (
 const (
 	AuthorizationHeader = "Authorization"
 
-	_securityComponent               = "security"
+	_securityComponent               = "rudder"
 	_securityAuthenticate            = "/v1/oauth/authenticate"
-	_securityTenantPluginPermissible = "/tenants/plugins/permissible"
+	_securityTenantPluginPermissible = "/v1/tenants/plugins/permissible"
 )
 
 var (
@@ -262,15 +262,20 @@ func (s *KeelServiceV1) setSrcAndUserSession(ctx context.Context, sess *session,
 			writeResult(resp, http.StatusUnauthorized, "invalid authorization token")
 			return fmt.Errorf("error external get user: %w", err)
 		}
-	} else {
-		log.Debugf("internal flow")
-		sess.User, err = s.checkXtKeelAtuh(ctx, header)
-		if err != nil {
-			writeResult(resp, http.StatusUnauthorized, "invalid x-tKeel-auth token")
-			return fmt.Errorf("error internal get user: %w", err)
-		}
+		sess.Src.TKeelDepened = version.Version
+		return nil
 	}
-	if pluginID != "rudder" && pluginID != "core" && pluginID != "security" {
+
+	log.Debugf("internal flow")
+	sess.User, err = s.checkXtKeelAtuh(ctx, header)
+	if err != nil {
+		writeResult(resp, http.StatusUnauthorized, "invalid x-tKeel-auth token")
+		return fmt.Errorf("error internal get user: %w", err)
+	}
+	if pluginID != "rudder" &&
+		pluginID != "core" &&
+		pluginID != "security" &&
+		pluginID != "keel" {
 		pluginRouteInterface, ok := s.pluginRouteMap.Load(pluginID)
 		if !ok {
 			writeResult(resp, http.StatusUnauthorized, "invalid plugin")
@@ -501,7 +506,14 @@ func (s *KeelServiceV1) getPluginDstAndMethod(sess *session, req *http.Request) 
 		return fmt.Errorf("get(%s) invalid plugin id", req.URL.Path)
 	}
 	log.Debugf("pluginID: %s,pluginMethod: %s", pluginID, pluginMethod)
-	if pluginID == "core" || pluginID == "keel" || pluginID == "rudder" {
+	if pluginID == "core" ||
+		pluginID == "keel" ||
+		pluginID == "rudder" ||
+		pluginID == "security" {
+		// convert security ==> rudder.
+		if pluginID == "security" {
+			pluginID = "rudder"
+		}
 		sess.Dst.TKeelDepened = version.Version
 	} else {
 		upstreamRouteInterface, ok := s.pluginRouteMap.Load(pluginID)

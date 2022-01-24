@@ -1,4 +1,0 @@
-pluginID: PLUGINID
-rudder:
-  Port: 31234
-secret: changeme

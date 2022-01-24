@@ -177,7 +177,7 @@ var rootCmd = &cobra.Command{
 			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
 			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
 			// entries service.
-			entriesSrvV1 := service.NewEntryService(kvOp, pOp)
+			entriesSrvV1 := service.NewEntryService(pOp, tenantPluginOp)
 			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, entriesSrvV1)
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), entriesSrvV1)
 

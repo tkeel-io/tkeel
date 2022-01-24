@@ -72,7 +72,7 @@ spec:
             - name: TKEEL_WATCH_INTERVAL
               value: {{ .Values.watchInterval }}
             - name: TKEEL_SECURITY_MYSQL_DBNAME
-              value: {{ .Value.middleware.mysql.dbname }}
+              value: {{ .Values.middleware.mysql.dbname }}
             - name: TKEEL_SECURITY_MYSQL_USER
               value: {{ .Values.middleware.mysql.user }}
             - name: TKEEL_SECURITY_MYSQL_PASSWORD

@@ -36,9 +36,9 @@ spec:
             - name: TKEEL_LOG_LEVEL
               value: {{ .Values.logLevel }}
             - name: TKEEL_HTTP_ADDR
-              value: {{ printf ":%s" .Values.httpPort }}
+              value: {{ printf ":%.0f" .Values.httpPort }}
             - name: TKEEL_GRPC_ADDR
-              value: {{ printf ":%s" .Values.grpcPort }}
+              value: {{ printf ":%.0f" .Values.grpcPort }}
             - name: TKEEL_DAPR_PUBLIC_STATE_NAME
               value: {{ printf "%s-redis-public-store" .Values.middleware.name }}
             - name: TKEEL_WATCH_INTERVAL
