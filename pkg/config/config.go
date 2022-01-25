@@ -51,10 +51,6 @@ type DaprConf struct {
 type ProxyConf struct {
 	// proxy timeout.
 	Timeout string `json:"timeout" yamlL:"timeout"`
-	// core address.
-	CoreAddr string `json:"core_addr" yaml:"coreAddr"`
-	// rudder address.
-	RudderAddr string `json:"rudder_addr" yaml:"rudderAddr"`
 }
 
 // LogConf log configuration.
@@ -171,8 +167,6 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.HTTPAddr, "http.addr", getEnvStr("TKEEL_HTTP_ADDR", ":31234"), "http listen address(default :31234).")
 	strVar(&c.GRPCAddr, "grpc.addr", getEnvStr("TKEEL_GRPC_ADDR", ":31233"), "grpc listen address(default :31233).")
 	strVar(&c.Proxy.Timeout, "proxy.timeout", getEnvStr("TKEEL_PROXY_TIMEOUT", "30s"), "proxy timeout(default 10s).")
-	strVar(&c.Proxy.CoreAddr, "proxy.core_addr", getEnvStr("TKEEL_PROXY_CORE_ADDR", "core:6789"), "core listen address(default core:6789).")
-	strVar(&c.Proxy.RudderAddr, "proxy.rudder_addr", getEnvStr("TKEEL_PROXY_RUDDER_ADDR", "rudder:31234"), "rudder listen address(default rudder:31234).")
 	strVar(&c.Dapr.GRPCPort, "dapr.grpc.port", getEnvStr("DAPR_GRPC_PORT", "50001"), "dapr grpc listen address(default 50001).")
 	strVar(&c.Dapr.HTTPPort, "dapr.http.port", getEnvStr("DAPR_HTTP_PORT", "3500"), "dapr grpc listen address(default 3500).")
 	strVar(&c.Dapr.PrivateStateName, "dapr.private_state_name", getEnvStr("TKEEL_DAPR_PRIVATE_STATE_NAME", "tkeel-middleware-redis-private-store"), "dapr private store name(default keel-private-store).")

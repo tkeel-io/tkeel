@@ -21,11 +21,10 @@ enum Retcode {
  * plugin state enum.
  **/
 enum PluginStatus {
-  ERROR = 0;
-  UNREGISTER = 1;
-  REGISTER = 2;
+  UNKNOWN = 0;
+  WAIT_RUNNING = 1;
+  ERR_REGISTER = 2;
   RUNNING = 3;
-  STOPPED = 4;
 }
 
 /**
@@ -113,36 +112,36 @@ message AddonsIdentifyResponse {
 }
 
 /**
- * The request value of the POST /v1/tenant/bind,
+ * The request value of the POST /v1/tenant/enable,
  * used when the tenant administrator enables the plugin.
  **/
-message TenantBindRequst {
+message TenantEnableRequst {
   string tenant_id = 1; // unique tenant id.
   bytes extra = 2;      // extra data
 }
 
 /**
- * The response value of the POST /v1/tenant/bind,
+ * The response value of the POST /v1/tenant/enable,
  * used when the tenant administrator enables the plugin.
  **/
-message TenantBindResponse {
+message TenantEnableResponse {
   Result res = 1; // detail result
 }
 
 /**
- * The request value of the POST /v1/tenant/unbind,
+ * The request value of the POST /v1/tenant/disable,
  * used when the tenant administrator disables the plugin.
  **/
-message TenantUnbindRequst {
+message TenantDisableRequst {
   string tenant_id = 1; // unique tenant id.
   bytes extra = 2;      // extra data
 }
 
 /**
- * The response value of the POST /v1/tenant/unbind,
+ * The response value of the POST /v1/tenant/disable,
  * used when the tenant administrator disables the plugin.
  **/
-message TenantUnbindResponse {
+message TenantDisableResponse {
   Result res = 1; // detail result
 }
 

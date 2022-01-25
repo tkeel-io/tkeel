@@ -26,57 +26,13 @@ import (
 
 // registerContainerHandler register proxy handler.
 func registerContainerHandler(c *restful.Container, srv keel.ProxyServer) {
-	c.HandleWithFilter(ApisRootPath+CoreSubPath+"/", proxyCore(srv))
-	c.HandleWithFilter(ApisRootPath+SecuritySubPath+"/", proxySecurity(srv))
-	c.HandleWithFilter(ApisRootPath+RudderSubPath+"/", proxyRudder(srv))
-	c.HandleWithFilter(ApisRootPath+AddonsRootPath+"/", proxyAddons(srv))
 	c.HandleWithFilter(ApisRootPath+"/", proxyPlugin(srv))
-}
-
-// proxyCore call core.
-func proxyCore(srv keel.ProxyServer) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		log.Debug("proxy core")
-		if err := srv.ProxyCore(rw, req); err != nil {
-			log.Errorf("error proxy core err: %s", err)
-		}
-	}
-}
-
-// proxyRudder call rudder.
-func proxyRudder(srv keel.ProxyServer) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		log.Debug("proxy rudder")
-		if err := srv.ProxyRudder(rw, req); err != nil {
-			log.Errorf("error proxy rudder err: %s", err)
-		}
-	}
-}
-
-// proxySecurity call Security.
-func proxySecurity(srv keel.ProxyServer) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		log.Debug("proxy Security")
-		if err := srv.ProxySecurity(rw, req); err != nil {
-			log.Errorf("error proxy Security err: %s", err)
-		}
-	}
 }
 
 // proxyPlugin call the request to the corresponding plugin method.
 func proxyPlugin(srv keel.ProxyServer) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		log.Debug("proxy Plugin")
-		if err := srv.ProxyPlugin(rw, req); err != nil {
-			log.Errorf("error proxy plugin: %s", err)
-		}
-	}
-}
-
-// proxyAddons call the request to the corresponding plugin addons.
-func proxyAddons(srv keel.ProxyServer) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
-		log.Debug("proxy Addons")
 		if err := srv.ProxyPlugin(rw, req); err != nil {
 			log.Errorf("error proxy plugin: %s", err)
 		}

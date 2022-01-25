@@ -35,10 +35,10 @@ import (
 )
 
 const (
-	ReadmeFileNameKey = "README"
-	ValuesSchemaKey   = "VALUES.SCHEMA"
-	ValuesKey         = "VALUES"
-	ValuesFileName    = "values.yaml"
+	ReadmeKey      = "readme"
+	ValuesFileName = "values.yaml"
+	ChartFileName  = "Chart.yaml"
+	ChartDescKey   = "Chart"
 )
 
 var SecretContext = "changeme"
@@ -64,16 +64,20 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 		annotations: func() repository.Annotations {
 			a := make(repository.Annotations)
 			for _, v := range ch.Raw {
-				if strings.HasPrefix(v.Name, ReadmeFileNameKey) {
-					a[ReadmeFileNameKey] = v.Data
+				if strings.HasPrefix(strings.ToLower(v.Name), ReadmeKey) {
+					a[ReadmeKey] = v.Data
 				}
 				if v.Name == ValuesFileName {
-					a[ValuesKey] = v.Data
+					a[repository.ConfigurationKey] = v.Data
+				}
+				if v.Name == ChartFileName {
+					a[ChartDescKey] = v.Data
 				}
 			}
 			if ch.Schema != nil {
-				a[ValuesSchemaKey] = ch.Schema
+				a[repository.ConfigurationSchemaKey] = ch.Schema
 			}
+
 			return a
 		}(),
 		brief:   brief,

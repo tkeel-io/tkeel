@@ -15,15 +15,16 @@ limitations under the License.
 
 syntax = "proto3";
 
-package api.security_oauth.v1;
+package io.tkeel.security.api.oauth.v1;
 
 import "google/api/annotations.proto";
 import "google/api/field_behavior.proto";
+import "google/protobuf/empty.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/security_oauth/v1;v1";
 option java_multiple_files = true;
-option java_package = "api.security_oauth.v1";
+option java_package = "io.tkeel.security.api.oauth.v1";
 
 service Oauth {
 
@@ -58,7 +59,7 @@ service Oauth {
     };
   }
 
-  rpc Authenticate(AuthenticateRequest) returns (AuthenticateResponse) {
+  rpc Authenticate(google.protobuf.Empty) returns (AuthenticateResponse) {
     option (google.api.http) = {
       get : "/oauth/authenticate"
     };
@@ -169,8 +170,6 @@ message TokenResponse {
   int64 expires_in = 3;
   string token_type = 4;
 }
-
-message AuthenticateRequest {}
 
 message AuthenticateResponse {
   int64 expires_in = 1;

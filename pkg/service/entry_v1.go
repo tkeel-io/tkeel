@@ -2,28 +2,28 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/tkeel-io/kit/log"
 	transport_http "github.com/tkeel-io/kit/transport/http"
-	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
+	"github.com/tkeel-io/security/authz/rbac"
+	v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	pb "github.com/tkeel-io/tkeel/api/entry/v1"
 	"github.com/tkeel-io/tkeel/pkg/model"
-	"github.com/tkeel-io/tkeel/pkg/model/kv"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type EntryService struct {
 	pb.UnimplementedEntryServer
-
-	kvOp     kv.Operator
-	pluginOp plugin.Operator
+	pOp  plugin.Operator
+	tpOp rbac.TenantPluginMgr
 }
 
-func NewEntryService(kvOp kv.Operator, pOp plugin.Operator) *EntryService {
+func NewEntryService(pOp plugin.Operator, tpOp rbac.TenantPluginMgr) *EntryService {
 	return &EntryService{
-		kvOp:     kvOp,
-		pluginOp: pOp,
+		pOp:  pOp,
+		tpOp: tpOp,
 	}
 }
 
@@ -39,22 +39,19 @@ func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.
 		log.Errorf("error decode auth(%s): %s", auths[0], err)
 		return nil, pb.EntryErrInvalidTenant()
 	}
-	tbKey := model.GetTenantBindKey(user.Tenant)
-	vsb, _, err := s.kvOp.Get(ctx, tbKey)
-	if err != nil {
-		log.Errorf("error get tenant(%s) bind: %s", user.Tenant, err)
-		return nil, pb.EntryErrInternalError()
-	}
-	tbBinds := model.ParseTenantBind(vsb)
-	ret := make([]*openapi_v1.ConsoleEntry, 0, len(tbBinds))
-	for _, v := range tbBinds {
-		p, err := s.pluginOp.Get(ctx, v)
+	ret := make([]*v1.ConsoleEntry, 0)
+	for _, v := range s.tpOp.ListTenantPlugins(user.Tenant) {
+		p, err := s.pOp.Get(ctx, v)
 		if err != nil {
-			log.Errorf("error get plugin(%s): %s", v, err)
-			return nil, pb.EntryErrInternalError()
+			if !errors.Is(err, plugin.ErrPluginNotExsist) {
+				log.Errorf("error get plugin(%s): %s", v, err)
+				return nil, pb.EntryErrInternalError()
+			}
+			continue
 		}
 		ret = append(ret, p.ConsoleEntries...)
 	}
+
 	return &pb.GetEntriesResponse{
 		Entries: ret,
 	}, nil

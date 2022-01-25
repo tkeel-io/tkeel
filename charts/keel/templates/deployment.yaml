@@ -15,7 +15,7 @@ spec:
       annotations:
         dapr.io/enabled: "true"
         dapr.io/app-id: {{ include "keel.name" . }}
-        dapr.io/app-port: {{ .Values.appPort | quote }}
+        dapr.io/app-port: {{ .Values.httpPort | quote }}
         dapr.io/config: {{ .Values.daprConfig }}
       labels:
         app: {{ include "keel.name" . }}
@@ -29,10 +29,16 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.appPort }}
+            - containerPort: {{ .Values.httpPort }}
           env:
-            - name: TKEEL_DAPR_PRIVATE_STATE_NAME
-              value: {{ printf "%s-redis-private-store" .Values.middleware.name }}
+            - name: TKEEL_DEBUG
+              value: {{ .Values.debug }}
+            - name: TKEEL_LOG_LEVEL
+              value: {{ .Values.logLevel }}
+            - name: TKEEL_HTTP_ADDR
+              value: {{ printf ":%.0f" .Values.httpPort }}
+            - name: TKEEL_GRPC_ADDR
+              value: {{ printf ":%.0f" .Values.grpcPort }}
             - name: TKEEL_DAPR_PUBLIC_STATE_NAME
               value: {{ printf "%s-redis-public-store" .Values.middleware.name }}
             - name: TKEEL_WATCH_INTERVAL

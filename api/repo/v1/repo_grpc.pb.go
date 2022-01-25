@@ -36,7 +36,7 @@ func NewRepoClient(cc grpc.ClientConnInterface) RepoClient {
 
 func (c *repoClient) CreateRepo(ctx context.Context, in *CreateRepoRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.repo.v1.Repo/CreateRepo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.plugin.api.repo.v1.Repo/CreateRepo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (c *repoClient) CreateRepo(ctx context.Context, in *CreateRepoRequest, opts
 
 func (c *repoClient) DeleteRepo(ctx context.Context, in *DeleteRepoRequest, opts ...grpc.CallOption) (*DeleteRepoResponse, error) {
 	out := new(DeleteRepoResponse)
-	err := c.cc.Invoke(ctx, "/api.repo.v1.Repo/DeleteRepo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.plugin.api.repo.v1.Repo/DeleteRepo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (c *repoClient) DeleteRepo(ctx context.Context, in *DeleteRepoRequest, opts
 
 func (c *repoClient) ListRepo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListRepoResponse, error) {
 	out := new(ListRepoResponse)
-	err := c.cc.Invoke(ctx, "/api.repo.v1.Repo/ListRepo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.plugin.api.repo.v1.Repo/ListRepo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *repoClient) ListRepo(ctx context.Context, in *emptypb.Empty, opts ...gr
 
 func (c *repoClient) ListRepoInstaller(ctx context.Context, in *ListRepoInstallerRequest, opts ...grpc.CallOption) (*ListRepoInstallerResponse, error) {
 	out := new(ListRepoInstallerResponse)
-	err := c.cc.Invoke(ctx, "/api.repo.v1.Repo/ListRepoInstaller", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.plugin.api.repo.v1.Repo/ListRepoInstaller", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (c *repoClient) ListRepoInstaller(ctx context.Context, in *ListRepoInstalle
 
 func (c *repoClient) GetRepoInstaller(ctx context.Context, in *GetRepoInstallerRequest, opts ...grpc.CallOption) (*GetRepoInstallerResponse, error) {
 	out := new(GetRepoInstallerResponse)
-	err := c.cc.Invoke(ctx, "/api.repo.v1.Repo/GetRepoInstaller", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.plugin.api.repo.v1.Repo/GetRepoInstaller", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func _Repo_CreateRepo_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.repo.v1.Repo/CreateRepo",
+		FullMethod: "/io.tkeel.plugin.api.repo.v1.Repo/CreateRepo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RepoServer).CreateRepo(ctx, req.(*CreateRepoRequest))
@@ -151,7 +151,7 @@ func _Repo_DeleteRepo_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.repo.v1.Repo/DeleteRepo",
+		FullMethod: "/io.tkeel.plugin.api.repo.v1.Repo/DeleteRepo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RepoServer).DeleteRepo(ctx, req.(*DeleteRepoRequest))
@@ -169,7 +169,7 @@ func _Repo_ListRepo_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.repo.v1.Repo/ListRepo",
+		FullMethod: "/io.tkeel.plugin.api.repo.v1.Repo/ListRepo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RepoServer).ListRepo(ctx, req.(*emptypb.Empty))
@@ -187,7 +187,7 @@ func _Repo_ListRepoInstaller_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.repo.v1.Repo/ListRepoInstaller",
+		FullMethod: "/io.tkeel.plugin.api.repo.v1.Repo/ListRepoInstaller",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RepoServer).ListRepoInstaller(ctx, req.(*ListRepoInstallerRequest))
@@ -205,7 +205,7 @@ func _Repo_GetRepoInstaller_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.repo.v1.Repo/GetRepoInstaller",
+		FullMethod: "/io.tkeel.plugin.api.repo.v1.Repo/GetRepoInstaller",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RepoServer).GetRepoInstaller(ctx, req.(*GetRepoInstallerRequest))
@@ -217,7 +217,7 @@ func _Repo_GetRepoInstaller_Handler(srv interface{}, ctx context.Context, dec fu
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Repo_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.repo.v1.Repo",
+	ServiceName: "io.tkeel.plugin.api.repo.v1.Repo",
 	HandlerType: (*RepoServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

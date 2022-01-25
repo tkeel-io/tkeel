@@ -18,10 +18,11 @@ package openapi
 
 import (
 	"context"
+	"net/http"
 
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
-
-	dapr "github.com/dapr/go-sdk/client"
+	"github.com/tkeel-io/tkeel/pkg/client/dapr"
+	"github.com/tkeel-io/tkeel/pkg/model"
 )
 
 type Client interface {
@@ -29,18 +30,24 @@ type Client interface {
 	Identify(ctx context.Context, sendToPluginID string) (*openapi_v1.IdentifyResponse, error)
 	AddonsIdentify(ctx context.Context, sendToPluginID string, req *openapi_v1.AddonsIdentifyRequest) (*openapi_v1.AddonsIdentifyResponse, error)
 	Status(ctx context.Context, sendToPluginID string) (*openapi_v1.StatusResponse, error)
-	TenantBind(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantBindRequst) (*openapi_v1.TenantBindResponse, error)
-	TenantUnbind(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantUnbindRequst) (*openapi_v1.TenantUnbindResponse, error)
+	TenantEnable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantEnableRequst) (*openapi_v1.TenantEnableResponse, error)
+	TenantDisable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantDisableRequst) (*openapi_v1.TenantDisableResponse, error)
 }
 
 type DaprClient struct {
-	appID  string
-	Client dapr.Client
+	c      *dapr.HTTPClient
+	header http.Header
 }
 
-func NewDaprClient(appID string, c dapr.Client) *DaprClient {
+func NewDaprClient(daprHTTPPort string) *DaprClient {
+	user := new(model.User)
+	user.Tenant = model.TKeelTenant
+	user.User = model.TKeelUser
+	user.Role = model.AdminRole
+	header := http.Header{}
+	header.Set(model.XtKeelAuthHeader, user.Base64Encode())
 	return &DaprClient{
-		appID:  appID,
-		Client: c,
+		header: header,
+		c:      dapr.NewHTTPClient(daprHTTPPort),
 	}
 }

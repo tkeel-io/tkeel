@@ -34,7 +34,7 @@ func NewEntityTokenClient(cc grpc.ClientConnInterface) EntityTokenClient {
 
 func (c *entityTokenClient) CreateEntityToken(ctx context.Context, in *CreateEntityTokenRequest, opts ...grpc.CallOption) (*CreateEntityTokenResponse, error) {
 	out := new(CreateEntityTokenResponse)
-	err := c.cc.Invoke(ctx, "/api.entity.v1.EntityToken/CreateEntityToken", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.entity.v1.EntityToken/CreateEntityToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *entityTokenClient) CreateEntityToken(ctx context.Context, in *CreateEnt
 
 func (c *entityTokenClient) TokenInfo(ctx context.Context, in *TokenInfoRequest, opts ...grpc.CallOption) (*TokenInfoResponse, error) {
 	out := new(TokenInfoResponse)
-	err := c.cc.Invoke(ctx, "/api.entity.v1.EntityToken/TokenInfo", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.entity.v1.EntityToken/TokenInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (c *entityTokenClient) TokenInfo(ctx context.Context, in *TokenInfoRequest,
 
 func (c *entityTokenClient) DeleteEntityToken(ctx context.Context, in *TokenInfoRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/api.entity.v1.EntityToken/DeleteEntityToken", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.entity.v1.EntityToken/DeleteEntityToken", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func _EntityToken_CreateEntityToken_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.entity.v1.EntityToken/CreateEntityToken",
+		FullMethod: "/io.tkeel.security.api.entity.v1.EntityToken/CreateEntityToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EntityTokenServer).CreateEntityToken(ctx, req.(*CreateEntityTokenRequest))
@@ -123,7 +123,7 @@ func _EntityToken_TokenInfo_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.entity.v1.EntityToken/TokenInfo",
+		FullMethod: "/io.tkeel.security.api.entity.v1.EntityToken/TokenInfo",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EntityTokenServer).TokenInfo(ctx, req.(*TokenInfoRequest))
@@ -141,7 +141,7 @@ func _EntityToken_DeleteEntityToken_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.entity.v1.EntityToken/DeleteEntityToken",
+		FullMethod: "/io.tkeel.security.api.entity.v1.EntityToken/DeleteEntityToken",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EntityTokenServer).DeleteEntityToken(ctx, req.(*TokenInfoRequest))
@@ -153,7 +153,7 @@ func _EntityToken_DeleteEntityToken_Handler(srv interface{}, ctx context.Context
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var EntityToken_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.entity.v1.EntityToken",
+	ServiceName: "io.tkeel.security.api.entity.v1.EntityToken",
 	HandlerType: (*EntityTokenServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

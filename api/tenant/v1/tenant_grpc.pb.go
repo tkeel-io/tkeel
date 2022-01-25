@@ -56,7 +56,7 @@ func NewTenantClient(cc grpc.ClientConnInterface) TenantClient {
 
 func (c *tenantClient) CreateTenant(ctx context.Context, in *CreateTenantRequest, opts ...grpc.CallOption) (*CreateTenantResponse, error) {
 	out := new(CreateTenantResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/CreateTenant", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/CreateTenant", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (c *tenantClient) CreateTenant(ctx context.Context, in *CreateTenantRequest
 
 func (c *tenantClient) GetTenant(ctx context.Context, in *GetTenantRequest, opts ...grpc.CallOption) (*GetTenantResponse, error) {
 	out := new(GetTenantResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/GetTenant", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/GetTenant", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (c *tenantClient) GetTenant(ctx context.Context, in *GetTenantRequest, opts
 
 func (c *tenantClient) ListTenant(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListTenantResponse, error) {
 	out := new(ListTenantResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/ListTenant", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/ListTenant", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (c *tenantClient) ListTenant(ctx context.Context, in *emptypb.Empty, opts .
 
 func (c *tenantClient) DeleteTenant(ctx context.Context, in *DeleteTenantRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/DeleteTenant", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/DeleteTenant", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (c *tenantClient) DeleteTenant(ctx context.Context, in *DeleteTenantRequest
 
 func (c *tenantClient) CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error) {
 	out := new(CreateUserResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/CreateUser", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/CreateUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (c *tenantClient) CreateUser(ctx context.Context, in *CreateUserRequest, op
 
 func (c *tenantClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error) {
 	out := new(GetUserResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/GetUser", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/GetUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (c *tenantClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...
 
 func (c *tenantClient) ListUser(ctx context.Context, in *ListUserRequest, opts ...grpc.CallOption) (*ListUserResponse, error) {
 	out := new(ListUserResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/ListUser", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/ListUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func (c *tenantClient) ListUser(ctx context.Context, in *ListUserRequest, opts .
 
 func (c *tenantClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/DeleteUser", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/DeleteUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (c *tenantClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, op
 
 func (c *tenantClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error) {
 	out := new(UpdateUserResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/UpdateUser", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/UpdateUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (c *tenantClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, op
 
 func (c *tenantClient) AddTenantPlugin(ctx context.Context, in *AddTenantPluginRequest, opts ...grpc.CallOption) (*AddTenantPluginResponse, error) {
 	out := new(AddTenantPluginResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/AddTenantPlugin", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/AddTenantPlugin", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (c *tenantClient) AddTenantPlugin(ctx context.Context, in *AddTenantPluginR
 
 func (c *tenantClient) ListTenantPlugin(ctx context.Context, in *ListTenantPluginRequest, opts ...grpc.CallOption) (*ListTenantPluginResponse, error) {
 	out := new(ListTenantPluginResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/ListTenantPlugin", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/ListTenantPlugin", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func (c *tenantClient) ListTenantPlugin(ctx context.Context, in *ListTenantPlugi
 
 func (c *tenantClient) DeleteTenantPlugin(ctx context.Context, in *DeleteTenantPluginRequest, opts ...grpc.CallOption) (*DeleteTenantPluginResponse, error) {
 	out := new(DeleteTenantPluginResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/DeleteTenantPlugin", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/DeleteTenantPlugin", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (c *tenantClient) DeleteTenantPlugin(ctx context.Context, in *DeleteTenantP
 
 func (c *tenantClient) TenantPluginPermissible(ctx context.Context, in *PluginPermissibleRequest, opts ...grpc.CallOption) (*PluginPermissibleResponse, error) {
 	out := new(PluginPermissibleResponse)
-	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/TenantPluginPermissible", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/TenantPluginPermissible", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,7 @@ func _Tenant_CreateTenant_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/CreateTenant",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/CreateTenant",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).CreateTenant(ctx, req.(*CreateTenantRequest))
@@ -287,7 +287,7 @@ func _Tenant_GetTenant_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/GetTenant",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/GetTenant",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).GetTenant(ctx, req.(*GetTenantRequest))
@@ -305,7 +305,7 @@ func _Tenant_ListTenant_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/ListTenant",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/ListTenant",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).ListTenant(ctx, req.(*emptypb.Empty))
@@ -323,7 +323,7 @@ func _Tenant_DeleteTenant_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/DeleteTenant",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/DeleteTenant",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).DeleteTenant(ctx, req.(*DeleteTenantRequest))
@@ -341,7 +341,7 @@ func _Tenant_CreateUser_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/CreateUser",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/CreateUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).CreateUser(ctx, req.(*CreateUserRequest))
@@ -359,7 +359,7 @@ func _Tenant_GetUser_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/GetUser",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/GetUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).GetUser(ctx, req.(*GetUserRequest))
@@ -377,7 +377,7 @@ func _Tenant_ListUser_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/ListUser",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/ListUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).ListUser(ctx, req.(*ListUserRequest))
@@ -395,7 +395,7 @@ func _Tenant_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/DeleteUser",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/DeleteUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).DeleteUser(ctx, req.(*DeleteUserRequest))
@@ -413,7 +413,7 @@ func _Tenant_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/UpdateUser",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/UpdateUser",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).UpdateUser(ctx, req.(*UpdateUserRequest))
@@ -431,7 +431,7 @@ func _Tenant_AddTenantPlugin_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/AddTenantPlugin",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/AddTenantPlugin",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).AddTenantPlugin(ctx, req.(*AddTenantPluginRequest))
@@ -449,7 +449,7 @@ func _Tenant_ListTenantPlugin_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/ListTenantPlugin",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/ListTenantPlugin",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).ListTenantPlugin(ctx, req.(*ListTenantPluginRequest))
@@ -467,7 +467,7 @@ func _Tenant_DeleteTenantPlugin_Handler(srv interface{}, ctx context.Context, de
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/DeleteTenantPlugin",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/DeleteTenantPlugin",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).DeleteTenantPlugin(ctx, req.(*DeleteTenantPluginRequest))
@@ -485,7 +485,7 @@ func _Tenant_TenantPluginPermissible_Handler(srv interface{}, ctx context.Contex
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/tenant.v1.Tenant/TenantPluginPermissible",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/TenantPluginPermissible",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).TenantPluginPermissible(ctx, req.(*PluginPermissibleRequest))
@@ -497,7 +497,7 @@ func _Tenant_TenantPluginPermissible_Handler(srv interface{}, ctx context.Contex
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Tenant_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "tenant.v1.Tenant",
+	ServiceName: "io.tkeel.security.api.tenant.v1.Tenant",
 	HandlerType: (*TenantServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

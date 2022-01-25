@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
@@ -45,8 +44,7 @@ const (
 
 	AdminRole = "admin"
 
-	KeyAdminPassword    = "Admin_Passwd"
-	KeyTenantBindPlugin = "tenant_%s_bind"
+	KeyAdminPassword = "Admin_Passwd"
 )
 
 var (
@@ -54,7 +52,23 @@ var (
 	XtKeelAuthHeader = http.CanonicalHeaderKey("x-tKeel-auth")
 
 	AuthorizationHeader = http.CanonicalHeaderKey("Authorization")
+
+	TKeelComponents = []string{"rudder", "core", "keel", "security"}
 )
+
+type EnableTenant struct {
+	TenantID        string `json:"tenant_id"`        // enable tenant id.
+	OperatorID      string `json:"operator_id"`      // operator id.
+	EnableTimestamp int64  `json:"enable_timestamp"` // enable timestamp.
+}
+
+func (et *EnableTenant) String() string {
+	b, err := json.Marshal(et)
+	if err != nil {
+		return "<" + err.Error() + ">"
+	}
+	return string(b)
+}
 
 type Plugin struct {
 	ID                string                          `json:"id,omitempty"`                 // plugin id.
@@ -67,7 +81,8 @@ type Plugin struct {
 	Secret            string                          `json:"secret,omitempty"`             // plugin registered secret.
 	RegisterTimestamp int64                           `json:"register_timestamp,omitempty"` // register timestamp.
 	Version           string                          `json:"version,omitempty"`            // model version.
-	State             openapi_v1.PluginStatus         `json:"state,omitempty"`              // plugin state.
+	Status            openapi_v1.PluginStatus         `json:"status,omitempty"`             // plugin state.
+	EnableTenantes    []*EnableTenant                 `json:"enable_tenantes,omitempty"`    // plugin active tenantes.
 }
 
 func (p *Plugin) String() string {
@@ -86,11 +101,10 @@ func (p *Plugin) Clone() *Plugin {
 		AddonsPoint: func() []*openapi_v1.AddonsPoint {
 			ret := make([]*openapi_v1.AddonsPoint, 0, len(p.AddonsPoint))
 			for _, v := range p.AddonsPoint {
-				tmp := &openapi_v1.AddonsPoint{
+				ret = append(ret, &openapi_v1.AddonsPoint{
 					Name: v.Name,
 					Desc: v.Desc,
-				}
-				ret = append(ret, tmp)
+				})
 			}
 			return ret
 		}(),
@@ -105,11 +119,10 @@ func (p *Plugin) Clone() *Plugin {
 					Addons: func() []*openapi_v1.ImplementedAddons {
 						ret := make([]*openapi_v1.ImplementedAddons, 0, len(v.Addons))
 						for _, v1 := range v.Addons {
-							tmp := &openapi_v1.ImplementedAddons{
+							ret = append(ret, &openapi_v1.ImplementedAddons{
 								AddonsPoint:         v1.AddonsPoint,
 								ImplementedEndpoint: v1.ImplementedEndpoint,
-							}
-							ret = append(ret, tmp)
+							})
 						}
 						return ret
 					}(),
@@ -130,6 +143,18 @@ func (p *Plugin) Clone() *Plugin {
 		Secret:            p.Secret,
 		RegisterTimestamp: p.RegisterTimestamp,
 		Version:           p.Version,
+		Status:            p.Status,
+		EnableTenantes: func() []*EnableTenant {
+			ret := make([]*EnableTenant, 0, len(p.EnableTenantes))
+			for _, v := range p.EnableTenantes {
+				ret = append(ret, &EnableTenant{
+					TenantID:        v.TenantID,
+					OperatorID:      v.OperatorID,
+					EnableTimestamp: v.EnableTimestamp,
+				})
+			}
+			return ret
+		}(),
 	}
 }
 
@@ -165,7 +190,6 @@ type PluginRoute struct {
 	TkeelVersion      string                  `json:"tkeel_version,omitempty"`      // plugin depened tkeel version.
 	RegisterAddons    map[string]string       `json:"register_addons,omitempty"`    // plugin register addons route map.
 	ImplementedPlugin []string                `json:"implemented_plugin,omitempty"` // plugin implemented plugins.
-	ActiveTenantes    []string                `json:"active_tenantes,omitempty"`    // plugin active tenant id list.
 	Version           string                  `json:"version,omitempty"`            // model version.
 }
 
@@ -194,11 +218,6 @@ func (pr *PluginRoute) Clone() *PluginRoute {
 			copy(ret, pr.ImplementedPlugin)
 			return ret
 		}(),
-		ActiveTenantes: func() []string {
-			ret := make([]string, 0, len(pr.ActiveTenantes))
-			copy(ret, pr.ActiveTenantes)
-			return ret
-		}(),
 		Version: pr.Version,
 	}
 }
@@ -208,7 +227,14 @@ func NewPlugin(pluginID string, installer *Installer) *Plugin {
 		ID:        pluginID,
 		Installer: installer,
 		Version:   "1",
-		State:     openapi_v1.PluginStatus_UNREGISTER,
+		Status:    openapi_v1.PluginStatus_WAIT_RUNNING,
+		EnableTenantes: []*EnableTenant{
+			{
+				TenantID:        TKeelTenant,
+				OperatorID:      TKeelUser,
+				EnableTimestamp: time.Now().Unix(),
+			},
+		},
 	}
 }
 
@@ -225,7 +251,7 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 func NewPluginRoute(resp *openapi_v1.IdentifyResponse) *PluginRoute {
 	return &PluginRoute{
 		ID:           resp.PluginId,
-		Status:       openapi_v1.PluginStatus_UNREGISTER,
+		Status:       openapi_v1.PluginStatus_RUNNING,
 		TkeelVersion: resp.TkeelVersion,
 		ImplementedPlugin: func() []string {
 			ret := make([]string, 0, len(resp.ImplementedPlugin))
@@ -234,8 +260,7 @@ func NewPluginRoute(resp *openapi_v1.IdentifyResponse) *PluginRoute {
 			}
 			return ret
 		}(),
-		ActiveTenantes: []string{TKeelTenant},
-		Version:        "1",
+		Version: "1",
 	}
 }
 
@@ -346,22 +371,4 @@ func (u *User) Base64Decode(s string) error {
 	}
 	u.Role = rs[0]
 	return nil
-}
-
-func GetTenantBindKey(tenantID string) string {
-	return fmt.Sprintf(KeyTenantBindPlugin, tenantID)
-}
-
-func ParseTenantBind(bindByte []byte) []string {
-	if len(bindByte) == 0 {
-		return []string{}
-	}
-	return strings.Split(string(bindByte), ",")
-}
-
-func EncodeTenantBind(tenants []string) []byte {
-	if tenants == nil {
-		return []byte{}
-	}
-	return []byte(strings.Join(tenants, ","))
 }

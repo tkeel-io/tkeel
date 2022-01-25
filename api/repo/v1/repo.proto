@@ -15,7 +15,7 @@ limitations under the License.
 
 syntax = "proto3";
 
-package api.repo.v1;
+package io.tkeel.plugin.api.repo.v1;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
@@ -24,7 +24,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/repo/v1;v1";
 option java_multiple_files = true;
-option java_package = "api.repo.v1";
+option java_package = "io.tkeel.plugin.api.repo.v1";
 
 service Repo {
   rpc CreateRepo(CreateRepoRequest) returns (google.protobuf.Empty) {
@@ -191,11 +191,6 @@ message RepoObject {
       } ];
 }
 
-enum ConfigurationSchemaType {
-  JSON = 0;
-  YAML = 1;
-}
-
 message InstallerObject {
   string name = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -209,25 +204,9 @@ message InstallerObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer repo"
       } ];
-  map<string, google.protobuf.Any> annotations = 4
+  map<string, google.protobuf.Any> metadata = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "repo annotations"
-      } ];
-  bytes readme = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "readme file"
-      } ];
-  bytes configuration_schema = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "configuration schema file"
-      } ];
-  ConfigurationSchemaType schema_type = 7
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "configuration schema type"
-      } ];
-  bytes configuration = 8
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "configuration file"
+        description : "repo metadata"
       } ];
   bool installed = 9
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -278,6 +257,10 @@ message ListRepoInstallerRequest {
   string repo = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo name"
+      } ];
+  bool installed = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installed option"
       } ];
 }
 

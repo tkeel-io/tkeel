@@ -95,7 +95,7 @@ var rootCmd = &cobra.Command{
 				log.Fatal("fatal new dapr client: %s", err)
 				os.Exit(-1)
 			}
-			openapiCli := openapi.NewDaprClient("rudder", daprGRPCClient)
+			openapiCli := openapi.NewDaprClient(conf.Dapr.HTTPPort)
 
 			// init operator.
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
@@ -111,15 +111,19 @@ var rootCmd = &cobra.Command{
 				Password: conf.SecurityConf.OAuth.Redis.Password,
 			})
 			tokenGenerator := generates.NewJWTAccessGenerate("", []byte(conf.SecurityConf.OAuth.AccessGenerate.SecurityKey), jwt.SigningMethodHS512)
-			gormdb, err := gormdb.SetUp(gormdb.DBConfig{Type: "mysql", Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port,
-				Dbname: conf.SecurityConf.Mysql.DBName, Username: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password})
+			gormdb, err := gormdb.SetUp(gormdb.DBConfig{
+				Type: "mysql", Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port,
+				Dbname: conf.SecurityConf.Mysql.DBName, Username: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password,
+			})
 			if err != nil {
 				log.Fatal(err)
 				os.Exit(-1)
 			}
-			rbacOp, err := security_casbin.NewRBACOperator(&security_casbin.MysqlConf{DBName: conf.SecurityConf.Mysql.DBName,
-				User: conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password,
-				Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port})
+			rbacOp, err := security_casbin.NewRBACOperator(&security_casbin.MysqlConf{
+				DBName: conf.SecurityConf.Mysql.DBName,
+				User:   conf.SecurityConf.Mysql.User, Password: conf.SecurityConf.Mysql.Password,
+				Host: conf.SecurityConf.Mysql.Host, Port: conf.SecurityConf.Mysql.Port,
+			})
 			if err != nil {
 				log.Fatal("fatal new rbac operator", err)
 				os.Exit(-1)
@@ -161,30 +165,30 @@ var rootCmd = &cobra.Command{
 
 			// init service.
 			// plugin service.
-			PluginSrvV1 := service.NewPluginServiceV1(conf.Tkeel, kvOp, pOp, prOp, openapiCli)
-			plugin_v1.RegisterPluginHTTPServer(httpSrv.Container, PluginSrvV1)
-			plugin_v1.RegisterPluginServer(grpcSrv.GetServe(), PluginSrvV1)
+			pluginSrvV1 := service.NewPluginServiceV1(conf.Tkeel, kvOp, pOp, prOp, tenantPluginOp, openapiCli)
+			plugin_v1.RegisterPluginHTTPServer(httpSrv.Container, pluginSrvV1)
+			plugin_v1.RegisterPluginServer(grpcSrv.GetServe(), pluginSrvV1)
 			// oauth2 service.
-			Oauth2SrvV1 := service.NewOauth2ServiceV1(conf.Tkeel.AdminPassword, kvOp, pOp)
-			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, Oauth2SrvV1)
-			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), Oauth2SrvV1)
+			oauth2SrvV1 := service.NewOauth2ServiceV1(conf.Tkeel.AdminPassword, kvOp, pOp)
+			oauth2_v1.RegisterOauth2HTTPServer(httpSrv.Container, oauth2SrvV1)
+			oauth2_v1.RegisterOauth2Server(grpcSrv.GetServe(), oauth2SrvV1)
 			// repo service.
 			repoSrv := service.NewRepoService()
 			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
 			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
 			// entries service.
-			EntriesSrvV1 := service.NewEntryService(kvOp, pOp)
-			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, EntriesSrvV1)
-			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), EntriesSrvV1)
+			entriesSrvV1 := service.NewEntryService(pOp, tenantPluginOp)
+			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, entriesSrvV1)
+			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), entriesSrvV1)
 
 			// tenant service.
-			TenantSrv := service.NewTenantService(gormdb, tenantPluginOp, rbacOp)
-			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, TenantSrv)
-			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), TenantSrv)
+			tenantSrv := service.NewTenantService(gormdb, tenantPluginOp, rbacOp)
+			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, tenantSrv)
+			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), tenantSrv)
 			// oauth server.
-			OauthSrv := service.NewOauthService(gormdb, tokenConf, tokenStore, tokenGenerator, nil)
-			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, OauthSrv)
-			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), OauthSrv)
+			oauthSrv := service.NewOauthService(gormdb, tokenConf, tokenStore, tokenGenerator, nil)
+			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, oauthSrv)
+			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), oauthSrv)
 
 			// entity token.
 			tokenOp := service.NewEntityTokenOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
@@ -193,9 +197,9 @@ var rootCmd = &cobra.Command{
 			entity_token_v1.RegisterEntityTokenServer(grpcSrv.GetServe(), EntityTokenSrv)
 
 			// rbac service.
-			RbacSrv := service.NewRbacService(rbacOp)
-			rbac_v1.RegisterRbacHTTPServer(httpSrv.Container, RbacSrv)
-			rbac_v1.RegisterRbacServer(grpcSrv.GetServe(), RbacSrv)
+			rbacSrv := service.NewRbacService(rbacOp)
+			rbac_v1.RegisterRbacHTTPServer(httpSrv.Container, rbacSrv)
+			rbac_v1.RegisterRbacServer(grpcSrv.GetServe(), rbacSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

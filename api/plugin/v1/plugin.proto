@@ -13,7 +13,7 @@ limitations under the License.
 
 syntax = "proto3";
 
-package api.plugin.v1;
+package io.tkeel.rudder.api.plugin.v1;
 
 import "openapi/v1/openapi.proto";
 import "google/protobuf/empty.proto";
@@ -22,7 +22,7 @@ import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/plugin/v1;v1";
 option java_multiple_files = true;
-option java_package = "api.plugin.v1";
+option java_package = "io.tkeel.rudder.api.plugin.v1";
 
 service Plugin {
   rpc InstallPlugin(InstallPluginRequest) returns (InstallPluginResponse) {
@@ -89,78 +89,6 @@ service Plugin {
     };
   };
 
-  rpc RegisterPlugin(RegisterPluginRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post : "/plugins/{id}/register"
-      body : "secret"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "注册插件接口"
-      operation_id : "RegisterPlugin"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "204"
-          value : {description : "SUCC_AND_NO_CONTENT"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "404"
-          value : {description : "PLUGIN_NOT_FOUND"}
-        },
-        {
-          key : "409"
-          value : {description : "ALREADY_EXISTS"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_QUERY_PLUGIN_OPENAPI"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_STORE"}
-        }
-      ]
-    };
-  };
-
-  rpc UnregisterPlugin(UnregisterPluginRequest)
-      returns (UnregisterPluginResponse) {
-    option (google.api.http) = {
-      delete : "/plugins/{id}/register"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "注销插件接口"
-      operation_id : "UnregisterPlugin"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "204"
-          value : {description : "SUCC_AND_NO_CONTENT"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "404"
-          value : {description : "PLUGIN_NOT_FOUND"}
-        },
-        {
-          key : "500"
-          value : {description : "UNREGISTER_PLUGIN_HAS_BEEN_DEPENDED"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_STORE"}
-        }
-      ]
-    };
-  };
-
   rpc GetPlugin(GetPluginRequest) returns (GetPluginResponse) {
     option (google.api.http) = {
       get : "/plugins/{id}"
@@ -214,14 +142,14 @@ service Plugin {
       ]
     };
   };
-  rpc BindTenants(BindTenantsRequest) returns (google.protobuf.Empty) {
+  rpc TenantEnable(TenantEnableRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post : "/plugins/{id}/tenants"
       body : "extra"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "插件绑定租户接口"
-      operation_id : "BindTenants"
+      summary : "插件租户启用接口"
+      operation_id : "TenantEnable"
       tags : "Plugin"
       responses : [
         {
@@ -239,13 +167,13 @@ service Plugin {
       ]
     };
   };
-  rpc UnbindTenants(UnbindTenantsRequest) returns (google.protobuf.Empty) {
+  rpc TenantDisable(TenantDisableRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       delete : "/plugins/{id}/tenants"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "插件绑定租户接口"
-      operation_id : "UnindTenants"
+      summary : "插件租户停用接口"
+      operation_id : "TenantDisable"
       tags : "Plugin"
       responses : [
         {
@@ -263,14 +191,14 @@ service Plugin {
       ]
     };
   };
-  rpc ListBindTenants(ListBindTenantsRequest)
-      returns (ListBindTenantsResponse) {
+  rpc ListEnabledTenants(ListEnabledTenantsRequest)
+      returns (ListEnabledTenantsResponse) {
     option (google.api.http) = {
       get : "/plugins/{id}/tenants"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "获取插件绑定租户接口"
-      operation_id : "ListBindTenants"
+      operation_id : "ListenableTenants"
       tags : "Plugin"
       responses : [
         {
@@ -336,6 +264,25 @@ message Installer {
 }
 
 /**
+ * EnabledTenant object.
+ **/
+
+message EnabledTenant {
+  string tenant_id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "enable tenant id"
+      } ]; // enable tenant id.
+  string operator_id = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "operator user id"
+      } ]; // operator user id.
+  int64 enable_timestamp = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "enable timestamp"
+      } ]; // enable timestamp.
+}
+
+/**
  * plugin object.
  **/
 message PluginObject {
@@ -367,10 +314,10 @@ message PluginObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "register timestamp"
       } ]; // register timestamp.
-  repeated string active_tenantes = 8
+  repeated EnabledTenant enable_tenantes = 8
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "active tenant's id list"
-      } ]; // active tenant's id list.
+        description : "enable tenant's id list"
+      } ]; // enable tenant's id list.
   repeated RegisterAddons register_addons = 9
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "register addons router"
@@ -422,30 +369,6 @@ message UninstallPluginResponse {
       } ];
 }
 
-message UnregisterPluginRequest {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id"
-      } ];
-}
-message UnregisterPluginResponse {
-  PluginObject plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin object"
-      } ];
-}
-
-message RegisterPluginRequest {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id"
-      } ];
-  string secret = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin register secret"
-      } ];
-}
-
 message GetPluginRequest {
   string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -466,7 +389,7 @@ message ListPluginResponse {
       } ];
 }
 
-message BindTenantsRequest {
+message TenantEnableRequest {
   string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
@@ -477,7 +400,7 @@ message BindTenantsRequest {
       } ];
 }
 
-message UnbindTenantsRequest {
+message TenantDisableRequest {
   string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
@@ -488,16 +411,16 @@ message UnbindTenantsRequest {
       } ];
 }
 
-message ListBindTenantsRequest {
+message ListEnabledTenantsRequest {
   string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
       } ];
 }
 
-message ListBindTenantsResponse {
-  repeated string tenants = 1
+message ListEnabledTenantsResponse {
+  repeated EnabledTenant tenants = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin bind tenants list"
+        description : "plugin enable tenants list"
       } ];
 }

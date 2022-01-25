@@ -15,11 +15,11 @@ limitations under the License.
 
 syntax = "proto3";
 
-package entry.v1;
+package io.tkeel.rudder.api.entry.v1;
 
 option go_package = "github.com/tkeel-io/tkeel/api/entry/v1;v1";
 option java_multiple_files = true;
-option java_package = "dev.tkeel.rudder.api.entry.v1";
+option java_package = "io.tkeel.rudder.api.entry.v1";
 option java_outer_classname = "OpenapiProtoV1";
 
 // @plugins=protoc-gen-go-errors

@@ -8,6 +8,8 @@ const (
 	tKeelPluginEnableKey     = "tkeel.io/enable"
 	tKeelPluginDeploymentKey = "tkeel.io/deployment-name"
 	tKeelPluginPortKey       = "tkeel.io/plugin-port"
+	// tKeelPluginTypeTag       = "tkeel.io/tag".
+	// tKeelPluginVersion       = "tkeel.io/version".
 
 	trueString = "true"
 )

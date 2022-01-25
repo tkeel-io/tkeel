@@ -22,6 +22,11 @@ import (
 	"errors"
 )
 
+const (
+	ConfigurationKey       = "configuration"
+	ConfigurationSchemaKey = "configuration_schema"
+)
+
 var (
 	ErrInvalidAnnotations = errors.New("invalid annotations")
 	ErrInvalidOptions     = errors.New("invalid options")

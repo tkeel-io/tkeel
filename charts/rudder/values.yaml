@@ -28,7 +28,7 @@ grpcPort: 32133
 adminPassword: tKeelAdmin
 
 # rudder goroutine watch interval
-watchInterval: 10s
+watchInterval: 1s
 
 # oauth2 configuration
 oauth2:

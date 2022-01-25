@@ -23,54 +23,90 @@ import (
 
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	"github.com/tkeel-io/tkeel/pkg/client"
+	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 )
 
-// GET Identify.
+// GET identify.
 func (c *DaprClient) Identify(ctx context.Context, sendToPluginID string) (*openapi_v1.IdentifyResponse, error) {
 	res := &openapi_v1.IdentifyResponse{}
-	err := client.DaprInvokeJSON(ctx, c.Client, sendToPluginID, "v1/identify", http.MethodGet, nil, res)
+	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
+		ID:         sendToPluginID,
+		Method:     "v1/identify",
+		Verb:       http.MethodGet,
+		Header:     c.header.Clone(),
+		QueryValue: nil,
+		Body:       nil,
+	}, nil, res)
 	if err != nil {
 		return nil, fmt.Errorf("error dapr invoke plugin(%s) identify: %w", sendToPluginID, err)
 	}
 	return res, nil
 }
 
-// POST AddonsIdentify.
+// POST addons/identify.
 func (c *DaprClient) AddonsIdentify(ctx context.Context, sendToPluginID string, req *openapi_v1.AddonsIdentifyRequest) (*openapi_v1.AddonsIdentifyResponse, error) {
 	res := &openapi_v1.AddonsIdentifyResponse{}
-	err := client.DaprInvokeJSON(ctx, c.Client, sendToPluginID, "v1/addons/identify", http.MethodPost, req, res)
+	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
+		ID:         sendToPluginID,
+		Method:     "v1/addons/identify",
+		Verb:       http.MethodGet,
+		Header:     c.header.Clone(),
+		QueryValue: nil,
+		Body:       nil,
+	}, req, res)
 	if err != nil {
 		return nil, fmt.Errorf("error dapr invoke plugin(%s) addons identify(%s): %w", sendToPluginID, req.String(), err)
 	}
 	return res, nil
 }
 
-// GET Status.
+// GET status.
 func (c *DaprClient) Status(ctx context.Context, sendToPluginID string) (*openapi_v1.StatusResponse, error) {
 	res := &openapi_v1.StatusResponse{}
-	err := client.DaprInvokeJSON(ctx, c.Client, sendToPluginID, "v1/status", http.MethodGet, nil, res)
+	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
+		ID:         sendToPluginID,
+		Method:     "v1/status",
+		Verb:       http.MethodGet,
+		Header:     c.header.Clone(),
+		QueryValue: nil,
+		Body:       nil,
+	}, nil, res)
 	if err != nil {
 		return nil, fmt.Errorf("error dapr invoke plugin(%s) status: %w", sendToPluginID, err)
 	}
 	return res, nil
 }
 
-// POST Tenantbind.
-func (c *DaprClient) TenantBind(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantBindRequst) (*openapi_v1.TenantBindResponse, error) {
-	res := &openapi_v1.TenantBindResponse{}
-	err := client.DaprInvokeJSON(ctx, c.Client, sendToPluginID, "v1/tenant/bind", http.MethodPost, req, res)
+// POST tenant/enable.
+func (c *DaprClient) TenantEnable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantEnableRequst) (*openapi_v1.TenantEnableResponse, error) {
+	res := &openapi_v1.TenantEnableResponse{}
+	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
+		ID:         sendToPluginID,
+		Method:     "v1/tenant/enable",
+		Verb:       http.MethodGet,
+		Header:     c.header.Clone(),
+		QueryValue: nil,
+		Body:       nil,
+	}, req, res)
 	if err != nil {
-		return nil, fmt.Errorf("error dapr invoke plugin(%s) tenant bind(%s): %w", sendToPluginID, req.String(), err)
+		return nil, fmt.Errorf("error dapr invoke plugin(%s) tenant enable(%s): %w", sendToPluginID, req.String(), err)
 	}
 	return res, nil
 }
 
-// POST TenantUnbind.
-func (c *DaprClient) TenantUnbind(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantUnbindRequst) (*openapi_v1.TenantUnbindResponse, error) {
-	res := &openapi_v1.TenantUnbindResponse{}
-	err := client.DaprInvokeJSON(ctx, c.Client, sendToPluginID, "v1/tenant/unbind", http.MethodPost, req, res)
+// POST tenant/disable.
+func (c *DaprClient) TenantDisable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantDisableRequst) (*openapi_v1.TenantDisableResponse, error) {
+	res := &openapi_v1.TenantDisableResponse{}
+	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
+		ID:         sendToPluginID,
+		Method:     "v1/tenant/disable",
+		Verb:       http.MethodGet,
+		Header:     c.header.Clone(),
+		QueryValue: nil,
+		Body:       nil,
+	}, req, res)
 	if err != nil {
-		return nil, fmt.Errorf("error dapr invoke plugin(%s) tenant unbind(%s): %w", sendToPluginID, req.String(), err)
+		return nil, fmt.Errorf("error dapr invoke plugin(%s) tenant disable(%s): %w", sendToPluginID, req.String(), err)
 	}
 	return res, nil
 }

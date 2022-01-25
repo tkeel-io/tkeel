@@ -7,10 +7,28 @@ daprConfig: keel
 middleware:
   name: tkeel-middleware
 replicaCount: 1
-appPort: 31234
 nodePort: 30707
 image:
   repository: tkeelio/keel
   tag: v0.3.0
   pullPolicy: Always
-watchInterval: 5s
+
+# keel debug mod
+debug: false
+
+# keel log level
+logLevel: debug
+
+# keel http port and dapr app port
+httpPort: 32134
+
+# keel grpc port
+grpcPort: 32133
+
+# keel goroutine watch interval
+watchInterval: 1s
+
+# dapr component
+dapr:
+  state:
+    publicName: tkeel-middleware-redis-public-store

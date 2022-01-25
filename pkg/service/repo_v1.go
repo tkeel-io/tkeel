@@ -30,6 +30,9 @@ func (s *RepoService) CreateRepo(ctx context.Context, req *pb.CreateRepoRequest)
 	}
 	if err := hub.GetInstance().Add(info); err != nil {
 		log.Errorf("error hub add repo(%s): %s", info, err)
+		if errors.Is(err, hub.ErrRepoExist) {
+			return nil, pb.ErrRepoExist()
+		}
 		return nil, pb.ErrInternalError()
 	}
 	return &emptypb.Empty{}, nil
@@ -143,105 +146,30 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 		return nil
 	}
 	return &pb.InstallerObject{
-		Name:                ib.Name,
-		Version:             ib.Version,
-		Repo:                ib.Repo,
-		Installed:           ib.Installed,
-		Readme:              pbReadme(i),
-		ConfigurationSchema: pbConfigurationSchame(i),
-		SchemaType:          pbConfigurationType(i),
-		Configuration:       pbConfiguration(i),
-		Annotations:         pbAnnotations(i),
+		Name:      ib.Name,
+		Version:   ib.Version,
+		Repo:      ib.Repo,
+		Installed: ib.Installed,
+		Metadata:  pbMetadata(i),
 	}
 }
 
-func pbReadme(i repository.Installer) []byte {
-	inAn := i.Annotations()
-	if inAn == nil {
-		return nil
-	}
-	bIn, ok := inAn[helm.ReadmeFileNameKey]
-	if !ok {
-		return nil
-	}
-	b, ok := bIn.([]byte)
-	if !ok {
-		log.Errorf("error installer(%s) readme invalid type", i)
-		return nil
-	}
-	return b
-}
-
-func pbConfigurationSchame(i repository.Installer) []byte {
-	inAn := i.Annotations()
-	if inAn == nil {
-		return nil
-	}
-	bIn, ok := inAn[helm.ValuesSchemaKey]
-	if !ok {
-		return nil
-	}
-	b, ok := bIn.([]byte)
-	if !ok {
-		log.Errorf("error installer(%s) configuration schema file invalid type", i)
-		return nil
-	}
-	return b
-}
-
-func pbConfigurationType(i repository.Installer) pb.ConfigurationSchemaType {
-	inAn := i.Annotations()
-	if inAn == nil {
-		return pb.ConfigurationSchemaType_JSON
-	}
-	iIn, ok := inAn["VALUES.SCHEMA.TYPE"]
-	if !ok {
-		return pb.ConfigurationSchemaType_JSON
-	}
-	ii, ok := iIn.(int)
-	if !ok {
-		log.Errorf("error installer(%s) configuration schema file invalid type", ii)
-		return pb.ConfigurationSchemaType_JSON
-	}
-	return pb.ConfigurationSchemaType(ii)
-}
-
-func pbConfiguration(i repository.Installer) []byte {
-	inAn := i.Annotations()
-	if inAn == nil {
-		return nil
-	}
-	valueIn, ok := inAn[helm.ValuesKey]
-	if !ok {
-		return nil
-	}
-	value, ok := valueIn.([]byte)
-	if !ok {
-		log.Errorf("error installer(%s) configuration file type invalid", i.Brief().Name)
-	}
-	return value
-}
-
-func pbAnnotations(i repository.Installer) map[string]*anypb.Any {
-	inAn := i.Annotations()
-	if inAn == nil {
-		return nil
-	}
-	ret := make(map[string]*anypb.Any)
-	for k, v := range inAn {
-		if k == helm.ReadmeFileNameKey ||
-			k == helm.ValuesSchemaKey ||
-			k == helm.ValuesKey ||
-			k == "VALUES.SCHEMA.TYPE" {
-			continue
-		}
-		b, err := json.Marshal(v)
-		if err != nil {
-			log.Errorf("error parse installer(%s) annotasions key(%s): %s", i.Brief().Name, k, err)
-			continue
-		}
-		ret[k] = &anypb.Any{
-			Value: b,
+func pbMetadata(i repository.Installer) map[string]*anypb.Any {
+	anno := i.Annotations()
+	ret := make(map[string]*anypb.Any, len(anno))
+	for k, v := range anno {
+		if k == repository.ConfigurationKey ||
+			k == repository.ConfigurationSchemaKey ||
+			k == helm.ReadmeKey ||
+			k == helm.ChartDescKey {
+			vb, ok := v.([]byte)
+			if !ok {
+				log.Errorf("installer(%s) annotasion(%s) is invalid type", i.Brief(), k)
+				continue
+			}
+			ret[k] = &anypb.Any{
+				Value: vb,
+			}
 		}
 	}
 	return ret
