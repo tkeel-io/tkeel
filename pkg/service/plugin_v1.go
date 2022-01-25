@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	t_errors "github.com/tkeel-io/kit/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/security/authz/rbac"
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
@@ -324,10 +323,7 @@ func (s *PluginServiceV1) TenantEnable(ctx context.Context,
 	if err != nil {
 		log.Errorf("error request(%s) tenant(%s/%s) enable: %s",
 			req.Id, u.Tenant, string(req.Extra), err)
-		if errors.As(err, t_errors.TError{}) {
-			return nil, err
-		}
-		return nil, pb.PluginErrUnknown()
+		return nil, pb.PluginErrOpenapiEnabletenant()
 	}
 	rbStack = append(rbStack, rb)
 	// add tenant plugin rbac.
@@ -392,10 +388,7 @@ func (s *PluginServiceV1) DisableTenants(ctx context.Context,
 		if err != nil {
 			log.Errorf("error request(%s) tenant(%s/%s) disable: %s",
 				req.Id, u.Tenant, string(req.Extra), err)
-			if errors.As(err, t_errors.TError{}) {
-				return nil, err
-			}
-			return nil, pb.PluginErrUnknown()
+			return nil, pb.PluginErrOpenapiDisableTenant()
 		}
 		rbStack = append(rbStack, rb)
 		// delete tenant plugin rbac.
