@@ -1703,6 +1703,12 @@
             "in": "query",
             "required": false,
             "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1815,6 +1821,49 @@
             "in": "path",
             "required": true,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "Tenant"
+        ]
+      },
+      "put": {
+        "summary": "add a plugin",
+        "operationId": "AddPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUserBody"
+            }
           }
         ],
         "tags": [
@@ -2075,6 +2124,17 @@
           "required": [
             "password"
           ]
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "user roles"
+        },
+        "nick_name": {
+          "type": "string",
+          "description": "user nick name"
         }
       },
       "required": [
@@ -2182,6 +2242,11 @@
         },
         "remark": {
           "type": "string",
+          "description": "tenant remark"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "int64",
           "description": "tenant remark"
         }
       }
@@ -2660,6 +2725,18 @@
           "type": "string",
           "format": "int64",
           "description": "user number in tenant"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "int64",
+          "description": "user number in tenant"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "user roles in tenant"
         }
       }
     },
@@ -2760,6 +2837,28 @@
         }
       }
     },
+    "v1UpdateUserBody": {
+      "type": "object",
+      "properties": {
+        "nick_name": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1UpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1UserListData": {
       "type": "object",
       "properties": {
@@ -2783,6 +2882,16 @@
         },
         "avatar": {
           "type": "string"
+        },
+        "create_at": {
+          "type": "string",
+          "format": "int64"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

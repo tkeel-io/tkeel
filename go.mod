@@ -25,7 +25,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb
-	github.com/tkeel-io/security v0.0.0-20220120104758-a664a3605e45
+	github.com/tkeel-io/security v0.0.0-20220124084748-5e5d7f65fb21
 	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220121054758-17063939b974
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect

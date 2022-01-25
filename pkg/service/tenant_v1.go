@@ -116,7 +116,7 @@ func (s *TenantService) ListTenant(ctx context.Context, _ *emptypb.Empty) (*pb.L
 	resp.Tenants = make([]*pb.TenantDetail, len(tenants))
 	for i, v := range tenants {
 		userDao := &model.User{}
-		detail := &pb.TenantDetail{TenantId: v.ID, Title: v.Title, Remark: v.Remark}
+		detail := &pb.TenantDetail{TenantId: v.ID, Title: v.Title, Remark: v.Remark, CreatedAt: v.CreatedAt.UnixMilli()}
 		numUser, err := userDao.CountInTenant(s.DB, v.ID)
 		if err != nil {
 			log.Error(err)
@@ -223,14 +223,37 @@ func (s *TenantService) ListUser(ctx context.Context, req *pb.ListUserRequest) (
 	}
 	userList := make([]*pb.UserListData, len(users))
 	for i, v := range users {
-		detail := &pb.UserListData{
-			TenantId: v.TenantID, UserId: v.ID, Username: v.UserName,
-			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName,
-		}
+		detail := &pb.UserListData{TenantId: v.TenantID, UserId: v.ID, Username: v.UserName,
+			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName, CreateAt: v.CreatedAt.UnixMilli()}
+		detail.Roles = s.RBACOp.GetRolesForUserInDomain(v.ID, v.TenantID)
 		userList[i] = detail
 	}
 	resp = &pb.ListUserResponse{Total: total, PageSize: int32(page.PageSize), PageNum: int32(page.PageNum), Users: userList}
 	return resp, nil
+}
+
+func (s *TenantService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+	roles := make([][]string, len(req.GetBody().GetRoles()))
+	_, err := s.RBACOp.DeleteRolesForUserInDomain(req.GetUserId(), req.GetTenantId())
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalError()
+	}
+	for i, v := range req.GetBody().GetRoles() {
+		roles[i] = []string{req.GetUserId(), v, req.GetTenantId()}
+	}
+	_, err = s.RBACOp.AddGroupingPolicies(roles)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalError()
+	}
+	userDao := model.User{}
+	err = userDao.Update(s.DB, req.GetUserId(), req.GetTenantId(), map[string]interface{}{"nick_name": req.GetBody().GetNickName()})
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalError()
+	}
+	return &pb.UpdateUserResponse{Ok: true}, nil
 }
 
 func (s *TenantService) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*emptypb.Empty, error) {
