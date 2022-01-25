@@ -132,12 +132,12 @@ func (h *Hub) SetConstructor(c repository.Constructor, args ...interface{}) {
 func (h *Hub) Add(i *repository.Info) error {
 	ok := false
 	h.repoSet.Range(func(key, value interface{}) bool {
-		repo, ok := value.(repository.Repository)
-		if !ok {
+		repo, ok1 := value.(repository.Repository)
+		if !ok1 {
 			h.repoSet.Delete(key)
 		}
 		ri := repo.Info()
-		if ri.URL == i.URL || ri.Name == ri.Name {
+		if ri.URL == i.URL || ri.Name == i.Name {
 			return false
 		}
 		return true

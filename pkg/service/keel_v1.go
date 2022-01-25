@@ -201,7 +201,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			// set header.
 			req.Request.Header[model.XtKeelAuthHeader] = []string{sess.User.Base64Encode()}
 		}
-		// set context
+		// set context.
 		req.Request = req.Request.WithContext(withSession(ctx, sess))
 		chain.ProcessFilter(req, resp)
 	}
