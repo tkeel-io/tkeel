@@ -35,6 +35,8 @@ type TenantClient interface {
 	ListUser(ctx context.Context, in *ListUserRequest, opts ...grpc.CallOption) (*ListUserResponse, error)
 	// delete a user.
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// update user
+	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
 	// add a plugin
 	AddTenantPlugin(ctx context.Context, in *AddTenantPluginRequest, opts ...grpc.CallOption) (*AddTenantPluginResponse, error)
 	// list plugin
@@ -124,6 +126,15 @@ func (c *tenantClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, op
 	return out, nil
 }
 
+func (c *tenantClient) UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error) {
+	out := new(UpdateUserResponse)
+	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/UpdateUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *tenantClient) AddTenantPlugin(ctx context.Context, in *AddTenantPluginRequest, opts ...grpc.CallOption) (*AddTenantPluginResponse, error) {
 	out := new(AddTenantPluginResponse)
 	err := c.cc.Invoke(ctx, "/tenant.v1.Tenant/AddTenantPlugin", in, out, opts...)
@@ -180,6 +191,8 @@ type TenantServer interface {
 	ListUser(context.Context, *ListUserRequest) (*ListUserResponse, error)
 	// delete a user.
 	DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error)
+	// update user
+	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 	// add a plugin
 	AddTenantPlugin(context.Context, *AddTenantPluginRequest) (*AddTenantPluginResponse, error)
 	// list plugin
@@ -217,6 +230,9 @@ func (UnimplementedTenantServer) ListUser(context.Context, *ListUserRequest) (*L
 }
 func (UnimplementedTenantServer) DeleteUser(context.Context, *DeleteUserRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
+}
+func (UnimplementedTenantServer) UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
 }
 func (UnimplementedTenantServer) AddTenantPlugin(context.Context, *AddTenantPluginRequest) (*AddTenantPluginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddTenantPlugin not implemented")
@@ -387,6 +403,24 @@ func _Tenant_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Tenant_UpdateUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServer).UpdateUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/tenant.v1.Tenant/UpdateUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServer).UpdateUser(ctx, req.(*UpdateUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Tenant_AddTenantPlugin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AddTenantPluginRequest)
 	if err := dec(in); err != nil {
@@ -497,6 +531,10 @@ var Tenant_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteUser",
 			Handler:    _Tenant_DeleteUser_Handler,
+		},
+		{
+			MethodName: "UpdateUser",
+			Handler:    _Tenant_UpdateUser_Handler,
 		},
 		{
 			MethodName: "AddTenantPlugin",
