@@ -1,10 +1,13 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/entity/v1/entity_token.proto",
-    "version": "version not set"
+    "title": "api/rudder",
+    "version": "v1"
   },
   "tags": [
+    {
+      "name": "authentication"
+    },
     {
       "name": "EntityToken"
     },
@@ -37,6 +40,53 @@
     "application/json"
   ],
   "paths": {
+    "/authenticate": {
+      "get": {
+        "summary": "tkeel authenticate with header Authorization",
+        "operationId": "Authenticate",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/apiauthenticationv1AuthenticateResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARG",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "path",
+            "description": "url path",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "verb",
+            "description": "http verb",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "authentication"
+        ]
+      }
+    },
     "/entity/info/{token}": {
       "get": {
         "summary": "get a entity token info",
@@ -175,7 +225,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1AuthenticateResponse"
+              "$ref": "#/definitions/apioauthv1AuthenticateResponse"
             }
           },
           "default": {
@@ -1988,6 +2038,59 @@
     }
   },
   "definitions": {
+    "apiauthenticationv1AuthenticateResponse": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "user id"
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "tenant id"
+        },
+        "role": {
+          "type": "string",
+          "description": "role"
+        },
+        "destination": {
+          "type": "string",
+          "description": "dst plugin id"
+        },
+        "method": {
+          "type": "string",
+          "description": "dst plugin method"
+        }
+      },
+      "title": "认证返回值"
+    },
+    "apioauthv1AuthenticateResponse": {
+      "type": "object",
+      "properties": {
+        "expires_in": {
+          "type": "string",
+          "format": "int64"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "nick_name": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "tenant_id": {
+          "type": "string"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -2100,33 +2203,6 @@
         }
       },
       "description": "*\nmessage plugin declares extension point."
-    },
-    "v1AuthenticateResponse": {
-      "type": "object",
-      "properties": {
-        "expires_in": {
-          "type": "string",
-          "format": "int64"
-        },
-        "user_id": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "external_id": {
-          "type": "string"
-        },
-        "nick_name": {
-          "type": "string"
-        },
-        "avatar": {
-          "type": "string"
-        },
-        "tenant_id": {
-          "type": "string"
-        }
-      }
     },
     "v1AuthorizeResponse": {
       "type": "object",

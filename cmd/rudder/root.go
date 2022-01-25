@@ -23,6 +23,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	authentication_v1 "github.com/tkeel-io/tkeel/api/authentication/v1"
 	entity_token_v1 "github.com/tkeel-io/tkeel/api/entity/v1"
 	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
@@ -46,6 +47,9 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/service"
 
 	"github.com/go-oauth2/oauth2/v4/generates"
+	"github.com/go-oauth2/oauth2/v4/manage"
+	"github.com/go-oauth2/oauth2/v4/models"
+	"github.com/go-oauth2/oauth2/v4/store"
 	oredis "github.com/go-oauth2/redis/v4"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
@@ -129,6 +133,19 @@ var rootCmd = &cobra.Command{
 				os.Exit(-1)
 			}
 			tenantPluginOp := rbac.NewTenantPluginOperator(rbacOp)
+			m := manage.NewDefaultManager()
+			clientStore := store.NewClientStore()
+			client := &models.Client{ID: "tkeel", Secret: "tkeel", Domain: "tkeel.io"}
+			clientStore.Set(client.GetID(), client)
+			mConf := manage.DefaultAuthorizeCodeTokenCfg
+			if tokenConf.AccessTokenExp != 0 && tokenConf.RefreshTokenExp != 0 {
+				mConf.AccessTokenExp = tokenConf.AccessTokenExp
+				mConf.RefreshTokenExp = tokenConf.RefreshTokenExp
+			}
+			m.SetPasswordTokenCfg(mConf)
+			m.MapClientStorage(clientStore)
+			m.MapTokenStorage(tokenStore)
+			m.MapAccessGenerate(tokenGenerator)
 
 			// init repo hub.
 			hub.Init(conf.Tkeel.WatchInterval, riOp,
@@ -186,7 +203,7 @@ var rootCmd = &cobra.Command{
 			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, tenantSrv)
 			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), tenantSrv)
 			// oauth server.
-			oauthSrv := service.NewOauthService(gormdb, tokenConf, tokenStore, tokenGenerator, nil)
+			oauthSrv := service.NewOauthService(m, gormdb, tokenConf)
 			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, oauthSrv)
 			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), oauthSrv)
 
@@ -200,6 +217,11 @@ var rootCmd = &cobra.Command{
 			rbacSrv := service.NewRbacService(rbacOp)
 			rbac_v1.RegisterRbacHTTPServer(httpSrv.Container, rbacSrv)
 			rbac_v1.RegisterRbacServer(grpcSrv.GetServe(), rbacSrv)
+
+			// authentication service.
+			authenticationSrv := service.NewAuthenticationService(m, gormdb, tokenConf, rbacOp, prOp, tenantPluginOp)
+			authentication_v1.RegisterAuthenticationHTTPServer(httpSrv.Container, authenticationSrv)
+			authentication_v1.RegisterAuthenticationServer(grpcSrv.GetServe(), authenticationSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

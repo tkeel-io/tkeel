@@ -27,7 +27,6 @@ import (
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
-	"github.com/tkeel-io/tkeel/pkg/model/proute"
 	"github.com/tkeel-io/tkeel/pkg/server"
 	"github.com/tkeel-io/tkeel/pkg/service"
 	keel_v1 "github.com/tkeel-io/tkeel/pkg/service/keel/v1"
@@ -64,21 +63,11 @@ var rootCmd = &cobra.Command{
 			Output: conf.Log.Output,
 		}, httpSrv, grpcSrv)
 		{
-			// init client.
-			// dapr grpc client.
-			daprGRPCClient, err := t_dapr.NewGPRCClient(10, "5s", conf.Dapr.GRPCPort)
-			if err != nil {
-				log.Fatalf("fatal new dapr client: %s", err)
-				os.Exit(-1)
-			}
 			// dapr http client.
 			daprHTTPClient := t_dapr.NewHTTPClient(conf.Dapr.HTTPPort)
-			// init operator.
-			prOp := proute.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
 			// init service.
 			// proxy service.
-			proxySrvV1 := service.NewKeelServiceV1(conf.Tkeel.WatchInterval,
-				conf, daprHTTPClient, prOp)
+			proxySrvV1 := service.NewKeelServiceV1(conf, daprHTTPClient)
 			keel_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, proxySrvV1)
 		}
 	},
