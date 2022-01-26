@@ -37,7 +37,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "create a tenant"
       operation_id : "CreateTenant"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [
         {
           key : "200"
@@ -67,7 +67,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "get a tenant"
       operation_id : "GetTenant"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -83,7 +83,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "tenant list"
       operation_id : "ListTenant"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -99,7 +99,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "delete a tenant"
       operation_id : "DeleteTenant"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -116,7 +116,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "create a  user at tenant"
       operation_id : "CreateUser"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -132,7 +132,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "get a  user"
       operation_id : "GetUser"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -149,7 +149,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "list users"
       operation_id : "ListUser"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -166,7 +166,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "delete a user"
       operation_id : "DeleteUser"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -182,9 +182,9 @@ service Tenant {
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "add a plugin"
-      operation_id : "AddPlugin"
-      tags : "Tenant"
+      summary : "update user"
+      operation_id : "UpdateUser"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -204,7 +204,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "add a plugin"
       operation_id : "AddPlugin"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -222,7 +222,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "list tenant plugin"
       operation_id : "ListTenantPlugin"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -240,7 +240,7 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "delete tenant plugin"
       operation_id : "DeleteTenantPlugin"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -257,7 +257,24 @@ service Tenant {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "permissible tenant plugin"
       operation_id : "PermissibleTenantPlugin"
-      tags : "Tenant"
+      tags : "[Security] Tenant"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
+
+  rpc BeforeSetPassword(BeforeSetPasswordRequest)
+      returns (BeforeSetPasswordResponse) {
+    option (google.api.http) = {
+      put : "/tenants/{tenant_id}/user/{user_id}/pwd"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "before reset user password "
+      operation_id : "BeforeSetPassword"
+      tags : "[Security] Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -379,7 +396,7 @@ message TenantDetail {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "tenant remark"
       } ];
-  int64 num_user = 4
+  int32 num_user = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "user number in tenant"
       } ];
@@ -475,7 +492,7 @@ message ListUserRequest {
 }
 
 message ListUserResponse {
-  int64 total = 1;
+  int32 total = 1;
   int32 page_num = 2;
   int32 page_size = 3;
   repeated UserListData users = 4;
@@ -534,3 +551,16 @@ message UpdateUserBody {
 message UpdateUserResponse {
   bool ok =1;
 }
+
+message BeforeSetPasswordRequest {
+  string tenant_id =1;
+  string user_id =2;
+}
+
+message BeforeSetPasswordResponse {
+  string tenant_id =1;
+  string user_id =2;
+  string username = 3;
+  string nick_name =4;
+}
+

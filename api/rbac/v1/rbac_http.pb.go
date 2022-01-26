@@ -29,6 +29,7 @@ var (
 
 type RbacHTTPServer interface {
 	AddRolePermission(context.Context, *AddRolePermissionRequest) (*AddRolePermissionResponse, error)
+	AddRolePermissionList(context.Context, *AddRolePermissionListRequest) (*AddRolePermissionResponse, error)
 	AddUserRoles(context.Context, *AddUserRolesRequest) (*emptypb.Empty, error)
 	CheckUserPermission(context.Context, *CheckUserPermissionRequest) (*CheckUserPermissionResponse, error)
 	CreateRoles(context.Context, *CreateRoleRequest) (*emptypb.Empty, error)
@@ -83,8 +84,69 @@ func (h *RbacHTTPHandler) AddRolePermission(req *go_restful.Request, resp *go_re
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *RbacHTTPHandler) AddRolePermissionList(req *go_restful.Request, resp *go_restful.Response) {
+	in := AddRolePermissionListRequest{}
+	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.AddRolePermissionList(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -146,8 +208,7 @@ func (h *RbacHTTPHandler) AddUserRoles(req *go_restful.Request, resp *go_restful
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -204,8 +265,7 @@ func (h *RbacHTTPHandler) CheckUserPermission(req *go_restful.Request, resp *go_
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -267,8 +327,7 @@ func (h *RbacHTTPHandler) CreateRoles(req *go_restful.Request, resp *go_restful.
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -325,8 +384,7 @@ func (h *RbacHTTPHandler) DeleteRole(req *go_restful.Request, resp *go_restful.R
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -383,8 +441,7 @@ func (h *RbacHTTPHandler) DeleteRolePermission(req *go_restful.Request, resp *go
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -441,8 +498,7 @@ func (h *RbacHTTPHandler) DeleteUserRole(req *go_restful.Request, resp *go_restf
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -499,8 +555,7 @@ func (h *RbacHTTPHandler) ListRole(req *go_restful.Request, resp *go_restful.Res
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -557,8 +612,7 @@ func (h *RbacHTTPHandler) ListUserPermissions(req *go_restful.Request, resp *go_
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -606,8 +660,10 @@ func RegisterRbacHTTPServer(container *go_restful.Container, srv RbacHTTPServer)
 		To(handler.ListRole))
 	ws.Route(ws.DELETE("/rbac/tenant/{tenant_id}/roles/{role}").
 		To(handler.DeleteRole))
-	ws.Route(ws.POST("/rbac/tenant/{tenant_id}/roles/{role}/permissions").
+	ws.Route(ws.POST("/rbac/tenant/{tenant_id}/roles/{role}/permission").
 		To(handler.AddRolePermission))
+	ws.Route(ws.POST("/rbac/tenant/{tenant_id}/roles/{role}/permissions").
+		To(handler.AddRolePermissionList))
 	ws.Route(ws.DELETE("/rbac/tenant/{tenant_id}/roles/{role}/permissions").
 		To(handler.DeleteRolePermission))
 	ws.Route(ws.POST("/rbac/tenant/{tenant_id}/users/roles").

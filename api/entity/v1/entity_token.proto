@@ -36,7 +36,7 @@ service EntityToken {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "create a entity token"
       operation_id : "CreateEntityToken"
-      tags : "entity token"
+      tags : "[Security] EntityToken"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -50,7 +50,7 @@ service EntityToken {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "get a entity token info"
       operation_id : "EntityTokenInfo"
-      tags : "entity token"
+      tags : "[Security] EntityToken"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -64,7 +64,7 @@ service EntityToken {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "delete a entity token"
       operation_id : "DeleteEntityToken"
-      tags : "entity token"
+      tags : "[Security] EntityToken"
       responses : [ {
         key : "200"
         value : {description : "OK"}

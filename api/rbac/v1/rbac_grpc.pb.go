@@ -23,6 +23,7 @@ type RbacClient interface {
 	ListRole(ctx context.Context, in *ListRolesRequest, opts ...grpc.CallOption) (*ListRolesResponse, error)
 	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	AddRolePermission(ctx context.Context, in *AddRolePermissionRequest, opts ...grpc.CallOption) (*AddRolePermissionResponse, error)
+	AddRolePermissionList(ctx context.Context, in *AddRolePermissionListRequest, opts ...grpc.CallOption) (*AddRolePermissionResponse, error)
 	DeleteRolePermission(ctx context.Context, in *DeleteRolePermissionRequest, opts ...grpc.CallOption) (*DeleteRolePermissionResponse, error)
 	AddUserRoles(ctx context.Context, in *AddUserRolesRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteUserRole(ctx context.Context, in *DeleteUserRoleRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -68,6 +69,15 @@ func (c *rbacClient) DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts
 func (c *rbacClient) AddRolePermission(ctx context.Context, in *AddRolePermissionRequest, opts ...grpc.CallOption) (*AddRolePermissionResponse, error) {
 	out := new(AddRolePermissionResponse)
 	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/AddRolePermission", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rbacClient) AddRolePermissionList(ctx context.Context, in *AddRolePermissionListRequest, opts ...grpc.CallOption) (*AddRolePermissionResponse, error) {
+	out := new(AddRolePermissionResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.rbac.v1.Rbac/AddRolePermissionList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -127,6 +137,7 @@ type RbacServer interface {
 	ListRole(context.Context, *ListRolesRequest) (*ListRolesResponse, error)
 	DeleteRole(context.Context, *DeleteRoleRequest) (*emptypb.Empty, error)
 	AddRolePermission(context.Context, *AddRolePermissionRequest) (*AddRolePermissionResponse, error)
+	AddRolePermissionList(context.Context, *AddRolePermissionListRequest) (*AddRolePermissionResponse, error)
 	DeleteRolePermission(context.Context, *DeleteRolePermissionRequest) (*DeleteRolePermissionResponse, error)
 	AddUserRoles(context.Context, *AddUserRolesRequest) (*emptypb.Empty, error)
 	DeleteUserRole(context.Context, *DeleteUserRoleRequest) (*emptypb.Empty, error)
@@ -150,6 +161,9 @@ func (UnimplementedRbacServer) DeleteRole(context.Context, *DeleteRoleRequest) (
 }
 func (UnimplementedRbacServer) AddRolePermission(context.Context, *AddRolePermissionRequest) (*AddRolePermissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddRolePermission not implemented")
+}
+func (UnimplementedRbacServer) AddRolePermissionList(context.Context, *AddRolePermissionListRequest) (*AddRolePermissionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddRolePermissionList not implemented")
 }
 func (UnimplementedRbacServer) DeleteRolePermission(context.Context, *DeleteRolePermissionRequest) (*DeleteRolePermissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRolePermission not implemented")
@@ -247,6 +261,24 @@ func _Rbac_AddRolePermission_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RbacServer).AddRolePermission(ctx, req.(*AddRolePermissionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Rbac_AddRolePermissionList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddRolePermissionListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RbacServer).AddRolePermissionList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.security.api.rbac.v1.Rbac/AddRolePermissionList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RbacServer).AddRolePermissionList(ctx, req.(*AddRolePermissionListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -363,6 +395,10 @@ var Rbac_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AddRolePermission",
 			Handler:    _Rbac_AddRolePermission_Handler,
+		},
+		{
+			MethodName: "AddRolePermissionList",
+			Handler:    _Rbac_AddRolePermissionList_Handler,
 		},
 		{
 			MethodName: "DeleteRolePermission",

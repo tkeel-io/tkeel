@@ -146,3 +146,22 @@ func (s *RbacService) CheckUserPermission(ctx context.Context, req *pb.CheckUser
 	}
 	return &pb.CheckUserPermissionResponse{Allowed: ok}, nil
 }
+
+func (s *RbacService) AddRolePermissionList(ctx context.Context, req *pb.AddRolePermissionListRequest) (*pb.AddRolePermissionResponse, error) {
+	_, err := s.RBACOperator.RemoveFilteredPolicy(0, req.GetRole(), req.GetTenantId())
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalStore()
+	}
+	policies := make([][]string, len(req.GetBody().GetPermissions()))
+	for i, v := range req.GetBody().GetPermissions() {
+		policy := []string{req.GetRole(), req.GetTenantId(), v.GetPermissionObject(), v.GetPermissionAction()}
+		policies[i] = policy
+	}
+	_, err = s.RBACOperator.AddPolicies(policies)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalStore()
+	}
+	return &pb.AddRolePermissionResponse{Ok: true}, nil
+}
