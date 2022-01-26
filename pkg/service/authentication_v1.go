@@ -201,21 +201,24 @@ func (s *AuthenticationService) setDstAndMethod(ctx context.Context, sess *sessi
 			if errors.Is(err, errNotFoundAddons) || errors.Is(err, errNotActiveUpstream) {
 				return pb.ErrUpstreamNotFound()
 			}
-			return fmt.Errorf("error get(%s) addons destination and method", sess)
+			return fmt.Errorf("error get(%s) addons destination and method: %w", path, err)
 		}
 	} else {
 		if err := s.getPluginDstAndMethod(ctx, sess, path); err != nil {
 			if errors.Is(err, errNotActiveUpstream) {
 				return errNotActiveUpstream
 			}
-			return fmt.Errorf("error get(%s) plugin destination and method", sess)
+			return fmt.Errorf("error get(%s) plugin destination and method: %w", path, err)
 		}
 	}
 	return nil
 }
 
 func (s *AuthenticationService) getPluginDstAndMethod(ctx context.Context, sess *session, path string) error {
-	pluginID := getPluginIDFromApisPath(path)
+	if err := checkPath(path); err != nil {
+		return fmt.Errorf("error checkpath(%s): %w", path, err)
+	}
+	pluginID := getPluginIDFromPath(path)
 	pluginMethod := getMethodApisPath(path)
 	if pluginID == "" {
 		return fmt.Errorf("get(%s) invalid plugin id", path)
@@ -388,7 +391,7 @@ func isAddons(path string) bool {
 	return strings.HasPrefix(path, keel_v1.ApisRootPath+keel_v1.AddonsRootPath)
 }
 
-func getPluginIDFromApisPath(pluginPath string) string {
+func getPluginIDFromPath(pluginPath string) string {
 	ss := strings.SplitN(pluginPath, "/", 4)
 	if len(ss) != 4 {
 		return ""
@@ -402,4 +405,18 @@ func getMethodApisPath(apisPath string) string {
 		return ""
 	}
 	return strings.Split(ss[3], "?")[0]
+}
+
+func checkPath(path string) error {
+	ok := false
+	for _, v := range []string{"/apis", "/ws", "/static"} {
+		if strings.HasPrefix(path, v) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return errors.New("invalid path: " + path)
+	}
+	return nil
 }

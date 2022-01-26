@@ -115,7 +115,7 @@ message AddonsIdentifyResponse {
  * The request value of the POST /v1/tenant/enable,
  * used when the tenant administrator enables the plugin.
  **/
-message TenantEnableRequst {
+message TenantEnableRequest {
   string tenant_id = 1; // unique tenant id.
   bytes extra = 2;      // extra data
 }
@@ -132,7 +132,7 @@ message TenantEnableResponse {
  * The request value of the POST /v1/tenant/disable,
  * used when the tenant administrator disables the plugin.
  **/
-message TenantDisableRequst {
+message TenantDisableRequest {
   string tenant_id = 1; // unique tenant id.
   bytes extra = 2;      // extra data
 }
