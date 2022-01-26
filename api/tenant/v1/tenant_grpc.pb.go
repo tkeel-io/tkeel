@@ -44,6 +44,7 @@ type TenantClient interface {
 	// delete plugin
 	DeleteTenantPlugin(ctx context.Context, in *DeleteTenantPluginRequest, opts ...grpc.CallOption) (*DeleteTenantPluginResponse, error)
 	TenantPluginPermissible(ctx context.Context, in *PluginPermissibleRequest, opts ...grpc.CallOption) (*PluginPermissibleResponse, error)
+	BeforeSetPassword(ctx context.Context, in *BeforeSetPasswordRequest, opts ...grpc.CallOption) (*BeforeSetPasswordResponse, error)
 }
 
 type tenantClient struct {
@@ -171,6 +172,15 @@ func (c *tenantClient) TenantPluginPermissible(ctx context.Context, in *PluginPe
 	return out, nil
 }
 
+func (c *tenantClient) BeforeSetPassword(ctx context.Context, in *BeforeSetPasswordRequest, opts ...grpc.CallOption) (*BeforeSetPasswordResponse, error) {
+	out := new(BeforeSetPasswordResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/BeforeSetPassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TenantServer is the server API for Tenant service.
 // All implementations must embed UnimplementedTenantServer
 // for forward compatibility
@@ -200,6 +210,7 @@ type TenantServer interface {
 	// delete plugin
 	DeleteTenantPlugin(context.Context, *DeleteTenantPluginRequest) (*DeleteTenantPluginResponse, error)
 	TenantPluginPermissible(context.Context, *PluginPermissibleRequest) (*PluginPermissibleResponse, error)
+	BeforeSetPassword(context.Context, *BeforeSetPasswordRequest) (*BeforeSetPasswordResponse, error)
 	mustEmbedUnimplementedTenantServer()
 }
 
@@ -245,6 +256,9 @@ func (UnimplementedTenantServer) DeleteTenantPlugin(context.Context, *DeleteTena
 }
 func (UnimplementedTenantServer) TenantPluginPermissible(context.Context, *PluginPermissibleRequest) (*PluginPermissibleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TenantPluginPermissible not implemented")
+}
+func (UnimplementedTenantServer) BeforeSetPassword(context.Context, *BeforeSetPasswordRequest) (*BeforeSetPasswordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BeforeSetPassword not implemented")
 }
 func (UnimplementedTenantServer) mustEmbedUnimplementedTenantServer() {}
 
@@ -493,6 +507,24 @@ func _Tenant_TenantPluginPermissible_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Tenant_BeforeSetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BeforeSetPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServer).BeforeSetPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/BeforeSetPassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServer).BeforeSetPassword(ctx, req.(*BeforeSetPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Tenant_ServiceDesc is the grpc.ServiceDesc for Tenant service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -551,6 +583,10 @@ var Tenant_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TenantPluginPermissible",
 			Handler:    _Tenant_TenantPluginPermissible_Handler,
+		},
+		{
+			MethodName: "BeforeSetPassword",
+			Handler:    _Tenant_BeforeSetPassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

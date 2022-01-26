@@ -72,8 +72,7 @@ func (h *EntityTokenHTTPHandler) CreateEntityToken(req *go_restful.Request, resp
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -130,8 +129,7 @@ func (h *EntityTokenHTTPHandler) DeleteEntityToken(req *go_restful.Request, resp
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -188,8 +186,7 @@ func (h *EntityTokenHTTPHandler) TokenInfo(req *go_restful.Request, resp *go_res
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",

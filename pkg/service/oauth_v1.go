@@ -278,3 +278,16 @@ func (s *OauthService) bearerAuth(header *http.Header) (string, bool) {
 	}
 	return token, token != ""
 }
+
+func (s *OauthService) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*pb.ResetPasswordResponse, error) {
+	user := &model.User{Password: req.GetBody().GetNewPassword()}
+	user.Encrypt()
+	updates := map[string]interface{}{"password": user.Password}
+
+	err := user.Update(s.UserDB, req.GetBody().GetTenantId(), req.GetBody().GetUserId(), updates)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.OauthErrServerError()
+	}
+	return &pb.ResetPasswordResponse{TenantId: req.GetBody().GetTenantId(), HasReset: true}, nil
+}

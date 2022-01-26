@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "/apis/rudder",
-    "version": "v1"
+    "title": "api/entity/v1/entity_token.proto",
+    "version": "version not set"
   },
   "tags": [
     {
@@ -65,7 +65,7 @@
           }
         ],
         "tags": [
-          "entity token"
+          "[Security] EntityToken"
         ]
       }
     },
@@ -100,7 +100,7 @@
           }
         ],
         "tags": [
-          "entity token"
+          "[Security] EntityToken"
         ]
       }
     },
@@ -132,7 +132,7 @@
           }
         ],
         "tags": [
-          "entity token"
+          "[Security] EntityToken"
         ]
       }
     },
@@ -186,7 +186,40 @@
           }
         },
         "tags": [
-          "OAuth"
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/pwd": {
+      "post": {
+        "summary": "oauth reset user password",
+        "operationId": "ResetPassword",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
         ]
       }
     },
@@ -253,7 +286,7 @@
           }
         ],
         "tags": [
-          "OAuth"
+          "[Security] OAuth"
         ]
       }
     },
@@ -327,7 +360,7 @@
           }
         ],
         "tags": [
-          "OAuth"
+          "[Security] OAuth"
         ]
       }
     },
@@ -825,7 +858,7 @@
           }
         ],
         "tags": [
-          "rbac"
+          "[Security] RBAC"
         ]
       }
     },
@@ -856,7 +889,7 @@
           }
         ],
         "tags": [
-          "rbac"
+          "[Security] RBAC"
         ]
       },
       "post": {
@@ -893,7 +926,7 @@
           }
         ],
         "tags": [
-          "rbac"
+          "[Security] RBAC"
         ]
       }
     },
@@ -930,7 +963,52 @@
           }
         ],
         "tags": [
-          "rbac"
+          "[Security] RBAC"
+        ]
+      }
+    },
+    "/rbac/tenant/{tenant_id}/roles/{role}/permission": {
+      "post": {
+        "summary": "add role permission ",
+        "operationId": "AddRolePermission",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1AddRolePermissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AddRolePermissionBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] RBAC"
         ]
       }
     },
@@ -979,12 +1057,12 @@
           }
         ],
         "tags": [
-          "rbac"
+          "[Security] RBAC"
         ]
       },
       "post": {
-        "summary": "add role permission ",
-        "operationId": "AddRolePermission",
+        "summary": "add role permission list",
+        "operationId": "AddRolePermissionList",
         "responses": {
           "200": {
             "description": "OK",
@@ -1017,12 +1095,12 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1AddRolePermissionBody"
+              "$ref": "#/definitions/v1AddRolePermissionListBody"
             }
           }
         ],
         "tags": [
-          "rbac"
+          "[Security] RBAC"
         ]
       }
     },
@@ -1061,7 +1139,7 @@
           }
         ],
         "tags": [
-          "rbac"
+          "[Security] RBAC"
         ]
       }
     },
@@ -1098,7 +1176,7 @@
           }
         ],
         "tags": [
-          "rbac"
+          "[Security] RBAC"
         ]
       }
     },
@@ -1141,7 +1219,7 @@
           }
         ],
         "tags": [
-          "rbac"
+          "[Security] RBAC"
         ]
       }
     },
@@ -1400,7 +1478,7 @@
           }
         },
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       },
       "post": {
@@ -1445,7 +1523,7 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       }
     },
@@ -1482,7 +1560,7 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       }
     },
@@ -1514,7 +1592,7 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       },
       "delete": {
@@ -1544,7 +1622,7 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       }
     },
@@ -1575,7 +1653,7 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       },
       "post": {
@@ -1612,7 +1690,7 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       }
     },
@@ -1649,7 +1727,44 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}/user/{user_id}/pwd": {
+      "put": {
+        "summary": "before reset user password ",
+        "operationId": "BeforeSetPassword",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1BeforeSetPasswordResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
         ]
       }
     },
@@ -1712,7 +1827,7 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       },
       "post": {
@@ -1752,7 +1867,7 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       }
     },
@@ -1789,7 +1904,7 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       },
       "delete": {
@@ -1824,12 +1939,12 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       },
       "put": {
-        "summary": "add a plugin",
-        "operationId": "AddPlugin",
+        "summary": "update user",
+        "operationId": "UpdateUser",
         "responses": {
           "200": {
             "description": "OK",
@@ -1867,7 +1982,7 @@
           }
         ],
         "tags": [
-          "Tenant"
+          "[Security] Tenant"
         ]
       }
     }
@@ -1919,6 +2034,17 @@
         },
         "permission_action": {
           "type": "string"
+        }
+      }
+    },
+    "v1AddRolePermissionListBody": {
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1AddRolePermissionBody"
+          }
         }
       }
     },
@@ -2006,6 +2132,23 @@
       "type": "object",
       "properties": {
         "code": {
+          "type": "string"
+        }
+      }
+    },
+    "v1BeforeSetPasswordResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "nick_name": {
           "type": "string"
         }
       }
@@ -2514,8 +2657,8 @@
       "type": "object",
       "properties": {
         "total": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "page_num": {
           "type": "integer",
@@ -2656,6 +2799,31 @@
         }
       }
     },
+    "v1ResetPasswordBody": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "tenant_id": {
+          "type": "string"
+        },
+        "new_password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ResetPasswordResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "has_reset": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1TenantAdmin": {
       "type": "object",
       "properties": {
@@ -2722,8 +2890,8 @@
           "description": "tenant remark"
         },
         "num_user": {
-          "type": "string",
-          "format": "int64",
+          "type": "integer",
+          "format": "int32",
           "description": "user number in tenant"
         },
         "created_at": {

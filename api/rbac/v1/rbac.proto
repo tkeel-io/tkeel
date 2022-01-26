@@ -35,7 +35,7 @@ service Rbac {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "create role in tenant "
       operation_id : "CreateRole"
-      tags : "rbac"
+      tags : "[Security] RBAC"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -50,7 +50,7 @@ service Rbac {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "list role in tenant "
       operation_id : "ListRole"
-      tags : "rbac"
+      tags : "[Security] RBAC"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -65,7 +65,7 @@ service Rbac {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "delete role in tenant "
       operation_id : "DeleteRole"
-      tags : "rbac"
+      tags : "[Security] RBAC"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -76,13 +76,30 @@ service Rbac {
   rpc AddRolePermission(AddRolePermissionRequest)
       returns (AddRolePermissionResponse) {
     option (google.api.http) = {
-      post : "/rbac/tenant/{tenant_id}/roles/{role}/permissions"
+      post : "/rbac/tenant/{tenant_id}/roles/{role}/permission"
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "add role permission "
       operation_id : "AddRolePermission"
-      tags : "rbac"
+      tags : "[Security] RBAC"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  };
+
+  rpc AddRolePermissionList(AddRolePermissionListRequest)
+      returns (AddRolePermissionResponse) {
+    option (google.api.http) = {
+      post : "/rbac/tenant/{tenant_id}/roles/{role}/permissions"
+      body : "body"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "add role permission list"
+      operation_id : "AddRolePermissionList"
+      tags : "[Security] RBAC"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -98,7 +115,7 @@ service Rbac {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "delete role permission "
       operation_id : "DeleteRolePermission"
-      tags : "rbac"
+      tags : "[Security] RBAC"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -114,7 +131,7 @@ service Rbac {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "add user roles "
       operation_id : "AddUserRoles"
-      tags : "rbac"
+      tags : "[Security] RBAC"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -129,7 +146,7 @@ service Rbac {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "delete user role "
       operation_id : "DeleteUserRole"
-      tags : "rbac"
+      tags : "[Security] RBAC"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -145,7 +162,7 @@ service Rbac {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "list user permissions "
       operation_id : "ListUserPermissions"
-      tags : "rbac"
+      tags : "[Security] RBAC"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -162,7 +179,7 @@ service Rbac {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "list user permissions "
       operation_id : "ListUserPermissions"
-      tags : "rbac"
+      tags : "[Security] RBAC"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -200,8 +217,17 @@ message AddRolePermissionBody {
   string permission_object = 1;
   string permission_action = 2;
 }
+
 message AddRolePermissionResponse { bool ok = 1; }
 
+message AddRolePermissionListRequest {
+  string tenant_id = 1;
+  string role = 2;
+  AddRolePermissionListBody body = 3;
+}
+message AddRolePermissionListBody {
+repeated AddRolePermissionBody permissions =1;
+}
 message DeleteRolePermissionRequest {
   string tenant_id = 1;
   string role = 2;

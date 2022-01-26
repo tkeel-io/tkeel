@@ -123,7 +123,7 @@ func (s *TenantService) ListTenant(ctx context.Context, _ *emptypb.Empty) (*pb.L
 			return nil, pb.ErrListTenant()
 		}
 
-		detail.NumUser = numUser
+		detail.NumUser = int32(numUser)
 		resp.Tenants[i] = detail
 	}
 
@@ -228,7 +228,7 @@ func (s *TenantService) ListUser(ctx context.Context, req *pb.ListUserRequest) (
 		detail.Roles = s.RBACOp.GetRolesForUserInDomain(v.ID, v.TenantID)
 		userList[i] = detail
 	}
-	resp = &pb.ListUserResponse{Total: total, PageSize: int32(page.PageSize), PageNum: int32(page.PageNum), Users: userList}
+	resp = &pb.ListUserResponse{Total: int32(total), PageSize: int32(page.PageSize), PageNum: int32(page.PageNum), Users: userList}
 	return resp, nil
 }
 
@@ -310,4 +310,19 @@ func (s *TenantService) TenantPluginPermissible(ctx context.Context, req *pb.Plu
 		return nil, pb.ErrInternalError()
 	}
 	return &pb.PluginPermissibleResponse{Allowed: allowed}, nil
+}
+
+func (s *TenantService) BeforeSetPassword(ctx context.Context, req *pb.BeforeSetPasswordRequest) (*pb.BeforeSetPasswordResponse, error) {
+	user := &model.User{}
+	conditions := map[string]interface{}{"id": req.GetUserId(), "tenant_id": req.GetTenantId()}
+	total, users, err := user.QueryByCondition(s.DB, conditions, nil)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalError()
+	}
+	if total != 1 {
+		log.Error("unexpected total query user")
+		return nil, pb.ErrInternalStore()
+	}
+	return &pb.BeforeSetPasswordResponse{TenantId: users[0].TenantID, UserId: users[0].ID, Username: users[0].UserName, NickName: users[0].NickName}, nil
 }
