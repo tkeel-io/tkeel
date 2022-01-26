@@ -49,7 +49,7 @@ func (c *DaprClient) AddonsIdentify(ctx context.Context, sendToPluginID string, 
 	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
 		ID:         sendToPluginID,
 		Method:     "v1/addons/identify",
-		Verb:       http.MethodGet,
+		Verb:       http.MethodPost,
 		Header:     c.header.Clone(),
 		QueryValue: nil,
 		Body:       nil,
@@ -83,7 +83,7 @@ func (c *DaprClient) TenantEnable(ctx context.Context, sendToPluginID string, re
 	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
 		ID:         sendToPluginID,
 		Method:     "v1/tenant/enable",
-		Verb:       http.MethodGet,
+		Verb:       http.MethodPost,
 		Header:     c.header.Clone(),
 		QueryValue: nil,
 		Body:       nil,
@@ -100,7 +100,7 @@ func (c *DaprClient) TenantDisable(ctx context.Context, sendToPluginID string, r
 	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
 		ID:         sendToPluginID,
 		Method:     "v1/tenant/disable",
-		Verb:       http.MethodGet,
+		Verb:       http.MethodPost,
 		Header:     c.header.Clone(),
 		QueryValue: nil,
 		Body:       nil,
