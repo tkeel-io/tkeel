@@ -1550,8 +1550,6 @@ github.com/tidwall/tinyqueue v0.0.0-20180302190814-1e39f5511563 h1:Otn9S136ELckZ
 github.com/tidwall/tinyqueue v0.0.0-20180302190814-1e39f5511563/go.mod h1:mLqSmt7Dv/CNneF2wfcChfN1rvapyQr01LGKnKex0DQ=
 github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb h1:rFm8sftTfuF1hMen/lPLUpDXgTeD2YbZ+54jhwr9EfI=
 github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb/go.mod h1:FYeTM+tqf/tdrf2HxUX2wdAAHQM8ggN4+IbZv4b6+wU=
-github.com/tkeel-io/security v0.0.0-20220124084748-5e5d7f65fb21 h1:n/6RdbbIuJ/lTqyixilOzzfdp4v3JxFJDb31Y+vBs2o=
-github.com/tkeel-io/security v0.0.0-20220124084748-5e5d7f65fb21/go.mod h1:06wwkHgD1BTqr3TTmJAktlDM9UyYRgjJp95fI2veewU=
 github.com/tkeel-io/security v0.0.0-20220125031304-c9b72213345f h1:0IvMVg5NAT/KoLljNIkItdpzl8wRY75QFAWlshvnuVE=
 github.com/tkeel-io/security v0.0.0-20220125031304-c9b72213345f/go.mod h1:06wwkHgD1BTqr3TTmJAktlDM9UyYRgjJp95fI2veewU=
 github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220121054758-17063939b974 h1:pjZYYe77N4K6ly10bGsOE0OZGSiczBxEeEff1qtPPTo=

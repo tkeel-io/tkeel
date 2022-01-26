@@ -339,7 +339,7 @@ func (s *PluginServiceV1) TenantEnable(ctx context.Context,
 		EnableTimestamp: time.Now().Unix(),
 	})
 	if err = s.pluginOp.Update(ctx, p); err != nil {
-		log.Errorf("error enable tenant(%s) update plugin(%s)", u.Tenant, p)
+		log.Errorf("error enable tenant(%s) update plugin(%s): %s", u.Tenant, p, err)
 		return nil, pb.PluginErrInternalStore()
 	}
 	rbStack = append(rbStack, func() error {
@@ -348,17 +348,19 @@ func (s *PluginServiceV1) TenantEnable(ctx context.Context,
 			log.Errorf("error roll back update plugin(%s) delete: %s", tmpP, err)
 			return fmt.Errorf("error p delete: %w", err)
 		}
+		tmpP.Version = "1"
 		if err = s.pluginOp.Create(ctx, tmpP); err != nil {
 			log.Errorf("error roll back update plugin(%s) create: %s", tmpP, err)
 			return fmt.Errorf("error p create: %w", err)
 		}
 		return nil
 	})
+	rbStack = util.NewRollbackStack()
 	log.Debugf("tenant(%s) enable plugin(%s) succ.", u.Tenant, req.Id)
 	return &emptypb.Empty{}, nil
 }
 
-func (s *PluginServiceV1) DisableTenants(ctx context.Context,
+func (s *PluginServiceV1) TenantDisable(ctx context.Context,
 	req *pb.TenantDisableRequest) (*emptypb.Empty, error) {
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
@@ -407,6 +409,7 @@ func (s *PluginServiceV1) DisableTenants(ctx context.Context,
 				log.Errorf("error roll back update plugin(%s) delete: %s", tmpP, err)
 				return fmt.Errorf("error p delete: %w", err)
 			}
+			tmpP.Version = "1"
 			if err = s.pluginOp.Create(ctx, tmpP); err != nil {
 				log.Errorf("error roll back update plugin(%s) create: %s", tmpP, err)
 				return fmt.Errorf("error p create: %w", err)
@@ -671,12 +674,15 @@ func (s *PluginServiceV1) requestTenantEnable(ctx context.Context, pluginID stri
 		Extra:    extra,
 	})
 	if err != nil {
+		log.Errorf("error tenant enalbe: %s", err)
 		return nil, pb.PluginErrOpenapiEnabletenant()
 	}
 	if resp.Res == nil {
+		log.Errorf("error tenant enalbe: res is nil")
 		return nil, pb.PluginErrOpenapiEnabletenant()
 	}
 	if resp.Res.Ret != openapi_v1.Retcode_OK {
+		log.Errorf("error tenant enalbe: %s", resp.Res.Msg)
 		return nil, pb.PluginErrOpenapiEnabletenant()
 	}
 	return func() error {
@@ -756,6 +762,7 @@ func (s *PluginServiceV1) resetImplementedPluginRoute(ctx context.Context,
 			if _, err := s.pluginRouteOp.Delete(ctx, tmpRoute.ID); err != nil {
 				return fmt.Errorf("error delete tmpRoute(%s): %w", tmpRoute, err)
 			}
+			tmpRoute.Version = "1"
 			if err := s.pluginRouteOp.Create(ctx, tmpRoute); err != nil {
 				return fmt.Errorf("error create tmpRoute(%s): %w", tmpRoute, err)
 			}
@@ -773,6 +780,7 @@ func (s *PluginServiceV1) deletePlugin(ctx context.Context, pID string) (util.Ro
 	}
 	return func() error {
 		log.Debugf("uninstall plugin delete plugin(%s) roll back run.", dp)
+		dp.Version = "1"
 		if err = s.pluginOp.Create(ctx, dp); err != nil {
 			return fmt.Errorf("error roll back create plugin(%s): %w", dp, err)
 		}
@@ -788,6 +796,7 @@ func (s *PluginServiceV1) deletePluginRoute(ctx context.Context, pID string) (ut
 	}
 	return func() error {
 		log.Debugf("uninstall plugin delete plugin(%s) route roll back run.", dpr)
+		dpr.Version = "1"
 		if err = s.pluginRouteOp.Create(ctx, dpr); err != nil {
 			return fmt.Errorf("error roll back create plugin(%s) route: %w", dpr, err)
 		}
