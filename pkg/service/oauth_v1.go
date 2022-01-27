@@ -11,10 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/go-oauth2/oauth2/v4"
-	"github.com/go-oauth2/oauth2/v4/generates"
 	"github.com/go-oauth2/oauth2/v4/manage"
-	"github.com/go-oauth2/oauth2/v4/models"
-	"github.com/go-oauth2/oauth2/v4/store"
 	"github.com/tkeel-io/kit/log"
 	transportHTTP "github.com/tkeel-io/kit/transport/http"
 	"github.com/tkeel-io/security/model"
@@ -59,36 +56,12 @@ type AuthorizeRequest struct {
 	Request             *http.Request
 }
 
-func NewOauthService(userDB *gorm.DB, conf *TokenConf, tokenStore oauth2.TokenStore, generator oauth2.AccessGenerate, client oauth2.ClientInfo) *OauthService {
-	manager := manage.NewDefaultManager()
-	tokenConf := manage.DefaultAuthorizeCodeTokenCfg
-	if conf.AccessTokenExp != 0 && conf.RefreshTokenExp != 0 {
-		tokenConf.AccessTokenExp = conf.AccessTokenExp
-		tokenConf.RefreshTokenExp = conf.RefreshTokenExp
-	}
-
-	log.Info(tokenConf)
-	clientStore := store.NewClientStore()
-	if client == nil {
-		client = &models.Client{ID: DefaultClient, Secret: DefaultClientSecurity, Domain: DefaultClientDomain}
-	}
-	clientStore.Set(client.GetID(), client)
-	if tokenStore == nil {
-		tokenStore, _ = store.NewMemoryTokenStore()
-	}
-	if generator == nil {
-		generator = generates.NewAccessGenerate()
-	}
-
-	manager.SetPasswordTokenCfg(tokenConf)
-	manager.MapClientStorage(clientStore)
-	manager.MapTokenStorage(tokenStore)
-	manager.MapAccessGenerate(generator)
+func NewOauthService(m *manage.Manager, userDB *gorm.DB, conf *TokenConf) *OauthService {
 	if userDB == nil {
 		log.Error("nil db")
 		panic("nil db")
 	}
-	oauthServer := &OauthService{UserDB: userDB, Config: conf, Manager: manager}
+	oauthServer := &OauthService{UserDB: userDB, Config: conf, Manager: m}
 	return oauthServer
 }
 
@@ -136,7 +109,7 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 
 func (s *OauthService) Authenticate(ctx context.Context, empty *emptypb.Empty) (*pb.AuthenticateResponse, error) {
 	header := transportHTTP.HeaderFromContext(ctx)
-	accessToken, ok := s.bearerAuth(&header)
+	accessToken, ok := bearerAuth(header)
 	if !ok {
 		return nil, pb.OauthErrInvalidAccessToken()
 	}
@@ -269,7 +242,7 @@ func (s *OauthService) GetAccessToken(ctx context.Context, gt oauth2.GrantType, 
 }
 
 // bearerAuth parse bearer token.
-func (s *OauthService) bearerAuth(header *http.Header) (string, bool) {
+func bearerAuth(header http.Header) (string, bool) {
 	auth := header.Get("Authorization")
 	prefix := "Bearer "
 	token := ""

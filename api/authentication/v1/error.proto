@@ -1,0 +1,54 @@
+/*
+Copyright 2021 The tKeel Authors.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+syntax = "proto3";
+
+package io.tkeel.security.api.authentication.v1;
+
+option go_package = "github.com/tkeel-io/tkeel/api/authentication/v1;v1";
+option java_multiple_files = true;
+option java_package = "io.tkeel.security.api.authentication.v1";
+
+// @plugins=protoc-gen-go-errors
+// 错误
+enum Error {
+  // 未知类型
+  // @code=UNKNOWN
+  ERR_UNKNOWN = 0;
+  // 请求参数无效
+  // @code=INVALID_ARGUMENT
+  ERR_INVALID_ARGUMENT = 1;
+  // 认证错误
+  // @code=UNAUTHENTICATED
+  ERR_UNAUTHENTICATED = 2;
+  // 内部错误
+  // @code=INTERNAL
+  ERR_INTERNAL_ERROR = 3;
+  // 上游插件未启用
+  // @code=PERMISSION_DENIED
+  ERR_UPSTREAM_NOT_ENABLE = 4;
+  // 无权限
+  // @code=PERMISSION_DENIED
+  ERR_NO_PERMISSION = 5;
+  // 无效的 x-plugin-jwt token
+  // @code=UNAUTHENTICATED
+  ERR_INVALID_X_PLUGIN_JWT_TOKEN = 6;
+  // 无效的 x-tKeel-auth token
+  // @code=UNAUTHENTICATED
+  ERR_INVALID_X_TKEEL_AUTH_TOKEN = 7;
+  // 上游插件未找到
+  // @code=NOT_FOUND
+  ERR_UPSTREAM_NOT_FOUND = 8;
+}

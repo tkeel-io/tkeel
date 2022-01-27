@@ -130,7 +130,7 @@ func (s *Oauth2ServiceV1) VerifyToken(ctx context.Context, empty *emptypb.Empty)
 	}
 	_, valid, err := s.secretProvider.Parse(strings.TrimPrefix(token[0], "Bearer "))
 	if err != nil {
-		log.Errorf("error parse token(%s): %w", token, err)
+		log.Errorf("error parse token(%s): %s", token, err)
 		return nil, pb.Oauth2ErrInvalidToken()
 	}
 	if !valid {
