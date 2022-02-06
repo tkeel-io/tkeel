@@ -173,7 +173,7 @@ func (s *KeelServiceV1) callAuthorization(ctx context.Context, req *http.Request
 		ID:         _securityComponent,
 		Method:     _authenticate,
 		Verb:       http.MethodGet,
-		Header:     req.Header,
+		Header:     req.Header.Clone(),
 		QueryValue: v,
 		Body:       nil,
 	}, nil, nil)
@@ -182,7 +182,7 @@ func (s *KeelServiceV1) callAuthorization(ctx context.Context, req *http.Request
 	}
 	res := &result.Http{}
 	if err = protojson.Unmarshal(out, res); err != nil {
-		return nil, fmt.Errorf("error protojson unmarshal: %w", err)
+		return nil, fmt.Errorf("error protojson unmarshal(%s): %w", out, err)
 	}
 	if res.Code != http.StatusOK {
 		return nil, fmt.Errorf("error result: %s", res)

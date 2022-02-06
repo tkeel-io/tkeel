@@ -34,8 +34,9 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 		resp *http.Response
 		err  error
 	)
-	request.Header.Set("Content-Type", contentTypeJSON)
+	request.Header.Del("Accept-Encoding")
 	if !util.IsNil(reqJSON) && reqJSON != nil {
+		request.Header.Set("Content-Type", contentTypeJSON)
 		reqBody, err1 := json.Marshal(reqJSON)
 		if err1 != nil {
 			return nil, fmt.Errorf("error marshal dapr invoke(%s) request: %w", request, err1)
@@ -68,7 +69,6 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 	if err != nil {
 		return nil, fmt.Errorf("error read resp body err: %w", err)
 	}
-
 	if !util.IsNil(respJSON) && respJSON != nil {
 		err = json.Unmarshal(out, respJSON)
 		if err != nil {
