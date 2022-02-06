@@ -88,7 +88,8 @@ func (h *TenantHTTPHandler) AddTenantPlugin(req *go_restful.Request, resp *go_re
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -145,7 +146,8 @@ func (h *TenantHTTPHandler) BeforeSetPassword(req *go_restful.Request, resp *go_
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -202,7 +204,8 @@ func (h *TenantHTTPHandler) CreateTenant(req *go_restful.Request, resp *go_restf
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -264,7 +267,8 @@ func (h *TenantHTTPHandler) CreateUser(req *go_restful.Request, resp *go_restful
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -321,7 +325,8 @@ func (h *TenantHTTPHandler) DeleteTenant(req *go_restful.Request, resp *go_restf
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -378,7 +383,8 @@ func (h *TenantHTTPHandler) DeleteTenantPlugin(req *go_restful.Request, resp *go
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -435,7 +441,8 @@ func (h *TenantHTTPHandler) DeleteUser(req *go_restful.Request, resp *go_restful
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -492,7 +499,8 @@ func (h *TenantHTTPHandler) GetTenant(req *go_restful.Request, resp *go_restful.
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -549,7 +557,8 @@ func (h *TenantHTTPHandler) GetUser(req *go_restful.Request, resp *go_restful.Re
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -601,7 +610,8 @@ func (h *TenantHTTPHandler) ListTenant(req *go_restful.Request, resp *go_restful
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -658,7 +668,8 @@ func (h *TenantHTTPHandler) ListTenantPlugin(req *go_restful.Request, resp *go_r
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -715,7 +726,8 @@ func (h *TenantHTTPHandler) ListUser(req *go_restful.Request, resp *go_restful.R
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -767,7 +779,8 @@ func (h *TenantHTTPHandler) TenantPluginPermissible(req *go_restful.Request, res
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -829,7 +842,8 @@ func (h *TenantHTTPHandler) UpdateUser(req *go_restful.Request, resp *go_restful
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
