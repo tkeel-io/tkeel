@@ -77,7 +77,11 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 			if ch.Schema != nil {
 				a[repository.ConfigurationSchemaKey] = ch.Schema
 			}
-
+			for k, v := range ch.Metadata.Annotations {
+				if !strings.HasPrefix(k, "dapr.io/") {
+					a[k] = v
+				}
+			}
 			return a
 		}(),
 		brief:   brief,

@@ -46,4 +46,7 @@ enum Error {
   // REPO 已存在
   // @code=INVALID_ARGUMENT
   ERR_REPO_EXIST = 6;
+  // INSTALLER 不存在
+  // @code=NOT_FOUND
+  ERR_INSTALLER_NOT_FOUND = 7;
 }

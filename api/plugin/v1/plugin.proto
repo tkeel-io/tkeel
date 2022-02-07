@@ -118,7 +118,7 @@ service Plugin {
     };
   };
 
-  rpc ListPlugin(google.protobuf.Empty) returns (ListPluginResponse) {
+  rpc ListPlugin(ListPluginRequest) returns (ListPluginResponse) {
     option (google.api.http) = {
       get : "/plugins"
     };
@@ -382,10 +382,41 @@ message GetPluginResponse {
       } ];
 }
 
+message ListPluginRequest {
+  int32 page_num = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page number"
+      } ];
+  int32 page_size = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page size"
+      } ];
+  string order_by = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items order by field"
+      } ];
+  bool is_descending = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items inverted sort"
+      } ];
+}
+
 message ListPluginResponse {
   repeated PluginObject plugin_list = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin object list"
+      } ];
+  int32 total = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "total items"
+      } ];
+  int32 page_num = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page number"
+      } ];
+  int32 page_size = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page size"
       } ];
 }
 

@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"sort"
+	"strconv"
 
 	"github.com/tkeel-io/kit/log"
 	pb "github.com/tkeel-io/tkeel/api/repo/v1"
 	"github.com/tkeel-io/tkeel/pkg/hub"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/repository/helm"
-	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -79,10 +80,31 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 			req.Repo, err)
 		return nil, pb.ErrInternalError()
 	}
+	ibList := iBriefList(installers)
+	if req.IsDescending {
+		sort.Sort(sort.Reverse(ibList))
+	} else {
+		sort.Sort(ibList)
+	}
+	if req.Installed {
+		for i, v := range ibList {
+			if !v.Installed {
+				ibList = ibList[:i]
+				break
+			}
+		}
+	}
+	total := ibList.Len()
+	start, end := getQueryItemsStartAndEnd(int(req.PageNum), int(req.PageSize), total)
+	log.Debugf("%d %d", start, end)
+	ibList = ibList[start:end]
 	return &pb.ListRepoInstallerResponse{
+		Total:    int32(total),
+		PageNum:  req.PageNum,
+		PageSize: req.PageSize,
 		BriefInstallers: func() []*pb.InstallerObject {
-			ret := make([]*pb.InstallerObject, 0, len(installers))
-			for _, v := range installers {
+			ret := make([]*pb.InstallerObject, 0, len(ibList))
+			for _, v := range ibList {
 				ret = append(ret, convertInstallerBrief2PB(v))
 			}
 			return ret
@@ -103,6 +125,9 @@ func (s *RepoService) GetRepoInstaller(ctx context.Context,
 	if err != nil {
 		log.Errorf("error repo(%s) get installer(%s/%s): %s",
 			repo.Info(), req.InstallerName, req.InstallerVersion, err)
+		if errors.Is(err, helm.ErrNotFound) {
+			return nil, pb.ErrInstallerNotFound()
+		}
 		return nil, pb.ErrInvalidArgument()
 	}
 	return &pb.GetRepoInstallerResponse{
@@ -114,17 +139,19 @@ func convertRepo2PB(r repository.Repository) *pb.RepoObject {
 	return &pb.RepoObject{
 		Name: r.Info().Name,
 		Url:  r.Info().URL,
-		Annotations: func() map[string]*anypb.Any {
-			ret := make(map[string]*anypb.Any)
+		Metadata: func() map[string][]byte {
+			ret := make(map[string][]byte)
+			return ret
+		}(),
+		Annotations: func() map[string]string {
+			ret := make(map[string]string)
 			for k, v := range r.Info().Annotations {
 				b, err := json.Marshal(v)
 				if err != nil {
 					log.Errorf("error parse installer(%s) annotasions key(%s): %s", r.Info().Name, k, err)
 					continue
 				}
-				ret[k] = &anypb.Any{
-					Value: b,
-				}
+				ret[k] = string(b)
 			}
 			return ret
 		}(),
@@ -133,10 +160,11 @@ func convertRepo2PB(r repository.Repository) *pb.RepoObject {
 
 func convertInstallerBrief2PB(ib *repository.InstallerBrief) *pb.InstallerObject {
 	return &pb.InstallerObject{
-		Name:      ib.Name,
-		Version:   ib.Version,
-		Repo:      ib.Repo,
-		Installed: ib.Installed,
+		Name:        ib.Name,
+		Version:     ib.Version,
+		Repo:        ib.Repo,
+		Installed:   ib.Installed,
+		Annotations: ib.Annotations,
 	}
 }
 
@@ -151,12 +179,33 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 		Repo:      ib.Repo,
 		Installed: ib.Installed,
 		Metadata:  pbMetadata(i),
+		Annotations: func() map[string]string {
+			ret := make(map[string]string)
+			for k, v := range i.Annotations() {
+				if k != repository.ConfigurationKey &&
+					k != repository.ConfigurationSchemaKey &&
+					k != helm.ReadmeKey &&
+					k != helm.ChartDescKey {
+					if vstr, ok := v.(string); ok {
+						ret[k] = vstr
+						continue
+					}
+					b, err := json.Marshal(v)
+					if err != nil {
+						log.Errorf("error parse installer(%s) annotasions key(%s): %s", i.Brief().Name, k, err)
+						continue
+					}
+					ret[k] = string(b)
+				}
+			}
+			return ret
+		}(),
 	}
 }
 
-func pbMetadata(i repository.Installer) map[string]*anypb.Any {
+func pbMetadata(i repository.Installer) map[string][]byte {
 	anno := i.Annotations()
-	ret := make(map[string]*anypb.Any, len(anno))
+	ret := make(map[string][]byte, len(anno))
 	for k, v := range anno {
 		if k == repository.ConfigurationKey ||
 			k == repository.ConfigurationSchemaKey ||
@@ -167,10 +216,36 @@ func pbMetadata(i repository.Installer) map[string]*anypb.Any {
 				log.Errorf("installer(%s) annotasion(%s) is invalid type", i.Brief(), k)
 				continue
 			}
-			ret[k] = &anypb.Any{
-				Value: vb,
-			}
+			ret[k] = vb
 		}
 	}
 	return ret
+}
+
+type iBriefList []*repository.InstallerBrief
+
+func (ib iBriefList) Len() int {
+	return len(ib)
+}
+
+func (ib iBriefList) Less(i, j int) bool {
+	if ib[i].Installed != ib[j].Installed {
+		return ib[j].Installed
+	}
+	if ib[i].Name != ib[j].Name {
+		return ib[i].Name < ib[j].Name
+	}
+	iVer, err := strconv.ParseFloat(ib[i].Version, 64)
+	if err != nil {
+		return true
+	}
+	jVer, err := strconv.ParseFloat(ib[j].Version, 64)
+	if err != nil {
+		return false
+	}
+	return iVer < jVer
+}
+
+func (ib iBriefList) Swap(i, j int) {
+	ib[i], ib[j] = ib[j], ib[i]
 }

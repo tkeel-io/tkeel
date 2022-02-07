@@ -18,22 +18,28 @@ package helm
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
-	"strings"
+	"os"
+	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	helmAction "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
-	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/release"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
-const _indexFileName = "index.yaml"
+const (
+	_indexFileName = "index.yaml"
+	_repoDirName   = "/.tkeel/repo"
+)
 
 var (
+	once = new(sync.Once)
+
 	ErrNotFound       = errors.New("not found")
 	ErrNoValidURL     = errors.New("no valid url")
 	ErrNoChartInfoSet = errors.New("no chart info set in installer")
@@ -75,22 +81,39 @@ func GetSecret() string {
 type Repo struct {
 	info         *repository.Info
 	actionConfig *helmAction.Configuration
-	httpGetter   getter.Getter
 	driver       Driver
 	namespace    string
+	index        *Index
 }
 
 func NewHelmRepo(info repository.Info, driver Driver, namespace string) (*Repo, error) {
-	httpGetter, err := getter.NewHTTPGetter()
+	// make repository directory.
+	repoDirName := _repoDirName + "/" + info.Name + "/"
+	_, err := os.Stat(repoDirName)
 	if err != nil {
-		log.Warn("init helm action configuration err", err)
-		return nil, errors.Wrap(err, "init http getter failed")
+		if os.IsExist(err) {
+			if err = os.RemoveAll(repoDirName); err != nil {
+				return nil, errors.Wrapf(err, "remove repository directory %s", repoDirName)
+			}
+		}
+		if !os.IsNotExist(err) {
+			return nil, errors.Wrap(err, "get repository directory stat")
+		}
+
+		if err = os.MkdirAll(repoDirName, os.ModePerm); err != nil {
+			return nil, errors.Wrapf(err, "make repository directory %s", repoDirName)
+		}
 	}
+	i, err := NewIndex(info.URL, info.Name)
+	if err != nil {
+		return nil, errors.Wrapf(err, "new index %s", info.Name)
+	}
+
 	repo := &Repo{
-		info:       &info,
-		namespace:  namespace,
-		driver:     driver,
-		httpGetter: httpGetter,
+		info:      &info,
+		namespace: namespace,
+		driver:    driver,
+		index:     i,
 	}
 	if err = repo.configSetup(); err != nil {
 		return nil, errors.Wrap(err, "setup helm action configuration failed")
@@ -127,8 +150,7 @@ func (r Repo) GetDriver() Driver {
 func (r *Repo) configSetup() error {
 	config, err := initActionConfig(r.namespace, r.driver)
 	if err != nil {
-		log.Warn("init helm action configuration err", err)
-		return err
+		return errors.Wrapf(err, "init helm action configuration")
 	}
 	r.actionConfig = config
 	return nil
@@ -140,29 +162,34 @@ func (r *Repo) Info() *repository.Info {
 
 // Search the word in repo, support "*" to get all installable in repo.
 func (r *Repo) Search(word string) ([]*repository.InstallerBrief, error) {
-	index, err := r.BuildIndex()
-	if err != nil {
-		return nil, errors.Wrap(err, "can't build helm index configSetup")
-	}
+	index := r.index
 
-	res := index.Search(word, "")
+	res, err := index.Search(word, "")
+	if err != nil {
+		return nil, errors.Wrapf(err, "repo search %s/%s", word, "")
+	}
 	briefs := res.ToInstallerBrief()
 
 	// modify briefs Installed status
 	// 1. get this repo installed
 	// 2. range briefs and change Installed status.
-	installedList, err := r.getInstalled()
+	rls, err := r.list()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "get helm release")
 	}
 
-	installedMap := make(map[string]string, len(installedList))
-	for i := range installedList {
-		installedMap[installedList[i].Brief().Name] = installedList[i].Brief().Version
+	installedMap := make(map[string]map[string]struct{}, len(rls))
+	for _, v := range rls {
+		vMap, ok := installedMap[v.Chart.Metadata.Name]
+		if !ok {
+			vMap = make(map[string]struct{})
+			installedMap[v.Chart.Metadata.Name] = vMap
+		}
+		vMap[v.Chart.Metadata.Version] = struct{}{}
 	}
 	for i := 0; i < len(briefs); i++ {
-		if version, ok := installedMap[briefs[i].Name]; ok {
-			if version == briefs[i].Version {
+		if vMap, ok := installedMap[briefs[i].Name]; ok {
+			if _, ok := vMap[briefs[i].Version]; ok {
 				briefs[i].Installed = true
 			}
 		}
@@ -173,39 +200,55 @@ func (r *Repo) Search(word string) ([]*repository.InstallerBrief, error) {
 
 // Get the Installer of the specified installable.
 func (r *Repo) Get(name, version string) (repository.Installer, error) {
-	index, err := r.BuildIndex()
+	index := r.index
+	resList, err := index.Search(name, version)
 	if err != nil {
-		return nil, errors.Wrap(err, "can't build helm index configSetup")
+		return nil, errors.Wrapf(err, "repo search %s/%s", name, version)
 	}
-
-	res := index.Search(name, version)
-	if len(res) != 1 {
+	if len(resList) == 0 {
 		return nil, ErrNotFound
 	}
-
-	if len(res[0].URLs) == 0 {
-		return nil, ErrNoValidURL
-	}
-
-	var buf *bytes.Buffer
-	err = nil
-	for i := range res[0].URLs {
-		buf, err = r.httpGetter.Get(res[0].URLs[i])
-		if err != nil {
-			continue
+	res := resList[0]
+	// check cache chart.
+	chartFile := _repoDirName + "/" + r.info.Name + "/" + res.Name + "-" + res.Version + ".tgz"
+	_, err = os.Stat(chartFile)
+	if os.IsNotExist(err) {
+		log.Debugf("stat err: %s", err)
+		if err := downloadChart(chartFile, res.URLs...); err != nil {
+			return nil, errors.Wrapf(err, "download chart %s", chartFile)
 		}
-		break
+	} else {
+		if err != nil {
+			return nil, errors.Wrapf(err, "file %s stat", chartFile)
+		}
 	}
+	// load chart.
+	body, err := os.ReadFile(chartFile)
 	if err != nil {
-		return nil, errors.Wrap(err, "GET target file failed")
+		return nil, errors.Wrapf(err, "read chart %s", chartFile)
+	}
+	d := fmt.Sprintf("%x", sha256.Sum256(body))
+	log.Debugf("check sha256: %s -- %s", res.ChartInfo.Digest, d)
+	if res.ChartInfo.Digest != d {
+		if err = updateChart(chartFile, res.URLs...); err != nil {
+			return nil, errors.Wrapf(err, "update chart %s", chartFile)
+		}
+	}
+	ch, err := loader.LoadArchive(bytes.NewBuffer(body))
+	if err != nil {
+		return nil, errors.Wrapf(err, "load chart %s", chartFile)
+	}
+	brief := res.ToInstallerBrief()
+	rls, err := r.list()
+	if err != nil {
+		return nil, errors.Wrap(err, "get helm release")
 	}
 
-	ch, err := loader.LoadArchive(buf)
-	if err != nil {
-		return nil, errors.Wrap(err, "Load archive to struct Chart failed")
+	for _, v := range rls {
+		if v.Chart.Metadata.Name == brief.Name && v.Chart.Metadata.Version == brief.Version {
+			brief.Installed = true
+		}
 	}
-
-	brief := res[0].ToInstallerBrief()
 	i := NewHelmInstaller(brief.Name, ch, *brief, r.namespace, r.actionConfig)
 	return &i, nil
 }
@@ -214,28 +257,57 @@ func (r *Repo) Installed() ([]repository.Installer, error) {
 	return r.getInstalled()
 }
 
+func (r *Repo) Update() (bool, error) {
+	ok, err := r.index.Update()
+	if err != nil {
+		return false, errors.Wrap(err, "index update")
+	}
+	if !ok {
+		return false, nil
+	}
+	return true, nil
+}
+
 func (r *Repo) Close() error {
+	if err := os.RemoveAll(_repoDirName + "/" + r.info.Name); err != nil {
+		return errors.Wrapf(err, "remove repository %s files", _repoDirName+"/"+r.info.Name)
+	}
 	return nil
 }
 
-func (r *Repo) BuildIndex() (*Index, error) {
-	fileContent, err := r.GetIndex()
-	if err != nil {
-		return nil, err
+func updateChart(chartFile string, urls ...string) error {
+	log.Debug("update chart")
+	if err := os.Remove(chartFile); err != nil {
+		return errors.Wrapf(err, "remove chart %s", chartFile)
 	}
-	return NewIndex(r.info.Name, fileContent)
+	if err := downloadChart(chartFile, urls...); err != nil {
+		return errors.Wrapf(err, "download chart %s", chartFile)
+	}
+	return nil
 }
 
-// GetIndex get the repo index.yaml file content.
-func (r *Repo) GetIndex() ([]byte, error) {
-	url := strings.TrimSuffix(r.info.URL, "/") + "/" + _indexFileName
-
-	buf, err := r.httpGetter.Get(url)
-	if err != nil {
-		return nil, errors.Wrap(err, "HTTP GET error")
+func downloadChart(chartFile string, urls ...string) error {
+	log.Debug("download chart")
+	if len(urls) == 0 {
+		return ErrNoValidURL
 	}
-
-	return buf.Bytes(), nil
+	// download chart.
+	var b *bytes.Buffer
+	var err error
+	for _, url := range urls {
+		b, err = _getter.Get(url)
+		if err != nil {
+			continue
+		}
+		if err = os.WriteFile(chartFile, b.Bytes(), os.ModePerm); err != nil {
+			return errors.Wrapf(err, "write file %s", chartFile)
+		}
+		break
+	}
+	if err != nil {
+		return errors.Wrapf(err, "GET target file %v failed", urls)
+	}
+	return nil
 }
 
 // list the installed release plugin by helm .
@@ -249,13 +321,11 @@ func (r *Repo) list() ([]*release.Release, error) {
 }
 
 func (r *Repo) getInstalled() ([]repository.Installer, error) {
-	index, err := r.BuildIndex()
+	index := r.index
+	res, err := index.Search("*", "")
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "repo search %s/%s", "*", "")
 	}
-
-	res := index.Search("*", "")
-
 	rls, err := r.list()
 	if err != nil {
 		return nil, err
@@ -285,7 +355,7 @@ func (r *Repo) getInstalled() ([]repository.Installer, error) {
 
 func getDebugLogFunc() helmAction.DebugLog {
 	return func(format string, v ...interface{}) {
-		log.Infof(format, v...)
+		log.Debugf(format, v...)
 	}
 }
 
@@ -297,7 +367,7 @@ func initActionConfig(namespace string, driver Driver) (*helmAction.Configuratio
 	}
 	err := config.Init(k8sFlags, namespace, driver.String(), getDebugLogFunc())
 	if err != nil {
-		return nil, fmt.Errorf("helmAction configuration init err:%w", err)
+		return nil, errors.Wrap(err, "helmAction configuration init err")
 	}
 	return config, nil
 }

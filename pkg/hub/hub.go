@@ -90,6 +90,30 @@ func (h *Hub) Init(interval string) error {
 			log.Panicf("error watch repo: %s", err)
 		}
 	}()
+	go func() {
+		d, err := time.ParseDuration(interval)
+		if err != nil {
+			log.Panic("error parse duration: %s", interval)
+		}
+		tick := time.NewTicker(d * 100)
+		for range tick.C {
+			h.repoSet.Range(
+				func(key, value interface{}) bool {
+					repo, ok := value.(repository.Repository)
+					if !ok {
+						log.Warnf("invalid repository %v type", key)
+						h.repoSet.Delete(key)
+					}
+					_, err := repo.Update()
+					if err != nil {
+						log.Warnf("repo update error: %s", err)
+					}
+					return true
+				},
+			)
+			tick.Reset(d * 100)
+		}
+	}()
 	return nil
 }
 
@@ -130,7 +154,7 @@ func (h *Hub) SetConstructor(c repository.Constructor, args ...interface{}) {
 
 // Add new repo into hub.
 func (h *Hub) Add(i *repository.Info) error {
-	ok := false
+	ok := true
 	h.repoSet.Range(func(key, value interface{}) bool {
 		repo, ok1 := value.(repository.Repository)
 		if !ok1 {
@@ -169,6 +193,9 @@ func (h *Hub) Delete(name string) (repository.Repository, error) {
 	repo, ok := repoIn.(repository.Repository)
 	if !ok {
 		return nil, errors.New("invalid repo type")
+	}
+	if err := repo.Close(); err != nil {
+		return nil, errors.Wrapf(err, "repo %s close", repo.Info().Name)
 	}
 	rbStack = append(rbStack, func() error {
 		rbRepo, err1 := h.constructor(repo.Info(), h.constructorArgs...)

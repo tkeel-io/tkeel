@@ -43,10 +43,11 @@ type Option struct {
 
 // InstallerBrief installer brief information.
 type InstallerBrief struct {
-	Name      string `json:"name"`
-	Repo      string `json:"repo"`
-	Version   string `json:"version"`
-	Installed bool   `json:"installed"`
+	Name        string            `json:"name"`
+	Repo        string            `json:"repo"`
+	Version     string            `json:"version"`
+	Installed   bool              `json:"installed"`
+	Annotations map[string]string `json:"annotations"`
 }
 
 func (ib *InstallerBrief) String() string {
@@ -123,6 +124,8 @@ type Repository interface {
 	Get(name, version string) (Installer, error)
 	// Installed find installed installer(contains installation packages that have been deleted in the repository).
 	Installed() ([]Installer, error)
+	// Update update repository installer.return whether updated.
+	Update() (bool, error)
 	// Close this repository.
 	Close() error
 }

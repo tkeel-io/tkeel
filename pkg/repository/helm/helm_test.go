@@ -70,7 +70,6 @@ func TestHelmRepo_Close(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -100,7 +99,6 @@ func TestHelmRepo_GetDriver(t *testing.T) {
 			r := Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -137,7 +135,6 @@ func TestHelmRepo_Info(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -168,7 +165,6 @@ func TestHelmRepo_Namespace(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -203,7 +199,6 @@ func TestHelmRepo_SetDriver(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -243,7 +238,6 @@ func TestHelmRepo_SetInfo(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -278,7 +272,6 @@ func TestHelmRepo_SetNamespace(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -309,7 +302,6 @@ func TestHelmRepo_setActionConfig(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}

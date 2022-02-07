@@ -271,7 +271,7 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 }
 
 func (s *PluginServiceV1) ListPlugin(ctx context.Context,
-	req *emptypb.Empty) (*pb.ListPluginResponse, error) {
+	req *pb.ListPluginRequest) (*pb.ListPluginResponse, error) {
 	ps, err := s.pluginOp.List(ctx)
 	if err != nil {
 		log.Errorf("error plugin list: %s", err)
