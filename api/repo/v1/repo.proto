@@ -215,7 +215,25 @@ message InstallerObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer metadata"
       } ];
-  bool installed = 6
+  message maintainer {
+    string name = 1
+        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+          description : "maintainer name"
+        } ];
+    string email = 2
+        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+          description : "maintainer email"
+        } ];
+    string url = 3
+        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+          description : "maintainer url"
+        } ];
+  }
+  repeated maintainer maintainers = 6
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer maintainers"
+      } ];
+  bool installed = 7
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "whether the installer has been installed"
       } ];

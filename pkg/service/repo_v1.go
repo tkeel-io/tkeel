@@ -13,6 +13,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/repository/helm"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"helm.sh/helm/v3/pkg/chart"
 )
 
 type RepoService struct {
@@ -136,6 +137,9 @@ func (s *RepoService) GetRepoInstaller(ctx context.Context,
 }
 
 func convertRepo2PB(r repository.Repository) *pb.RepoObject {
+	if r == nil {
+		return &pb.RepoObject{}
+	}
 	return &pb.RepoObject{
 		Name: r.Info().Name,
 		Url:  r.Info().URL,
@@ -185,7 +189,8 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 				if k != repository.ConfigurationKey &&
 					k != repository.ConfigurationSchemaKey &&
 					k != helm.ReadmeKey &&
-					k != helm.ChartDescKey {
+					k != helm.ChartDescKey &&
+					k != helm.ChartMetaDataKey {
 					if vstr, ok := v.(string); ok {
 						ret[k] = vstr
 						continue
@@ -196,6 +201,23 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 						continue
 					}
 					ret[k] = string(b)
+				}
+			}
+			return ret
+		}(),
+		Maintainers: func() []*pb.InstallerObjectMaintainer {
+			ret := make([]*pb.InstallerObjectMaintainer, 0)
+			metaIn, ok := i.Annotations()[helm.ChartMetaDataKey]
+			if ok {
+				metadata, ok := metaIn.(*chart.Metadata)
+				if ok {
+					for _, v := range metadata.Maintainers {
+						ret = append(ret, &pb.InstallerObjectMaintainer{
+							Name:  v.Name,
+							Email: v.Email,
+							Url:   v.URL,
+						})
+					}
 				}
 			}
 			return ret

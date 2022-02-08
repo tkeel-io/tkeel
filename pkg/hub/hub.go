@@ -162,6 +162,7 @@ func (h *Hub) Add(i *repository.Info) error {
 		}
 		ri := repo.Info()
 		if ri.URL == i.URL || ri.Name == i.Name {
+			ok = false
 			return false
 		}
 		return true
