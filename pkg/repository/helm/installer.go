@@ -77,7 +77,11 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 			if ch.Schema != nil {
 				a[repository.ConfigurationSchemaKey] = ch.Schema
 			}
-
+			for k, v := range ch.Metadata.Annotations {
+				if !strings.HasPrefix(k, "dapr.io/") {
+					a[k] = v
+				}
+			}
 			return a
 		}(),
 		brief:   brief,
@@ -195,8 +199,9 @@ func (h Installer) Brief() *repository.InstallerBrief {
 }
 
 func (h *Installer) inject(installer *action.Install, dependency *chart.Chart) error {
-	if !getBoolAnnotationOrDefault(h.chart.Metadata.Annotations,
-		tKeelPluginEnableKey, false) {
+	enableAutoInject := getBoolAnnotationOrDefault(h.chart.Metadata.Annotations,
+		tKeelPluginEnableKey, false)
+	if !enableAutoInject {
 		// Compatible with versions prior to 0.4.0.
 		h.chart.Values["daprConfig"] = h.id
 		return nil
