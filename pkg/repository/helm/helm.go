@@ -21,7 +21,6 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
-	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
@@ -38,8 +37,6 @@ const (
 )
 
 var (
-	once = new(sync.Once)
-
 	ErrNotFound       = errors.New("not found")
 	ErrNoValidURL     = errors.New("no valid url")
 	ErrNoChartInfoSet = errors.New("no chart info set in installer")
@@ -218,13 +215,11 @@ func (r *Repo) Get(name, version string) (repository.Installer, error) {
 	_, err = os.Stat(chartFile)
 	if os.IsNotExist(err) {
 		log.Debugf("stat err: %s", err)
-		if err := downloadChart(chartFile, res.URLs...); err != nil {
+		if err = downloadChart(chartFile, res.URLs...); err != nil {
 			return nil, errors.Wrapf(err, "download chart %s", chartFile)
 		}
-	} else {
-		if err != nil {
-			return nil, errors.Wrapf(err, "file %s stat", chartFile)
-		}
+	} else if err != nil {
+		return nil, errors.Wrapf(err, "file %s stat", chartFile)
 	}
 	// load chart.
 	body, err := os.ReadFile(chartFile)

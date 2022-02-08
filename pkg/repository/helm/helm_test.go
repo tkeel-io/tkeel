@@ -26,7 +26,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	helmAction "helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/getter"
 )
 
 func TestDriver_String(t *testing.T) {
@@ -53,7 +52,6 @@ func TestHelmRepo_Close(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -83,7 +81,6 @@ func TestHelmRepo_GetDriver(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -113,7 +110,6 @@ func TestHelmRepo_Info(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -149,7 +145,6 @@ func TestHelmRepo_Namespace(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -179,7 +174,6 @@ func TestHelmRepo_SetDriver(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -214,7 +208,6 @@ func TestHelmRepo_SetInfo(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -252,7 +245,6 @@ func TestHelmRepo_SetNamespace(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -286,7 +278,6 @@ func TestHelmRepo_setActionConfig(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}

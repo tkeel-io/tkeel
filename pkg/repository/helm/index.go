@@ -156,33 +156,33 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 	return list, nil
 }
 
-func (i *Index) Update() (bool, error) {
-	iFile, err := getIndex(i.URL, _getter)
+func (r *Index) Update() (bool, error) {
+	iFile, err := getIndex(r.URL, _getter)
 	if err != nil {
-		return false, errors.Wrapf(err, "get repository(%s) index", i.URL)
+		return false, errors.Wrapf(err, "get repository(%s) index", r.URL)
 	}
-	if iFile.Generated.After(i.helmIndex.Generated) {
-		i.helmIndex = iFile
+	if iFile.Generated.After(r.helmIndex.Generated) {
+		r.helmIndex = iFile
 	}
-	i.lock.Lock()
-	defer i.lock.Unlock()
+	r.lock.Lock()
+	defer r.lock.Unlock()
 	for name, ref := range iFile.Entries {
 		if len(ref) == 0 {
 			continue
 		}
 		for _, rr := range ref {
-			versionMap, ok := i.charts[name]
+			versionMap, ok := r.charts[name]
 			if !ok {
 				versionMap = make(map[string]*repo.ChartVersion)
-				i.charts[name] = versionMap
+				r.charts[name] = versionMap
 			}
 			versionMap[rr.Version] = rr
 		}
 	}
-	for k, vMap := range i.charts {
+	for k, vMap := range r.charts {
 		vList, ok := iFile.Entries[k]
 		if !ok {
-			delete(i.charts, k)
+			delete(r.charts, k)
 		} else {
 			for ver := range vMap {
 				exist := false

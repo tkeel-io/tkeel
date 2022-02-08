@@ -473,27 +473,25 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 					return
 				}
 				retry--
-			} else {
-				if resp.Status == openapi_v1.PluginStatus_RUNNING {
-					// get register plugin identify.
-					resp, err := s.queryIdentify(ctx, pID)
-					if err != nil {
-						log.Errorf("register error query identify: %s", err)
-						return
-					}
-					// check register plugin identify.
-					if err = s.checkIdentify(ctx, resp); err != nil {
-						log.Errorf("register error check identify: %s", err)
-						return
-					}
-					if err = s.verifyPluginIdentity(ctx, resp); err != nil {
-						log.Errorf("register error register plugin: %s", err)
-						return
-					}
-					registrationfailed = false
-					log.Debugf("register plugin(%s) ok", pID)
+			} else if resp.Status == openapi_v1.PluginStatus_RUNNING {
+				// get register plugin identify.
+				resp, err := s.queryIdentify(ctx, pID)
+				if err != nil {
+					log.Errorf("register error query identify: %s", err)
 					return
 				}
+				// check register plugin identify.
+				if err = s.checkIdentify(ctx, resp); err != nil {
+					log.Errorf("register error check identify: %s", err)
+					return
+				}
+				if err = s.verifyPluginIdentity(ctx, resp); err != nil {
+					log.Errorf("register error register plugin: %s", err)
+					return
+				}
+				registrationfailed = false
+				log.Debugf("register plugin(%s) ok", pID)
+				return
 			}
 			ticker.Reset(duration)
 		case <-ctx.Done():
