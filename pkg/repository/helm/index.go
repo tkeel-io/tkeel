@@ -117,23 +117,7 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 	if word == "*" {
 		for _, vMap := range r.charts {
 			for _, ch := range vMap {
-				res := PluginRes{
-					Name:        ch.Name,
-					Version:     ch.Version,
-					Repo:        r.RepoName,
-					URLs:        ch.URLs,
-					Description: ch.Description,
-					ChartInfo:   ch,
-				}
-				list = append(list, &res)
-			}
-		}
-		return list, nil
-	}
-	for chartName, vMap := range r.charts {
-		if chartName == word {
-			for _, ch := range vMap {
-				if version == "" || version == ch.Version {
+				if _, ok := ch.Metadata.Annotations[tKeelPluginEnableKey]; ok {
 					res := PluginRes{
 						Name:        ch.Name,
 						Version:     ch.Version,
@@ -143,7 +127,28 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 						ChartInfo:   ch,
 					}
 					list = append(list, &res)
-					return list, nil
+				}
+			}
+		}
+		return list, nil
+	}
+	for chartName, vMap := range r.charts {
+		if chartName == word {
+			for _, ch := range vMap {
+				if version == "" || version == ch.Version {
+					if _, ok := ch.Metadata.Annotations[tKeelPluginEnableKey]; ok {
+						res := PluginRes{
+							Name:        ch.Name,
+							Version:     ch.Version,
+							Repo:        r.RepoName,
+							URLs:        ch.URLs,
+							Description: ch.Description,
+							ChartInfo:   ch,
+						}
+						list = append(list, &res)
+						// TODO: remove return.
+						return list, nil
+					}
 				}
 			}
 		}

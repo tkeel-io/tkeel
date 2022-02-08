@@ -263,7 +263,7 @@ func (h *Hub) Uninstall(pluginID string, brief *repository.InstallerBrief) error
 	if brief == nil {
 		return errors.New("invalid plugin installer info")
 	}
-	repoIn, ok := h.repoSet.Load(brief)
+	repoIn, ok := h.repoSet.Load(brief.Repo)
 	if ok {
 		repo, ok := repoIn.(repository.Repository)
 		if !ok {

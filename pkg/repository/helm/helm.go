@@ -86,36 +86,40 @@ type Repo struct {
 	index        *Index
 }
 
-func NewHelmRepo(info repository.Info, driver Driver, namespace string) (*Repo, error) {
-	// make repository directory.
-	repoDirName := _repoDirName + "/" + info.Name + "/"
-	_, err := os.Stat(repoDirName)
-	if err != nil {
-		if os.IsExist(err) {
-			if err = os.RemoveAll(repoDirName); err != nil {
-				return nil, errors.Wrapf(err, "remove repository directory %s", repoDirName)
+func NewHelmRepo(info *repository.Info, driver Driver, namespace string) (*Repo, error) {
+	var index *Index
+	if info != nil {
+		// make repository directory.
+		repoDirName := _repoDirName + "/" + info.Name + "/"
+		_, err := os.Stat(repoDirName)
+		if err != nil {
+			if os.IsExist(err) {
+				if err = os.RemoveAll(repoDirName); err != nil {
+					return nil, errors.Wrapf(err, "remove repository directory %s", repoDirName)
+				}
+			}
+			if !os.IsNotExist(err) {
+				return nil, errors.Wrap(err, "get repository directory stat")
+			}
+
+			if err = os.MkdirAll(repoDirName, os.ModePerm); err != nil {
+				return nil, errors.Wrapf(err, "make repository directory %s", repoDirName)
 			}
 		}
-		if !os.IsNotExist(err) {
-			return nil, errors.Wrap(err, "get repository directory stat")
+		i, err := NewIndex(info.URL, info.Name)
+		if err != nil {
+			return nil, errors.Wrapf(err, "new index %s", info.Name)
 		}
-
-		if err = os.MkdirAll(repoDirName, os.ModePerm); err != nil {
-			return nil, errors.Wrapf(err, "make repository directory %s", repoDirName)
-		}
-	}
-	i, err := NewIndex(info.URL, info.Name)
-	if err != nil {
-		return nil, errors.Wrapf(err, "new index %s", info.Name)
+		index = i
 	}
 
 	repo := &Repo{
-		info:      &info,
+		info:      info,
 		namespace: namespace,
 		driver:    driver,
-		index:     i,
+		index:     index,
 	}
-	if err = repo.configSetup(); err != nil {
+	if err := repo.configSetup(); err != nil {
 		return nil, errors.Wrap(err, "setup helm action configuration failed")
 	}
 	return repo, nil

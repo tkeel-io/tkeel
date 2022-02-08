@@ -175,18 +175,17 @@ func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 	}
 	pr, err := s.pluginRouteOp.Get(ctx, req.GetId())
 	if err != nil {
-		log.Errorf("error plugin operator get: %s", err)
-		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
-			return nil, pb.PluginErrPluginRouteNotFound()
+		if !errors.Is(err, proute.ErrPluginRouteNotExsist) {
+			log.Errorf("error plugin operator get: %s", err)
+			return nil, pb.PluginErrInternalStore()
 		}
-		return nil, pb.PluginErrInternalStore()
 	}
 	if p.Installer == nil {
 		log.Errorf("error plugin(%s) installer is nil", p)
 		return nil, pb.PluginErrInternalStore()
 	}
 	// check whether the extension point is implemented.
-	if len(pr.RegisterAddons) != 0 {
+	if pr != nil && len(pr.RegisterAddons) != 0 {
 		log.Errorf("error uninstall plugin(%s): other plugins have implemented the extension points of this plugin.", req.GetId())
 		return nil, pb.PluginErrUninstallPluginHasBeenDepended()
 	}
@@ -256,13 +255,10 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 	}
 	gPluginRoute, err := s.pluginRouteOp.Get(ctx, req.Id)
 	if err != nil {
-		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
-			return &pb.GetPluginResponse{
-				Plugin: util.ConvertModel2PluginObjectPb(gPlugin, nil),
-			}, nil
+		if !errors.Is(err, proute.ErrPluginRouteNotExsist) {
+			log.Errorf("error plugin(%s) route get: %s", req.Id, err)
+			return nil, pb.PluginErrInternalStore()
 		}
-		log.Errorf("error plugin(%s) route get: %s", req.Id, err)
-		return nil, pb.PluginErrInternalStore()
 	}
 
 	return &pb.GetPluginResponse{
@@ -285,8 +281,10 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 		} else {
 			pr, err := s.pluginRouteOp.Get(ctx, p.ID)
 			if err != nil {
-				log.Errorf("error plugin list get plugin(%s) route: %s", p.ID, err)
-				return nil, pb.PluginErrInternalStore()
+				if !errors.Is(err, proute.ErrPluginRouteNotExsist) {
+					log.Errorf("error plugin list get plugin(%s) route: %s", p.ID, err)
+					return nil, pb.PluginErrInternalStore()
+				}
 			}
 			pbPlugin = util.ConvertModel2PluginObjectPb(p, pr)
 		}
@@ -453,7 +451,8 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 		log.Errorf("register error parse watch interval: %s", err)
 		return
 	}
-	ticker := time.NewTicker(duration)
+
+	ticker := time.NewTicker(duration * 10)
 	registrationfailed := true
 	defer func() {
 		if registrationfailed {
@@ -462,36 +461,39 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 			}
 		}
 	}()
-	log.Debugf("start register plugin(%s)", pID)
+	retry := 5
+	log.Debugf("start register plugin(%s) retry: %d", pID, retry)
 	for {
 		select {
 		case <-ticker.C:
 			resp, err := s.queryStatus(ctx, pID)
 			if err != nil {
-				log.Errorf("register query plugin(%s) status: %s", pID, err)
-				if err = s.updatePluginStatus(ctx, pID, openapi_v1.PluginStatus_ERR_REGISTER); err != nil {
-					log.Errorf("register update register error plugin: %s", err)
-				}
-				return
-			}
-			if resp.Status == openapi_v1.PluginStatus_RUNNING {
-				// get register plugin identify.
-				resp, err := s.queryIdentify(ctx, pID)
-				if err != nil {
-					log.Errorf("register error query identify: %s", err)
+				log.Warnf("register query plugin(%s) status: %s retry: %d", pID, err, retry)
+				if retry == 0 {
 					return
 				}
-				// check register plugin identify.
-				if err = s.checkIdentify(ctx, resp); err != nil {
-					log.Errorf("register error check identify: %s", err)
+				retry--
+			} else {
+				if resp.Status == openapi_v1.PluginStatus_RUNNING {
+					// get register plugin identify.
+					resp, err := s.queryIdentify(ctx, pID)
+					if err != nil {
+						log.Errorf("register error query identify: %s", err)
+						return
+					}
+					// check register plugin identify.
+					if err = s.checkIdentify(ctx, resp); err != nil {
+						log.Errorf("register error check identify: %s", err)
+						return
+					}
+					if err = s.verifyPluginIdentity(ctx, resp); err != nil {
+						log.Errorf("register error register plugin: %s", err)
+						return
+					}
+					registrationfailed = false
+					log.Debugf("register plugin(%s) ok", pID)
 					return
 				}
-				if err = s.verifyPluginIdentity(ctx, resp); err != nil {
-					log.Errorf("register error register plugin: %s", err)
-					return
-				}
-				log.Debugf("register plugin(%s) ok", pID)
-				return
 			}
 			ticker.Reset(duration)
 		case <-ctx.Done():
@@ -791,6 +793,11 @@ func (s *PluginServiceV1) deletePlugin(ctx context.Context, pID string) (util.Ro
 func (s *PluginServiceV1) deletePluginRoute(ctx context.Context, pID string) (util.RollbackFunc, error) {
 	dpr, err := s.pluginRouteOp.Delete(ctx, pID)
 	if err != nil {
+		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
+			return func() error {
+				return nil
+			}, nil
+		}
 		log.Errorf("error delete plugin(%s): %s", pID, err)
 		return nil, pb.PluginErrUninstallPlugin()
 	}
