@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "api/rudder",
-    "version": "v1"
+    "title": "api/authentication/v1/authentication.proto",
+    "version": "version not set"
   },
   "tags": [
     {
@@ -2100,6 +2100,23 @@
     }
   },
   "definitions": {
+    "InstallerObjectmaintainer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "maintainer name"
+        },
+        "email": {
+          "type": "string",
+          "description": "maintainer email"
+        },
+        "url": {
+          "type": "string",
+          "description": "maintainer url"
+        }
+      }
+    },
     "apiauthenticationv1AuthenticateResponse": {
       "type": "object",
       "properties": {
@@ -2648,6 +2665,13 @@
             "type": "string"
           },
           "description": "installer metadata"
+        },
+        "maintainers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InstallerObjectmaintainer"
+          },
+          "description": "installer maintainers"
         },
         "installed": {
           "type": "boolean",

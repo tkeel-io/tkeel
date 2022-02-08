@@ -35,10 +35,11 @@ import (
 )
 
 const (
-	ReadmeKey      = "readme"
-	ValuesFileName = "values.yaml"
-	ChartFileName  = "Chart.yaml"
-	ChartDescKey   = "Chart"
+	ReadmeKey        = "readme"
+	ValuesFileName   = "values.yaml"
+	ChartFileName    = "Chart.yaml"
+	ChartDescKey     = "Chart"
+	ChartMetaDataKey = "_Tkeel_Chart_Metadata_"
 )
 
 var SecretContext = "changeme"
@@ -82,6 +83,7 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 					a[k] = v
 				}
 			}
+			a[ChartMetaDataKey] = ch.Metadata
 			return a
 		}(),
 		brief:   brief,
