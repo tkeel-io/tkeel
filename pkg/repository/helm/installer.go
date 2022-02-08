@@ -56,7 +56,8 @@ type Installer struct {
 	namespace   string
 }
 
-func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrief, namespace string, helmConfig *action.Configuration) Installer {
+func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrief,
+	namespace string, helmConfig *action.Configuration) Installer {
 	return Installer{
 		chart:      ch,
 		helmConfig: helmConfig,
@@ -83,7 +84,6 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 					a[k] = v
 				}
 			}
-			a[ChartMetaDataKey] = ch.Metadata
 			return a
 		}(),
 		brief:   brief,

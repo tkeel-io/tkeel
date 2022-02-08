@@ -627,6 +627,13 @@
             "in": "query",
             "required": false,
             "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "description": "query items key",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -808,6 +815,43 @@
             "description": "plugin id",
             "in": "path",
             "required": true,
+            "type": "string"
+          },
+          {
+            "name": "page_num",
+            "description": "query page number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "description": "query page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "description": "query items order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "description": "query items inverted sort",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "description": "query items key",
+            "in": "query",
+            "required": false,
             "type": "string"
           }
         ],
@@ -1336,6 +1380,83 @@
         ]
       }
     },
+    "/repos/installers": {
+      "get": {
+        "summary": "获取所有仓库的安装包列表接口",
+        "operationId": "ListAllRepoInstaller",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "$ref": "#/definitions/v1ListAllRepoInstallerResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page_num",
+            "description": "query page number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "description": "query page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "description": "query items order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "description": "query items inverted sort",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "description": "query items key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "installed",
+            "description": "installed option",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Repo"
+        ]
+      }
+    },
     "/repos/{name}": {
       "delete": {
         "summary": "删除仓库接口",
@@ -1471,13 +1592,6 @@
             "type": "string"
           },
           {
-            "name": "installed",
-            "description": "installed option",
-            "in": "query",
-            "required": false,
-            "type": "boolean"
-          },
-          {
             "name": "page_num",
             "description": "query page number",
             "in": "query",
@@ -1503,6 +1617,20 @@
           {
             "name": "is_descending",
             "description": "query items inverted sort",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "description": "query items key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "installed",
+            "description": "installed option",
             "in": "query",
             "required": false,
             "type": "boolean"
@@ -2480,6 +2608,14 @@
     "v1EnabledTenant": {
       "type": "object",
       "properties": {
+        "title": {
+          "type": "string",
+          "description": "enable tenant title"
+        },
+        "remark": {
+          "type": "string",
+          "description": "enable tenant remark"
+        },
         "tenant_id": {
           "type": "string",
           "description": "enable tenant id"
@@ -2492,6 +2628,11 @@
           "type": "string",
           "format": "int64",
           "description": "enable timestamp"
+        },
+        "user_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "enable tenant user number"
         }
       }
     },
@@ -2676,6 +2817,15 @@
         "installed": {
           "type": "boolean",
           "description": "whether the installer has been installed"
+        },
+        "desc": {
+          "type": "string",
+          "description": "installer desc"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "uint64",
+          "description": "last change chart timestamp"
         }
       }
     },
@@ -2714,9 +2864,56 @@
         }
       }
     },
+    "v1ListAllRepoInstallerResponse": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "total items"
+        },
+        "page_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page number"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page size"
+        },
+        "brief_installers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1InstallerObject"
+          },
+          "description": "brief installer info list,only has name and version"
+        },
+        "installed": {
+          "type": "integer",
+          "format": "int32",
+          "description": "installed installer number"
+        }
+      }
+    },
     "v1ListEnabledTenantsResponse": {
       "type": "object",
       "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "total items"
+        },
+        "page_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page number"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page size"
+        },
         "tenants": {
           "type": "array",
           "items": {
@@ -2743,13 +2940,6 @@
     "v1ListPluginResponse": {
       "type": "object",
       "properties": {
-        "plugin_list": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1PluginObject"
-          },
-          "description": "plugin object list"
-        },
         "total": {
           "type": "integer",
           "format": "int32",
@@ -2764,12 +2954,34 @@
           "type": "integer",
           "format": "int32",
           "description": "query page size"
+        },
+        "plugin_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1PluginObject"
+          },
+          "description": "plugin object list"
         }
       }
     },
     "v1ListRepoInstallerResponse": {
       "type": "object",
       "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "total items"
+        },
+        "page_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page number"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page size"
+        },
         "brief_installers": {
           "type": "array",
           "items": {
@@ -2777,20 +2989,10 @@
           },
           "description": "brief installer info list,only has name and version"
         },
-        "total": {
+        "installed": {
           "type": "integer",
           "format": "int32",
-          "description": "total items"
-        },
-        "page_num": {
-          "type": "integer",
-          "format": "int32",
-          "description": "query page number"
-        },
-        "page_size": {
-          "type": "integer",
-          "format": "int32",
-          "description": "query page size"
+          "description": "installed installer number"
         }
       }
     },
@@ -3002,6 +3204,11 @@
             "type": "string"
           },
           "description": "repo annotations"
+        },
+        "installer_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "installer num"
         }
       }
     },

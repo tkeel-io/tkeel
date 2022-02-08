@@ -331,11 +331,12 @@ func (s *AuthenticationService) checkAuthorization(ctx context.Context, header h
 			return nil, fmt.Errorf("error load access token(%s): %w", token, err)
 		}
 		userID := token.GetUserID()
-		u := &s_model.User{}
+		var u *s_model.User
 		_, users, err := u.QueryByCondition(s.userDB, map[string]interface{}{"id": userID}, nil)
 		if err != nil || len(users) != 1 {
 			return nil, fmt.Errorf("error query user(%s)", userID)
 		}
+		u = users[0]
 		roles := s.rbacOp.GetRolesForUserInDomain(u.TenantID, u.ID)
 		if len(roles) > 0 {
 			// only one role bind user.

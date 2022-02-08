@@ -17,6 +17,7 @@ limitations under the License.
 package helm
 
 import (
+	"regexp"
 	"strings"
 	"sync"
 
@@ -54,7 +55,20 @@ func (r PluginRes) ToInstallerBrief() *repository.InstallerBrief {
 		Repo:        r.Repo,
 		Version:     r.Version,
 		Installed:   false,
+		Desc:        r.ChartInfo.Description,
 		Annotations: r.ChartInfo.Annotations,
+		Maintainers: func() []*repository.Maintainer {
+			ret := make([]*repository.Maintainer, 0, len(r.ChartInfo.Maintainers))
+			for _, v := range r.ChartInfo.Maintainers {
+				ret = append(ret, &repository.Maintainer{
+					Name:  v.Name,
+					URL:   v.URL,
+					Email: v.Email,
+				})
+			}
+			return ret
+		}(),
+		CreateTimestamp: r.ChartInfo.Created.Unix(),
 	}
 }
 
@@ -109,11 +123,6 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 	list := make(PluginResList, 0, len(r.helmIndex.Entries))
-	// TODO: regexp.
-	// exp, err := regexp.Compile(word).
-	// if err != nil {.
-	// 	return nil, errors.Wrapf(err, "%s is not a valid regular expression", word).
-	// }.
 	if word == "*" {
 		for _, vMap := range r.charts {
 			for _, ch := range vMap {
@@ -132,8 +141,12 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 		}
 		return list, nil
 	}
+	exp, err := regexp.Compile(word)
+	if err != nil {
+		return nil, errors.Wrapf(err, "%s is not a valid regular expression", word)
+	}
 	for chartName, vMap := range r.charts {
-		if chartName == word {
+		if exp.MatchString(chartName) {
 			for _, ch := range vMap {
 				if version == "" || version == ch.Version {
 					if _, ok := ch.Metadata.Annotations[tKeelPluginEnableKey]; ok {
@@ -146,8 +159,6 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 							ChartInfo:   ch,
 						}
 						list = append(list, &res)
-						// TODO: remove return.
-						return list, nil
 					}
 				}
 			}
