@@ -306,7 +306,7 @@ func TestHelmRepo_setActionConfig(t *testing.T) {
 
 func TestNewHelmRepo(t *testing.T) {
 	type args struct {
-		info      repository.Info
+		info      *repository.Info
 		driver    Driver
 		namespace string
 	}
@@ -319,25 +319,17 @@ func TestNewHelmRepo(t *testing.T) {
 		{
 			"new helm repo",
 			args{
-				info: repository.Info{
-					Name:        "name",
-					URL:         "url",
-					Annotations: nil,
-				},
+				info:      nil,
 				driver:    Mem,
 				namespace: "namespace",
 			},
-			&Repo{info: &repository.Info{
-				Name:        "name",
-				URL:         "url",
-				Annotations: nil,
-			}, driver: Mem, namespace: "namespace"},
+			&Repo{info: nil, driver: Mem, namespace: "namespace"},
 			false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewHelmRepo(&tt.args.info, tt.args.driver, tt.args.namespace)
+			got, err := NewHelmRepo(tt.args.info, tt.args.driver, tt.args.namespace)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewHelmRepo() error = %v, wantErr %v", err, tt.wantErr)
 				return

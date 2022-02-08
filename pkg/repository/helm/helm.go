@@ -268,8 +268,10 @@ func (r *Repo) Update() (bool, error) {
 }
 
 func (r *Repo) Close() error {
-	if err := os.RemoveAll(_repoDirName + "/" + r.info.Name); err != nil {
-		return errors.Wrapf(err, "remove repository %s files", _repoDirName+"/"+r.info.Name)
+	if r.info != nil {
+		if err := os.RemoveAll(_repoDirName + "/" + r.info.Name); err != nil {
+			return errors.Wrapf(err, "remove repository %s files", _repoDirName+"/"+r.info.Name)
+		}
 	}
 	return nil
 }
