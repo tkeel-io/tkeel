@@ -91,6 +91,7 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 		regExpWhiteList: []string{
 			"/apis/rudder/v1/oauth2*",
 			"/apis/security/v1/oauth*",
+			"/apis/security/v1/tenants/users/rpk/info",
 		},
 	}
 }

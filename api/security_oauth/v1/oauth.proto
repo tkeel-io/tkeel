@@ -201,9 +201,8 @@ message ResetPasswordRequest {
 }
 
 message ResetPasswordBody {
-  string user_id = 1;
-  string tenant_id = 2;
-  string new_password =3;
+  string new_password =1;
+  string reset_key =2;
 }
 
 
