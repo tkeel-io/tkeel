@@ -165,11 +165,26 @@ func (s *TenantService) CreateUser(ctx context.Context, req *pb.CreateUserReques
 	user.TenantID = req.GetTenantId()
 	user.UserName = req.GetBody().GetUsername()
 	user.Password = req.GetBody().GetPassword()
+	user.NickName = req.GetBody().GetNickName()
 	err = user.Create(s.DB)
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
 	}
+
+	if len(req.GetBody().GetRoles()) != 0 {
+		gpolicies := make([][]string, len(req.GetBody().GetRoles()))
+		for i, v := range req.GetBody().GetRoles() {
+			gpolicy := []string{user.ID, v, req.GetTenantId()}
+			gpolicies[i] = gpolicy
+		}
+		_, err = s.RBACOp.AddGroupingPolicy(gpolicies)
+		if err != nil {
+			log.Error(err)
+			return nil, pb.ErrInternalError()
+		}
+	}
+
 	resp = &pb.CreateUserResponse{TenantId: user.TenantID, Username: user.UserName, UserId: user.ID}
 	return resp, nil
 }
@@ -312,7 +327,7 @@ func (s *TenantService) TenantPluginPermissible(ctx context.Context, req *pb.Plu
 	return &pb.PluginPermissibleResponse{Allowed: allowed}, nil
 }
 
-func (s *TenantService) BeforeSetPassword(ctx context.Context, req *pb.BeforeSetPasswordRequest) (*pb.BeforeSetPasswordResponse, error) {
+func (s *TenantService) GetResetPasswordKey(ctx context.Context, req *pb.GetResetPasswordKeyRequest) (*pb.GetResetPasswordKeyResponse, error) {
 	user := &model.User{}
 	conditions := map[string]interface{}{"id": req.GetUserId(), "tenant_id": req.GetTenantId()}
 	total, users, err := user.QueryByCondition(s.DB, conditions, nil)
@@ -324,5 +339,5 @@ func (s *TenantService) BeforeSetPassword(ctx context.Context, req *pb.BeforeSet
 		log.Error("unexpected total query user")
 		return nil, pb.ErrInternalStore()
 	}
-	return &pb.BeforeSetPasswordResponse{TenantId: users[0].TenantID, UserId: users[0].ID, Username: users[0].UserName, NickName: users[0].NickName}, nil
+	return &pb.GetResetPasswordKeyResponse{TenantId: users[0].TenantID, UserId: users[0].ID, Username: users[0].UserName, NickName: users[0].NickName, ResetKey: users[0].Password}, nil
 }

@@ -265,15 +265,15 @@ service Tenant {
     };
   }
 
-  rpc BeforeSetPassword(BeforeSetPasswordRequest)
-      returns (BeforeSetPasswordResponse) {
+  rpc GetResetPasswordKey(GetResetPasswordKeyRequest)
+      returns (GetResetPasswordKeyResponse) {
     option (google.api.http) = {
-      put : "/tenants/{tenant_id}/user/{user_id}/pwd"
+      get : "/tenants/{tenant_id}/users/{user_id}/rpk"
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "before reset user password "
-      operation_id : "BeforeSetPassword"
+      summary : "get reset user password key "
+      operation_id : "GetResetPasswordKey"
       tags : "[Security] Tenant"
       responses : [ {
         key : "200"
@@ -552,15 +552,16 @@ message UpdateUserResponse {
   bool ok =1;
 }
 
-message BeforeSetPasswordRequest {
+message GetResetPasswordKeyRequest {
   string tenant_id =1;
   string user_id =2;
 }
 
-message BeforeSetPasswordResponse {
+message GetResetPasswordKeyResponse {
   string tenant_id =1;
   string user_id =2;
   string username = 3;
   string nick_name =4;
+  string reset_key = 5;
 }
 

@@ -68,8 +68,7 @@ func (h *Oauth2HTTPHandler) AddPluginWhiteList(req *go_restful.Request, resp *go
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -121,8 +120,7 @@ func (h *Oauth2HTTPHandler) IssueAdminToken(req *go_restful.Request, resp *go_re
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -195,8 +193,7 @@ func (h *Oauth2HTTPHandler) VerifyToken(req *go_restful.Request, resp *go_restfu
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",

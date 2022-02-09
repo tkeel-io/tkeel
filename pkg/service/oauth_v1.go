@@ -253,11 +253,16 @@ func bearerAuth(header http.Header) (string, bool) {
 }
 
 func (s *OauthService) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*pb.ResetPasswordResponse, error) {
+	uDao := &model.User{}
+	total, _, err := uDao.QueryByCondition(s.UserDB, map[string]interface{}{"tenant_id": req.GetBody().GetTenantId(), "id": req.GetBody().GetUserId(), "password": req.GetBody().GetResetKey()}, nil)
+	if err != nil || total != 1 {
+		log.Error(err)
+		return nil, pb.OauthErrInvalidRequest()
+	}
 	user := &model.User{Password: req.GetBody().GetNewPassword()}
 	user.Encrypt()
 	updates := map[string]interface{}{"password": user.Password}
-
-	err := user.Update(s.UserDB, req.GetBody().GetTenantId(), req.GetBody().GetUserId(), updates)
+	err = user.Update(s.UserDB, req.GetBody().GetTenantId(), req.GetBody().GetUserId(), updates)
 	if err != nil {
 		log.Error(err)
 		return nil, pb.OauthErrServerError()

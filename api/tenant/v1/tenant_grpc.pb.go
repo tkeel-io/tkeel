@@ -44,7 +44,7 @@ type TenantClient interface {
 	// delete plugin
 	DeleteTenantPlugin(ctx context.Context, in *DeleteTenantPluginRequest, opts ...grpc.CallOption) (*DeleteTenantPluginResponse, error)
 	TenantPluginPermissible(ctx context.Context, in *PluginPermissibleRequest, opts ...grpc.CallOption) (*PluginPermissibleResponse, error)
-	BeforeSetPassword(ctx context.Context, in *BeforeSetPasswordRequest, opts ...grpc.CallOption) (*BeforeSetPasswordResponse, error)
+	GetResetPasswordKey(ctx context.Context, in *GetResetPasswordKeyRequest, opts ...grpc.CallOption) (*GetResetPasswordKeyResponse, error)
 }
 
 type tenantClient struct {
@@ -172,9 +172,9 @@ func (c *tenantClient) TenantPluginPermissible(ctx context.Context, in *PluginPe
 	return out, nil
 }
 
-func (c *tenantClient) BeforeSetPassword(ctx context.Context, in *BeforeSetPasswordRequest, opts ...grpc.CallOption) (*BeforeSetPasswordResponse, error) {
-	out := new(BeforeSetPasswordResponse)
-	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/BeforeSetPassword", in, out, opts...)
+func (c *tenantClient) GetResetPasswordKey(ctx context.Context, in *GetResetPasswordKeyRequest, opts ...grpc.CallOption) (*GetResetPasswordKeyResponse, error) {
+	out := new(GetResetPasswordKeyResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/GetResetPasswordKey", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +210,7 @@ type TenantServer interface {
 	// delete plugin
 	DeleteTenantPlugin(context.Context, *DeleteTenantPluginRequest) (*DeleteTenantPluginResponse, error)
 	TenantPluginPermissible(context.Context, *PluginPermissibleRequest) (*PluginPermissibleResponse, error)
-	BeforeSetPassword(context.Context, *BeforeSetPasswordRequest) (*BeforeSetPasswordResponse, error)
+	GetResetPasswordKey(context.Context, *GetResetPasswordKeyRequest) (*GetResetPasswordKeyResponse, error)
 	mustEmbedUnimplementedTenantServer()
 }
 
@@ -257,8 +257,8 @@ func (UnimplementedTenantServer) DeleteTenantPlugin(context.Context, *DeleteTena
 func (UnimplementedTenantServer) TenantPluginPermissible(context.Context, *PluginPermissibleRequest) (*PluginPermissibleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TenantPluginPermissible not implemented")
 }
-func (UnimplementedTenantServer) BeforeSetPassword(context.Context, *BeforeSetPasswordRequest) (*BeforeSetPasswordResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BeforeSetPassword not implemented")
+func (UnimplementedTenantServer) GetResetPasswordKey(context.Context, *GetResetPasswordKeyRequest) (*GetResetPasswordKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetResetPasswordKey not implemented")
 }
 func (UnimplementedTenantServer) mustEmbedUnimplementedTenantServer() {}
 
@@ -507,20 +507,20 @@ func _Tenant_TenantPluginPermissible_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Tenant_BeforeSetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BeforeSetPasswordRequest)
+func _Tenant_GetResetPasswordKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetResetPasswordKeyRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TenantServer).BeforeSetPassword(ctx, in)
+		return srv.(TenantServer).GetResetPasswordKey(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/BeforeSetPassword",
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/GetResetPasswordKey",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TenantServer).BeforeSetPassword(ctx, req.(*BeforeSetPasswordRequest))
+		return srv.(TenantServer).GetResetPasswordKey(ctx, req.(*GetResetPasswordKeyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -585,8 +585,8 @@ var Tenant_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Tenant_TenantPluginPermissible_Handler,
 		},
 		{
-			MethodName: "BeforeSetPassword",
-			Handler:    _Tenant_BeforeSetPassword_Handler,
+			MethodName: "GetResetPasswordKey",
+			Handler:    _Tenant_GetResetPasswordKey_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

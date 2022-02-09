@@ -79,8 +79,7 @@ func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.R
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -137,8 +136,7 @@ func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.R
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -195,8 +193,7 @@ func (h *RepoHTTPHandler) GetRepoInstaller(req *go_restful.Request, resp *go_res
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -248,8 +245,7 @@ func (h *RepoHTTPHandler) ListRepo(req *go_restful.Request, resp *go_restful.Res
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -306,8 +302,7 @@ func (h *RepoHTTPHandler) ListRepoInstaller(req *go_restful.Request, resp *go_re
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
+		UseProtoNames: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
