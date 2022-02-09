@@ -267,6 +267,13 @@ func (r *Repo) Update() (bool, error) {
 	return true, nil
 }
 
+func (r *Repo) Len() int {
+	if r.index != nil {
+		return len(r.index.helmIndex.Entries)
+	}
+	return 0
+}
+
 func (r *Repo) Close() error {
 	if r.info != nil {
 		if err := os.RemoveAll(_repoDirName + "/" + r.info.Name); err != nil {

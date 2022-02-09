@@ -13,7 +13,6 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/repository/helm"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"helm.sh/helm/v3/pkg/chart"
 )
 
 type RepoService struct {
@@ -66,6 +65,55 @@ func (s *RepoService) ListRepo(ctx context.Context, req *emptypb.Empty) (*pb.Lis
 	}, nil
 }
 
+func (s *RepoService) ListAllRepoInstaller(ctx context.Context,
+	req *pb.ListAllRepoInstallerRequest) (*pb.ListAllRepoInstallerResponse, error) {
+	repos := hub.GetInstance().List()
+	var installedList []*repository.InstallerBrief
+	var resList []*repository.InstallerBrief
+	for _, v := range repos {
+		res, err := v.Search("")
+		if err != nil {
+			log.Warnf("get repo(%s) all installer err: %s", v.Info().Name, err)
+			continue
+		}
+		is, err := v.Installed()
+		if err != nil {
+			log.Warnf("get repo(%s) installed installer err: %s", v.Info().Name, err)
+			continue
+		}
+		for _, i := range is {
+			installedList = append(installedList, i.Brief())
+		}
+		resList = append(resList, res...)
+	}
+	if req.Installed {
+		resList = installedList
+	}
+	ibList := iBriefList(resList)
+	if req.IsDescending {
+		sort.Sort(sort.Reverse(ibList))
+	} else {
+		sort.Sort(ibList)
+	}
+	total := ibList.Len()
+	start, end := getQueryItemsStartAndEnd(int(req.PageNum), int(req.PageSize), total)
+	log.Debugf("%d %d", start, end)
+	ibList = ibList[start:end]
+	return &pb.ListAllRepoInstallerResponse{
+		Total:    int32(total),
+		PageNum:  req.PageNum,
+		PageSize: req.PageSize,
+		BriefInstallers: func() []*pb.InstallerObject {
+			ret := make([]*pb.InstallerObject, 0, len(ibList))
+			for _, v := range ibList {
+				ret = append(ret, convertInstallerBrief2PB(v))
+			}
+			return ret
+		}(),
+		Installed: int32(len(installedList)),
+	}, nil
+}
+
 func (s *RepoService) ListRepoInstaller(ctx context.Context,
 	req *pb.ListRepoInstallerRequest) (*pb.ListRepoInstallerResponse, error) {
 	repo, err := hub.GetInstance().Get(req.Repo)
@@ -75,7 +123,9 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 			return nil, pb.ErrRepoNotFound()
 		}
 	}
-	installers, err := repo.Search("*")
+	searchWord := getReglarStringKeyWords(req.KeyWords)
+	log.Debugf("search words %s -- %s", req.KeyWords, searchWord)
+	installers, err := repo.Search(searchWord)
 	if err != nil {
 		log.Errorf("error repo(%s) search * get all installer err: %s",
 			req.Repo, err)
@@ -87,13 +137,15 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 	} else {
 		sort.Sort(ibList)
 	}
-	if req.Installed {
-		for i, v := range ibList {
-			if !v.Installed {
-				ibList = ibList[:i]
-				break
-			}
+	installedNum := 0
+	for i, v := range ibList {
+		if !v.Installed {
+			installedNum = i + 1
+			break
 		}
+	}
+	if req.Installed {
+		ibList = ibList[:installedNum]
 	}
 	total := ibList.Len()
 	start, end := getQueryItemsStartAndEnd(int(req.PageNum), int(req.PageSize), total)
@@ -110,6 +162,7 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 			}
 			return ret
 		}(),
+		Installed: int32(installedNum),
 	}, nil
 }
 
@@ -159,6 +212,7 @@ func convertRepo2PB(r repository.Repository) *pb.RepoObject {
 			}
 			return ret
 		}(),
+		InstallerNum: int32(r.Len()),
 	}
 }
 
@@ -169,6 +223,19 @@ func convertInstallerBrief2PB(ib *repository.InstallerBrief) *pb.InstallerObject
 		Repo:        ib.Repo,
 		Installed:   ib.Installed,
 		Annotations: ib.Annotations,
+		Maintainers: func() []*pb.InstallerObjectMaintainer {
+			ret := make([]*pb.InstallerObjectMaintainer, 0, len(ib.Maintainers))
+			for _, v := range ib.Maintainers {
+				ret = append(ret, &pb.InstallerObjectMaintainer{
+					Name:  v.Name,
+					Email: v.Email,
+					Url:   v.URL,
+				})
+			}
+			return ret
+		}(),
+		Desc:      ib.Desc,
+		Timestamp: uint64(ib.CreateTimestamp),
 	}
 }
 
@@ -206,22 +273,18 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 			return ret
 		}(),
 		Maintainers: func() []*pb.InstallerObjectMaintainer {
-			ret := make([]*pb.InstallerObjectMaintainer, 0)
-			metaIn, ok := i.Annotations()[helm.ChartMetaDataKey]
-			if ok {
-				metadata, ok := metaIn.(*chart.Metadata)
-				if ok {
-					for _, v := range metadata.Maintainers {
-						ret = append(ret, &pb.InstallerObjectMaintainer{
-							Name:  v.Name,
-							Email: v.Email,
-							Url:   v.URL,
-						})
-					}
-				}
+			ret := make([]*pb.InstallerObjectMaintainer, 0, len(i.Brief().Maintainers))
+			for _, v := range i.Brief().Maintainers {
+				ret = append(ret, &pb.InstallerObjectMaintainer{
+					Name:  v.Name,
+					Email: v.Email,
+					Url:   v.URL,
+				})
 			}
 			return ret
 		}(),
+		Desc:      i.Brief().Desc,
+		Timestamp: uint64(ib.CreateTimestamp),
 	}
 }
 

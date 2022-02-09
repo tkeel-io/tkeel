@@ -20,11 +20,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"sort"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/security/authz/rbac"
+	s_model "github.com/tkeel-io/security/model"
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	pb "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
@@ -40,6 +43,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/version"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gopkg.in/yaml.v3"
+	"gorm.io/gorm"
 )
 
 var (
@@ -56,9 +60,10 @@ type PluginServiceV1 struct {
 	pluginRouteOp  proute.Operator
 	tenantPluginOp rbac.TenantPluginMgr
 	openapiClient  openapi.Client
+	db             *gorm.DB
 }
 
-func NewPluginServiceV1(conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Operator,
+func NewPluginServiceV1(db *gorm.DB, conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Operator,
 	prOp proute.Operator, tpOp rbac.TenantPluginMgr, openapi openapi.Client) *PluginServiceV1 {
 	ok, err := tpOp.OnCreateTenant(model.TKeelTenant)
 	if err != nil {
@@ -79,6 +84,7 @@ func NewPluginServiceV1(conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Ope
 		pluginRouteOp:  prOp,
 		tenantPluginOp: tpOp,
 		openapiClient:  openapi,
+		db:             db,
 	}
 }
 
@@ -420,7 +426,7 @@ func (s *PluginServiceV1) TenantDisable(ctx context.Context,
 	return &emptypb.Empty{}, nil
 }
 
-func (s *PluginServiceV1) ListEnableTenants(ctx context.Context,
+func (s *PluginServiceV1) ListEnabledTenants(ctx context.Context,
 	req *pb.ListEnabledTenantsRequest) (*pb.ListEnabledTenantsResponse, error) {
 	p, err := s.pluginOp.Get(ctx, req.Id)
 	if err != nil {
@@ -430,18 +436,56 @@ func (s *PluginServiceV1) ListEnableTenants(ctx context.Context,
 		}
 		return nil, pb.PluginErrInternalStore()
 	}
-	return &pb.ListEnabledTenantsResponse{
-		Tenants: func() []*pb.EnabledTenant {
-			ret := make([]*pb.EnabledTenant, 0, len(p.EnableTenantes))
-			for _, v := range p.EnableTenantes {
-				ret = append(ret, &pb.EnabledTenant{
-					TenantId:        v.TenantID,
-					OperatorId:      v.OperatorID,
-					EnableTimestamp: v.EnableTimestamp,
-				})
+
+	regular := getReglarStringKeyWords(req.KeyWords)
+	exp, err := regexp.Compile(regular)
+	if err != nil {
+		log.Errorf("error compile regular(%s): %s", regular, err)
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	daoTenant := &s_model.Tenant{}
+	daoUser := &s_model.User{}
+	ret := make([]*pb.EnabledTenant, 0, len(p.EnableTenantes))
+	for _, v := range p.EnableTenantes {
+		if v.TenantID == model.TKeelTenant {
+			continue
+		}
+		if exp.MatchString(v.TenantID) {
+			daoTenant.ID = v.TenantID
+			ts, err := daoTenant.List(s.db, nil)
+			if err != nil {
+				log.Warnf("error list tenant(%s): %s", v.TenantID, err)
+				continue
 			}
-			return ret
-		}(),
+			if len(ts) != 1 {
+				log.Warnf("error list tenant(%s/%d) invalid", v.TenantID, len(ts))
+				continue
+			}
+			num, err := daoUser.CountInTenant(s.db, v.TenantID)
+			if err != nil {
+				log.Warnf("error count user in tenant(%s): %s", v.TenantID, err)
+				continue
+			}
+			ret = append(ret, &pb.EnabledTenant{
+				TenantId:        v.TenantID,
+				OperatorId:      v.OperatorID,
+				EnableTimestamp: v.EnableTimestamp,
+				Title:           ts[0].Title,
+				Remark:          ts[0].Remark,
+				UserNum:         int32(num),
+			})
+		}
+	}
+	etList := enabledTenantList(ret)
+	sort.Sort(etList)
+	total := etList.Len()
+	start, end := getQueryItemsStartAndEnd(int(req.PageNum), int(req.PageSize), total)
+	etList = etList[start:end]
+	return &pb.ListEnabledTenantsResponse{
+		Total:    int32(total),
+		PageNum:  req.PageNum,
+		PageSize: req.PageSize,
+		Tenants:  etList,
 	}, nil
 }
 
@@ -840,3 +884,9 @@ func convertConfiguration2Option(installerConfiguration map[string]interface{}) 
 	}
 	return ret
 }
+
+type enabledTenantList []*pb.EnabledTenant
+
+func (a enabledTenantList) Len() int           { return len(a) }
+func (a enabledTenantList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a enabledTenantList) Less(i, j int) bool { return a[i].EnableTimestamp < a[j].EnableTimestamp }

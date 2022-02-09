@@ -22,6 +22,7 @@ type RepoClient interface {
 	CreateRepo(ctx context.Context, in *CreateRepoRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteRepo(ctx context.Context, in *DeleteRepoRequest, opts ...grpc.CallOption) (*DeleteRepoResponse, error)
 	ListRepo(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListRepoResponse, error)
+	ListAllRepoInstaller(ctx context.Context, in *ListAllRepoInstallerRequest, opts ...grpc.CallOption) (*ListAllRepoInstallerResponse, error)
 	ListRepoInstaller(ctx context.Context, in *ListRepoInstallerRequest, opts ...grpc.CallOption) (*ListRepoInstallerResponse, error)
 	GetRepoInstaller(ctx context.Context, in *GetRepoInstallerRequest, opts ...grpc.CallOption) (*GetRepoInstallerResponse, error)
 }
@@ -61,6 +62,15 @@ func (c *repoClient) ListRepo(ctx context.Context, in *emptypb.Empty, opts ...gr
 	return out, nil
 }
 
+func (c *repoClient) ListAllRepoInstaller(ctx context.Context, in *ListAllRepoInstallerRequest, opts ...grpc.CallOption) (*ListAllRepoInstallerResponse, error) {
+	out := new(ListAllRepoInstallerResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.plugin.api.repo.v1.Repo/ListAllRepoInstaller", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *repoClient) ListRepoInstaller(ctx context.Context, in *ListRepoInstallerRequest, opts ...grpc.CallOption) (*ListRepoInstallerResponse, error) {
 	out := new(ListRepoInstallerResponse)
 	err := c.cc.Invoke(ctx, "/io.tkeel.plugin.api.repo.v1.Repo/ListRepoInstaller", in, out, opts...)
@@ -86,6 +96,7 @@ type RepoServer interface {
 	CreateRepo(context.Context, *CreateRepoRequest) (*emptypb.Empty, error)
 	DeleteRepo(context.Context, *DeleteRepoRequest) (*DeleteRepoResponse, error)
 	ListRepo(context.Context, *emptypb.Empty) (*ListRepoResponse, error)
+	ListAllRepoInstaller(context.Context, *ListAllRepoInstallerRequest) (*ListAllRepoInstallerResponse, error)
 	ListRepoInstaller(context.Context, *ListRepoInstallerRequest) (*ListRepoInstallerResponse, error)
 	GetRepoInstaller(context.Context, *GetRepoInstallerRequest) (*GetRepoInstallerResponse, error)
 	mustEmbedUnimplementedRepoServer()
@@ -103,6 +114,9 @@ func (UnimplementedRepoServer) DeleteRepo(context.Context, *DeleteRepoRequest) (
 }
 func (UnimplementedRepoServer) ListRepo(context.Context, *emptypb.Empty) (*ListRepoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListRepo not implemented")
+}
+func (UnimplementedRepoServer) ListAllRepoInstaller(context.Context, *ListAllRepoInstallerRequest) (*ListAllRepoInstallerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAllRepoInstaller not implemented")
 }
 func (UnimplementedRepoServer) ListRepoInstaller(context.Context, *ListRepoInstallerRequest) (*ListRepoInstallerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListRepoInstaller not implemented")
@@ -177,6 +191,24 @@ func _Repo_ListRepo_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Repo_ListAllRepoInstaller_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAllRepoInstallerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RepoServer).ListAllRepoInstaller(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.plugin.api.repo.v1.Repo/ListAllRepoInstaller",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RepoServer).ListAllRepoInstaller(ctx, req.(*ListAllRepoInstallerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Repo_ListRepoInstaller_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListRepoInstallerRequest)
 	if err := dec(in); err != nil {
@@ -231,6 +263,10 @@ var Repo_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListRepo",
 			Handler:    _Repo_ListRepo_Handler,
+		},
+		{
+			MethodName: "ListAllRepoInstaller",
+			Handler:    _Repo_ListAllRepoInstaller_Handler,
 		},
 		{
 			MethodName: "ListRepoInstaller",

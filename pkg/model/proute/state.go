@@ -161,7 +161,7 @@ func (o *DaprStateOprator) Delete(ctx context.Context, pluginID string) (*model.
 		return nil, fmt.Errorf("error dapr state oprator get(%s): %w", pluginID, err)
 	}
 	if item.Etag == "" {
-		return nil, ErrPluginRouteNotExsist
+		return &model.PluginRoute{}, nil
 	}
 	pluginProxyMap := make(model.PluginProxyRouteMap)
 	if err = json.Unmarshal(item.Value, &pluginProxyMap); err != nil {
@@ -169,7 +169,7 @@ func (o *DaprStateOprator) Delete(ctx context.Context, pluginID string) (*model.
 	}
 	pr, ok := pluginProxyMap[pluginID]
 	if !ok {
-		return nil, ErrPluginRouteExsist
+		return &model.PluginRoute{}, nil
 	}
 	delete(pluginProxyMap, pluginID)
 	if len(pluginProxyMap) == 0 {

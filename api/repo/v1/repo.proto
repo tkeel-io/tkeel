@@ -110,6 +110,32 @@ service Repo {
     };
   };
 
+  rpc ListAllRepoInstaller(ListAllRepoInstallerRequest)
+      returns (ListAllRepoInstallerResponse) {
+    option (google.api.http) = {
+      get : "/repos/installers"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "获取所有仓库的安装包列表接口"
+      operation_id : "ListAllRepoInstaller"
+      tags : "Repo"
+      responses : [
+        {
+          key : "200"
+          value : {description : "SUCC"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
+  };
+
   rpc ListRepoInstaller(ListRepoInstallerRequest)
       returns (ListRepoInstallerResponse) {
     option (google.api.http) = {
@@ -192,6 +218,10 @@ message RepoObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo annotations"
       } ];
+  int32 installer_num = 5
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer num"
+      } ];
 }
 
 message InstallerObject {
@@ -237,6 +267,14 @@ message InstallerObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "whether the installer has been installed"
       } ];
+  string desc = 8
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer desc"
+      } ];
+  uint64 timestamp = 9
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "last change chart timestamp"
+      } ];
 }
 
 message CreateRepoRequest {
@@ -278,49 +316,108 @@ message ListRepoResponse {
       } ];
 }
 
-message ListRepoInstallerRequest {
-  string repo = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "repo name"
-      } ];
-  bool installed = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "installed option"
-      } ];
-  int32 page_num = 3
+message ListAllRepoInstallerRequest {
+  int32 page_num = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "query page number"
       } ];
-  int32 page_size = 4
+  int32 page_size = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "query page size"
       } ];
-  string order_by = 5
+  string order_by = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "query items order by field"
       } ];
-  bool is_descending = 6
+  bool is_descending = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "query items inverted sort"
+      } ];
+  string key_words = 5
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items key"
+      } ];
+  bool installed = 10
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installed option"
+      } ];
+}
+
+message ListAllRepoInstallerResponse {
+  int32 total = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "total items"
+      } ];
+  int32 page_num = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page number"
+      } ];
+  int32 page_size = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page size"
+      } ];
+  repeated InstallerObject brief_installers = 10
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "brief installer info list,only has name and version"
+      } ];
+  int32 installed = 11
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installed installer number"
+      } ];
+}
+
+message ListRepoInstallerRequest {
+  int32 page_num = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page number"
+      } ];
+  int32 page_size = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page size"
+      } ];
+  string order_by = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items order by field"
+      } ];
+  bool is_descending = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items inverted sort"
+      } ];
+  string key_words = 5
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items key"
+      } ];
+
+  string repo = 10
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "repo name"
+      } ];
+  bool installed = 11
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installed option"
       } ];
 }
 
 message ListRepoInstallerResponse {
-  repeated InstallerObject brief_installers = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "brief installer info list,only has name and version"
-      } ];
-  int32 total = 2
+  int32 total = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "total items"
       } ];
-  int32 page_num = 3
+  int32 page_num = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "query page number"
       } ];
-  int32 page_size = 4
+  int32 page_size = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "query page size"
+      } ];
+  repeated InstallerObject brief_installers = 10
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "brief installer info list,only has name and version"
+      } ];
+  int32 installed = 11
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installed installer number"
       } ];
 }
 
