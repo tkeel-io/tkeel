@@ -45,6 +45,7 @@ type TenantClient interface {
 	DeleteTenantPlugin(ctx context.Context, in *DeleteTenantPluginRequest, opts ...grpc.CallOption) (*DeleteTenantPluginResponse, error)
 	TenantPluginPermissible(ctx context.Context, in *PluginPermissibleRequest, opts ...grpc.CallOption) (*PluginPermissibleResponse, error)
 	GetResetPasswordKey(ctx context.Context, in *GetResetPasswordKeyRequest, opts ...grpc.CallOption) (*GetResetPasswordKeyResponse, error)
+	ResetPasswordKeyInfo(ctx context.Context, in *RPKInfoRequest, opts ...grpc.CallOption) (*RPKInfoResponse, error)
 }
 
 type tenantClient struct {
@@ -181,6 +182,15 @@ func (c *tenantClient) GetResetPasswordKey(ctx context.Context, in *GetResetPass
 	return out, nil
 }
 
+func (c *tenantClient) ResetPasswordKeyInfo(ctx context.Context, in *RPKInfoRequest, opts ...grpc.CallOption) (*RPKInfoResponse, error) {
+	out := new(RPKInfoResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/ResetPasswordKeyInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TenantServer is the server API for Tenant service.
 // All implementations must embed UnimplementedTenantServer
 // for forward compatibility
@@ -211,6 +221,7 @@ type TenantServer interface {
 	DeleteTenantPlugin(context.Context, *DeleteTenantPluginRequest) (*DeleteTenantPluginResponse, error)
 	TenantPluginPermissible(context.Context, *PluginPermissibleRequest) (*PluginPermissibleResponse, error)
 	GetResetPasswordKey(context.Context, *GetResetPasswordKeyRequest) (*GetResetPasswordKeyResponse, error)
+	ResetPasswordKeyInfo(context.Context, *RPKInfoRequest) (*RPKInfoResponse, error)
 	mustEmbedUnimplementedTenantServer()
 }
 
@@ -259,6 +270,9 @@ func (UnimplementedTenantServer) TenantPluginPermissible(context.Context, *Plugi
 }
 func (UnimplementedTenantServer) GetResetPasswordKey(context.Context, *GetResetPasswordKeyRequest) (*GetResetPasswordKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetResetPasswordKey not implemented")
+}
+func (UnimplementedTenantServer) ResetPasswordKeyInfo(context.Context, *RPKInfoRequest) (*RPKInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResetPasswordKeyInfo not implemented")
 }
 func (UnimplementedTenantServer) mustEmbedUnimplementedTenantServer() {}
 
@@ -525,6 +539,24 @@ func _Tenant_GetResetPasswordKey_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Tenant_ResetPasswordKeyInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RPKInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServer).ResetPasswordKeyInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/ResetPasswordKeyInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServer).ResetPasswordKeyInfo(ctx, req.(*RPKInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Tenant_ServiceDesc is the grpc.ServiceDesc for Tenant service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -587,6 +619,10 @@ var Tenant_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetResetPasswordKey",
 			Handler:    _Tenant_GetResetPasswordKey_Handler,
+		},
+		{
+			MethodName: "ResetPasswordKeyInfo",
+			Handler:    _Tenant_ResetPasswordKeyInfo_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

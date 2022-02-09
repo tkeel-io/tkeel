@@ -166,6 +166,9 @@ func (s *TenantService) CreateUser(ctx context.Context, req *pb.CreateUserReques
 	user.UserName = req.GetBody().GetUsername()
 	user.Password = req.GetBody().GetPassword()
 	user.NickName = req.GetBody().GetNickName()
+	if user.Password == "" {
+		user.Password = "default"
+	}
 	err = user.Create(s.DB)
 	if err != nil {
 		log.Error(err)
@@ -340,4 +343,20 @@ func (s *TenantService) GetResetPasswordKey(ctx context.Context, req *pb.GetRese
 		return nil, pb.ErrInternalStore()
 	}
 	return &pb.GetResetPasswordKeyResponse{TenantId: users[0].TenantID, UserId: users[0].ID, Username: users[0].UserName, NickName: users[0].NickName, ResetKey: users[0].Password}, nil
+}
+
+func (s *TenantService) ResetPasswordKeyInfo(ctx context.Context, req *pb.RPKInfoRequest) (*pb.RPKInfoResponse, error) {
+	user := &model.User{}
+	conditions := map[string]interface{}{"password": req.GetBody().GetResetKey()}
+	total, users, err := user.QueryByCondition(s.DB, conditions, nil)
+	if err != nil || total != 1 {
+		log.Error(err)
+		return nil, pb.ErrInternalError()
+	}
+	return &pb.RPKInfoResponse{
+		NickName: users[0].NickName,
+		UserId:   users[0].ID,
+		Username: users[0].UserName,
+		TenantId: users[0].TenantID,
+	}, nil
 }

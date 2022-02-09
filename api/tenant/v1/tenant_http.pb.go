@@ -40,6 +40,7 @@ type TenantHTTPServer interface {
 	ListTenant(context.Context, *emptypb.Empty) (*ListTenantResponse, error)
 	ListTenantPlugin(context.Context, *ListTenantPluginRequest) (*ListTenantPluginResponse, error)
 	ListUser(context.Context, *ListUserRequest) (*ListUserResponse, error)
+	ResetPasswordKeyInfo(context.Context, *RPKInfoRequest) (*RPKInfoResponse, error)
 	TenantPluginPermissible(context.Context, *PluginPermissibleRequest) (*PluginPermissibleResponse, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
 }
@@ -753,6 +754,64 @@ func (h *TenantHTTPHandler) ListUser(req *go_restful.Request, resp *go_restful.R
 	}
 }
 
+func (h *TenantHTTPHandler) ResetPasswordKeyInfo(req *go_restful.Request, resp *go_restful.Response) {
+	in := RPKInfoRequest{}
+	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.ResetPasswordKeyInfo(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
 func (h *TenantHTTPHandler) TenantPluginPermissible(req *go_restful.Request, resp *go_restful.Response) {
 	in := PluginPermissibleRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
@@ -913,4 +972,6 @@ func RegisterTenantHTTPServer(container *go_restful.Container, srv TenantHTTPSer
 		To(handler.TenantPluginPermissible))
 	ws.Route(ws.GET("/tenants/{tenant_id}/users/{user_id}/rpk").
 		To(handler.GetResetPasswordKey))
+	ws.Route(ws.POST("/tenants/users/rpk/info").
+		To(handler.ResetPasswordKeyInfo))
 }

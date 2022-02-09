@@ -281,6 +281,24 @@ service Tenant {
       } ]
     };
   }
+
+  rpc ResetPasswordKeyInfo(RPKInfoRequest)
+      returns (RPKInfoResponse) {
+    option (google.api.http) = {
+      post : "/tenants/users/rpk/info"
+      body : "body"
+    };
+
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "get reset user password key info"
+      operation_id : "ResetPasswordKeyInfo"
+      tags : "[Security] Tenant"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
 }
 
 // The request message.
@@ -565,3 +583,17 @@ message GetResetPasswordKeyResponse {
   string reset_key = 5;
 }
 
+message RPKInfoRequest {
+  RPKInfoBody body =1;
+}
+
+message RPKInfoBody {
+  string reset_key =1;
+}
+
+message RPKInfoResponse {
+  string user_id =1;
+  string username =2;
+  string nick_name =3;
+  string tenant_id =4;
+}
