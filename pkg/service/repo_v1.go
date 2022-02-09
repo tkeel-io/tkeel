@@ -110,7 +110,7 @@ func (s *RepoService) ListAllRepoInstaller(ctx context.Context,
 			}
 			return ret
 		}(),
-		Installed: int32(len(installedList)),
+		InstalledNum: int32(len(installedList)),
 	}, nil
 }
 
@@ -138,9 +138,9 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 		sort.Sort(ibList)
 	}
 	installedNum := 0
-	for i, v := range ibList {
-		if !v.Installed {
-			installedNum = i + 1
+	for _, v := range ibList {
+		if v.Installed {
+			installedNum++
 			break
 		}
 	}
@@ -162,7 +162,7 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 			}
 			return ret
 		}(),
-		Installed: int32(installedNum),
+		InstalledNum: int32(installedNum),
 	}, nil
 }
 

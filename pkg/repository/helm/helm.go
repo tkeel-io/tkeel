@@ -188,10 +188,10 @@ func (r *Repo) Search(word string) ([]*repository.InstallerBrief, error) {
 		}
 		vMap[v.Chart.Metadata.Version] = struct{}{}
 	}
-	for i := 0; i < len(briefs); i++ {
-		if vMap, ok := installedMap[briefs[i].Name]; ok {
-			if _, ok := vMap[briefs[i].Version]; ok {
-				briefs[i].Installed = true
+	for _, v := range briefs {
+		if vMap, ok := installedMap[v.Name]; ok {
+			if _, ok := vMap[v.Version]; ok {
+				v.Installed = true
 			}
 		}
 	}
@@ -269,7 +269,15 @@ func (r *Repo) Update() (bool, error) {
 
 func (r *Repo) Len() int {
 	if r.index != nil {
-		return len(r.index.helmIndex.Entries)
+		count := 0
+		for _, vs := range r.index.helmIndex.Entries {
+			for _, v := range vs {
+				if _, ok := v.Annotations[tKeelPluginEnableKey]; ok {
+					count++
+				}
+			}
+		}
+		return count
 	}
 	return 0
 }
