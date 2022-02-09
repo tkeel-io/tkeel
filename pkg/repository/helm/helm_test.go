@@ -26,7 +26,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	helmAction "helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/getter"
 )
 
 func TestDriver_String(t *testing.T) {
@@ -53,7 +52,6 @@ func TestHelmRepo_Close(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -70,7 +68,6 @@ func TestHelmRepo_Close(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -84,7 +81,6 @@ func TestHelmRepo_GetDriver(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -100,7 +96,6 @@ func TestHelmRepo_GetDriver(t *testing.T) {
 			r := Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -115,7 +110,6 @@ func TestHelmRepo_Info(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -137,7 +131,6 @@ func TestHelmRepo_Info(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -152,7 +145,6 @@ func TestHelmRepo_Namespace(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -168,7 +160,6 @@ func TestHelmRepo_Namespace(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -183,7 +174,6 @@ func TestHelmRepo_SetDriver(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -203,7 +193,6 @@ func TestHelmRepo_SetDriver(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -219,7 +208,6 @@ func TestHelmRepo_SetInfo(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -243,7 +231,6 @@ func TestHelmRepo_SetInfo(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -258,7 +245,6 @@ func TestHelmRepo_SetNamespace(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -278,7 +264,6 @@ func TestHelmRepo_SetNamespace(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -293,7 +278,6 @@ func TestHelmRepo_setActionConfig(t *testing.T) {
 	type fields struct {
 		info         *repository.Info
 		actionConfig *helmAction.Configuration
-		httpGetter   getter.Getter
 		driver       Driver
 		namespace    string
 	}
@@ -309,7 +293,6 @@ func TestHelmRepo_setActionConfig(t *testing.T) {
 			r := &Repo{
 				info:         tt.fields.info,
 				actionConfig: tt.fields.actionConfig,
-				httpGetter:   tt.fields.httpGetter,
 				driver:       tt.fields.driver,
 				namespace:    tt.fields.namespace,
 			}
@@ -323,7 +306,7 @@ func TestHelmRepo_setActionConfig(t *testing.T) {
 
 func TestNewHelmRepo(t *testing.T) {
 	type args struct {
-		info      repository.Info
+		info      *repository.Info
 		driver    Driver
 		namespace string
 	}
@@ -336,19 +319,11 @@ func TestNewHelmRepo(t *testing.T) {
 		{
 			"new helm repo",
 			args{
-				info: repository.Info{
-					Name:        "name",
-					URL:         "url",
-					Annotations: nil,
-				},
+				info:      nil,
 				driver:    Mem,
 				namespace: "namespace",
 			},
-			&Repo{info: &repository.Info{
-				Name:        "name",
-				URL:         "url",
-				Annotations: nil,
-			}, driver: Mem, namespace: "namespace"},
+			&Repo{info: nil, driver: Mem, namespace: "namespace"},
 			false,
 		},
 	}

@@ -41,12 +41,22 @@ type Option struct {
 	Value interface{} `json:"value"`
 }
 
+type Maintainer struct {
+	Name  string `json:"name"`
+	URL   string `json:"url"`
+	Email string `json:"email"`
+}
+
 // InstallerBrief installer brief information.
 type InstallerBrief struct {
-	Name      string `json:"name"`
-	Repo      string `json:"repo"`
-	Version   string `json:"version"`
-	Installed bool   `json:"installed"`
+	Name            string            `json:"name"`
+	Repo            string            `json:"repo"`
+	Version         string            `json:"version"`
+	Installed       bool              `json:"installed"`
+	Desc            string            `json:"desc"`
+	Maintainers     []*Maintainer     `json:"maintainers"`
+	Annotations     map[string]string `json:"annotations"`
+	CreateTimestamp int64             `json:"create_timestamp"`
 }
 
 func (ib *InstallerBrief) String() string {
@@ -123,6 +133,10 @@ type Repository interface {
 	Get(name, version string) (Installer, error)
 	// Installed find installed installer(contains installation packages that have been deleted in the repository).
 	Installed() ([]Installer, error)
+	// Update update repository installer.return whether updated.
+	Update() (bool, error)
+	// Len get all installer number.
+	Len() int
 	// Close this repository.
 	Close() error
 }

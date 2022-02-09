@@ -228,8 +228,8 @@ init-proto:
 ################################################################################
 # Target: gen-rudder-proto                                                       #
 ################################################################################
-.PHONY: gen-rudder-v1-proto
-gen-rudder-v1-proto:
+.PHONY: gen-proto
+gen-proto:
 	protoc --proto_path=. \
 	       --proto_path=./third_party \
  	       --go_out=paths=source_relative:. \

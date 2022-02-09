@@ -22,7 +22,7 @@ type PluginClient interface {
 	InstallPlugin(ctx context.Context, in *InstallPluginRequest, opts ...grpc.CallOption) (*InstallPluginResponse, error)
 	UninstallPlugin(ctx context.Context, in *UninstallPluginRequest, opts ...grpc.CallOption) (*UninstallPluginResponse, error)
 	GetPlugin(ctx context.Context, in *GetPluginRequest, opts ...grpc.CallOption) (*GetPluginResponse, error)
-	ListPlugin(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListPluginResponse, error)
+	ListPlugin(ctx context.Context, in *ListPluginRequest, opts ...grpc.CallOption) (*ListPluginResponse, error)
 	TenantEnable(ctx context.Context, in *TenantEnableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	TenantDisable(ctx context.Context, in *TenantDisableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListEnabledTenants(ctx context.Context, in *ListEnabledTenantsRequest, opts ...grpc.CallOption) (*ListEnabledTenantsResponse, error)
@@ -63,7 +63,7 @@ func (c *pluginClient) GetPlugin(ctx context.Context, in *GetPluginRequest, opts
 	return out, nil
 }
 
-func (c *pluginClient) ListPlugin(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListPluginResponse, error) {
+func (c *pluginClient) ListPlugin(ctx context.Context, in *ListPluginRequest, opts ...grpc.CallOption) (*ListPluginResponse, error) {
 	out := new(ListPluginResponse)
 	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.plugin.v1.Plugin/ListPlugin", in, out, opts...)
 	if err != nil {
@@ -106,7 +106,7 @@ type PluginServer interface {
 	InstallPlugin(context.Context, *InstallPluginRequest) (*InstallPluginResponse, error)
 	UninstallPlugin(context.Context, *UninstallPluginRequest) (*UninstallPluginResponse, error)
 	GetPlugin(context.Context, *GetPluginRequest) (*GetPluginResponse, error)
-	ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error)
+	ListPlugin(context.Context, *ListPluginRequest) (*ListPluginResponse, error)
 	TenantEnable(context.Context, *TenantEnableRequest) (*emptypb.Empty, error)
 	TenantDisable(context.Context, *TenantDisableRequest) (*emptypb.Empty, error)
 	ListEnabledTenants(context.Context, *ListEnabledTenantsRequest) (*ListEnabledTenantsResponse, error)
@@ -126,7 +126,7 @@ func (UnimplementedPluginServer) UninstallPlugin(context.Context, *UninstallPlug
 func (UnimplementedPluginServer) GetPlugin(context.Context, *GetPluginRequest) (*GetPluginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPlugin not implemented")
 }
-func (UnimplementedPluginServer) ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error) {
+func (UnimplementedPluginServer) ListPlugin(context.Context, *ListPluginRequest) (*ListPluginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPlugin not implemented")
 }
 func (UnimplementedPluginServer) TenantEnable(context.Context, *TenantEnableRequest) (*emptypb.Empty, error) {
@@ -206,7 +206,7 @@ func _Plugin_GetPlugin_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Plugin_ListPlugin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(ListPluginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -218,7 +218,7 @@ func _Plugin_ListPlugin_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/io.tkeel.rudder.api.plugin.v1.Plugin/ListPlugin",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PluginServer).ListPlugin(ctx, req.(*emptypb.Empty))
+		return srv.(PluginServer).ListPlugin(ctx, req.(*ListPluginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

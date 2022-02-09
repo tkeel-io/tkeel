@@ -118,7 +118,7 @@ service Plugin {
     };
   };
 
-  rpc ListPlugin(google.protobuf.Empty) returns (ListPluginResponse) {
+  rpc ListPlugin(ListPluginRequest) returns (ListPluginResponse) {
     option (google.api.http) = {
       get : "/plugins"
     };
@@ -268,18 +268,30 @@ message Installer {
  **/
 
 message EnabledTenant {
-  string tenant_id = 1
+  string title = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "enable tenant title"
+      } ];
+  string remark = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "enable tenant remark"
+      } ];
+  string tenant_id = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "enable tenant id"
       } ]; // enable tenant id.
-  string operator_id = 2
+  string operator_id = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "operator user id"
       } ]; // operator user id.
-  int64 enable_timestamp = 3
+  int64 enable_timestamp = 5
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "enable timestamp"
       } ]; // enable timestamp.
+  int32 user_num = 6
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "enable tenant user number"
+      } ];
 }
 
 /**
@@ -382,8 +394,43 @@ message GetPluginResponse {
       } ];
 }
 
+message ListPluginRequest {
+  int32 page_num = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page number"
+      } ];
+  int32 page_size = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page size"
+      } ];
+  string order_by = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items order by field"
+      } ];
+  bool is_descending = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items inverted sort"
+      } ];
+  string key_words = 5
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items key"
+      } ];
+}
+
 message ListPluginResponse {
-  repeated PluginObject plugin_list = 1
+  int32 total = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "total items"
+      } ];
+  int32 page_num = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page number"
+      } ];
+  int32 page_size = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page size"
+      } ];
+  repeated PluginObject plugin_list = 10
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin object list"
       } ];
@@ -412,14 +459,46 @@ message TenantDisableRequest {
 }
 
 message ListEnabledTenantsRequest {
-  string id = 1
+  int32 page_num = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page number"
+      } ];
+  int32 page_size = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page size"
+      } ];
+  string order_by = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items order by field"
+      } ];
+  bool is_descending = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items inverted sort"
+      } ];
+  string key_words = 5
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query items key"
+      } ];
+  string id = 10
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
       } ];
 }
 
 message ListEnabledTenantsResponse {
-  repeated EnabledTenant tenants = 1
+  int32 total = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "total items"
+      } ];
+  int32 page_num = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page number"
+      } ];
+  int32 page_size = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "query page size"
+      } ];
+  repeated EnabledTenant tenants = 10
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin enable tenants list"
       } ];

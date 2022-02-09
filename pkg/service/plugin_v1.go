@@ -20,11 +20,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"sort"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/security/authz/rbac"
+	s_model "github.com/tkeel-io/security/model"
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	pb "github.com/tkeel-io/tkeel/api/plugin/v1"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
@@ -40,6 +43,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/version"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gopkg.in/yaml.v3"
+	"gorm.io/gorm"
 )
 
 var (
@@ -56,9 +60,10 @@ type PluginServiceV1 struct {
 	pluginRouteOp  proute.Operator
 	tenantPluginOp rbac.TenantPluginMgr
 	openapiClient  openapi.Client
+	db             *gorm.DB
 }
 
-func NewPluginServiceV1(conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Operator,
+func NewPluginServiceV1(db *gorm.DB, conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Operator,
 	prOp proute.Operator, tpOp rbac.TenantPluginMgr, openapi openapi.Client) *PluginServiceV1 {
 	ok, err := tpOp.OnCreateTenant(model.TKeelTenant)
 	if err != nil {
@@ -79,6 +84,7 @@ func NewPluginServiceV1(conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Ope
 		pluginRouteOp:  prOp,
 		tenantPluginOp: tpOp,
 		openapiClient:  openapi,
+		db:             db,
 	}
 }
 
@@ -175,18 +181,17 @@ func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 	}
 	pr, err := s.pluginRouteOp.Get(ctx, req.GetId())
 	if err != nil {
-		log.Errorf("error plugin operator get: %s", err)
-		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
-			return nil, pb.PluginErrPluginRouteNotFound()
+		if !errors.Is(err, proute.ErrPluginRouteNotExsist) {
+			log.Errorf("error plugin operator get: %s", err)
+			return nil, pb.PluginErrInternalStore()
 		}
-		return nil, pb.PluginErrInternalStore()
 	}
 	if p.Installer == nil {
 		log.Errorf("error plugin(%s) installer is nil", p)
 		return nil, pb.PluginErrInternalStore()
 	}
 	// check whether the extension point is implemented.
-	if len(pr.RegisterAddons) != 0 {
+	if pr != nil && len(pr.RegisterAddons) != 0 {
 		log.Errorf("error uninstall plugin(%s): other plugins have implemented the extension points of this plugin.", req.GetId())
 		return nil, pb.PluginErrUninstallPluginHasBeenDepended()
 	}
@@ -256,13 +261,10 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 	}
 	gPluginRoute, err := s.pluginRouteOp.Get(ctx, req.Id)
 	if err != nil {
-		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
-			return &pb.GetPluginResponse{
-				Plugin: util.ConvertModel2PluginObjectPb(gPlugin, nil),
-			}, nil
+		if !errors.Is(err, proute.ErrPluginRouteNotExsist) {
+			log.Errorf("error plugin(%s) route get: %s", req.Id, err)
+			return nil, pb.PluginErrInternalStore()
 		}
-		log.Errorf("error plugin(%s) route get: %s", req.Id, err)
-		return nil, pb.PluginErrInternalStore()
 	}
 
 	return &pb.GetPluginResponse{
@@ -271,7 +273,7 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 }
 
 func (s *PluginServiceV1) ListPlugin(ctx context.Context,
-	req *emptypb.Empty) (*pb.ListPluginResponse, error) {
+	req *pb.ListPluginRequest) (*pb.ListPluginResponse, error) {
 	ps, err := s.pluginOp.List(ctx)
 	if err != nil {
 		log.Errorf("error plugin list: %s", err)
@@ -285,8 +287,10 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 		} else {
 			pr, err := s.pluginRouteOp.Get(ctx, p.ID)
 			if err != nil {
-				log.Errorf("error plugin list get plugin(%s) route: %s", p.ID, err)
-				return nil, pb.PluginErrInternalStore()
+				if !errors.Is(err, proute.ErrPluginRouteNotExsist) {
+					log.Errorf("error plugin list get plugin(%s) route: %s", p.ID, err)
+					return nil, pb.PluginErrInternalStore()
+				}
 			}
 			pbPlugin = util.ConvertModel2PluginObjectPb(p, pr)
 		}
@@ -422,7 +426,7 @@ func (s *PluginServiceV1) TenantDisable(ctx context.Context,
 	return &emptypb.Empty{}, nil
 }
 
-func (s *PluginServiceV1) ListEnableTenants(ctx context.Context,
+func (s *PluginServiceV1) ListEnabledTenants(ctx context.Context,
 	req *pb.ListEnabledTenantsRequest) (*pb.ListEnabledTenantsResponse, error) {
 	p, err := s.pluginOp.Get(ctx, req.Id)
 	if err != nil {
@@ -432,18 +436,56 @@ func (s *PluginServiceV1) ListEnableTenants(ctx context.Context,
 		}
 		return nil, pb.PluginErrInternalStore()
 	}
-	return &pb.ListEnabledTenantsResponse{
-		Tenants: func() []*pb.EnabledTenant {
-			ret := make([]*pb.EnabledTenant, 0, len(p.EnableTenantes))
-			for _, v := range p.EnableTenantes {
-				ret = append(ret, &pb.EnabledTenant{
-					TenantId:        v.TenantID,
-					OperatorId:      v.OperatorID,
-					EnableTimestamp: v.EnableTimestamp,
-				})
+
+	regular := getReglarStringKeyWords(req.KeyWords)
+	exp, err := regexp.Compile(regular)
+	if err != nil {
+		log.Errorf("error compile regular(%s): %s", regular, err)
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	daoTenant := &s_model.Tenant{}
+	daoUser := &s_model.User{}
+	ret := make([]*pb.EnabledTenant, 0, len(p.EnableTenantes))
+	for _, v := range p.EnableTenantes {
+		if v.TenantID == model.TKeelTenant {
+			continue
+		}
+		if exp.MatchString(v.TenantID) {
+			daoTenant.ID = v.TenantID
+			ts, err := daoTenant.List(s.db, nil)
+			if err != nil {
+				log.Warnf("error list tenant(%s): %s", v.TenantID, err)
+				continue
 			}
-			return ret
-		}(),
+			if len(ts) != 1 {
+				log.Warnf("error list tenant(%s/%d) invalid", v.TenantID, len(ts))
+				continue
+			}
+			num, err := daoUser.CountInTenant(s.db, v.TenantID)
+			if err != nil {
+				log.Warnf("error count user in tenant(%s): %s", v.TenantID, err)
+				continue
+			}
+			ret = append(ret, &pb.EnabledTenant{
+				TenantId:        v.TenantID,
+				OperatorId:      v.OperatorID,
+				EnableTimestamp: v.EnableTimestamp,
+				Title:           ts[0].Title,
+				Remark:          ts[0].Remark,
+				UserNum:         int32(num),
+			})
+		}
+	}
+	etList := enabledTenantList(ret)
+	sort.Sort(etList)
+	total := etList.Len()
+	start, end := getQueryItemsStartAndEnd(int(req.PageNum), int(req.PageSize), total)
+	etList = etList[start:end]
+	return &pb.ListEnabledTenantsResponse{
+		Total:    int32(total),
+		PageNum:  req.PageNum,
+		PageSize: req.PageSize,
+		Tenants:  etList,
 	}, nil
 }
 
@@ -453,7 +495,8 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 		log.Errorf("register error parse watch interval: %s", err)
 		return
 	}
-	ticker := time.NewTicker(duration)
+
+	ticker := time.NewTicker(duration * 10)
 	registrationfailed := true
 	defer func() {
 		if registrationfailed {
@@ -462,19 +505,19 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 			}
 		}
 	}()
-	log.Debugf("start register plugin(%s)", pID)
+	retry := 5
+	log.Debugf("start register plugin(%s) retry: %d", pID, retry)
 	for {
 		select {
 		case <-ticker.C:
 			resp, err := s.queryStatus(ctx, pID)
 			if err != nil {
-				log.Errorf("register query plugin(%s) status: %s", pID, err)
-				if err = s.updatePluginStatus(ctx, pID, openapi_v1.PluginStatus_ERR_REGISTER); err != nil {
-					log.Errorf("register update register error plugin: %s", err)
+				log.Warnf("register query plugin(%s) status: %s retry: %d", pID, err, retry)
+				if retry == 0 {
+					return
 				}
-				return
-			}
-			if resp.Status == openapi_v1.PluginStatus_RUNNING {
+				retry--
+			} else if resp.Status == openapi_v1.PluginStatus_RUNNING {
 				// get register plugin identify.
 				resp, err := s.queryIdentify(ctx, pID)
 				if err != nil {
@@ -490,6 +533,7 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 					log.Errorf("register error register plugin: %s", err)
 					return
 				}
+				registrationfailed = false
 				log.Debugf("register plugin(%s) ok", pID)
 				return
 			}
@@ -791,6 +835,11 @@ func (s *PluginServiceV1) deletePlugin(ctx context.Context, pID string) (util.Ro
 func (s *PluginServiceV1) deletePluginRoute(ctx context.Context, pID string) (util.RollbackFunc, error) {
 	dpr, err := s.pluginRouteOp.Delete(ctx, pID)
 	if err != nil {
+		if errors.Is(err, proute.ErrPluginRouteNotExsist) {
+			return func() error {
+				return nil
+			}, nil
+		}
 		log.Errorf("error delete plugin(%s): %s", pID, err)
 		return nil, pb.PluginErrUninstallPlugin()
 	}
@@ -835,3 +884,9 @@ func convertConfiguration2Option(installerConfiguration map[string]interface{}) 
 	}
 	return ret
 }
+
+type enabledTenantList []*pb.EnabledTenant
+
+func (a enabledTenantList) Len() int           { return len(a) }
+func (a enabledTenantList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a enabledTenantList) Less(i, j int) bool { return a[i].EnableTimestamp < a[j].EnableTimestamp }

@@ -31,7 +31,7 @@ type PluginHTTPServer interface {
 	GetPlugin(context.Context, *GetPluginRequest) (*GetPluginResponse, error)
 	InstallPlugin(context.Context, *InstallPluginRequest) (*InstallPluginResponse, error)
 	ListEnabledTenants(context.Context, *ListEnabledTenantsRequest) (*ListEnabledTenantsResponse, error)
-	ListPlugin(context.Context, *emptypb.Empty) (*ListPluginResponse, error)
+	ListPlugin(context.Context, *ListPluginRequest) (*ListPluginResponse, error)
 	TenantDisable(context.Context, *TenantDisableRequest) (*emptypb.Empty, error)
 	TenantEnable(context.Context, *TenantEnableRequest) (*emptypb.Empty, error)
 	UninstallPlugin(context.Context, *UninstallPluginRequest) (*UninstallPluginResponse, error)
@@ -222,7 +222,7 @@ func (h *PluginHTTPHandler) ListEnabledTenants(req *go_restful.Request, resp *go
 }
 
 func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful.Response) {
-	in := emptypb.Empty{}
+	in := ListPluginRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")

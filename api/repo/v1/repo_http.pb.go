@@ -31,6 +31,7 @@ type RepoHTTPServer interface {
 	CreateRepo(context.Context, *CreateRepoRequest) (*emptypb.Empty, error)
 	DeleteRepo(context.Context, *DeleteRepoRequest) (*DeleteRepoResponse, error)
 	GetRepoInstaller(context.Context, *GetRepoInstallerRequest) (*GetRepoInstallerResponse, error)
+	ListAllRepoInstaller(context.Context, *ListAllRepoInstallerRequest) (*ListAllRepoInstallerResponse, error)
 	ListRepo(context.Context, *emptypb.Empty) (*ListRepoResponse, error)
 	ListRepoInstaller(context.Context, *ListRepoInstallerRequest) (*ListRepoInstallerResponse, error)
 }
@@ -219,6 +220,58 @@ func (h *RepoHTTPHandler) GetRepoInstaller(req *go_restful.Request, resp *go_res
 	}
 }
 
+func (h *RepoHTTPHandler) ListAllRepoInstaller(req *go_restful.Request, resp *go_restful.Response) {
+	in := ListAllRepoInstallerRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.ListAllRepoInstaller(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
 func (h *RepoHTTPHandler) ListRepo(req *go_restful.Request, resp *go_restful.Response) {
 	in := emptypb.Empty{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
@@ -350,6 +403,8 @@ func RegisterRepoHTTPServer(container *go_restful.Container, srv RepoHTTPServer)
 		To(handler.DeleteRepo))
 	ws.Route(ws.GET("/repos").
 		To(handler.ListRepo))
+	ws.Route(ws.GET("/repos/installers").
+		To(handler.ListAllRepoInstaller))
 	ws.Route(ws.GET("/repos/{repo}/installers").
 		To(handler.ListRepoInstaller))
 	ws.Route(ws.GET("/repos/{repo}/installers/{installer_name}/{installer_version}").

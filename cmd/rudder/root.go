@@ -162,14 +162,14 @@ var rootCmd = &cobra.Command{
 					if !ok {
 						return nil, errors.New("invalid argument type")
 					}
-					repo, err := helm.NewHelmRepo(*connectInfo, drive, namespace)
+					repo, err := helm.NewHelmRepo(connectInfo, drive, namespace)
 					if err != nil {
 						return nil, fmt.Errorf("error new helm repo: %w", err)
 					}
 					return repo, nil
 				},
 				func(pluginID string) error {
-					repo, err := helm.NewHelmRepo(repository.Info{}, helm.Secret, conf.Tkeel.Namespace)
+					repo, err := helm.NewHelmRepo(nil, helm.Secret, conf.Tkeel.Namespace)
 					if err != nil {
 						return fmt.Errorf("error new helm repo: %w", err)
 					}
@@ -182,7 +182,7 @@ var rootCmd = &cobra.Command{
 
 			// init service.
 			// plugin service.
-			pluginSrvV1 := service.NewPluginServiceV1(conf.Tkeel, kvOp, pOp, prOp, tenantPluginOp, openapiCli)
+			pluginSrvV1 := service.NewPluginServiceV1(gormdb, conf.Tkeel, kvOp, pOp, prOp, tenantPluginOp, openapiCli)
 			plugin_v1.RegisterPluginHTTPServer(httpSrv.Container, pluginSrvV1)
 			plugin_v1.RegisterPluginServer(grpcSrv.GetServe(), pluginSrvV1)
 			// oauth2 service.
