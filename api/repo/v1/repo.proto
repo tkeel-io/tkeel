@@ -360,7 +360,7 @@ message ListAllRepoInstallerResponse {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "brief installer info list,only has name and version"
       } ];
-  int32 installed = 11
+  int32 installed_num = 11
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installed installer number"
       } ];
@@ -415,7 +415,7 @@ message ListRepoInstallerResponse {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "brief installer info list,only has name and version"
       } ];
-  int32 installed = 11
+  int32 installed_num = 11
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installed installer number"
       } ];

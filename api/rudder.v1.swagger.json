@@ -2892,7 +2892,7 @@
           },
           "description": "brief installer info list,only has name and version"
         },
-        "installed": {
+        "installed_num": {
           "type": "integer",
           "format": "int32",
           "description": "installed installer number"
@@ -2992,7 +2992,7 @@
           },
           "description": "brief installer info list,only has name and version"
         },
-        "installed": {
+        "installed_num": {
           "type": "integer",
           "format": "int32",
           "description": "installed installer number"
