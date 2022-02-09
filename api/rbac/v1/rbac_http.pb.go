@@ -84,7 +84,8 @@ func (h *RbacHTTPHandler) AddRolePermission(req *go_restful.Request, resp *go_re
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -146,7 +147,8 @@ func (h *RbacHTTPHandler) AddRolePermissionList(req *go_restful.Request, resp *g
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -208,7 +210,8 @@ func (h *RbacHTTPHandler) AddUserRoles(req *go_restful.Request, resp *go_restful
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -265,7 +268,8 @@ func (h *RbacHTTPHandler) CheckUserPermission(req *go_restful.Request, resp *go_
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -327,7 +331,8 @@ func (h *RbacHTTPHandler) CreateRoles(req *go_restful.Request, resp *go_restful.
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -384,7 +389,8 @@ func (h *RbacHTTPHandler) DeleteRole(req *go_restful.Request, resp *go_restful.R
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -441,7 +447,8 @@ func (h *RbacHTTPHandler) DeleteRolePermission(req *go_restful.Request, resp *go
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -498,7 +505,8 @@ func (h *RbacHTTPHandler) DeleteUserRole(req *go_restful.Request, resp *go_restf
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -555,7 +563,8 @@ func (h *RbacHTTPHandler) ListRole(req *go_restful.Request, resp *go_restful.Res
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
@@ -612,7 +621,8 @@ func (h *RbacHTTPHandler) ListUserPermissions(req *go_restful.Request, resp *go_
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",

@@ -65,7 +65,8 @@ func (h *AuthenticationHTTPHandler) Authenticate(req *go_restful.Request, resp *
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",

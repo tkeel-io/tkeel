@@ -65,7 +65,8 @@ func (h *EntryHTTPHandler) GetEntries(req *go_restful.Request, resp *go_restful.
 	}
 
 	outB, err := protojson.MarshalOptions{
-		UseProtoNames: true,
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
 		Code: http.StatusOK,
 		Msg:  "ok",
