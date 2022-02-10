@@ -608,6 +608,7 @@ func (s *PluginServiceV1) checkIdentify(ctx context.Context,
 		return fmt.Errorf("error plugin(%s) depend tkeel version(%s) not invalid",
 			resp.PluginId, resp.TkeelVersion)
 	}
+	// TODO: openapi depence plugin check.
 	return nil
 }
 

@@ -57,6 +57,7 @@ type InstallerBrief struct {
 	Maintainers     []*Maintainer     `json:"maintainers"`
 	Annotations     map[string]string `json:"annotations"`
 	CreateTimestamp int64             `json:"create_timestamp"`
+	Icon            string            `json:"icon"`
 }
 
 func (ib *InstallerBrief) String() string {

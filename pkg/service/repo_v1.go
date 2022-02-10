@@ -236,6 +236,7 @@ func convertInstallerBrief2PB(ib *repository.InstallerBrief) *pb.InstallerObject
 		}(),
 		Desc:      ib.Desc,
 		Timestamp: uint64(ib.CreateTimestamp),
+		Icon:      ib.Icon,
 	}
 }
 
@@ -285,6 +286,7 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 		}(),
 		Desc:      i.Brief().Desc,
 		Timestamp: uint64(ib.CreateTimestamp),
+		Icon:      ib.Icon,
 	}
 }
 
