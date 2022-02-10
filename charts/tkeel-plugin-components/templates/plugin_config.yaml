@@ -20,7 +20,9 @@ spec:
       trustDomain: 'tkeel'
       namespace: {{ .Release.Namespace | quote }}
     {{- end }}
+{{- if (ne .Values.pluginID "keel") }}
   httpPipeline:
     handlers:
     - name: {{ .Values.pluginID }}-oauth2-client
       type: middleware.http.oauth2clientcredentials
+{{- end -}}

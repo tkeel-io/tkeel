@@ -118,7 +118,7 @@ func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.Authen
 			ID: pluginID,
 		}
 		// set user.
-		if pluginID == "keel" {
+		if pluginID == "" {
 			log.Debugf("external flow(%s)", req)
 			sess.User, err = s.checkAuthorization(ctx, header)
 			if err != nil {
@@ -296,6 +296,7 @@ func (s *AuthenticationService) checkXPluginJwt(ctx context.Context, header http
 	if pluginToken == "" {
 		return "", nil
 	}
+	log.Debugf("pluginTokens: %s", pluginToken)
 	payload, ok, err := s.secretProvider.Parse(strings.TrimPrefix(pluginToken, "Bearer "))
 	if err != nil {
 		return "", fmt.Errorf("error parse plugin token(%s): %w", pluginToken, err)
@@ -318,7 +319,7 @@ func (s *AuthenticationService) checkXPluginJwt(ctx context.Context, header http
 func (s *AuthenticationService) checkAuthorization(ctx context.Context, header http.Header) (*model.User, error) {
 	authorization := header.Get(model.AuthorizationHeader)
 	if authorization == "" {
-		return nil, errors.New("invalid authorization")
+		return nil, errors.New("invalid authorization is nil")
 	}
 	isManager, err := s.isManagerToken(authorization)
 	if err != nil {
@@ -351,7 +352,7 @@ func (s *AuthenticationService) checkAuthorization(ctx context.Context, header h
 			return nil, fmt.Errorf("error parse token(%s): %w", authorization, err)
 		}
 		if !valid {
-			return nil, errors.New("invalid authorization")
+			return nil, errors.New("manager invalid authorization")
 		}
 		user.User = model.TKeelUser
 		user.Tenant = model.TKeelTenant

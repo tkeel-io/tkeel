@@ -69,6 +69,7 @@ func (r PluginRes) ToInstallerBrief() *repository.InstallerBrief {
 			return ret
 		}(),
 		CreateTimestamp: r.ChartInfo.Created.Unix(),
+		Icon:            r.ChartInfo.Icon,
 	}
 }
 
