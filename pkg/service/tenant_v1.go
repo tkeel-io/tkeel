@@ -188,7 +188,7 @@ func (s *TenantService) CreateUser(ctx context.Context, req *pb.CreateUserReques
 		}
 	}
 
-	resp = &pb.CreateUserResponse{TenantId: user.TenantID, Username: user.UserName, UserId: user.ID}
+	resp = &pb.CreateUserResponse{TenantId: user.TenantID, Username: user.UserName, UserId: user.ID, ResetKey: user.Password}
 	return resp, nil
 }
 
@@ -242,7 +242,7 @@ func (s *TenantService) ListUser(ctx context.Context, req *pb.ListUserRequest) (
 	userList := make([]*pb.UserListData, len(users))
 	for i, v := range users {
 		detail := &pb.UserListData{TenantId: v.TenantID, UserId: v.ID, Username: v.UserName,
-			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName, CreateAt: v.CreatedAt.UnixMilli()}
+			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName, CreatedAt: v.CreatedAt.UnixMilli()}
 		detail.Roles = s.RBACOp.GetRolesForUserInDomain(v.ID, v.TenantID)
 		userList[i] = detail
 	}
@@ -266,7 +266,7 @@ func (s *TenantService) UpdateUser(ctx context.Context, req *pb.UpdateUserReques
 		return nil, pb.ErrInternalError()
 	}
 	userDao := model.User{}
-	err = userDao.Update(s.DB, req.GetUserId(), req.GetTenantId(), map[string]interface{}{"nick_name": req.GetBody().GetNickName()})
+	err = userDao.Update(s.DB, req.GetTenantId(), req.GetUserId(), map[string]interface{}{"nick_name": req.GetBody().GetNickName()})
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrInternalError()

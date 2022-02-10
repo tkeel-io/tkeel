@@ -2593,6 +2593,10 @@
         },
         "username": {
           "type": "string"
+        },
+        "reset_key": {
+          "type": "string",
+          "title": "reset password key"
         }
       }
     },
@@ -3526,7 +3530,7 @@
         "avatar": {
           "type": "string"
         },
-        "create_at": {
+        "created_at": {
           "type": "string",
           "format": "int64"
         },
