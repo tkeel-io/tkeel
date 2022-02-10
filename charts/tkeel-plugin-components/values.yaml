@@ -2,3 +2,5 @@ pluginID: changeme
 rudder:
   port: 31234
 secret: changeme
+
+pipeline: false
