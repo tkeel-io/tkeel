@@ -181,7 +181,7 @@ func (s *TenantService) CreateUser(ctx context.Context, req *pb.CreateUserReques
 			gpolicy := []string{user.ID, v, req.GetTenantId()}
 			gpolicies[i] = gpolicy
 		}
-		_, err = s.RBACOp.AddGroupingPolicy(gpolicies)
+		_, err = s.RBACOp.AddGroupingPolicies(gpolicies)
 		if err != nil {
 			log.Error(err)
 			return nil, pb.ErrInternalError()
