@@ -1,4 +1,4 @@
-{{- if .Values.pipeline -}}
+{{- if (ne .Values.pluginID "keel") -}}
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
