@@ -120,7 +120,7 @@ func (s *OauthService) Authenticate(ctx context.Context, empty *emptypb.Empty) (
 	}
 	userID := token.GetUserID()
 	user := &model.User{}
-	_, users, err := user.QueryByCondition(s.UserDB, map[string]interface{}{"id": userID}, nil)
+	_, users, err := user.QueryByCondition(s.UserDB, map[string]interface{}{"id": userID}, nil, "")
 	if err != nil || len(users) != 1 {
 		log.Error(err)
 		return nil, pb.OauthErrServerError()
@@ -254,7 +254,7 @@ func bearerAuth(header http.Header) (string, bool) {
 
 func (s *OauthService) ResetPassword(ctx context.Context, req *pb.ResetPasswordRequest) (*pb.ResetPasswordResponse, error) {
 	uDao := &model.User{}
-	total, users, err := uDao.QueryByCondition(s.UserDB, map[string]interface{}{"password": req.GetBody().GetResetKey()}, nil)
+	total, users, err := uDao.QueryByCondition(s.UserDB, map[string]interface{}{"password": req.GetBody().GetResetKey()}, nil, "")
 	if err != nil || total != 1 {
 		log.Error(err)
 		return nil, pb.OauthErrInvalidRequest()

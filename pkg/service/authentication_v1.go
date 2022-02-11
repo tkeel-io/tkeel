@@ -334,7 +334,7 @@ func (s *AuthenticationService) checkAuthorization(ctx context.Context, header h
 		}
 		userID := token.GetUserID()
 		var u *s_model.User
-		_, users, err := u.QueryByCondition(s.userDB, map[string]interface{}{"id": userID}, nil)
+		_, users, err := u.QueryByCondition(s.userDB, map[string]interface{}{"id": userID}, nil, "")
 		if err != nil || len(users) != 1 {
 			return nil, fmt.Errorf("error query user(%s)", userID)
 		}
