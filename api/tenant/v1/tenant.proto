@@ -483,6 +483,8 @@ message CreateUserResponse {
   string tenant_id = 1;
   string user_id = 2;
   string username = 3;
+  // reset password key
+  string reset_key =4;
 }
 
 message GetUserRequest {
@@ -524,7 +526,7 @@ message UserListData {
   string email = 5;
   string nick_name = 6;
   string avatar = 7;
-  int64 create_at =8;
+  int64 created_at =8;
   repeated string roles=9;
 }
 
