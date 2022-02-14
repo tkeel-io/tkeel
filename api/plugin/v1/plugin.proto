@@ -441,7 +441,17 @@ message TenantEnableRequest {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
       } ];
-  bytes extra = 2
+  message EnableExtraData {
+    string desc = 1
+        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+          description : "extra data"
+        } ];
+    bytes extra = 2
+        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+          description : "extra data"
+        } ];
+  }
+  EnableExtraData extra = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "extra data"
       } ];
