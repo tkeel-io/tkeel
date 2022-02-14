@@ -201,7 +201,7 @@ func (s *TenantService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*p
 	)
 	condition["id"] = req.GetUserId()
 	condition["tenant_id"] = req.GetTenantId()
-	_, users, err := user.QueryByCondition(s.DB, condition, nil)
+	_, users, err := user.QueryByCondition(s.DB, condition, nil, "")
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
@@ -234,7 +234,7 @@ func (s *TenantService) ListUser(ctx context.Context, req *pb.ListUserRequest) (
 	page.PageSize = int(req.PageSize)
 	page.OrderBy = req.OrderBy
 	page.IsDescending = req.IsDescending
-	total, users, err := user.QueryByCondition(s.DB, condition, page)
+	total, users, err := user.QueryByCondition(s.DB, condition, page, req.GetKeyWords())
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
@@ -333,7 +333,7 @@ func (s *TenantService) TenantPluginPermissible(ctx context.Context, req *pb.Plu
 func (s *TenantService) GetResetPasswordKey(ctx context.Context, req *pb.GetResetPasswordKeyRequest) (*pb.GetResetPasswordKeyResponse, error) {
 	user := &model.User{}
 	conditions := map[string]interface{}{"id": req.GetUserId(), "tenant_id": req.GetTenantId()}
-	total, users, err := user.QueryByCondition(s.DB, conditions, nil)
+	total, users, err := user.QueryByCondition(s.DB, conditions, nil, "")
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrInternalError()
@@ -348,7 +348,7 @@ func (s *TenantService) GetResetPasswordKey(ctx context.Context, req *pb.GetRese
 func (s *TenantService) ResetPasswordKeyInfo(ctx context.Context, req *pb.RPKInfoRequest) (*pb.RPKInfoResponse, error) {
 	user := &model.User{}
 	conditions := map[string]interface{}{"password": req.GetBody().GetResetKey()}
-	total, users, err := user.QueryByCondition(s.DB, conditions, nil)
+	total, users, err := user.QueryByCondition(s.DB, conditions, nil, "")
 	if err != nil || total != 1 {
 		log.Error(err)
 		return nil, pb.ErrInternalError()
