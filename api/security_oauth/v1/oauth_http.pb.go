@@ -30,6 +30,7 @@ var (
 type OauthHTTPServer interface {
 	Authenticate(context.Context, *emptypb.Empty) (*AuthenticateResponse, error)
 	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
+	OIDCRegister(context.Context, *OIDCRegisterRequest) (*OIDCRegisterResponse, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error)
 	Token(context.Context, *TokenRequest) (*TokenResponse, error)
 }
@@ -111,6 +112,69 @@ func (h *OauthHTTPHandler) Authorize(req *go_restful.Request, resp *go_restful.R
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
 	out, err := h.srv.Authorize(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(httpCode, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: http.StatusOK,
+		Msg:  "ok",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+		return
+	}
+	resp.WriteHeader(http.StatusOK)
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *OauthHTTPHandler) OIDCRegister(req *go_restful.Request, resp *go_restful.Response) {
+	in := OIDCRegisterRequest{}
+	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.OIDCRegister(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -293,4 +357,6 @@ func RegisterOauthHTTPServer(container *go_restful.Container, srv OauthHTTPServe
 		To(handler.Authenticate))
 	ws.Route(ws.POST("/oauth/pwd").
 		To(handler.ResetPassword))
+	ws.Route(ws.POST("/oauth/oidc/register/{tenant_id}").
+		To(handler.OIDCRegister))
 }

@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
-	github.com/bugsnag/bugsnag-go v1.5.3 // indirect
+	github.com/bugsnag/bugsnag-go v2.1.2+incompatible // indirect
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/casbin/casbin/v2 v2.41.0
 	github.com/dapr/go-sdk v1.3.0
@@ -34,7 +34,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb
-	github.com/tkeel-io/security v0.0.0-20220211035837-e12bbcd41eea
+	github.com/tkeel-io/security v0.0.0-20220214065206-5b4c1c80bb39
 	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220121054758-17063939b974
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	go.uber.org/atomic v1.9.0 // indirect

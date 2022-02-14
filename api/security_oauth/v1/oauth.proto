@@ -88,6 +88,22 @@ service Oauth {
       } ]
     };
   }
+
+  rpc OIDCRegister(OIDCRegisterRequest) returns (OIDCRegisterResponse) {
+    option (google.api.http) = {
+      post : "/oauth/oidc/register/{tenant_id}"
+      body : "body"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "oauth OIDC provider register"
+      operation_id : "OIDCRegister"
+      tags : "[Security] OAuth"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
 }
 
 //
@@ -209,4 +225,32 @@ message ResetPasswordBody {
 message ResetPasswordResponse {
   string tenant_id =1;
   bool has_reset =2;
+}
+
+message OIDCRegisterRequest {
+  string tenant_id = 1;
+  OIDCRegisterBody body = 2;
+}
+message OIDCRegisterBody {
+  string issuer =1;
+  string client_id =2;
+  string client_secret =3;
+  string redirect_url =4;
+  repeated string scopes =5;
+  bool get_user_info =6;
+  bool insecure_skip_verify =7;
+  string email_key =8;
+  string preferred_username_key =9;
+  OIDCEndpoint endpoint =10;
+}
+message OIDCEndpoint {
+    string auth_url =1;
+    string token_url=2;
+    string user_info_url=3;
+    string jwksurl =4;
+    string end_session_url =5;
+}
+
+message OIDCRegisterResponse {
+  bool ok =1;
 }
