@@ -355,12 +355,14 @@ func (r *Repo) getInstalled() ([]repository.Installer, error) {
 	list := make([]repository.Installer, 0)
 	for i := 0; i < len(rls); i++ {
 		if plugin, ok := cache[rls[i].Chart.Name()]; ok {
+			brief := *plugin.ToInstallerBrief()
+			brief.Installed = true
 			installer := NewHelmInstaller(
-				rls[i].Name,                /* Installed Plugin ID. */
-				rls[i].Chart,               /* Plugin Chart. */
-				*plugin.ToInstallerBrief(), /* Brief. */
-				r.namespace,                /* Namespace. */
-				r.actionConfig,             /* Action Config. */
+				rls[i].Name,    /* Installed Plugin ID. */
+				rls[i].Chart,   /* Plugin Chart. */
+				brief,          /* Brief. */
+				r.namespace,    /* Namespace. */
+				r.actionConfig, /* Action Config. */
 			)
 			list = append(list, &installer)
 		}
