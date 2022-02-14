@@ -22,10 +22,44 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
+	"sync"
 	"time"
 
+	"github.com/pkg/errors"
+
+	"github.com/golang/protobuf/proto"
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	"github.com/tkeel-io/tkeel/pkg/repository"
+)
+
+const (
+	TKeelUser   = "_tKeel"
+	TKeelTenant = "_tKeel_system"
+
+	AdminRole = "admin"
+
+	KeyAdminPassword = "admin_passwd"
+
+	KeyPermissionSet = "permission_set"
+)
+
+var (
+	ErrPermissionExist                   = errors.New("Permission exist")
+	ErrPermissionNotExist                = errors.New("Permission not exist")
+	ErrDuplicatePermissionAsTheSameLevel = errors.New("Duplicate permissions at the same level")
+	ErrPermissionDependencyNotExist      = errors.New("Permission dependency does not exist")
+)
+
+var (
+	XPluginJwtHeader = http.CanonicalHeaderKey("x-plugin-jwt")
+	XtKeelAuthHeader = http.CanonicalHeaderKey("x-tKeel-auth")
+
+	AuthorizationHeader = http.CanonicalHeaderKey("Authorization")
+
+	TKeelComponents = []string{"rudder", "core", "keel", "security"}
+
+	_permissionSet = NewPermissionSet()
 )
 
 type Secret struct {
@@ -37,24 +71,6 @@ type Installer struct {
 	Name    string `json:"name,omitempty"`    // installer name.
 	Version string `json:"version,omitempty"` // installer version.
 }
-
-const (
-	TKeelUser   = "_tKeel"
-	TKeelTenant = "_tKeel_system"
-
-	AdminRole = "admin"
-
-	KeyAdminPassword = "Admin_Passwd"
-)
-
-var (
-	XPluginJwtHeader = http.CanonicalHeaderKey("x-plugin-jwt")
-	XtKeelAuthHeader = http.CanonicalHeaderKey("x-tKeel-auth")
-
-	AuthorizationHeader = http.CanonicalHeaderKey("Authorization")
-
-	TKeelComponents = []string{"rudder", "core", "keel", "security"}
-)
 
 type EnableTenant struct {
 	TenantID        string `json:"tenant_id"`        // enable tenant id.
@@ -78,6 +94,7 @@ type Plugin struct {
 	AddonsPoint       []*openapi_v1.AddonsPoint       `json:"addons_point,omitempty"`       // plugin declares addons.
 	ImplementedPlugin []*openapi_v1.ImplementedPlugin `json:"implemented_plugin,omitempty"` // plugin implemented plugin list.
 	ConsoleEntries    []*openapi_v1.ConsoleEntry      `json:"console_entries,omitempty"`    // plugin console entries.
+	PluginDependences []*openapi_v1.BriefPluginInfo   `json:"plugin_dependences,omitempty"` // plugin dependences.
 	Secret            string                          `json:"secret,omitempty"`             // plugin registered secret.
 	RegisterTimestamp int64                           `json:"register_timestamp,omitempty"` // register timestamp.
 	Version           string                          `json:"version,omitempty"`            // model version.
@@ -91,6 +108,33 @@ func (p *Plugin) String() string {
 		return "<" + err.Error() + ">"
 	}
 	return string(b)
+}
+
+func NewPlugin(pluginID string, installer *Installer) *Plugin {
+	return &Plugin{
+		ID:        pluginID,
+		Installer: installer,
+		Version:   "1",
+		Status:    openapi_v1.PluginStatus_WAIT_RUNNING,
+		EnableTenantes: []*EnableTenant{
+			{
+				TenantID:        TKeelTenant,
+				OperatorID:      TKeelUser,
+				EnableTimestamp: time.Now().Unix(),
+			},
+		},
+	}
+}
+
+func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
+	p.PluginVersion = resp.Version
+	p.TkeelVersion = resp.TkeelVersion
+	p.AddonsPoint = resp.AddonsPoint
+	p.ImplementedPlugin = resp.ImplementedPlugin
+	p.PluginDependences = resp.Dependence
+	p.ConsoleEntries = resp.Entries
+	p.Secret = secret
+	p.RegisterTimestamp = time.Now().Unix()
 }
 
 func (p *Plugin) Clone() *Plugin {
@@ -140,6 +184,16 @@ func (p *Plugin) Clone() *Plugin {
 			}
 			return ret
 		}(),
+		PluginDependences: func() []*openapi_v1.BriefPluginInfo {
+			ret := make([]*openapi_v1.BriefPluginInfo, 0, len(p.PluginDependences))
+			for _, v := range p.PluginDependences {
+				ret = append(ret, &openapi_v1.BriefPluginInfo{
+					Id:      v.Id,
+					Version: v.Version,
+				})
+			}
+			return ret
+		}(),
 		Secret:            p.Secret,
 		RegisterTimestamp: p.RegisterTimestamp,
 		Version:           p.Version,
@@ -156,6 +210,31 @@ func (p *Plugin) Clone() *Plugin {
 			return ret
 		}(),
 	}
+}
+
+func (p *Plugin) CheckTenantEnable(tenantID string) bool {
+	for _, v := range p.EnableTenantes {
+		if v.TenantID == tenantID {
+			return true
+		}
+	}
+	return false
+}
+
+func (p *Plugin) TenantEnable(t *EnableTenant) {
+	p.EnableTenantes = append(p.EnableTenantes, t)
+}
+
+func (p *Plugin) TenantDisable(tenantID string) bool {
+	ok := false
+	for i, v := range p.EnableTenantes {
+		if v.TenantID == tenantID {
+			p.EnableTenantes = append(p.EnableTenantes[:i], p.EnableTenantes[i+1:]...)
+			ok = true
+			break
+		}
+	}
+	return ok
 }
 
 func consoleEntryClone(dst, src *openapi_v1.ConsoleEntry) {
@@ -220,32 +299,6 @@ func (pr *PluginRoute) Clone() *PluginRoute {
 		}(),
 		Version: pr.Version,
 	}
-}
-
-func NewPlugin(pluginID string, installer *Installer) *Plugin {
-	return &Plugin{
-		ID:        pluginID,
-		Installer: installer,
-		Version:   "1",
-		Status:    openapi_v1.PluginStatus_WAIT_RUNNING,
-		EnableTenantes: []*EnableTenant{
-			{
-				TenantID:        TKeelTenant,
-				OperatorID:      TKeelUser,
-				EnableTimestamp: time.Now().Unix(),
-			},
-		},
-	}
-}
-
-func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
-	p.PluginVersion = resp.Version
-	p.TkeelVersion = resp.TkeelVersion
-	p.AddonsPoint = resp.AddonsPoint
-	p.ImplementedPlugin = resp.ImplementedPlugin
-	p.ConsoleEntries = resp.Entries
-	p.Secret = secret
-	p.RegisterTimestamp = time.Now().Unix()
 }
 
 func NewPluginRoute(resp *openapi_v1.IdentifyResponse) *PluginRoute {
@@ -371,4 +424,140 @@ func (u *User) Base64Decode(s string) error {
 	}
 	u.Role = rs[0]
 	return nil
+}
+
+func ClonePermission(pb *openapi_v1.Permission) *openapi_v1.Permission {
+	clonePb := &openapi_v1.Permission{}
+	proto.Merge(proto.Clone(pb), clonePb)
+	return clonePb
+}
+
+type PermissionSet struct {
+	rwLock *sync.RWMutex
+	set    map[string][]*openapi_v1.Permission
+}
+
+func NewPermissionSet() *PermissionSet {
+	return &PermissionSet{
+		rwLock: new(sync.RWMutex),
+		set:    make(map[string][]*openapi_v1.Permission),
+	}
+}
+
+func GetPermissionSet() *PermissionSet {
+	return _permissionSet
+}
+
+func (ps *PermissionSet) Marshall() ([]byte, error) {
+	ps.rwLock.Lock()
+	defer ps.rwLock.Unlock()
+	b, err := json.Marshal(&(ps.set))
+	if err != nil {
+		return nil, errors.Wrap(err, "marshal permission set")
+	}
+	return b, nil
+}
+
+func (ps *PermissionSet) Unmarshal(b []byte) error {
+	ps.rwLock.RLock()
+	defer ps.rwLock.RUnlock()
+	if err := json.Unmarshal(b, &(ps.set)); err != nil {
+		return errors.Wrapf(err, "unmarshal permission set(%s)", string(b))
+	}
+	return nil
+}
+
+func (ps *PermissionSet) Add(pluginID string, permission *openapi_v1.Permission) (bool, error) {
+	ps.rwLock.Lock()
+	defer ps.rwLock.Unlock()
+	list, ok := (ps.set)[pluginID]
+	if !ok {
+		list = make([]*openapi_v1.Permission, 0, 1)
+	}
+	for _, v := range list {
+		if v.Id == permission.Id || v.Name == permission.Name {
+			return false, ErrPermissionExist
+		}
+	}
+	if err := ps.checkPermission(permission); err != nil {
+		return false, errors.Wrap(err, "check permission")
+	}
+	list = append(list, permission)
+	(ps.set)[pluginID] = list
+	return true, nil
+}
+
+func (ps *PermissionSet) Delete(pluginID string) {
+	ps.rwLock.Lock()
+	defer ps.rwLock.Unlock()
+	delete((ps.set), pluginID)
+}
+
+func (ps *PermissionSet) checkPermission(p *openapi_v1.Permission) error {
+	for _, v := range p.Dependences {
+		if _, err := ps.GetPermission(v.Path); err != nil {
+			if errors.Is(err, ErrPermissionNotExist) {
+				return ErrPermissionDependencyNotExist
+			}
+		}
+	}
+	idSet := make(map[string]struct{}, len(p.Children))
+	for _, v := range p.Children {
+		if _, ok := idSet[v.Id]; ok {
+			return ErrDuplicatePermissionAsTheSameLevel
+		}
+		idSet[v.Id] = struct{}{}
+		if err := ps.checkPermission(v); err != nil {
+			return errors.Wrapf(err, "check child permission(%s)", v)
+		}
+	}
+	return nil
+}
+
+func (ps *PermissionSet) GetPermission(path string) (*openapi_v1.Permission, error) {
+	ps.rwLock.RLock()
+	defer ps.rwLock.RUnlock()
+	if path == "" {
+		return nil, ErrPermissionNotExist
+	}
+	ids := strings.Split(path, "/")
+	if len(ids) < 2 {
+		return nil, ErrPermissionNotExist
+	}
+	list, ok := (ps.set)[ids[0]]
+	if !ok {
+		return nil, ErrPermissionNotExist
+	}
+	var ret *openapi_v1.Permission
+	for _, v := range list {
+		if v.Id == ids[1] {
+			ret = v
+			if len(ids) > 2 {
+				ret = getChildPermission(v, ids[2:])
+			}
+		}
+	}
+	if ret == nil {
+		return nil, ErrPermissionNotExist
+	}
+	return ret, nil
+}
+
+func getChildPermission(p *openapi_v1.Permission, path []string) *openapi_v1.Permission {
+	if len(path) == 0 {
+		return p
+	}
+	for _, v := range p.Children {
+		if v.Id == p.Id {
+			getChildPermission(v, path[1:])
+		}
+	}
+	return nil
+}
+
+type Role struct {
+	TenantID      string   `json:"tenant_id"`
+	Name          string   `json:"name"`
+	Desc          string   `json:"desc"`
+	PermissonPath []string `json:"permission_path"`
 }

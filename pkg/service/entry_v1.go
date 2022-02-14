@@ -2,7 +2,8 @@ package service
 
 import (
 	"context"
-	"errors"
+
+	"github.com/pkg/errors"
 
 	"github.com/tkeel-io/kit/log"
 	transport_http "github.com/tkeel-io/kit/transport/http"

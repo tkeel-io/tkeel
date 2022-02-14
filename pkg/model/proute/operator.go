@@ -18,7 +18,8 @@ package proute
 
 import (
 	"context"
-	"errors"
+
+	"github.com/pkg/errors"
 
 	"github.com/tkeel-io/tkeel/pkg/model"
 )

@@ -17,11 +17,11 @@ limitations under the License.
 package config
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
 
+	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
 
@@ -140,12 +140,12 @@ func NewDefaultConfiguration() *Configuration {
 func LoadStandaloneConfiguration(configPath string) (*Configuration, error) {
 	_, err := os.Stat(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("error os Stat: %w", err)
+		return nil, errors.Wrap(err, "os Stat")
 	}
 
 	b, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		return nil, fmt.Errorf("error ioutil readfile: %w", err)
+		return nil, errors.Wrap(err, "ioutil readfile")
 	}
 
 	// Parse environment variables from yaml.
@@ -154,7 +154,7 @@ func LoadStandaloneConfiguration(configPath string) (*Configuration, error) {
 	conf := NewDefaultConfiguration()
 	err = yaml.Unmarshal(b, conf)
 	if err != nil {
-		return nil, fmt.Errorf("error yaml unmarshal: %w", err)
+		return nil, errors.Wrap(err, "yaml unmarshal")
 	}
 
 	return conf, nil
@@ -203,7 +203,7 @@ func getEnvBool(env string, defaultValue bool) bool {
 	}
 	ret, err := strconv.ParseBool(v)
 	if err != nil {
-		panic(fmt.Errorf("error get env(%s) bool: %w", env, err))
+		panic(errors.Wrapf(err, "get env(%s) bool", env))
 	}
 	return ret
 }
@@ -215,7 +215,7 @@ func getEnvInt(env string, defaultValue int) int {
 	}
 	ret, err := strconv.Atoi(v)
 	if err != nil {
-		panic(fmt.Errorf("error get env(%s) int: %w", env, err))
+		panic(errors.Wrapf(err, "get env(%s) int", env))
 	}
 	return ret
 }

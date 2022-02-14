@@ -19,11 +19,11 @@ package dapr
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 
 	dapr "github.com/dapr/go-sdk/client"
@@ -65,7 +65,7 @@ func NewGPRCClient(retry int, interval, gprcPort string) (dapr.Client, error) {
 	var err error
 	inval, err := time.ParseDuration(interval)
 	if err != nil {
-		return nil, fmt.Errorf("error parse interval(%s): %w", interval, err)
+		return nil, errors.Wrapf(err, "parse interval(%s)", interval)
 	}
 	if retry < 1 {
 		retry = 1
@@ -80,7 +80,7 @@ func NewGPRCClient(retry int, interval, gprcPort string) (dapr.Client, error) {
 		log.Debugf("error new client: %s retry: %d", err, i)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("error new client with port(%s): %w", gprcPort, err)
+		return nil, errors.Wrapf(err, "new client with port(%s)", gprcPort)
 	}
 	return daprGRPCClient, nil
 }

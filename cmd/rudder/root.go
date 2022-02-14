@@ -17,11 +17,11 @@ package main
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/pkg/errors"
 
 	authentication_v1 "github.com/tkeel-io/tkeel/api/authentication/v1"
 	entity_token_v1 "github.com/tkeel-io/tkeel/api/entity/v1"
@@ -37,6 +37,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/hub"
+	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/kv"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/prepo"
@@ -105,7 +106,13 @@ var rootCmd = &cobra.Command{
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			prOp := proute.NewDaprStateOperator(conf.Dapr.PublicStateName, daprGRPCClient)
 			riOp := prepo.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
-			kvOp := kv.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
+			kvOp := kv.NewDaprStateOperator(conf.Tkeel.WatchInterval, conf.Dapr.PrivateStateName, daprGRPCClient)
+			kvOp.Watch(context.TODO(), model.KeyPermissionSet, func(value []byte, version string) error {
+				if err := model.GetPermissionSet().Unmarshal(value); err != nil {
+					return errors.Wrapf(err, "unmarshal %s %s", model.KeyPermissionSet, value)
+				}
+				return nil
+			})
 
 			// init security operator.
 			tokenConf := &service.TokenConf{TokenType: service.TokenTypeBearer, AllowedGrantTypes: service.DefaultGrantType}
@@ -164,18 +171,18 @@ var rootCmd = &cobra.Command{
 					}
 					repo, err := helm.NewHelmRepo(connectInfo, drive, namespace)
 					if err != nil {
-						return nil, fmt.Errorf("error new helm repo: %w", err)
+						return nil, errors.Wrap(err, "new helm repo")
 					}
 					return repo, nil
 				},
 				func(pluginID string) error {
 					repo, err := helm.NewHelmRepo(nil, helm.Secret, conf.Tkeel.Namespace)
 					if err != nil {
-						return fmt.Errorf("error new helm repo: %w", err)
+						return errors.Wrap(err, "new helm repo")
 					}
 					installer := helm.NewHelmInstallerQuick(pluginID, conf.Tkeel.Namespace, repo.Config())
 					if err = installer.Uninstall(); err != nil {
-						return fmt.Errorf("error uninstall(%s) err: %w", pluginID, err)
+						return errors.Wrapf(err, "uninstall(%s)", pluginID)
 					}
 					return nil
 				}, helm.Secret, conf.Tkeel.Namespace)
@@ -214,9 +221,9 @@ var rootCmd = &cobra.Command{
 			entity_token_v1.RegisterEntityTokenServer(grpcSrv.GetServe(), EntityTokenSrv)
 
 			// rbac service.
-			rbacSrv := service.NewRbacService(rbacOp)
-			rbac_v1.RegisterRbacHTTPServer(httpSrv.Container, rbacSrv)
-			rbac_v1.RegisterRbacServer(grpcSrv.GetServe(), rbacSrv)
+			rbacSrv := service.NewRBACService(kvOp, rbacOp)
+			rbac_v1.RegisterRBACHTTPServer(httpSrv.Container, rbacSrv)
+			rbac_v1.RegisterRBACServer(grpcSrv.GetServe(), rbacSrv)
 
 			// authentication service.
 			authenticationSrv := service.NewAuthenticationService(m, gormdb, tokenConf, rbacOp, prOp, tenantPluginOp)

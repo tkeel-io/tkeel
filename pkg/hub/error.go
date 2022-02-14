@@ -1,6 +1,6 @@
 package hub
 
-import "errors"
+import "github.com/pkg/errors"
 
 var (
 	ErrRepoNotFound  = errors.New("repo not found")

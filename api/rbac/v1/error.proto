@@ -15,11 +15,11 @@ limitations under the License.
 
 syntax = "proto3";
 
-package io.tkeel.security.api.rbac.v1;
+package io.tkeel.rudder.api.rbac.v1;
 
 option go_package = "github.com/tkeel-io/tkeel/api/rbac/v1;v1";
 option java_multiple_files = true;
-option java_package = "io.tkeel.security.api.rbac.v1";
+option java_package = "io.tkeel.rudder.api.rbac.v1";
 
 // @plugins=protoc-gen-go-errors
 // 错误
@@ -36,7 +36,10 @@ enum Error {
   // 内部错误
   // @code=INTERNAL
   ERR_INTERNAL_ERROR = 3;
-  // 资源不存在
-  // @code=INTERNAL
-  ERR_RESOURCE_NOT_FOUND = 4;
+  // 权限不存在
+  // @code=NOT_FOUND
+  ERR_PERMISSION_NOT_FOUND = 4;
+  // 角色不存在
+  // @code=NOT_FOUND
+  ERR_ROLE_NOT_FOUND = 5;
 }

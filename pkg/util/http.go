@@ -18,9 +18,10 @@ package util
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/pkg/errors"
 
 	"github.com/tkeel-io/tkeel/pkg/model"
 

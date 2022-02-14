@@ -2,166 +2,75 @@ package service
 
 import (
 	"context"
-	"net/http"
 
-	pb "github.com/tkeel-io/tkeel/api/rbac/v1"
-	"github.com/tkeel-io/tkeel/pkg/model"
-	"google.golang.org/protobuf/types/known/emptypb"
+	"github.com/pkg/errors"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/tkeel-io/kit/log"
-	transport_http "github.com/tkeel-io/kit/transport/http"
+	pb "github.com/tkeel-io/tkeel/api/rbac/v1"
+	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/tkeel-io/tkeel/pkg/model/kv"
+	"github.com/tkeel-io/tkeel/pkg/util"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type RbacService struct {
-	RBACOperator *casbin.SyncedEnforcer
-	pb.UnimplementedRbacServer
+type RBACService struct {
+	kvOp   kv.Operator
+	rbacOp *casbin.SyncedEnforcer
+	pb.UnimplementedRBACServer
 }
 
-func NewRbacService(rbacOperator *casbin.SyncedEnforcer) *RbacService {
-	return &RbacService{RBACOperator: rbacOperator}
+func NewRBACService(kvOp kv.Operator, rbac *casbin.SyncedEnforcer) *RBACService {
+	return &RBACService{
+		kvOp:   kvOp,
+		rbacOp: rbac,
+	}
 }
 
-func (s *RbacService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest) (*emptypb.Empty, error) {
-	header := transport_http.HeaderFromContext(ctx)
-	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
-	if !ok {
-		log.Error("error get auth")
-		return nil, pb.ErrUnknown()
-	}
-	user := new(model.User)
-	if err := user.Base64Decode(auths[0]); err != nil {
-		log.Errorf("error decode auth(%s): %s", auths[0], err)
-		return nil, pb.ErrUnknown()
-	}
-	_, err := s.RBACOperator.AddGroupingPolicy(user.User, req.GetBody().GetRole(), req.GetTenantId())
+func (s *RBACService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest) (*pb.CreateRoleResponse, error) {
+	u, err := util.GetUser(ctx)
 	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalError()
+		log.Errorf("error get user: %s", err)
+		return nil, pb.ErrInvalidArgument()
 	}
-	return &emptypb.Empty{}, nil
-}
-
-func (s *RbacService) ListRole(ctx context.Context, req *pb.ListRolesRequest) (*pb.ListRolesResponse, error) {
-	header := transport_http.HeaderFromContext(ctx)
-	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
-	if !ok {
-		log.Error("error get auth")
-		return nil, pb.ErrUnknown()
-	}
-	user := new(model.User)
-	if err := user.Base64Decode(auths[0]); err != nil {
-		log.Errorf("error decode auth(%s): %s", auths[0], err)
-		return nil, pb.ErrUnknown()
-	}
-	roles := s.RBACOperator.GetRolesForUserInDomain(user.User, req.GetTenantId())
-	return &pb.ListRolesResponse{Roles: roles}, nil
-}
-
-func (s *RbacService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest) (*emptypb.Empty, error) {
-	header := transport_http.HeaderFromContext(ctx)
-	auths, ok := header[http.CanonicalHeaderKey(model.XtKeelAuthHeader)]
-	if !ok {
-		log.Error("error get auth")
-		return nil, pb.ErrUnknown()
-	}
-	user := new(model.User)
-	if err := user.Base64Decode(auths[0]); err != nil {
-		log.Errorf("error decode auth(%s): %s", auths[0], err)
-		return nil, pb.ErrUnknown()
-	}
-	_, err := s.RBACOperator.DeleteRoleForUserInDomain(user.User, req.GetRole(), req.GetTenantId())
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalError()
-	}
-	return &emptypb.Empty{}, nil
-}
-
-func (s *RbacService) AddRolePermission(ctx context.Context, req *pb.AddRolePermissionRequest) (*pb.AddRolePermissionResponse, error) {
-	ok, err := s.RBACOperator.AddPolicy(req.GetRole(), req.GetTenantId(),
-		req.GetBody().GetPermissionObject(), req.GetBody().GetPermissionAction())
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalError()
-	}
-	return &pb.AddRolePermissionResponse{Ok: ok}, nil
-}
-
-func (s *RbacService) DeleteRolePermission(ctx context.Context, req *pb.DeleteRolePermissionRequest) (*pb.DeleteRolePermissionResponse, error) {
-	ok, err := s.RBACOperator.RemovePolicy(req.GetRole(), req.GetTenantId(),
-		req.GetPermissionObject(), req.GetPermissionAction())
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalError()
-	}
-	return &pb.DeleteRolePermissionResponse{Ok: ok}, nil
-}
-
-func (s *RbacService) AddUserRoles(ctx context.Context, req *pb.AddUserRolesRequest) (*emptypb.Empty, error) {
-	groupingPolices := make([][]string,
-		len(req.GetBody().GetRoles())*len(req.GetBody().GetUserIds()))
-	for i := range req.GetBody().GetUserIds() {
-		for j := range req.GetBody().GetRoles() {
-			groupingPolices[(i+1)*(j+1)-1] = []string{req.GetBody().GetUserIds()[i], req.GetBody().GetRoles()[j], req.GetTenantId()}
+	for _, v := range req.Role.PermissionPathList {
+		_, err = model.GetPermissionSet().GetPermission(v)
+		if err != nil {
+			if errors.Is(err, model.ErrPermissionNotExist) {
+				return nil, pb.ErrPermissionNotFound()
+			}
+			log.Errorf("error create role(%s) check permission: %s", req, err)
+			return nil, pb.ErrInvalidArgument()
 		}
 	}
-	_, err := s.RBACOperator.AddGroupingPolicies(groupingPolices)
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalError()
-	}
+
+	return &pb.CreateRoleResponse{}, nil
+}
+
+func (s *RBACService) ListRole(ctx context.Context, req *pb.ListRolesRequest) (*pb.ListRolesResponse, error) {
+	return &pb.ListRolesResponse{}, nil
+}
+
+func (s *RBACService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest) (*pb.DeleteRoleResponse, error) {
+	return &pb.DeleteRoleResponse{}, nil
+}
+
+func (s *RBACService) UpdateRole(ctx context.Context, req *pb.UpdateRoleRequest) (*pb.UpdateRoleResponse, error) {
+	return &pb.UpdateRoleResponse{}, nil
+}
+
+func (s *RBACService) CreateRoleBinding(ctx context.Context, req *pb.CreateRoleBindingRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
 
-func (s *RbacService) DeleteUserRole(ctx context.Context, req *pb.DeleteUserRoleRequest) (*emptypb.Empty, error) {
-	_, err := s.RBACOperator.DeleteRoleForUserInDomain(req.GetUserId(), req.GetRole(), req.GetTenantId())
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalError()
-	}
+func (s *RBACService) DeleteRoleBinding(ctx context.Context, req *pb.DeleteRoleBindingRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
 
-func (s *RbacService) ListUserPermissions(ctx context.Context, req *pb.ListUserPermissionRequest) (*pb.ListUserPermissionResponse, error) {
-	permissions := s.RBACOperator.GetPermissionsForUserInDomain(req.GetUserId(), req.GetTenantId())
-	out := make([]*pb.ListPermissionDetail, len(permissions))
-	for i := range permissions {
-		permissionItem := &pb.ListPermissionDetail{
-			Role:             permissions[i][0],
-			PermissionObject: permissions[i][2],
-			PermissionAction: permissions[i][3],
-		}
-		out[i] = permissionItem
-	}
-	return &pb.ListUserPermissionResponse{Permissions: out}, nil
+func (s *RBACService) ListPermissions(ctx context.Context, req *pb.ListPermissionRequest) (*pb.ListPermissionResponse, error) {
+	return &pb.ListPermissionResponse{}, nil
 }
 
-func (s *RbacService) CheckUserPermission(ctx context.Context, req *pb.CheckUserPermissionRequest) (*pb.CheckUserPermissionResponse, error) {
-	ok, err := s.RBACOperator.Enforce(req.GetBody().GetUserId(), req.GetBody().GetTenantId(),
-		req.GetBody().GetPermissionObject(), req.GetBody().GetPermissionAction())
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalError()
-	}
-	return &pb.CheckUserPermissionResponse{Allowed: ok}, nil
-}
-
-func (s *RbacService) AddRolePermissionList(ctx context.Context, req *pb.AddRolePermissionListRequest) (*pb.AddRolePermissionResponse, error) {
-	_, err := s.RBACOperator.RemoveFilteredPolicy(0, req.GetRole(), req.GetTenantId())
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalStore()
-	}
-	policies := make([][]string, len(req.GetBody().GetPermissions()))
-	for i, v := range req.GetBody().GetPermissions() {
-		policy := []string{req.GetRole(), req.GetTenantId(), v.GetPermissionObject(), v.GetPermissionAction()}
-		policies[i] = policy
-	}
-	_, err = s.RBACOperator.AddPolicies(policies)
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalStore()
-	}
-	return &pb.AddRolePermissionResponse{Ok: true}, nil
+func (s *RBACService) CheckRolePermission(ctx context.Context, req *pb.CheckRolePermissionRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }

@@ -19,7 +19,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"regexp"
 	"sort"
 	"time"
@@ -125,8 +124,7 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 	rbStack = append(rbStack, func() error {
 		log.Debugf("installer roll back.")
 		if err = hub.GetInstance().Uninstall(req.Id, installer.Brief()); err != nil {
-			return fmt.Errorf("error uninstall installer(%s): %w",
-				installer.Brief(), err)
+			return errors.Wrapf(err, "uninstall installer(%s)", installer.Brief())
 		}
 		return nil
 	})
@@ -146,7 +144,7 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 	rbStack = append(rbStack, func() error {
 		log.Debugf("installer roll back.")
 		if _, err = s.pluginOp.Delete(ctx, req.Id); err != nil {
-			return fmt.Errorf("error delete plugin(%s): %w", req.Id, err)
+			return errors.Wrapf(err, "delete plugin(%s)", req.Id)
 		}
 		return nil
 	})
@@ -203,7 +201,7 @@ func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 	// reset implemented plugin route.
 	subRbStack, err := s.resetImplementedPluginRoute(ctx, p)
 	if err != nil {
-		return nil, fmt.Errorf("error reset implemented plugin route(%s): %w", p.ID, err)
+		return nil, errors.Wrapf(err, "reset implemented plugin route(%s)", p.ID)
 	}
 	rbStack = append(rbStack, subRbStack...)
 	// delete plugin.
@@ -228,7 +226,7 @@ func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 	rbStack = append(rbStack, func() error {
 		log.Debugf("uninstall plugin  tenant(%s) plugin(%s) route roll back run.", model.TKeelTenant, req.Id)
 		if _, err = s.tenantPluginOp.AddTenantPlugin(model.TKeelTenant, req.Id); err != nil {
-			return fmt.Errorf("error add tenant(%s) plugin(%s): %w", model.TKeelTenant, req.Id, err)
+			return errors.Wrapf(err, "add tenant(%s) plugin(%s)", model.TKeelTenant, req.Id)
 		}
 		return nil
 	})
@@ -304,62 +302,16 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 
 func (s *PluginServiceV1) TenantEnable(ctx context.Context,
 	req *pb.TenantEnableRequest) (*emptypb.Empty, error) {
-	rbStack := util.NewRollbackStack()
-	defer rbStack.Run()
 	u, err := util.GetUser(ctx)
 	if err != nil {
 		log.Errorf("error get user: %s", err)
 		return nil, pb.PluginErrInvalidArgument()
 	}
-	p, err := s.pluginOp.Get(ctx, req.Id)
+	_, terr, err := s.tenantEnablePlugin(ctx, false, u.Tenant, u.User, req.Id, req.Extra.Extra)
 	if err != nil {
-		log.Errorf("error get plugin route: %s", err)
-		return nil, pb.PluginErrInternalStore()
+		log.Errorf("error tenant(%s) enable plugin(%s): %s", u.Tenant, u.User)
+		return nil, terr
 	}
-	for _, v := range p.EnableTenantes {
-		if v.TenantID == u.Tenant {
-			log.Errorf("error tenant(%s) has been enabled", v)
-			return nil, pb.PluginErrDuplicateEnableTenant()
-		}
-	}
-	// openapi tenant/enable.
-	rb, err := s.requestTenantEnable(ctx, req.Id, u.Tenant, req.Extra.Extra)
-	if err != nil {
-		log.Errorf("error request(%s) tenant(%s/%s/%s) enable: %s",
-			req.Id, u.Tenant, req.Extra.Desc, string(req.Extra.Extra), err)
-		return nil, pb.PluginErrOpenapiEnabletenant()
-	}
-	rbStack = append(rbStack, rb)
-	// add tenant plugin rbac.
-	if _, err = s.tenantPluginOp.AddTenantPlugin(u.Tenant, req.Id); err != nil {
-		log.Errorf("error add tenant(%s) plugin(%s) rbac: %s", u.Tenant, p, err)
-		return nil, pb.PluginErrUnknown()
-	}
-	// update plugin.
-	tmpP := p.Clone()
-	p.EnableTenantes = append(p.EnableTenantes, &model.EnableTenant{
-		TenantID:        u.Tenant,
-		OperatorID:      u.User,
-		EnableTimestamp: time.Now().Unix(),
-	})
-	if err = s.pluginOp.Update(ctx, p); err != nil {
-		log.Errorf("error enable tenant(%s) update plugin(%s): %s", u.Tenant, p, err)
-		return nil, pb.PluginErrInternalStore()
-	}
-	rbStack = append(rbStack, func() error {
-		log.Debugf("roll back enable tenant: %s --> %s", p, tmpP)
-		if _, err = s.pluginOp.Delete(ctx, tmpP.ID); err != nil {
-			log.Errorf("error roll back update plugin(%s) delete: %s", tmpP, err)
-			return fmt.Errorf("error p delete: %w", err)
-		}
-		tmpP.Version = "1"
-		if err = s.pluginOp.Create(ctx, tmpP); err != nil {
-			log.Errorf("error roll back update plugin(%s) create: %s", tmpP, err)
-			return fmt.Errorf("error p create: %w", err)
-		}
-		return nil
-	})
-	rbStack = util.NewRollbackStack()
 	log.Debugf("tenant(%s) enable plugin(%s) succ.", u.Tenant, req.Id)
 	return &emptypb.Empty{}, nil
 }
@@ -379,16 +331,8 @@ func (s *PluginServiceV1) TenantDisable(ctx context.Context,
 		return nil, pb.PluginErrInternalStore()
 	}
 
-	update := false
 	tmpP := p.Clone()
-	for i, v := range p.EnableTenantes {
-		if v.TenantID == u.Tenant {
-			p.EnableTenantes = append(p.EnableTenantes[:i], p.EnableTenantes[i+1:]...)
-			update = true
-			break
-		}
-	}
-	if update {
+	if p.TenantDisable(u.Tenant) {
 		// openapi tenant/disable.
 		rb, err := s.requestTenantDisable(ctx, req.Id, u.Tenant, req.Extra)
 		if err != nil {
@@ -403,23 +347,10 @@ func (s *PluginServiceV1) TenantDisable(ctx context.Context,
 			return nil, pb.PluginErrUnknown()
 		}
 		// plugin update.
-		if err = s.pluginOp.Update(ctx, p); err != nil {
-			log.Errorf("error disable tenant(%s) update plugin(%s)", u.Tenant, p)
+		if _, err = s.updatePlugin(ctx, tmpP, p); err != nil {
+			log.Errorf("error update tenant(%s) disable plugin(%s): %s", u.Tenant, p, err)
 			return nil, pb.PluginErrInternalStore()
 		}
-		rbStack = append(rbStack, func() error {
-			log.Debugf("roll back disable tenant: %s --> %s", p, tmpP)
-			if _, err = s.pluginOp.Delete(ctx, tmpP.ID); err != nil {
-				log.Errorf("error roll back update plugin(%s) delete: %s", tmpP, err)
-				return fmt.Errorf("error p delete: %w", err)
-			}
-			tmpP.Version = "1"
-			if err = s.pluginOp.Create(ctx, tmpP); err != nil {
-				log.Errorf("error roll back update plugin(%s) create: %s", tmpP, err)
-				return fmt.Errorf("error p create: %w", err)
-			}
-			return nil
-		})
 	}
 	rbStack = util.NewRollbackStack()
 	log.Debugf("tenant(%s) disable plugin(%s) succ.", u.Tenant, req.Id)
@@ -549,12 +480,12 @@ func (s *PluginServiceV1) updatePluginStatus(ctx context.Context, pID string, st
 	// get plugin.
 	p, err := s.pluginOp.Get(ctx, pID)
 	if err != nil {
-		return fmt.Errorf("error get plugin: %w", err)
+		return errors.Wrapf(err, "get plugin")
 	}
 	// update plugin status.
 	p.Status = status
 	if err = s.pluginOp.Update(ctx, p); err != nil {
-		return fmt.Errorf("error update plugin: %w", err)
+		return errors.Wrapf(err, "update plugin")
 	}
 	return nil
 }
@@ -566,16 +497,16 @@ func (s *PluginServiceV1) queryIdentify(ctx context.Context,
 	}
 	identifyResp, err := s.openapiClient.Identify(ctx, pID)
 	if err != nil {
-		return nil, fmt.Errorf("error identify(%s): %w", pID, err)
+		return nil, errors.Wrapf(err, "identify(%s)", pID)
 	}
 	if identifyResp.Res == nil {
-		return nil, fmt.Errorf("error identify(%s): Res is nil", pID)
+		return nil, errors.Errorf("identify(%s): Res is nil", pID)
 	}
 	if identifyResp.Res.Ret != openapi_v1.Retcode_OK {
-		return nil, fmt.Errorf("error identify(%s): %s", pID, identifyResp.Res.Ret)
+		return nil, errors.Errorf("identify(%s): %s", pID, identifyResp.Res.Ret)
 	}
 	if identifyResp.PluginId != pID {
-		return nil, fmt.Errorf("error plugin id not match: %s -- %s", pID, identifyResp.PluginId)
+		return nil, errors.Errorf("plugin id not match: %s -- %s", pID, identifyResp.PluginId)
 	}
 	return identifyResp, nil
 }
@@ -586,13 +517,13 @@ func (s *PluginServiceV1) queryStatus(ctx context.Context, pID string) (*openapi
 	}
 	statusResp, err := s.openapiClient.Status(ctx, pID)
 	if err != nil {
-		return nil, fmt.Errorf("error status(%s): %w", pID, err)
+		return nil, errors.Wrapf(err, "status(%s)", pID)
 	}
 	if statusResp.Res == nil {
-		return nil, fmt.Errorf("error status(%s): Res is nil", pID)
+		return nil, errors.Errorf("status(%s): Res is nil", pID)
 	}
 	if statusResp.Res.Ret != openapi_v1.Retcode_OK {
-		return nil, fmt.Errorf("error status(%s): %s", pID, statusResp.Res.Ret)
+		return nil, errors.Errorf("status(%s): %s", pID, statusResp.Res.Ret)
 	}
 	return statusResp, nil
 }
@@ -601,14 +532,18 @@ func (s *PluginServiceV1) checkIdentify(ctx context.Context,
 	resp *openapi_v1.IdentifyResponse) error {
 	ok, err := util.CheckRegisterPluginTkeelVersion(resp.TkeelVersion, version.Version)
 	if err != nil {
-		return fmt.Errorf("error check register plugin(%s) depend tkeel version(%s): %w",
-			resp.PluginId, resp.TkeelVersion, err)
-	}
-	if !ok {
-		return fmt.Errorf("error plugin(%s) depend tkeel version(%s) not invalid",
+		return errors.Wrapf(err, "check register plugin(%s) depend tkeel version(%s)",
 			resp.PluginId, resp.TkeelVersion)
 	}
-	// TODO: openapi depence plugin check.
+	if !ok {
+		return errors.Errorf("plugin(%s) depend tkeel version(%s) not invalid",
+			resp.PluginId, resp.TkeelVersion)
+	}
+	for _, v := range resp.Dependence {
+		if _, err := s.pluginOp.Get(ctx, v.Id); err != nil {
+			return errors.Wrapf(err, "get dependence plugin(%s)", v.Id)
+		}
+	}
 	return nil
 }
 
@@ -622,31 +557,31 @@ func (s *PluginServiceV1) verifyPluginIdentity(ctx context.Context, resp *openap
 		if errors.Is(err, proute.ErrPluginRouteExsist) {
 			return ErrPluginRegistered
 		}
-		return fmt.Errorf("error create new plugin route(%s): %w", newPluginRoute, err)
+		return errors.Wrapf(err, "create new plugin route(%s)", newPluginRoute)
 	}
 	rbStack = append(rbStack, func() error {
 		log.Debugf("save register plugin route roll back run.")
 		_, err = s.pluginRouteOp.Delete(ctx, newPluginRoute.ID)
 		if err != nil {
-			return fmt.Errorf("error delete new plugin(%s) route: %w", newPluginRoute.ID, err)
+			return errors.Wrapf(err, "delete new plugin(%s) route", newPluginRoute.ID)
 		}
 		return nil
 	})
 	// register implemented plugin route.
 	rbs, err := s.checkImplementedPluginRoute(ctx, resp)
 	if err != nil {
-		return fmt.Errorf("error register implemented plugin(%s) route: %w", resp.PluginId, err)
+		return errors.Wrapf(err, "register implemented plugin(%s) route", resp.PluginId)
 	}
 	rbStack = append(rbStack, rbs...)
 	// update register plugin and update plugin route.
 	p, err := s.pluginOp.Get(ctx, resp.PluginId)
 	if err != nil {
-		return fmt.Errorf("error get plugin(%s): %w", resp.PluginId, err)
+		return errors.Wrapf(err, "get plugin(%s)", resp.PluginId)
 	}
 	p.Register(resp, helm.SecretContext)
 	p.Status = openapi_v1.PluginStatus_RUNNING
 	if err := s.pluginOp.Update(ctx, p); err != nil {
-		return fmt.Errorf("error update plugin(%s): %w", p, err)
+		return errors.Wrapf(err, "update plugin(%s)", p)
 	}
 	rbStack = util.NewRollbackStack()
 	return nil
@@ -659,17 +594,16 @@ func (s *PluginServiceV1) checkImplementedPluginRoute(ctx context.Context,
 		oldPluginRoute, err := s.pluginRouteOp.Get(ctx, v.Plugin.Id)
 		if err != nil {
 			rbStack.Run()
-			return nil, fmt.Errorf("error implemented plugin(%s) not registered", v.Plugin.Id)
+			return nil, errors.Errorf("implemented plugin(%s) not registered", v.Plugin.Id)
 		}
 		ok, err := util.CheckRegisterPluginTkeelVersion(oldPluginRoute.TkeelVersion, resp.TkeelVersion)
 		if err != nil {
 			rbStack.Run()
-			return nil, fmt.Errorf("error check implemented plugin(%s) depened tkeel version: %w",
-				v.Plugin.Id, err)
+			return nil, errors.Wrapf(err, "check implemented plugin(%s) depened tkeel version", v.Plugin.Id)
 		}
 		if !ok {
 			rbStack.Run()
-			return nil, fmt.Errorf(`error implemented plugin(%s) depened tkeel version(%s) 
+			return nil, errors.Errorf(`implemented plugin(%s) depened tkeel version(%s) 
 			not less register plugin tkeel version(%s)`,
 				v.Plugin.Id, oldPluginRoute.TkeelVersion, resp.TkeelVersion)
 		}
@@ -683,15 +617,15 @@ func (s *PluginServiceV1) checkImplementedPluginRoute(ctx context.Context,
 		addonsResp, err := s.openapiClient.AddonsIdentify(ctx, v.Plugin.Id, addonsReq)
 		if err != nil {
 			rbStack.Run()
-			return nil, fmt.Errorf("error addons identify(%s/%s): %w", v.Plugin.Id, addonsReq, err)
+			return nil, errors.Wrapf(err, "addons identify(%s/%s): %w", v.Plugin.Id, addonsReq)
 		}
 		if addonsResp.Res == nil {
 			rbStack.Run()
-			return nil, fmt.Errorf("error addons identify(%s/%s): Res is nil", v.Plugin.Id, addonsReq)
+			return nil, errors.Errorf("addons identify(%s/%s): Res is nil", v.Plugin.Id, addonsReq)
 		}
 		if addonsResp.Res.Ret != openapi_v1.Retcode_OK {
 			rbStack.Run()
-			return nil, fmt.Errorf("error addons identify(%s/%s): %s", v.Plugin.Id, addonsReq, addonsResp.Res.Msg)
+			return nil, errors.Errorf("addons identify(%s/%s): %s", v.Plugin.Id, addonsReq, addonsResp.Res.Msg)
 		}
 		pluginRouteBackup := oldPluginRoute.Clone()
 		util.UpdatePluginRoute(resp.PluginId, v.Addons, oldPluginRoute)
@@ -699,22 +633,72 @@ func (s *PluginServiceV1) checkImplementedPluginRoute(ctx context.Context,
 			log.Debugf("register implemented plugin route roll back run.")
 			err = s.pluginRouteOp.Update(ctx, pluginRouteBackup)
 			if err != nil {
-				return fmt.Errorf("error update plugin route backup(%s): %w", pluginRouteBackup, err)
+				return errors.Wrapf(err, "update plugin route backup(%s)", pluginRouteBackup)
 			}
 			return nil
 		})
 		err = s.pluginRouteOp.Update(ctx, oldPluginRoute)
 		if err != nil {
 			rbStack.Run()
-			return nil, fmt.Errorf("error update old plugin route(%s): %w", oldPluginRoute, err)
+			return nil, errors.Wrapf(err, "update old plugin route(%s)", oldPluginRoute)
 		}
 	}
 	return rbStack, nil
 }
 
+func (s *PluginServiceV1) tenantEnablePlugin(ctx context.Context, isDependence bool,
+	tenantID, userID, pluginID string, extra []byte) (util.RollBackStack, error, error) {
+	rbStack := util.NewRollbackStack()
+	p, err := s.pluginOp.Get(ctx, pluginID)
+	if err != nil {
+		return nil, pb.PluginErrInternalStore(), errors.Wrapf(err, "get plugin route")
+	}
+	if p.CheckTenantEnable(tenantID) {
+		if !isDependence {
+			return nil, pb.PluginErrDuplicateEnableTenant(), errors.Errorf("error tenant(%s) has been enabled", tenantID)
+		} else {
+			return rbStack, nil, nil
+		}
+	}
+	for _, v := range p.PluginDependences {
+		rbs, terr, err := s.tenantEnablePlugin(ctx, true, tenantID, userID, v.Id, extra)
+		if err != nil {
+			return nil, terr, errors.Wrapf(err, "enant(%s) enable plugin(%s) enable dependence(%s)", tenantID, pluginID, v.Id)
+		}
+		rbStack = append(rbStack, rbs...)
+	}
+	// openapi tenant/enable.
+	rb, err := s.requestTenantEnable(ctx, pluginID, tenantID, extra)
+	if err != nil {
+		rbStack.Run()
+		return nil, pb.PluginErrOpenapiEnabletenant(), errors.Wrapf(err, "request(%s) tenant(%s/%s) enable",
+			pluginID, tenantID, string(extra))
+	}
+	rbStack = append(rbStack, rb)
+	// add tenant plugin rbac.
+	if _, err = s.tenantPluginOp.AddTenantPlugin(tenantID, pluginID); err != nil {
+		rbStack.Run()
+		return nil, pb.PluginErrUnknown(), errors.Wrapf(err, "add tenant(%s) plugin(%s) rbac: %s", tenantID, p)
+	}
+	// update plugin.
+	tmpP := p.Clone()
+	p.TenantEnable(&model.EnableTenant{
+		TenantID:        tenantID,
+		OperatorID:      userID,
+		EnableTimestamp: time.Now().Unix(),
+	})
+	rb, err = s.updatePlugin(ctx, tmpP, p)
+	if err != nil {
+		rbStack.Run()
+		return nil, pb.PluginErrInternalStore(), errors.Wrapf(err, "tenant(%s) enable(%s) update plugin: %s", tenantID, p)
+	}
+	rbStack = append(rbStack, rb)
+	return rbStack, nil, nil
+}
+
 func (s *PluginServiceV1) requestTenantEnable(ctx context.Context, pluginID string,
 	tenantID string, extra []byte) (util.RollbackFunc, error) {
-	resp, err := s.openapiClient.TenantEnable(ctx, pluginID, &openapi_v1.TenantEnableRequst{
+	resp, err := s.openapiClient.TenantEnable(ctx, pluginID, &openapi_v1.TenantEnableRequest{
 		TenantId: tenantID,
 		Extra:    extra,
 	})
@@ -732,15 +716,15 @@ func (s *PluginServiceV1) requestTenantEnable(ctx context.Context, pluginID stri
 	}
 	return func() error {
 		log.Debugf("roll back enable tenant: request(%s) disable(%s)", pluginID, tenantID)
-		resp, err1 := s.openapiClient.TenantDisable(ctx, pluginID, &openapi_v1.TenantDisableRequst{
+		resp, err1 := s.openapiClient.TenantDisable(ctx, pluginID, &openapi_v1.TenantDisableRequest{
 			TenantId: tenantID,
 			Extra:    extra,
 		})
 		if err1 != nil {
-			return fmt.Errorf("error request plugin(%s) tenant disable: %w", pluginID, err1)
+			return errors.Wrapf(err1, "request plugin(%s) tenant disable: %w", pluginID)
 		}
 		if resp.Res == nil {
-			return fmt.Errorf("error request plugin(%s) tenant disable: Res is nil", pluginID)
+			return errors.Errorf("request plugin(%s) tenant disable: Res is nil", pluginID)
 		}
 		if resp.Res.Ret != openapi_v1.Retcode_OK {
 			log.Errorf("error request plugin(%s) tenant enable: %s", pluginID, resp.Res.Msg)
@@ -751,7 +735,7 @@ func (s *PluginServiceV1) requestTenantEnable(ctx context.Context, pluginID stri
 
 func (s *PluginServiceV1) requestTenantDisable(ctx context.Context, pluginID string,
 	tenantID string, extra []byte) (util.RollbackFunc, error) {
-	resp, err := s.openapiClient.TenantDisable(ctx, pluginID, &openapi_v1.TenantDisableRequst{
+	resp, err := s.openapiClient.TenantDisable(ctx, pluginID, &openapi_v1.TenantDisableRequest{
 		TenantId: tenantID,
 		Extra:    extra,
 	})
@@ -766,15 +750,15 @@ func (s *PluginServiceV1) requestTenantDisable(ctx context.Context, pluginID str
 	}
 	return func() error {
 		log.Debugf("roll back enable tenant: request(%s) enable(%s)", pluginID, tenantID)
-		resp, err1 := s.openapiClient.TenantEnable(ctx, pluginID, &openapi_v1.TenantEnableRequst{
+		resp, err1 := s.openapiClient.TenantEnable(ctx, pluginID, &openapi_v1.TenantEnableRequest{
 			TenantId: tenantID,
 			Extra:    extra,
 		})
 		if err1 != nil {
-			return fmt.Errorf("error request plugin(%s) tenant enable: %w", pluginID, err1)
+			return errors.Wrapf(err1, "request plugin(%s) tenant enable", pluginID)
 		}
 		if resp.Res == nil {
-			return fmt.Errorf("error request plugin(%s) tenant enable: Res is nil", pluginID)
+			return errors.Errorf("request plugin(%s) tenant enable: Res is nil", pluginID)
 		}
 		if resp.Res.Ret != openapi_v1.Retcode_OK {
 			log.Errorf("error request plugin(%s) tenant enable: %s", pluginID, resp.Res.Msg)
@@ -790,7 +774,7 @@ func (s *PluginServiceV1) resetImplementedPluginRoute(ctx context.Context,
 		oldRoute, err := s.pluginRouteOp.Get(ctx, v.Plugin.Id)
 		if err != nil {
 			rbStack.Run()
-			return nil, fmt.Errorf("error plugin route(%s) get: %w", v.Plugin.Id, err)
+			return nil, errors.Wrapf(err, "plugin route(%s) get", v.Plugin.Id)
 		}
 		tmpRoute := oldRoute.Clone()
 		for _, a := range v.Addons {
@@ -800,21 +784,40 @@ func (s *PluginServiceV1) resetImplementedPluginRoute(ctx context.Context,
 		err = s.pluginRouteOp.Update(ctx, oldRoute)
 		if err != nil {
 			rbStack.Run()
-			return nil, fmt.Errorf("error plugin route(%s) update: %w", oldRoute, err)
+			return nil, errors.Wrapf(err, "plugin route(%s) update", oldRoute)
 		}
 		rbStack = append(rbStack, func() error {
 			log.Debugf("delete plugin reset implemented plugin route roll back run.")
 			if _, err := s.pluginRouteOp.Delete(ctx, tmpRoute.ID); err != nil {
-				return fmt.Errorf("error delete tmpRoute(%s): %w", tmpRoute, err)
+				return errors.Wrapf(err, "delete tmpRoute(%s)", tmpRoute)
 			}
 			tmpRoute.Version = "1"
 			if err := s.pluginRouteOp.Create(ctx, tmpRoute); err != nil {
-				return fmt.Errorf("error create tmpRoute(%s): %w", tmpRoute, err)
+				return errors.Wrapf(err, "create tmpRoute(%s)", tmpRoute)
 			}
 			return nil
 		})
 	}
 	return rbStack, nil
+}
+
+func (s *PluginServiceV1) updatePlugin(ctx context.Context, old, new *model.Plugin) (util.RollbackFunc, error) {
+	if err := s.pluginOp.Update(ctx, new); err != nil {
+		return nil, errors.Wrapf(err, "update plugin(%s)", new)
+	}
+	return func() error {
+		log.Debugf("roll back update plugin: %s --> %s", new, old)
+		if _, err := s.pluginOp.Delete(ctx, old.ID); err != nil {
+			log.Errorf("error roll back update plugin(%s) delete: %s", old, err)
+			return errors.Wrap(err, "plugin delete")
+		}
+		old.Version = "1"
+		if err := s.pluginOp.Create(ctx, old); err != nil {
+			log.Errorf("error roll back update plugin(%s) create: %s", old, err)
+			return errors.Wrap(err, "plugin create")
+		}
+		return nil
+	}, nil
 }
 
 func (s *PluginServiceV1) deletePlugin(ctx context.Context, pID string) (util.RollbackFunc, error) {
@@ -827,7 +830,7 @@ func (s *PluginServiceV1) deletePlugin(ctx context.Context, pID string) (util.Ro
 		log.Debugf("uninstall plugin delete plugin(%s) roll back run.", dp)
 		dp.Version = "1"
 		if err = s.pluginOp.Create(ctx, dp); err != nil {
-			return fmt.Errorf("error roll back create plugin(%s): %w", dp, err)
+			return errors.Wrapf(err, "roll back create plugin(%s)", dp)
 		}
 		return nil
 	}, nil
@@ -848,7 +851,7 @@ func (s *PluginServiceV1) deletePluginRoute(ctx context.Context, pID string) (ut
 		log.Debugf("uninstall plugin delete plugin(%s) route roll back run.", dpr)
 		dpr.Version = "1"
 		if err = s.pluginRouteOp.Create(ctx, dpr); err != nil {
-			return fmt.Errorf("error roll back create plugin(%s) route: %w", dpr, err)
+			return errors.Wrapf(err, "roll back create plugin(%s) route", dpr)
 		}
 		return nil
 	}, nil
@@ -861,14 +864,12 @@ func getInstallerConfiguration(req *pb.InstallPluginRequest) (map[string]interfa
 		case pb.ConfigurationType_JSON:
 			if err := json.Unmarshal(req.Installer.Configuration,
 				&installerConfiguration); err != nil {
-				return nil, fmt.Errorf("error unmarshal request installer info configuration: %w",
-					err)
+				return nil, errors.Wrap(err, "unmarshal request installer info configuration")
 			}
 		case pb.ConfigurationType_YAML:
 			if err := yaml.Unmarshal(req.Installer.Configuration,
 				&installerConfiguration); err != nil {
-				return nil, fmt.Errorf("error unmarshal request installer info configuration: %w",
-					err)
+				return nil, errors.Wrap(err, "unmarshal request installer info configuration")
 			}
 		}
 	}

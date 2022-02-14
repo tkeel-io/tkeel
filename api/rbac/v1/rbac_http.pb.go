@@ -27,59 +27,52 @@ var (
 	_ = emptypb.Empty{}
 )
 
-type RbacHTTPServer interface {
-	AddRolePermission(context.Context, *AddRolePermissionRequest) (*AddRolePermissionResponse, error)
-	AddRolePermissionList(context.Context, *AddRolePermissionListRequest) (*AddRolePermissionResponse, error)
-	AddUserRoles(context.Context, *AddUserRolesRequest) (*emptypb.Empty, error)
-	CheckUserPermission(context.Context, *CheckUserPermissionRequest) (*CheckUserPermissionResponse, error)
-	CreateRoles(context.Context, *CreateRoleRequest) (*emptypb.Empty, error)
-	DeleteRole(context.Context, *DeleteRoleRequest) (*emptypb.Empty, error)
-	DeleteRolePermission(context.Context, *DeleteRolePermissionRequest) (*DeleteRolePermissionResponse, error)
-	DeleteUserRole(context.Context, *DeleteUserRoleRequest) (*emptypb.Empty, error)
+type RBACHTTPServer interface {
+	CheckRolePermission(context.Context, *CheckRolePermissionRequest) (*emptypb.Empty, error)
+	CreateRoleBinding(context.Context, *CreateRoleBindingRequest) (*emptypb.Empty, error)
+	CreateRoles(context.Context, *CreateRoleRequest) (*CreateRoleResponse, error)
+	DeleteRole(context.Context, *DeleteRoleRequest) (*DeleteRoleResponse, error)
+	DeleteRoleBinding(context.Context, *DeleteRoleBindingRequest) (*emptypb.Empty, error)
+	ListPermissions(context.Context, *ListPermissionRequest) (*ListPermissionResponse, error)
 	ListRole(context.Context, *ListRolesRequest) (*ListRolesResponse, error)
-	ListUserPermissions(context.Context, *ListUserPermissionRequest) (*ListUserPermissionResponse, error)
+	UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleResponse, error)
 }
 
-type RbacHTTPHandler struct {
-	srv RbacHTTPServer
+type RBACHTTPHandler struct {
+	srv RBACHTTPServer
 }
 
-func newRbacHTTPHandler(s RbacHTTPServer) *RbacHTTPHandler {
-	return &RbacHTTPHandler{srv: s}
+func newRBACHTTPHandler(s RBACHTTPServer) *RBACHTTPHandler {
+	return &RBACHTTPHandler{srv: s}
 }
 
-func (h *RbacHTTPHandler) AddRolePermission(req *go_restful.Request, resp *go_restful.Response) {
-	in := AddRolePermissionRequest{}
-	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
+func (h *RBACHTTPHandler) CheckRolePermission(req *go_restful.Request, resp *go_restful.Response) {
+	in := CheckRolePermissionRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.AddRolePermission(ctx, &in)
+	out, err := h.srv.CheckRolePermission(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -87,16 +80,17 @@ func (h *RbacHTTPHandler) AddRolePermission(req *go_restful.Request, resp *go_re
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -111,38 +105,38 @@ func (h *RbacHTTPHandler) AddRolePermission(req *go_restful.Request, resp *go_re
 	}
 }
 
-func (h *RbacHTTPHandler) AddRolePermissionList(req *go_restful.Request, resp *go_restful.Response) {
-	in := AddRolePermissionListRequest{}
-	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
+func (h *RBACHTTPHandler) CreateRoleBinding(req *go_restful.Request, resp *go_restful.Response) {
+	in := CreateRoleBindingRequest{}
+	if err := transportHTTP.GetBody(req, &in.User); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.AddRolePermissionList(ctx, &in)
+	out, err := h.srv.CreateRoleBinding(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -150,16 +144,17 @@ func (h *RbacHTTPHandler) AddRolePermissionList(req *go_restful.Request, resp *g
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -174,142 +169,21 @@ func (h *RbacHTTPHandler) AddRolePermissionList(req *go_restful.Request, resp *g
 	}
 }
 
-func (h *RbacHTTPHandler) AddUserRoles(req *go_restful.Request, resp *go_restful.Response) {
-	in := AddUserRolesRequest{}
-	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-
-	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
-
-	out, err := h.srv.AddUserRoles(ctx, &in)
-	if err != nil {
-		tErr := errors.FromError(err)
-		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
-		return
-	}
-	anyOut, err := anypb.New(out)
-	if err != nil {
-		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
-		return
-	}
-
-	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
-	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
-		Data: anyOut,
-	})
-	if err != nil {
-		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
-		return
-	}
-	resp.WriteHeader(http.StatusOK)
-
-	var remain int
-	for {
-		outB = outB[remain:]
-		remain, err = resp.Write(outB)
-		if err != nil {
-			return
-		}
-		if remain == 0 {
-			break
-		}
-	}
-}
-
-func (h *RbacHTTPHandler) CheckUserPermission(req *go_restful.Request, resp *go_restful.Response) {
-	in := CheckUserPermissionRequest{}
-	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-
-	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
-
-	out, err := h.srv.CheckUserPermission(ctx, &in)
-	if err != nil {
-		tErr := errors.FromError(err)
-		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
-		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
-		return
-	}
-	anyOut, err := anypb.New(out)
-	if err != nil {
-		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
-		return
-	}
-
-	outB, err := protojson.MarshalOptions{
-		UseProtoNames:   true,
-		EmitUnpopulated: true,
-	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
-		Data: anyOut,
-	})
-	if err != nil {
-		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
-		return
-	}
-	resp.WriteHeader(http.StatusOK)
-
-	var remain int
-	for {
-		outB = outB[remain:]
-		remain, err = resp.Write(outB)
-		if err != nil {
-			return
-		}
-		if remain == 0 {
-			break
-		}
-	}
-}
-
-func (h *RbacHTTPHandler) CreateRoles(req *go_restful.Request, resp *go_restful.Response) {
+func (h *RBACHTTPHandler) CreateRoles(req *go_restful.Request, resp *go_restful.Response) {
 	in := CreateRoleRequest{}
-	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
+	if err := transportHTTP.GetBody(req, &in.Role); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -320,13 +194,13 @@ func (h *RbacHTTPHandler) CreateRoles(req *go_restful.Request, resp *go_restful.
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -334,16 +208,17 @@ func (h *RbacHTTPHandler) CreateRoles(req *go_restful.Request, resp *go_restful.
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -358,16 +233,16 @@ func (h *RbacHTTPHandler) CreateRoles(req *go_restful.Request, resp *go_restful.
 	}
 }
 
-func (h *RbacHTTPHandler) DeleteRole(req *go_restful.Request, resp *go_restful.Response) {
+func (h *RBACHTTPHandler) DeleteRole(req *go_restful.Request, resp *go_restful.Response) {
 	in := DeleteRoleRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -378,13 +253,13 @@ func (h *RbacHTTPHandler) DeleteRole(req *go_restful.Request, resp *go_restful.R
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -392,16 +267,17 @@ func (h *RbacHTTPHandler) DeleteRole(req *go_restful.Request, resp *go_restful.R
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -416,33 +292,33 @@ func (h *RbacHTTPHandler) DeleteRole(req *go_restful.Request, resp *go_restful.R
 	}
 }
 
-func (h *RbacHTTPHandler) DeleteRolePermission(req *go_restful.Request, resp *go_restful.Response) {
-	in := DeleteRolePermissionRequest{}
+func (h *RBACHTTPHandler) DeleteRoleBinding(req *go_restful.Request, resp *go_restful.Response) {
+	in := DeleteRoleBindingRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.DeleteRolePermission(ctx, &in)
+	out, err := h.srv.DeleteRoleBinding(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -450,16 +326,17 @@ func (h *RbacHTTPHandler) DeleteRolePermission(req *go_restful.Request, resp *go
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -474,33 +351,28 @@ func (h *RbacHTTPHandler) DeleteRolePermission(req *go_restful.Request, resp *go
 	}
 }
 
-func (h *RbacHTTPHandler) DeleteUserRole(req *go_restful.Request, resp *go_restful.Response) {
-	in := DeleteUserRoleRequest{}
+func (h *RBACHTTPHandler) ListPermissions(req *go_restful.Request, resp *go_restful.Response) {
+	in := ListPermissionRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.DeleteUserRole(ctx, &in)
+	out, err := h.srv.ListPermissions(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -508,16 +380,17 @@ func (h *RbacHTTPHandler) DeleteUserRole(req *go_restful.Request, resp *go_restf
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -532,16 +405,11 @@ func (h *RbacHTTPHandler) DeleteUserRole(req *go_restful.Request, resp *go_restf
 	}
 }
 
-func (h *RbacHTTPHandler) ListRole(req *go_restful.Request, resp *go_restful.Response) {
+func (h *RBACHTTPHandler) ListRole(req *go_restful.Request, resp *go_restful.Response) {
 	in := ListRolesRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
-	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -552,13 +420,13 @@ func (h *RbacHTTPHandler) ListRole(req *go_restful.Request, resp *go_restful.Res
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -566,16 +434,17 @@ func (h *RbacHTTPHandler) ListRole(req *go_restful.Request, resp *go_restful.Res
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -590,33 +459,38 @@ func (h *RbacHTTPHandler) ListRole(req *go_restful.Request, resp *go_restful.Res
 	}
 }
 
-func (h *RbacHTTPHandler) ListUserPermissions(req *go_restful.Request, resp *go_restful.Response) {
-	in := ListUserPermissionRequest{}
+func (h *RBACHTTPHandler) UpdateRole(req *go_restful.Request, resp *go_restful.Response) {
+	in := UpdateRoleRequest{}
+	if err := transportHTTP.GetBody(req, &in.Role); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.ListUserPermissions(ctx, &in)
+	out, err := h.srv.UpdateRole(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -624,16 +498,17 @@ func (h *RbacHTTPHandler) ListUserPermissions(req *go_restful.Request, resp *go_
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -648,7 +523,7 @@ func (h *RbacHTTPHandler) ListUserPermissions(req *go_restful.Request, resp *go_
 	}
 }
 
-func RegisterRbacHTTPServer(container *go_restful.Container, srv RbacHTTPServer) {
+func RegisterRBACHTTPServer(container *go_restful.Container, srv RBACHTTPServer) {
 	var ws *go_restful.WebService
 	for _, v := range container.RegisteredWebServices() {
 		if v.RootPath() == "/v1" {
@@ -663,25 +538,21 @@ func RegisterRbacHTTPServer(container *go_restful.Container, srv RbacHTTPServer)
 		container.Add(ws)
 	}
 
-	handler := newRbacHTTPHandler(srv)
-	ws.Route(ws.POST("/rbac/tenant/{tenant_id}/roles").
+	handler := newRBACHTTPHandler(srv)
+	ws.Route(ws.POST("/rbac/roles/{name}").
 		To(handler.CreateRoles))
-	ws.Route(ws.GET("/rbac/tenant/{tenant_id}/roles").
+	ws.Route(ws.GET("/rbac/roles").
 		To(handler.ListRole))
-	ws.Route(ws.DELETE("/rbac/tenant/{tenant_id}/roles/{role}").
+	ws.Route(ws.DELETE("/rbac/roles/{name}").
 		To(handler.DeleteRole))
-	ws.Route(ws.POST("/rbac/tenant/{tenant_id}/roles/{role}/permission").
-		To(handler.AddRolePermission))
-	ws.Route(ws.POST("/rbac/tenant/{tenant_id}/roles/{role}/permissions").
-		To(handler.AddRolePermissionList))
-	ws.Route(ws.DELETE("/rbac/tenant/{tenant_id}/roles/{role}/permissions").
-		To(handler.DeleteRolePermission))
-	ws.Route(ws.POST("/rbac/tenant/{tenant_id}/users/roles").
-		To(handler.AddUserRoles))
-	ws.Route(ws.DELETE("/rbac/tenant/{tenant_id}/users/{user_id}/roles/{role}").
-		To(handler.DeleteUserRole))
-	ws.Route(ws.GET("/rbac/tenant/{tenant_id}/users/{user_id}/permissions").
-		To(handler.ListUserPermissions))
-	ws.Route(ws.POST("/rbac/check/tenant/users/permissions").
-		To(handler.CheckUserPermission))
+	ws.Route(ws.PUT("/rbac/roles/{name}").
+		To(handler.UpdateRole))
+	ws.Route(ws.POST("/rbac/roles/{role_name}/users").
+		To(handler.CreateRoleBinding))
+	ws.Route(ws.DELETE("/rbac/roles/{role_name}/users/{user_id}").
+		To(handler.DeleteRoleBinding))
+	ws.Route(ws.GET("/rbac/permissions").
+		To(handler.ListPermissions))
+	ws.Route(ws.GET("/rbac/permissions/{permission}/check").
+		To(handler.CheckRolePermission))
 }

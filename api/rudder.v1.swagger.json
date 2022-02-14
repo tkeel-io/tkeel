@@ -21,7 +21,7 @@
       "name": "Plugin"
     },
     {
-      "name": "Rbac"
+      "name": "RBAC"
     },
     {
       "name": "Repo"
@@ -954,15 +954,15 @@
         ]
       }
     },
-    "/rbac/check/tenant/users/permissions": {
-      "post": {
-        "summary": "list user permissions ",
-        "operationId": "ListUserPermissions",
+    "/rbac/permissions": {
+      "get": {
+        "summary": "list permissions ",
+        "operationId": "ListPermissions",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1CheckUserPermissionResponse"
+              "$ref": "#/definitions/v1ListPermissionResponse"
             }
           },
           "default": {
@@ -974,20 +974,58 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1CheckUserPermissionBody"
-            }
+            "name": "key_words",
+            "description": "permission name search words",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "description": "tenant role name,default is current role",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
-          "[Security] RBAC"
+          "RBAC"
         ]
       }
     },
-    "/rbac/tenant/{tenant_id}/roles": {
+    "/rbac/permissions/{permission}/check": {
+      "get": {
+        "summary": "check role has the permission",
+        "operationId": "CheckRolePermission",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "permission",
+            "description": "permission path",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/rbac/roles": {
       "get": {
         "summary": "list role in tenant ",
         "operationId": "ListRole",
@@ -1007,14 +1045,84 @@
         },
         "parameters": [
           {
+            "name": "page_num",
+            "description": "query page number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "description": "query page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "description": "query items order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "description": "query items inverted sort",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "description": "query items key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
             "name": "tenant_id",
+            "description": "tenant id, default is current tenant",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/rbac/roles/{name}": {
+      "delete": {
+        "summary": "delete role in tenant ",
+        "operationId": "DeleteRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "description": "tenant role name",
             "in": "path",
             "required": true,
             "type": "string"
           }
         ],
         "tags": [
-          "[Security] RBAC"
+          "RBAC"
         ]
       },
       "post": {
@@ -1024,7 +1132,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "properties": {}
+              "$ref": "#/definitions/v1CreateRoleResponse"
             }
           },
           "default": {
@@ -1036,163 +1144,35 @@
         },
         "parameters": [
           {
-            "name": "tenant_id",
+            "name": "name",
+            "description": "tenant role name",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "body",
+            "description": "tenant role",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1TenantRole"
+              "$ref": "#/definitions/v1Role",
+              "description": "tenant role"
             }
           }
         ],
         "tags": [
-          "[Security] RBAC"
-        ]
-      }
-    },
-    "/rbac/tenant/{tenant_id}/roles/{role}": {
-      "delete": {
-        "summary": "delete role in tenant ",
-        "operationId": "DeleteRole",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "properties": {}
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "tenant_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "role",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "[Security] RBAC"
-        ]
-      }
-    },
-    "/rbac/tenant/{tenant_id}/roles/{role}/permission": {
-      "post": {
-        "summary": "add role permission ",
-        "operationId": "AddRolePermission",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/v1AddRolePermissionResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "tenant_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "role",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1AddRolePermissionBody"
-            }
-          }
-        ],
-        "tags": [
-          "[Security] RBAC"
-        ]
-      }
-    },
-    "/rbac/tenant/{tenant_id}/roles/{role}/permissions": {
-      "delete": {
-        "summary": "delete role permission ",
-        "operationId": "DeleteRolePermission",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/v1DeleteRolePermissionResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "tenant_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "role",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "permission_object",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "permission_action",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "[Security] RBAC"
+          "RBAC"
         ]
       },
-      "post": {
-        "summary": "add role permission list",
-        "operationId": "AddRolePermissionList",
+      "put": {
+        "summary": "update role in tenant ",
+        "operationId": "UpdateRole",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1AddRolePermissionResponse"
+              "$ref": "#/definitions/v1UpdateRoleResponse"
             }
           },
           "default": {
@@ -1204,35 +1184,32 @@
         },
         "parameters": [
           {
-            "name": "tenant_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "role",
+            "name": "name",
+            "description": "tenant role name",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "body",
+            "description": "tenant role",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1AddRolePermissionListBody"
+              "$ref": "#/definitions/v1Role",
+              "description": "tenant role"
             }
           }
         ],
         "tags": [
-          "[Security] RBAC"
+          "RBAC"
         ]
       }
     },
-    "/rbac/tenant/{tenant_id}/users/roles": {
+    "/rbac/roles/{role_name}/users": {
       "post": {
-        "summary": "add user roles ",
-        "operationId": "AddUserRoles",
+        "summary": "create binding to bind role_name with user_id",
+        "operationId": "CreateRoleBinding",
         "responses": {
           "200": {
             "description": "OK",
@@ -1249,66 +1226,32 @@
         },
         "parameters": [
           {
-            "name": "tenant_id",
+            "name": "role_name",
+            "description": "bind role name",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "body",
+            "description": "bind user id",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1AddUserRolesBody"
+              "$ref": "#/definitions/CreateRoleBindingRequestUser",
+              "description": "bind user id"
             }
           }
         ],
         "tags": [
-          "[Security] RBAC"
+          "RBAC"
         ]
       }
     },
-    "/rbac/tenant/{tenant_id}/users/{user_id}/permissions": {
-      "get": {
-        "summary": "list user permissions ",
-        "operationId": "ListUserPermissions",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/v1ListUserPermissionResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "tenant_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "user_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "[Security] RBAC"
-        ]
-      }
-    },
-    "/rbac/tenant/{tenant_id}/users/{user_id}/roles/{role}": {
+    "/rbac/roles/{role_name}/users/{user_id}": {
       "delete": {
-        "summary": "delete user role ",
-        "operationId": "DeleteUserRole",
+        "summary": "delete binding of the bind role_name with user_id",
+        "operationId": "DeleteRoleBinding",
         "responses": {
           "200": {
             "description": "OK",
@@ -1325,26 +1268,22 @@
         },
         "parameters": [
           {
-            "name": "tenant_id",
+            "name": "role_name",
+            "description": "bind role name",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "user_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "role",
+            "description": "bind user id",
             "in": "path",
             "required": true,
             "type": "string"
           }
         ],
         "tags": [
-          "[Security] RBAC"
+          "RBAC"
         ]
       }
     },
@@ -2269,6 +2208,15 @@
         }
       }
     },
+    "CreateRoleBindingRequestUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "bind user id"
+        }
+      }
+    },
     "InstallerObjectmaintainer": {
       "type": "object",
       "properties": {
@@ -2283,6 +2231,18 @@
         "url": {
           "type": "string",
           "description": "maintainer url"
+        }
+      }
+    },
+    "PermissionDependence": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string",
+          "description": "ID\u003e/authority ID.The content in \u003c\u003e is variable."
         }
       }
     },
@@ -2389,36 +2349,6 @@
         }
       }
     },
-    "v1AddRolePermissionBody": {
-      "type": "object",
-      "properties": {
-        "permission_object": {
-          "type": "string"
-        },
-        "permission_action": {
-          "type": "string"
-        }
-      }
-    },
-    "v1AddRolePermissionListBody": {
-      "type": "object",
-      "properties": {
-        "permissions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1AddRolePermissionBody"
-          }
-        }
-      }
-    },
-    "v1AddRolePermissionResponse": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
-        }
-      }
-    },
     "v1AddTenantPluginBody": {
       "type": "object",
       "properties": {
@@ -2432,23 +2362,6 @@
       "properties": {
         "ok": {
           "type": "boolean"
-        }
-      }
-    },
-    "v1AddUserRolesBody": {
-      "type": "object",
-      "properties": {
-        "user_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "roles": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       }
     },
@@ -2483,31 +2396,6 @@
         }
       },
       "description": "*\nmessage brief plugin information."
-    },
-    "v1CheckUserPermissionBody": {
-      "type": "object",
-      "properties": {
-        "tenant_id": {
-          "type": "string"
-        },
-        "user_id": {
-          "type": "string"
-        },
-        "permission_object": {
-          "type": "string"
-        },
-        "permission_action": {
-          "type": "string"
-        }
-      }
-    },
-    "v1CheckUserPermissionResponse": {
-      "type": "object",
-      "properties": {
-        "allowed": {
-          "type": "boolean"
-        }
-      }
     },
     "v1ConfigurationType": {
       "type": "string",
@@ -2549,6 +2437,15 @@
       "properties": {
         "token": {
           "type": "string"
+        }
+      }
+    },
+    "v1CreateRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role",
+          "description": "tenant role"
         }
       }
     },
@@ -2631,11 +2528,12 @@
         }
       }
     },
-    "v1DeleteRolePermissionResponse": {
+    "v1DeleteRoleResponse": {
       "type": "object",
       "properties": {
-        "ok": {
-          "type": "boolean"
+        "role": {
+          "$ref": "#/definitions/v1Role",
+          "description": "tenant role"
         }
       }
     },
@@ -2989,17 +2887,15 @@
         }
       }
     },
-    "v1ListPermissionDetail": {
+    "v1ListPermissionResponse": {
       "type": "object",
       "properties": {
-        "role": {
-          "type": "string"
-        },
-        "permission_object": {
-          "type": "string"
-        },
-        "permission_action": {
-          "type": "string"
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Permission"
+          },
+          "description": "role permissions"
         }
       }
     },
@@ -3077,11 +2973,31 @@
     "v1ListRolesResponse": {
       "type": "object",
       "properties": {
+        "page_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page number"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page size"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query item total"
+        },
         "roles": {
           "type": "array",
           "items": {
-            "type": "string"
-          }
+            "$ref": "#/definitions/v1Role"
+          },
+          "description": "roles"
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "tenant id, default is current tenant"
         }
       }
     },
@@ -3108,17 +3024,6 @@
         }
       }
     },
-    "v1ListUserPermissionResponse": {
-      "type": "object",
-      "properties": {
-        "permissions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1ListPermissionDetail"
-          }
-        }
-      }
-    },
     "v1ListUserResponse": {
       "type": "object",
       "properties": {
@@ -3141,6 +3046,33 @@
           }
         }
       }
+    },
+    "v1Permission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "dependences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PermissionDependence"
+          }
+        },
+        "desc": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Permission"
+          }
+        }
+      },
+      "description": "plugin define permission."
     },
     "v1PluginObject": {
       "type": "object",
@@ -3325,6 +3257,43 @@
         }
       }
     },
+    "v1Role": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "tenant role name"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Permission"
+          },
+          "description": "role permissions"
+        },
+        "desc": {
+          "type": "string",
+          "description": "role desc"
+        },
+        "bind_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "role bind user number"
+        },
+        "upsert_timestamp": {
+          "type": "string",
+          "format": "uint64",
+          "description": "role upsert timestamp"
+        },
+        "permission_path_list": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "permission path list"
+        }
+      }
+    },
     "v1TenantAdmin": {
       "type": "object",
       "properties": {
@@ -3406,14 +3375,6 @@
             "type": "string"
           },
           "description": "user roles in tenant"
-        }
-      }
-    },
-    "v1TenantRole": {
-      "type": "object",
-      "properties": {
-        "role": {
-          "type": "string"
         }
       }
     },
@@ -3503,6 +3464,15 @@
         "plugin": {
           "$ref": "#/definitions/v1PluginObject",
           "description": "plugin object"
+        }
+      }
+    },
+    "v1UpdateRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role",
+          "description": "tenant role"
         }
       }
     },

@@ -18,9 +18,9 @@ package openapi
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
+	"github.com/pkg/errors"
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	"github.com/tkeel-io/tkeel/pkg/client"
 	"github.com/tkeel-io/tkeel/pkg/client/dapr"
@@ -38,7 +38,7 @@ func (c *DaprClient) Identify(ctx context.Context, sendToPluginID string) (*open
 		Body:       nil,
 	}, nil, res)
 	if err != nil {
-		return nil, fmt.Errorf("error dapr invoke plugin(%s) identify: %w", sendToPluginID, err)
+		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) identify", sendToPluginID)
 	}
 	return res, nil
 }
@@ -55,7 +55,7 @@ func (c *DaprClient) AddonsIdentify(ctx context.Context, sendToPluginID string, 
 		Body:       nil,
 	}, req, res)
 	if err != nil {
-		return nil, fmt.Errorf("error dapr invoke plugin(%s) addons identify(%s): %w", sendToPluginID, req.String(), err)
+		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) addons identify(%s): %w", sendToPluginID, req.String())
 	}
 	return res, nil
 }
@@ -72,13 +72,13 @@ func (c *DaprClient) Status(ctx context.Context, sendToPluginID string) (*openap
 		Body:       nil,
 	}, nil, res)
 	if err != nil {
-		return nil, fmt.Errorf("error dapr invoke plugin(%s) status: %w", sendToPluginID, err)
+		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) status: %w", sendToPluginID)
 	}
 	return res, nil
 }
 
 // POST tenant/enable.
-func (c *DaprClient) TenantEnable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantEnableRequst) (*openapi_v1.TenantEnableResponse, error) {
+func (c *DaprClient) TenantEnable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantEnableRequest) (*openapi_v1.TenantEnableResponse, error) {
 	res := &openapi_v1.TenantEnableResponse{}
 	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
 		ID:         sendToPluginID,
@@ -89,13 +89,13 @@ func (c *DaprClient) TenantEnable(ctx context.Context, sendToPluginID string, re
 		Body:       nil,
 	}, req, res)
 	if err != nil {
-		return nil, fmt.Errorf("error dapr invoke plugin(%s) tenant enable(%s): %w", sendToPluginID, req.String(), err)
+		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) tenant enable(%s): %w", sendToPluginID, req.String())
 	}
 	return res, nil
 }
 
 // POST tenant/disable.
-func (c *DaprClient) TenantDisable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantDisableRequst) (*openapi_v1.TenantDisableResponse, error) {
+func (c *DaprClient) TenantDisable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantDisableRequest) (*openapi_v1.TenantDisableResponse, error) {
 	res := &openapi_v1.TenantDisableResponse{}
 	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
 		ID:         sendToPluginID,
@@ -106,7 +106,7 @@ func (c *DaprClient) TenantDisable(ctx context.Context, sendToPluginID string, r
 		Body:       nil,
 	}, req, res)
 	if err != nil {
-		return nil, fmt.Errorf("error dapr invoke plugin(%s) tenant disable(%s): %w", sendToPluginID, req.String(), err)
+		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) tenant disable(%s): %w", sendToPluginID, req.String())
 	}
 	return res, nil
 }

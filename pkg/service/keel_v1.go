@@ -15,12 +15,13 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/pkg/errors"
 
 	pb "github.com/tkeel-io/tkeel/api/authentication/v1"
 	"github.com/tkeel-io/tkeel/pkg/client"

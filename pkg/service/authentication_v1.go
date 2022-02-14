@@ -3,11 +3,12 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/go-oauth2/oauth2/v4/manage"

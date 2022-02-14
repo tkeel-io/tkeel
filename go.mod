@@ -22,6 +22,7 @@ require (
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/golang-jwt/jwt v3.2.1+incompatible
+	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
@@ -34,8 +35,8 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb
-	github.com/tkeel-io/security v0.0.0-20220211035837-e12bbcd41eea
-	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220121054758-17063939b974
+	github.com/tkeel-io/security v0.0.0-20220214065206-5b4c1c80bb39
+	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220210040815-6869ce5a4ca6
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect

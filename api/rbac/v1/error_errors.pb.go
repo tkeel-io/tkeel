@@ -15,19 +15,22 @@ var errUnknown *errors.TError
 var errInvalidArgument *errors.TError
 var errInternalStore *errors.TError
 var errInternalError *errors.TError
-var errResourceNotFound *errors.TError
+var errPermissionNotFound *errors.TError
+var errRoleNotFound *errors.TError
 
 func init() {
-	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.rbac.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
+	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.rudder.api.rbac.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
 	errors.Register(errUnknown)
-	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.rbac.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
+	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.rbac.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
 	errors.Register(errInvalidArgument)
-	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.security.api.rbac.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
+	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.rudder.api.rbac.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
 	errors.Register(errInternalStore)
-	errInternalError = errors.New(int(codes.Internal), "io.tkeel.security.api.rbac.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
+	errInternalError = errors.New(int(codes.Internal), "io.tkeel.rudder.api.rbac.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
 	errors.Register(errInternalError)
-	errResourceNotFound = errors.New(int(codes.Internal), "io.tkeel.security.api.rbac.v1.ERR_RESOURCE_NOT_FOUND", Error_ERR_RESOURCE_NOT_FOUND.String())
-	errors.Register(errResourceNotFound)
+	errPermissionNotFound = errors.New(int(codes.NotFound), "io.tkeel.rudder.api.rbac.v1.ERR_PERMISSION_NOT_FOUND", Error_ERR_PERMISSION_NOT_FOUND.String())
+	errors.Register(errPermissionNotFound)
+	errRoleNotFound = errors.New(int(codes.NotFound), "io.tkeel.rudder.api.rbac.v1.ERR_ROLE_NOT_FOUND", Error_ERR_ROLE_NOT_FOUND.String())
+	errors.Register(errRoleNotFound)
 }
 
 func ErrUnknown() errors.Error {
@@ -46,6 +49,10 @@ func ErrInternalError() errors.Error {
 	return errInternalError
 }
 
-func ErrResourceNotFound() errors.Error {
-	return errResourceNotFound
+func ErrPermissionNotFound() errors.Error {
+	return errPermissionNotFound
+}
+
+func ErrRoleNotFound() errors.Error {
+	return errRoleNotFound
 }

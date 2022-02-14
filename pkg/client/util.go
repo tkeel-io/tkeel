@@ -19,10 +19,10 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/pkg/errors"
 	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/util"
 )
@@ -39,7 +39,7 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 		request.Header.Set("Content-Type", contentTypeJSON)
 		reqBody, err1 := json.Marshal(reqJSON)
 		if err1 != nil {
-			return nil, fmt.Errorf("error marshal dapr invoke(%s) request: %w", request, err1)
+			return nil, errors.Wrapf(err1, "marshal dapr invoke(%s) request", request)
 		}
 		request.Body = reqBody
 		resp, err = c.Call(ctx, request)
@@ -57,22 +57,22 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 		}()
 	}
 	if err != nil {
-		return nil, fmt.Errorf("error invoke requst(%s): %w", request, err)
+		return nil, errors.Wrapf(err, "invoke requst(%s)", request)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error invoke request(%s): %s", request, resp.Status)
+		return nil, errors.Errorf("invoke request(%s): %s", request, resp.Status)
 	}
 	if resp.ContentLength == 0 {
 		return nil, nil
 	}
 	out, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error read resp body err: %w", err)
+		return nil, errors.Wrap(err, "read resp body")
 	}
 	if !util.IsNil(respJSON) && respJSON != nil {
 		err = json.Unmarshal(out, respJSON)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshal out(%s): %w", string(out), err)
+			return nil, errors.Wrapf(err, "unmarshal out(%s)", string(out), err)
 		}
 	}
 	return out, nil
