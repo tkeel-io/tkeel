@@ -48,17 +48,17 @@ func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.R
 	in := CreateRepoRequest{}
 	if err := transportHTTP.GetBody(req, &in.Url); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -69,13 +69,13 @@ func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.R
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -83,16 +83,16 @@ func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.R
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -111,12 +111,12 @@ func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.R
 	in := DeleteRepoRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -127,13 +127,13 @@ func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.R
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -141,16 +141,16 @@ func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.R
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -169,12 +169,12 @@ func (h *RepoHTTPHandler) GetRepoInstaller(req *go_restful.Request, resp *go_res
 	in := GetRepoInstallerRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -185,13 +185,13 @@ func (h *RepoHTTPHandler) GetRepoInstaller(req *go_restful.Request, resp *go_res
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -199,16 +199,16 @@ func (h *RepoHTTPHandler) GetRepoInstaller(req *go_restful.Request, resp *go_res
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -227,7 +227,7 @@ func (h *RepoHTTPHandler) ListAllRepoInstaller(req *go_restful.Request, resp *go
 	in := ListAllRepoInstallerRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -238,13 +238,13 @@ func (h *RepoHTTPHandler) ListAllRepoInstaller(req *go_restful.Request, resp *go
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -252,16 +252,16 @@ func (h *RepoHTTPHandler) ListAllRepoInstaller(req *go_restful.Request, resp *go
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -280,7 +280,7 @@ func (h *RepoHTTPHandler) ListRepo(req *go_restful.Request, resp *go_restful.Res
 	in := emptypb.Empty{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -291,13 +291,13 @@ func (h *RepoHTTPHandler) ListRepo(req *go_restful.Request, resp *go_restful.Res
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -305,16 +305,16 @@ func (h *RepoHTTPHandler) ListRepo(req *go_restful.Request, resp *go_restful.Res
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {
@@ -333,12 +333,12 @@ func (h *RepoHTTPHandler) ListRepoInstaller(req *go_restful.Request, resp *go_re
 	in := ListRepoInstallerRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -349,13 +349,13 @@ func (h *RepoHTTPHandler) ListRepoInstaller(req *go_restful.Request, resp *go_re
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		resp.WriteHeaderAndJson(httpCode,
-			result.Set(httpCode, tErr.Message, out), "application/json")
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
 	}
 	anyOut, err := anypb.New(out)
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
 
@@ -363,16 +363,16 @@ func (h *RepoHTTPHandler) ListRepoInstaller(req *go_restful.Request, resp *go_re
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: http.StatusOK,
-		Msg:  "ok",
+		Code: errors.Success.Reason,
+		Msg:  "",
 		Data: anyOut,
 	})
 	if err != nil {
 		resp.WriteHeaderAndJson(http.StatusInternalServerError,
-			result.Set(http.StatusInternalServerError, err.Error(), nil), "application/json")
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
 	for {

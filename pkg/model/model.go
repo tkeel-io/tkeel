@@ -36,6 +36,8 @@ type Installer struct {
 	Repo    string `json:"repo,omitempty"`    // repo name.
 	Name    string `json:"name,omitempty"`    // installer name.
 	Version string `json:"version,omitempty"` // installer version.
+	Icon    string `json:"icon,omitempty"`    // installer icon.
+	Desc    string `json:"desc,omitempty"`    // installer desc.
 }
 
 const (
