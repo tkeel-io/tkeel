@@ -26,7 +26,7 @@ func NewRepoService() *RepoService {
 func (s *RepoService) CreateRepo(ctx context.Context, req *pb.CreateRepoRequest) (*emptypb.Empty, error) {
 	info := &repository.Info{
 		Name: req.Name,
-		URL:  req.Url,
+		URL:  req.GetUrl().Url,
 		// TODO: add annotations.
 	}
 	if err := hub.GetInstance().Add(info); err != nil {
@@ -68,26 +68,27 @@ func (s *RepoService) ListRepo(ctx context.Context, req *emptypb.Empty) (*pb.Lis
 func (s *RepoService) ListAllRepoInstaller(ctx context.Context,
 	req *pb.ListAllRepoInstallerRequest) (*pb.ListAllRepoInstallerResponse, error) {
 	repos := hub.GetInstance().List()
-	var installedList []*repository.InstallerBrief
 	var resList []*repository.InstallerBrief
 	for _, v := range repos {
-		res, err := v.Search("")
+		res, err := v.Search(req.KeyWords)
 		if err != nil {
 			log.Warnf("get repo(%s) all installer err: %s", v.Info().Name, err)
 			continue
 		}
-		is, err := v.Installed()
-		if err != nil {
-			log.Warnf("get repo(%s) installed installer err: %s", v.Info().Name, err)
-			continue
-		}
-		for _, i := range is {
-			installedList = append(installedList, i.Brief())
-		}
 		resList = append(resList, res...)
 	}
+	tmp := make([]*repository.InstallerBrief, 0, len(resList))
+	installedNum := 0
+	for _, v := range resList {
+		if v.Installed {
+			installedNum++
+			if req.Installed {
+				tmp = append(tmp, v)
+			}
+		}
+	}
 	if req.Installed {
-		resList = installedList
+		resList = tmp
 	}
 	ibList := iBriefList(resList)
 	if req.IsDescending {
@@ -110,7 +111,7 @@ func (s *RepoService) ListAllRepoInstaller(ctx context.Context,
 			}
 			return ret
 		}(),
-		InstalledNum: int32(len(installedList)),
+		InstalledNum: int32(installedNum),
 	}, nil
 }
 

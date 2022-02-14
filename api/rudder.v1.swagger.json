@@ -944,8 +944,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "byte",
+              "$ref": "#/definitions/TenantEnableRequestEnableExtraData",
               "description": "extra data"
             }
           }
@@ -1543,7 +1542,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "type": "string",
+              "$ref": "#/definitions/CreateRepoRequestRepoUrl",
               "description": "repo url"
             }
           }
@@ -2261,6 +2260,15 @@
     }
   },
   "definitions": {
+    "CreateRepoRequestRepoUrl": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "repo url"
+        }
+      }
+    },
     "InstallerObjectmaintainer": {
       "type": "object",
       "properties": {
@@ -2275,6 +2283,20 @@
         "url": {
           "type": "string",
           "description": "maintainer url"
+        }
+      }
+    },
+    "TenantEnableRequestEnableExtraData": {
+      "type": "object",
+      "properties": {
+        "desc": {
+          "type": "string",
+          "description": "extra data"
+        },
+        "extra": {
+          "type": "string",
+          "format": "byte",
+          "description": "extra data"
         }
       }
     },
