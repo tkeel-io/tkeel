@@ -91,7 +91,7 @@ service Oauth {
 
   rpc OIDCRegister(OIDCRegisterRequest) returns (OIDCRegisterResponse) {
     option (google.api.http) = {
-      post : "/oauth/oidc/register/{tenant_id}"
+      post : "/oauth/oidc/register"
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -200,6 +200,7 @@ message TokenResponse {
   string refresh_token = 2;
   int64 expires_in = 3;
   string token_type = 4;
+  string redirect_url =5;
 }
 
 message AuthenticateResponse {
@@ -228,8 +229,7 @@ message ResetPasswordResponse {
 }
 
 message OIDCRegisterRequest {
-  string tenant_id = 1;
-  OIDCRegisterBody body = 2;
+  OIDCRegisterBody body = 1;
 }
 message OIDCRegisterBody {
   string issuer =1;
@@ -242,6 +242,7 @@ message OIDCRegisterBody {
   string email_key =8;
   string preferred_username_key =9;
   OIDCEndpoint endpoint =10;
+  string tenant_id =11;
 }
 message OIDCEndpoint {
     string auth_url =1;

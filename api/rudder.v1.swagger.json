@@ -240,7 +240,7 @@
         ]
       }
     },
-    "/oauth/oidc/register/{tenant_id}": {
+    "/oauth/oidc/register": {
       "post": {
         "summary": "oauth OIDC provider register",
         "operationId": "OIDCRegister",
@@ -259,12 +259,6 @@
           }
         },
         "parameters": [
-          {
-            "name": "tenant_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
           {
             "name": "body",
             "in": "body",
@@ -3236,6 +3230,9 @@
         },
         "endpoint": {
           "$ref": "#/definitions/v1OIDCEndpoint"
+        },
+        "tenant_id": {
+          "type": "string"
         }
       }
     },

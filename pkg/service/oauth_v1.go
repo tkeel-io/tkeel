@@ -3,18 +3,18 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/coreos/go-oidc"
-	"github.com/tkeel-io/security/authn/idprovider"
-	oidcprovider "github.com/tkeel-io/security/authn/idprovider/oidc"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/coreos/go-oidc"
 	dapr "github.com/dapr/go-sdk/client"
 	oauth2v4 "github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/manage"
 	"github.com/tkeel-io/kit/log"
 	transportHTTP "github.com/tkeel-io/kit/transport/http"
+	"github.com/tkeel-io/security/authn/idprovider"
+	oidcprovider "github.com/tkeel-io/security/authn/idprovider/oidc"
 	"github.com/tkeel-io/security/model"
 	pb "github.com/tkeel-io/tkeel/api/security_oauth/v1"
 	"golang.org/x/oauth2"
@@ -128,7 +128,7 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 			}, nil
 		}
 
-		return &pb.TokenResponse{AccessToken: provider.AuthCodeURL("", "")}, nil
+		return &pb.TokenResponse{RedirectUrl: provider.AuthCodeURL("", "")}, nil
 	}
 
 	return nil, pb.OauthErrInvalidRequest()
@@ -298,7 +298,7 @@ func (s *OauthService) ResetPassword(ctx context.Context, req *pb.ResetPasswordR
 }
 
 func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterRequest) (*pb.OIDCRegisterResponse, error) {
-	if req.GetBody().GetIssuer() == "" || req.GetBody().GetClientId() == "" || req.GetBody().GetClientSecret() == "" || req.GetBody().GetRedirectUrl() == "" {
+	if req.GetBody().GetTenantId() == "" || req.GetBody().GetIssuer() == "" || req.GetBody().GetClientId() == "" || req.GetBody().GetClientSecret() == "" || req.GetBody().GetRedirectUrl() == "" {
 		log.Error("invalid oidc register params")
 		return nil, pb.OauthErrInvalidRequest()
 	}
@@ -315,13 +315,9 @@ func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterReq
 		Scopes:       req.GetBody().GetScopes(),
 		Endpoint:     provider.Endpoint(),
 	}
-	oidcConfig := &oidc.Config{
-		ClientID: req.GetBody().GetClientId(),
-	}
-	verifier := provider.Verifier(oidcConfig)
 
-	oidcProvider := &oidcprovider.OIDCProvider{Provider: provider, OAuth2Config: oauth2Config, Verifier: verifier}
-	idprovider.RegisterIdentityProvider(req.GetTenantId(), oidcProvider)
+	oidcProvider := &oidcprovider.OIDCProvider{Provider: provider, OAuth2Config: oauth2Config}
+	idprovider.RegisterIdentityProvider(req.GetBody().GetTenantId(), oidcProvider)
 
 	return &pb.OIDCRegisterResponse{Ok: true}, nil
 }

@@ -166,11 +166,6 @@ func (h *OauthHTTPHandler) OIDCRegister(req *go_restful.Request, resp *go_restfu
 			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
 		return
 	}
-	if err := transportHTTP.GetPathValue(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(http.StatusBadRequest, err.Error(), nil), "application/json")
-		return
-	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
@@ -357,6 +352,6 @@ func RegisterOauthHTTPServer(container *go_restful.Container, srv OauthHTTPServe
 		To(handler.Authenticate))
 	ws.Route(ws.POST("/oauth/pwd").
 		To(handler.ResetPassword))
-	ws.Route(ws.POST("/oauth/oidc/register/{tenant_id}").
+	ws.Route(ws.POST("/oauth/oidc/register").
 		To(handler.OIDCRegister))
 }
