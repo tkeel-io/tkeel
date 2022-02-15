@@ -2860,6 +2860,14 @@
           "type": "string",
           "description": "repository name"
         },
+        "icon": {
+          "type": "string",
+          "description": "installer icon"
+        },
+        "desc": {
+          "type": "string",
+          "description": "installer desc"
+        },
         "configuration": {
           "type": "string",
           "format": "byte",
@@ -3057,7 +3065,7 @@
         "plugin_list": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/v1PluginObject"
+            "$ref": "#/definitions/v1PluginBrief"
           },
           "description": "plugin object list"
         }
@@ -3244,20 +3252,46 @@
         }
       }
     },
-    "v1PluginObject": {
+    "v1PluginBrief": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string",
           "description": "plugin id"
         },
-        "plugin_version": {
+        "version": {
           "type": "string",
           "description": "plugin version"
+        },
+        "register_timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "register timestamp"
         },
         "tkeel_version": {
           "type": "string",
           "description": "plugin depend tkeel version"
+        },
+        "installer_brief": {
+          "$ref": "#/definitions/v1Installer",
+          "description": "brief installer info only has name,verison,repo_name and installed field."
+        },
+        "tenant_enable": {
+          "type": "boolean",
+          "description": "tenant enable"
+        },
+        "status": {
+          "$ref": "#/definitions/v1PluginStatus",
+          "description": "register plugin status"
+        }
+      }
+    },
+    "v1PluginObject": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1PluginBrief",
+          "description": "plugin brief info"
         },
         "addons_point": {
           "type": "array",
@@ -3277,11 +3311,6 @@
           "type": "string",
           "description": "plugin registered secret"
         },
-        "register_timestamp": {
-          "type": "string",
-          "format": "int64",
-          "description": "register timestamp"
-        },
         "enable_tenantes": {
           "type": "array",
           "items": {
@@ -3295,14 +3324,6 @@
             "$ref": "#/definitions/v1RegisterAddons"
           },
           "description": "register addons router"
-        },
-        "status": {
-          "$ref": "#/definitions/v1PluginStatus",
-          "description": "register plugin status"
-        },
-        "brief_installer_info": {
-          "$ref": "#/definitions/v1Installer",
-          "description": "brief installer info only has name,verison,repo_name and installed field."
         },
         "console_entries": {
           "type": "array",

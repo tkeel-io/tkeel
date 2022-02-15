@@ -22,6 +22,7 @@ import (
 	"net/url"
 	"time"
 
+	t_errors "github.com/tkeel-io/kit/errors"
 	pb "github.com/tkeel-io/tkeel/api/authentication/v1"
 	"github.com/tkeel-io/tkeel/pkg/client"
 	"github.com/tkeel-io/tkeel/pkg/client/dapr"
@@ -70,7 +71,7 @@ func writeResult(resp http.ResponseWriter, code int, msg string) {
 		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}.Marshal(&result.Http{
-		Code: int32(code),
+		Code: "",
 		Msg:  msg,
 		Data: nil,
 	})
@@ -144,7 +145,7 @@ func (s *KeelServiceV1) authenticate(ctx context.Context, req *http.Request) (*s
 	if err != nil {
 		return nil, fmt.Errorf("error call authentication: %w", err)
 	}
-	if out.Code != http.StatusOK {
+	if out.Code != t_errors.Success.Reason {
 		return nil, fmt.Errorf("error call authentication: %s", out.Msg)
 	}
 	resp := &pb.AuthenticateResponse{}
@@ -184,7 +185,7 @@ func (s *KeelServiceV1) callAuthorization(ctx context.Context, req *http.Request
 	if err = protojson.Unmarshal(out, res); err != nil {
 		return nil, fmt.Errorf("error protojson unmarshal(%s): %w", out, err)
 	}
-	if res.Code != http.StatusOK {
+	if res.Code != t_errors.Success.Reason {
 		return nil, fmt.Errorf("error result: %s", res)
 	}
 	return res, nil

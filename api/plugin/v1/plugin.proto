@@ -253,11 +253,19 @@ message Installer {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repository name"
       } ];
-  bytes configuration = 4
+  string icon = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer icon"
+      } ];
+  string desc = 5
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer desc"
+      } ];
+  bytes configuration = 6
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer configuration data"
       } ];
-  ConfigurationType type = 5
+  ConfigurationType type = 7
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "configuration type"
       } ];
@@ -294,57 +302,70 @@ message EnabledTenant {
       } ];
 }
 
-/**
- * plugin object.
- **/
-message PluginObject {
+// plugin brief
+
+message PluginBrief {
   string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin id"
       } ]; // plugin id.
-  string plugin_version = 2
+  string version = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin version"
-      } ]; // plugin version.
-  string tkeel_version = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin depend tkeel version"
-      } ]; // plugin depend tkeel version.
-  repeated openapi.v1.AddonsPoint addons_point = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin declares addons"
-      } ]; // plugin declares addons.
-  repeated openapi.v1.ImplementedPlugin implemented_plugin = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin implemented plugin list"
-      } ]; // plugin implemented plugin list.
-  string secret = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin registered secret"
-      } ]; // plugin registered secret.
-  int64 register_timestamp = 7
+      } ]; // plugin version
+  int64 register_timestamp = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "register timestamp"
       } ]; // register timestamp.
-  repeated EnabledTenant enable_tenantes = 8
+  string tkeel_version = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "enable tenant's id list"
-      } ]; // enable tenant's id list.
-  repeated RegisterAddons register_addons = 9
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "register addons router"
-      } ]; // register addons router.
-  openapi.v1.PluginStatus status = 10
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "register plugin status"
-      } ]; // register plugin status.
-  Installer brief_installer_info = 11 [
+        description : "plugin depend tkeel version"
+      } ]; // plugin depend tkeel version.
+  Installer installer_brief = 5 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       description : "brief installer info only has name,verison,repo_name and "
                     "installed field."
     }
-  ]; // register plugin status.
-  repeated openapi.v1.ConsoleEntry console_entries = 12
+  ]; // register plugin status
+  bool tenant_enable = 6
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant enable"
+      } ]; // tenant enable.
+  openapi.v1.PluginStatus status = 7
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "register plugin status"
+      } ]; // register plugin status.
+}
+
+/**
+ * plugin object.
+ **/
+message PluginObject {
+  PluginBrief plugin = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin brief info"
+      } ]; // plugin brief info.
+  repeated openapi.v1.AddonsPoint addons_point = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin declares addons"
+      } ]; // plugin declares addons.
+  repeated openapi.v1.ImplementedPlugin implemented_plugin = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin implemented plugin list"
+      } ]; // plugin implemented plugin list.
+  string secret = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin registered secret"
+      } ]; // plugin registered secret.
+  repeated EnabledTenant enable_tenantes = 5
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "enable tenant's id list"
+      } ]; // enable tenant's id list.
+  repeated RegisterAddons register_addons = 6
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "register addons router"
+      } ]; // register addons router.
+  repeated openapi.v1.ConsoleEntry console_entries = 7
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin console entries"
       } ];
@@ -430,7 +451,7 @@ message ListPluginResponse {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "query page size"
       } ];
-  repeated PluginObject plugin_list = 10
+  repeated PluginBrief plugin_list = 10
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin object list"
       } ];

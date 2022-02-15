@@ -11,10 +11,13 @@ func getReglarStringKeyWords(keyWords string) string {
 }
 
 func getQueryItemsStartAndEnd(pageNum, pageSize, listLen int) (int, int) {
-	if pageSize <= 0 {
+	if pageSize == 0 && pageNum == 0 {
+		return 0, listLen
+	}
+	if pageSize < 0 {
 		pageSize = 0
 	}
-	if pageNum <= 0 {
+	if pageNum < 0 {
 		pageNum = 0
 	}
 	start := (pageNum - 1) * pageSize

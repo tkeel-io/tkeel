@@ -89,6 +89,7 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 		prOp:           prOp,
 		tenantPluginOp: tpOp,
 		regExpWhiteList: []string{
+			"/static/*",
 			"/apis/rudder/v1/oauth2*",
 			"/apis/security/v1/oauth*",
 			"/apis/security/v1/tenants/users/rpk/info",
@@ -126,27 +127,27 @@ func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.Authen
 				return nil, pb.ErrUnauthenticated()
 			}
 			sess.Src.TKeelDepened = version.Version
-			return convertSession2PB(sess), nil
-		}
-		log.Debugf("internal flow(%s)", req)
-		sess.User, err = checkXtKeelAtuh(ctx, header)
-		if err != nil {
-			log.Errorf("error internal get user: %s", err)
-			return nil, pb.ErrInvalidXTkeelAuthToken()
-		}
-		// set src tkeel depened.
-		if pluginIsTkeelComponent(pluginID) {
-			pr, err1 := s.prOp.Get(ctx, pluginID)
-			if err1 != nil {
-				if errors.Is(err1, proute.ErrPluginRouteNotExsist) {
-					return nil, pb.ErrUpstreamNotFound()
-				}
-				log.Errorf("error get plugin(%s) route", pluginID)
-				return nil, pb.ErrInternalError()
-			}
-			sess.Src.TKeelDepened = pr.TkeelVersion
 		} else {
-			sess.Src.TKeelDepened = version.Version
+			log.Debugf("internal flow(%s)", req)
+			sess.User, err = checkXtKeelAtuh(ctx, header)
+			if err != nil {
+				log.Errorf("error internal get user: %s", err)
+				return nil, pb.ErrInvalidXTkeelAuthToken()
+			}
+			// set src tkeel depened.
+			if pluginIsTkeelComponent(pluginID) {
+				pr, err1 := s.prOp.Get(ctx, pluginID)
+				if err1 != nil {
+					if errors.Is(err1, proute.ErrPluginRouteNotExsist) {
+						return nil, pb.ErrUpstreamNotFound()
+					}
+					log.Errorf("error get plugin(%s) route", pluginID)
+					return nil, pb.ErrInternalError()
+				}
+				sess.Src.TKeelDepened = pr.TkeelVersion
+			} else {
+				sess.Src.TKeelDepened = version.Version
+			}
 		}
 		if err = s.checkSession(ctx, sess); err != nil {
 			log.Errorf("error check session(%s): %s", sess, err)

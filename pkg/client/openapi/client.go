@@ -30,8 +30,8 @@ type Client interface {
 	Identify(ctx context.Context, sendToPluginID string) (*openapi_v1.IdentifyResponse, error)
 	AddonsIdentify(ctx context.Context, sendToPluginID string, req *openapi_v1.AddonsIdentifyRequest) (*openapi_v1.AddonsIdentifyResponse, error)
 	Status(ctx context.Context, sendToPluginID string) (*openapi_v1.StatusResponse, error)
-	TenantEnable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantEnableRequst) (*openapi_v1.TenantEnableResponse, error)
-	TenantDisable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantDisableRequst) (*openapi_v1.TenantDisableResponse, error)
+	TenantEnable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantEnableRequest) (*openapi_v1.TenantEnableResponse, error)
+	TenantDisable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantDisableRequest) (*openapi_v1.TenantDisableResponse, error)
 }
 
 type DaprClient struct {
