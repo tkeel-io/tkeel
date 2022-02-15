@@ -23,6 +23,7 @@ type OauthClient interface {
 	Token(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	Authenticate(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AuthenticateResponse, error)
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*ResetPasswordResponse, error)
+	OIDCRegister(ctx context.Context, in *OIDCRegisterRequest, opts ...grpc.CallOption) (*OIDCRegisterResponse, error)
 }
 
 type oauthClient struct {
@@ -69,6 +70,15 @@ func (c *oauthClient) ResetPassword(ctx context.Context, in *ResetPasswordReques
 	return out, nil
 }
 
+func (c *oauthClient) OIDCRegister(ctx context.Context, in *OIDCRegisterRequest, opts ...grpc.CallOption) (*OIDCRegisterResponse, error) {
+	out := new(OIDCRegisterResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.oauth.v1.Oauth/OIDCRegister", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OauthServer is the server API for Oauth service.
 // All implementations must embed UnimplementedOauthServer
 // for forward compatibility
@@ -77,6 +87,7 @@ type OauthServer interface {
 	Token(context.Context, *TokenRequest) (*TokenResponse, error)
 	Authenticate(context.Context, *emptypb.Empty) (*AuthenticateResponse, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error)
+	OIDCRegister(context.Context, *OIDCRegisterRequest) (*OIDCRegisterResponse, error)
 	mustEmbedUnimplementedOauthServer()
 }
 
@@ -95,6 +106,9 @@ func (UnimplementedOauthServer) Authenticate(context.Context, *emptypb.Empty) (*
 }
 func (UnimplementedOauthServer) ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
+}
+func (UnimplementedOauthServer) OIDCRegister(context.Context, *OIDCRegisterRequest) (*OIDCRegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OIDCRegister not implemented")
 }
 func (UnimplementedOauthServer) mustEmbedUnimplementedOauthServer() {}
 
@@ -181,6 +195,24 @@ func _Oauth_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Oauth_OIDCRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OIDCRegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OauthServer).OIDCRegister(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.security.api.oauth.v1.Oauth/OIDCRegister",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OauthServer).OIDCRegister(ctx, req.(*OIDCRegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Oauth_ServiceDesc is the grpc.ServiceDesc for Oauth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -203,6 +235,10 @@ var Oauth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ResetPassword",
 			Handler:    _Oauth_ResetPassword_Handler,
+		},
+		{
+			MethodName: "OIDCRegister",
+			Handler:    _Oauth_OIDCRegister_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
