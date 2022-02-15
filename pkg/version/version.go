@@ -23,7 +23,7 @@ import (
 )
 
 // Version The tkeel platform Version.
-const _TKEEL_VERSION = "TKEEL_VERSION"
+const _TkeelVersion = "TKEEL_VERSION"
 
 var Version string
 
@@ -46,7 +46,7 @@ var GoVersion = runtime.Version()
 var OsArch = fmt.Sprintf("%s %s", runtime.GOOS, runtime.GOARCH)
 
 func init() {
-	if ver := os.Getenv(_TKEEL_VERSION); ver != "" {
+	if ver := os.Getenv(_TkeelVersion); ver != "" {
 		Version = ver
 	}
 }
