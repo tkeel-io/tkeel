@@ -18,6 +18,7 @@ package openapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -78,7 +79,7 @@ func (c *DaprClient) Status(ctx context.Context, sendToPluginID string) (*openap
 }
 
 // POST tenant/enable.
-func (c *DaprClient) TenantEnable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantEnableRequst) (*openapi_v1.TenantEnableResponse, error) {
+func (c *DaprClient) TenantEnable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantEnableRequest) (*openapi_v1.TenantEnableResponse, error) {
 	res := &openapi_v1.TenantEnableResponse{}
 	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
 		ID:         sendToPluginID,
@@ -89,13 +90,27 @@ func (c *DaprClient) TenantEnable(ctx context.Context, sendToPluginID string, re
 		Body:       nil,
 	}, req, res)
 	if err != nil {
+		if errors.Is(err, client.ErrMethodNotAllow) {
+			_, err = client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
+				ID:         sendToPluginID,
+				Method:     "v1/tenant/enable",
+				Verb:       http.MethodGet,
+				Header:     c.header.Clone(),
+				QueryValue: nil,
+				Body:       nil,
+			}, nil, res)
+			if err != nil {
+				return nil, fmt.Errorf("error dapr invoke plugin(%s) tenant enable(%s) GET: %w", sendToPluginID, req.String(), err)
+			}
+			return res, nil
+		}
 		return nil, fmt.Errorf("error dapr invoke plugin(%s) tenant enable(%s): %w", sendToPluginID, req.String(), err)
 	}
 	return res, nil
 }
 
 // POST tenant/disable.
-func (c *DaprClient) TenantDisable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantDisableRequst) (*openapi_v1.TenantDisableResponse, error) {
+func (c *DaprClient) TenantDisable(ctx context.Context, sendToPluginID string, req *openapi_v1.TenantDisableRequest) (*openapi_v1.TenantDisableResponse, error) {
 	res := &openapi_v1.TenantDisableResponse{}
 	_, err := client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
 		ID:         sendToPluginID,
@@ -106,6 +121,20 @@ func (c *DaprClient) TenantDisable(ctx context.Context, sendToPluginID string, r
 		Body:       nil,
 	}, req, res)
 	if err != nil {
+		if errors.Is(err, client.ErrMethodNotAllow) {
+			_, err = client.InvokeJSON(ctx, c.c, &dapr.AppRequest{
+				ID:         sendToPluginID,
+				Method:     "v1/tenant/disable",
+				Verb:       http.MethodGet,
+				Header:     c.header.Clone(),
+				QueryValue: nil,
+				Body:       nil,
+			}, nil, res)
+			if err != nil {
+				return nil, fmt.Errorf("error dapr invoke plugin(%s) tenant disable(%s) GET: %w", sendToPluginID, req.String(), err)
+			}
+			return res, nil
+		}
 		return nil, fmt.Errorf("error dapr invoke plugin(%s) tenant disable(%s): %w", sendToPluginID, req.String(), err)
 	}
 	return res, nil

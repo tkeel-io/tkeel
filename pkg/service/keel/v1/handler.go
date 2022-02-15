@@ -27,6 +27,7 @@ import (
 // registerContainerHandler register proxy handler.
 func registerContainerHandler(c *restful.Container, srv keel.ProxyServer) {
 	c.HandleWithFilter(ApisRootPath+"/", proxyPlugin(srv))
+	c.HandleWithFilter(StaticRootPath+"/", proxyPlugin(srv))
 }
 
 // proxyPlugin call the request to the corresponding plugin method.

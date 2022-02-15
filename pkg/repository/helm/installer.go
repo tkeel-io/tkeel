@@ -84,6 +84,9 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 					a[k] = v
 				}
 			}
+			if _, ok := ch.Metadata.Annotations[tKeelPluginTypeTag]; !ok {
+				ch.Metadata.Annotations[tKeelPluginTypeTag] = "User"
+			}
 			return a
 		}(),
 		brief:   brief,

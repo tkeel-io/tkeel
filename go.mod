@@ -34,15 +34,15 @@ require (
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
-	github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb
+	github.com/tkeel-io/kit v0.0.0-20220214021338-d36b084b71ae
 	github.com/tkeel-io/security v0.0.0-20220214065206-5b4c1c80bb39
-	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220121054758-17063939b974
+	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220214074546-06eaa2a61578
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
-	google.golang.org/genproto v0.0.0-20211129164237-f09f9a12af12
-	google.golang.org/grpc v1.42.0
+	google.golang.org/genproto v0.0.0-20220211171837-173942840c17
+	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gorm.io/gorm v1.22.3

@@ -18,10 +18,13 @@ package version
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 )
 
 // Version The tkeel platform Version.
+const _TkeelVersion = "TKEEL_VERSION"
+
 var Version string
 
 // GitCommit The git commit that was compiled. This will be filled in by the compiler.
@@ -41,3 +44,9 @@ var GoVersion = runtime.Version()
 
 // OsArch The system info.
 var OsArch = fmt.Sprintf("%s %s", runtime.GOOS, runtime.GOARCH)
+
+func init() {
+	if ver := os.Getenv(_TkeelVersion); ver != "" {
+		Version = ver
+	}
+}
