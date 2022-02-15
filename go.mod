@@ -34,8 +34,8 @@ require (
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
-	github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb
-	github.com/tkeel-io/security v0.0.0-20220214065206-5b4c1c80bb39
+	github.com/tkeel-io/kit v0.0.0-20220214021338-d36b084b71ae
+	github.com/tkeel-io/security v0.0.0-20220215074958-1b9fdae657c6
 	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220121054758-17063939b974
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	go.uber.org/atomic v1.9.0 // indirect

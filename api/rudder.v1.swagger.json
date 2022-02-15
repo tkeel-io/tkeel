@@ -3596,6 +3596,9 @@
         },
         "token_type": {
           "type": "string"
+        },
+        "redirect_url": {
+          "type": "string"
         }
       }
     },
