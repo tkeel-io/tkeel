@@ -33,6 +33,18 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/repository"
 )
 
+type Secret struct {
+	Data string `json:"data,omitempty"` // data.
+}
+
+type Installer struct {
+	Repo    string `json:"repo,omitempty"`    // repo name.
+	Name    string `json:"name,omitempty"`    // installer name.
+	Version string `json:"version,omitempty"` // installer version.
+	Icon    string `json:"icon,omitempty"`    // installer icon.
+	Desc    string `json:"desc,omitempty"`    // installer desc.
+}
+
 const (
 	TKeelUser   = "_tKeel"
 	TKeelTenant = "_tKeel_system"
@@ -61,16 +73,6 @@ var (
 
 	_permissionSet = NewPermissionSet()
 )
-
-type Secret struct {
-	Data string `json:"data,omitempty"` // data.
-}
-
-type Installer struct {
-	Repo    string `json:"repo,omitempty"`    // repo name.
-	Name    string `json:"name,omitempty"`    // installer name.
-	Version string `json:"version,omitempty"` // installer version.
-}
 
 type EnableTenant struct {
 	TenantID        string `json:"tenant_id"`        // enable tenant id.

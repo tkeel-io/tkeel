@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"regexp"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/pkg/errors"
@@ -133,6 +134,8 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 		Repo:    installer.Brief().Repo,
 		Name:    installer.Brief().Name,
 		Version: installer.Brief().Version,
+		Icon:    installer.Brief().Icon,
+		Desc:    installer.Brief().Desc,
 	})
 	if err = s.pluginOp.Create(ctx, newP); err != nil {
 		log.Errorf("error create plugin(%s): %s", newP, err)
@@ -161,7 +164,7 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 	}()
 	log.Debugf("install plugin(%s) succ.", newP)
 	return &pb.InstallPluginResponse{
-		Plugin: util.ConvertModel2PluginObjectPb(newP, nil),
+		Plugin: util.ConvertModel2PluginObjectPb(newP, nil, model.TKeelTenant),
 	}, nil
 }
 
@@ -243,12 +246,17 @@ func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 	log.Debugf("uninstall plugin(%s) succ.", p)
 	rbStack = util.NewRollbackStack()
 	return &pb.UninstallPluginResponse{
-		Plugin: util.ConvertModel2PluginObjectPb(p, pr),
+		Plugin: util.ConvertModel2PluginObjectPb(p, pr, model.TKeelTenant),
 	}, nil
 }
 
 func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 	req *pb.GetPluginRequest) (*pb.GetPluginResponse, error) {
+	u, err := util.GetUser(ctx)
+	if err != nil {
+		log.Errorf("error get user", err)
+		return nil, pb.PluginErrUnknown()
+	}
 	gPlugin, err := s.pluginOp.Get(ctx, req.Id)
 	if err != nil {
 		log.Errorf("error plugin(%s) get: %s", req.Id, err)
@@ -266,37 +274,47 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 	}
 
 	return &pb.GetPluginResponse{
-		Plugin: util.ConvertModel2PluginObjectPb(gPlugin, gPluginRoute),
+		Plugin: util.ConvertModel2PluginObjectPb(gPlugin, gPluginRoute, u.Tenant),
 	}, nil
 }
 
 func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 	req *pb.ListPluginRequest) (*pb.ListPluginResponse, error) {
+	u, err := util.GetUser(ctx)
+	if err != nil {
+		log.Errorf("error get user", err)
+		return nil, pb.PluginErrUnknown()
+	}
 	ps, err := s.pluginOp.List(ctx)
 	if err != nil {
 		log.Errorf("error plugin list: %s", err)
 		return nil, pb.PluginErrListPlugin()
 	}
-	retList := make([]*pb.PluginObject, 0, len(ps))
+	pList := make(pluginList, 0, len(ps))
 	for _, p := range ps {
-		var pbPlugin *pb.PluginObject
-		if p.Status == openapi_v1.PluginStatus_WAIT_RUNNING {
-			pbPlugin = util.ConvertModel2PluginObjectPb(p, nil)
-		} else {
-			pr, err := s.pluginRouteOp.Get(ctx, p.ID)
-			if err != nil {
-				if !errors.Is(err, proute.ErrPluginRouteNotExsist) {
-					log.Errorf("error plugin list get plugin(%s) route: %s", p.ID, err)
-					return nil, pb.PluginErrInternalStore()
-				}
-			}
-			pbPlugin = util.ConvertModel2PluginObjectPb(p, pr)
-		}
-		retList = append(retList, pbPlugin)
+		pList = append(pList, util.ConvertModel2PluginBriefObjectPb(p, u.Tenant))
 	}
 
+	regular := getReglarStringKeyWords(req.KeyWords)
+	exp, err := regexp.Compile(regular)
+	if err != nil {
+		log.Errorf("error compile regular(%s): %s", regular, err)
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	ret := make(pluginList, 0, len(pList))
+	for _, v := range pList {
+		if exp.MatchString(v.Id) {
+			ret = append(ret, v)
+		}
+	}
+	total := ret.Len()
+	sort.Sort(ret)
+	start, end := getQueryItemsStartAndEnd(int(req.PageNum), int(req.PageSize), len(ret))
 	return &pb.ListPluginResponse{
-		PluginList: retList,
+		Total:      int32(total),
+		PageNum:    req.PageNum,
+		PageSize:   req.PageSize,
+		PluginList: ret[start:end],
 	}, nil
 }
 
@@ -740,12 +758,15 @@ func (s *PluginServiceV1) requestTenantDisable(ctx context.Context, pluginID str
 		Extra:    extra,
 	})
 	if err != nil {
+		log.Errorf("error tenant disable: %s", err)
 		return nil, pb.PluginErrOpenapiDisableTenant()
 	}
 	if resp.Res == nil {
+		log.Errorf("error tenant disable: res is nil")
 		return nil, pb.PluginErrOpenapiDisableTenant()
 	}
 	if resp.Res.Ret != openapi_v1.Retcode_OK {
+		log.Errorf("error tenant enalbe: %s", resp.Res.Msg)
 		return nil, pb.PluginErrOpenapiDisableTenant()
 	}
 	return func() error {
@@ -892,3 +913,25 @@ type enabledTenantList []*pb.EnabledTenant
 func (a enabledTenantList) Len() int           { return len(a) }
 func (a enabledTenantList) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a enabledTenantList) Less(i, j int) bool { return a[i].EnableTimestamp < a[j].EnableTimestamp }
+
+type pluginList []*pb.PluginBrief
+
+func (a pluginList) Len() int      { return len(a) }
+func (a pluginList) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a pluginList) Less(i, j int) bool {
+	if a[i].TenantEnable != a[j].TenantEnable {
+		return a[j].TenantEnable
+	}
+	if a[i].Id != a[j].Id {
+		return a[i].Id < a[j].Id
+	}
+	iVer, err := strconv.ParseFloat(a[i].Version, 64)
+	if err != nil {
+		return true
+	}
+	jVer, err := strconv.ParseFloat(a[j].Version, 64)
+	if err != nil {
+		return false
+	}
+	return iVer < jVer
+}

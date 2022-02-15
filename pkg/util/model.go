@@ -7,23 +7,54 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/repository"
 )
 
-func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.PluginObject {
-	return &pb.PluginObject{
+func ConvertModel2PluginBriefObjectPb(p *model.Plugin, tenantID string) *pb.PluginBrief {
+	return &pb.PluginBrief{
 		Id:                p.ID,
-		PluginVersion:     p.PluginVersion,
+		Version:           p.PluginVersion,
 		TkeelVersion:      p.TkeelVersion,
+		RegisterTimestamp: p.RegisterTimestamp,
+		InstallerBrief: func() *pb.Installer {
+			if p.Installer == nil {
+				return nil
+			}
+			return &pb.Installer{
+				Name:    p.Installer.Name,
+				Version: p.Installer.Version,
+				Repo:    p.Installer.Repo,
+				Icon:    p.Installer.Icon,
+				Desc:    p.Installer.Desc,
+			}
+		}(),
+		TenantEnable: func() bool {
+			for _, v := range p.EnableTenantes {
+				if v.TenantID == tenantID {
+					return true
+				}
+			}
+			return false
+		}(),
+		Status: func() v1.PluginStatus {
+			return p.Status
+		}(),
+	}
+}
+
+func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute, tenantID string) *pb.PluginObject {
+	return &pb.PluginObject{
+		Plugin:            ConvertModel2PluginBriefObjectPb(p, tenantID),
 		AddonsPoint:       p.AddonsPoint,
 		ImplementedPlugin: p.ImplementedPlugin,
 		Secret:            p.Secret,
-		RegisterTimestamp: p.RegisterTimestamp,
 		EnableTenantes: func() []*pb.EnabledTenant {
 			ret := make([]*pb.EnabledTenant, 0, len(p.EnableTenantes))
 			for _, v := range p.EnableTenantes {
-				ret = append(ret, &pb.EnabledTenant{
-					TenantId:        v.TenantID,
-					OperatorId:      v.OperatorID,
-					EnableTimestamp: v.EnableTimestamp,
-				})
+				if tenantID == model.TKeelTenant || tenantID == v.TenantID {
+					ret = append(ret, &pb.EnabledTenant{
+						TenantId:        v.TenantID,
+						OperatorId:      v.OperatorID,
+						EnableTimestamp: v.EnableTimestamp,
+					})
+				}
 			}
 			return ret
 		}(),
@@ -40,19 +71,7 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute) *pb.Plu
 			}
 			return ret
 		}(),
-		Status: func() v1.PluginStatus {
-			return p.Status
-		}(),
-		BriefInstallerInfo: func() *pb.Installer {
-			if p.Installer == nil {
-				return nil
-			}
-			return &pb.Installer{
-				Name:    p.Installer.Name,
-				Version: p.Installer.Version,
-				Repo:    p.Installer.Repo,
-			}
-		}(),
+
 		ConsoleEntries: p.ConsoleEntries,
 	}
 }

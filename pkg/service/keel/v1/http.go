@@ -26,13 +26,9 @@ import (
 )
 
 const (
-	SecuritySubPath = "/security"
-	RudderSubPath   = "/rudder"
-	CoreSubPath     = "/core"
-	ApisRootPath    = "/apis"
-	AddonsRootPath  = "/addons"
-	MethodPath      = "method"
-	AddonsNamePath  = "addons_name"
+	ApisRootPath   = "/apis"
+	StaticRootPath = "/static"
+	AddonsRootPath = "/addons"
 )
 
 func RegisterPluginProxyHTTPServer(ctx context.Context,
@@ -40,6 +36,14 @@ func RegisterPluginProxyHTTPServer(ctx context.Context,
 	if container == nil {
 		return errors.New("error invalid container: nil")
 	}
+	cors := restful.CrossOriginResourceSharing{
+		AllowedHeaders: []string{"Content-Type", "Accept"},
+		AllowedMethods: []string{"GET", "POST", "HEAD", "PUT", "DELETE", "OPTIONS"},
+		CookiesAllowed: true,
+		Container:      container,
+	}
+	container.Filter(cors.Filter)
+	container.Filter(container.OPTIONSFilter)
 	container.Filter(srv.Filter())
 	// register.
 	registerContainerHandler(container, srv)

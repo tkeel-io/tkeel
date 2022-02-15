@@ -29,6 +29,8 @@ import (
 
 const contentTypeJSON = "application/json"
 
+var ErrMethodNotAllow = errors.New("method not allow")
+
 func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, reqJSON, respJSON interface{}) ([]byte, error) {
 	var (
 		resp *http.Response
@@ -60,7 +62,10 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 		return nil, errors.Wrapf(err, "invoke requst(%s)", request)
 	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf("invoke request(%s): %s", request, resp.Status)
+		if resp.StatusCode == http.StatusMethodNotAllowed {
+			return nil, ErrMethodNotAllow
+		}
+		return nil, errors.Errorf("error invoke request(%s): %s", request, resp.Status)
 	}
 	if resp.ContentLength == 0 {
 		return nil, nil
