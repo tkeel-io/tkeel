@@ -80,7 +80,6 @@ func (h *Oauth2HTTPHandler) AddPluginWhiteList(req *go_restful.Request, resp *go
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -134,7 +133,6 @@ func (h *Oauth2HTTPHandler) IssueAdminToken(req *go_restful.Request, resp *go_re
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -209,7 +207,6 @@ func (h *Oauth2HTTPHandler) VerifyToken(req *go_restful.Request, resp *go_restfu
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int

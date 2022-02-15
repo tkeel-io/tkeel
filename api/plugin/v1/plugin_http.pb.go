@@ -88,7 +88,6 @@ func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -152,7 +151,6 @@ func (h *PluginHTTPHandler) InstallPlugin(req *go_restful.Request, resp *go_rest
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -211,7 +209,6 @@ func (h *PluginHTTPHandler) ListEnabledTenants(req *go_restful.Request, resp *go
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -265,7 +262,6 @@ func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -324,7 +320,6 @@ func (h *PluginHTTPHandler) TenantDisable(req *go_restful.Request, resp *go_rest
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -388,7 +383,6 @@ func (h *PluginHTTPHandler) TenantEnable(req *go_restful.Request, resp *go_restf
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -447,7 +441,6 @@ func (h *PluginHTTPHandler) UninstallPlugin(req *go_restful.Request, resp *go_re
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int

@@ -84,7 +84,6 @@ func (h *EntityTokenHTTPHandler) CreateEntityToken(req *go_restful.Request, resp
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -143,7 +142,6 @@ func (h *EntityTokenHTTPHandler) DeleteEntityToken(req *go_restful.Request, resp
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -202,7 +200,6 @@ func (h *EntityTokenHTTPHandler) TokenInfo(req *go_restful.Request, resp *go_res
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int

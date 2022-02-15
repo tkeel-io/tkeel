@@ -92,7 +92,6 @@ func (h *RepoHTTPHandler) CreateRepo(req *go_restful.Request, resp *go_restful.R
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -151,7 +150,6 @@ func (h *RepoHTTPHandler) DeleteRepo(req *go_restful.Request, resp *go_restful.R
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -210,7 +208,6 @@ func (h *RepoHTTPHandler) GetRepoInstaller(req *go_restful.Request, resp *go_res
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -264,7 +261,6 @@ func (h *RepoHTTPHandler) ListAllRepoInstaller(req *go_restful.Request, resp *go
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -318,7 +314,6 @@ func (h *RepoHTTPHandler) ListRepo(req *go_restful.Request, resp *go_restful.Res
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -377,7 +372,6 @@ func (h *RepoHTTPHandler) ListRepoInstaller(req *go_restful.Request, resp *go_re
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int

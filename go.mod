@@ -5,9 +5,10 @@ go 1.16
 require (
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
-	github.com/bugsnag/bugsnag-go v1.5.3 // indirect
+	github.com/bugsnag/bugsnag-go v2.1.2+incompatible // indirect
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/casbin/casbin/v2 v2.41.0
+	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/dapr/go-sdk v1.3.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docker/docker v20.10.3+incompatible // indirect
@@ -36,9 +37,10 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb
 	github.com/tkeel-io/security v0.0.0-20220214065206-5b4c1c80bb39
-	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220210040815-6869ce5a4ca6
+	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220215024719-5296e91b6ff3
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	go.uber.org/atomic v1.9.0 // indirect
+	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
 	google.golang.org/genproto v0.0.0-20211129164237-f09f9a12af12
 	google.golang.org/grpc v1.42.0

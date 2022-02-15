@@ -89,7 +89,6 @@ func (h *RBACHTTPHandler) CheckRolePermission(req *go_restful.Request, resp *go_
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -153,7 +152,6 @@ func (h *RBACHTTPHandler) CreateRoleBinding(req *go_restful.Request, resp *go_re
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -217,7 +215,6 @@ func (h *RBACHTTPHandler) CreateRoles(req *go_restful.Request, resp *go_restful.
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -276,7 +273,6 @@ func (h *RBACHTTPHandler) DeleteRole(req *go_restful.Request, resp *go_restful.R
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -335,7 +331,6 @@ func (h *RBACHTTPHandler) DeleteRoleBinding(req *go_restful.Request, resp *go_re
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -389,7 +384,6 @@ func (h *RBACHTTPHandler) ListPermissions(req *go_restful.Request, resp *go_rest
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -443,7 +437,6 @@ func (h *RBACHTTPHandler) ListRole(req *go_restful.Request, resp *go_restful.Res
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -507,7 +500,6 @@ func (h *RBACHTTPHandler) UpdateRole(req *go_restful.Request, resp *go_restful.R
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int

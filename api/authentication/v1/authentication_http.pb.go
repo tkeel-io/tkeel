@@ -77,7 +77,6 @@ func (h *AuthenticationHTTPHandler) Authenticate(req *go_restful.Request, resp *
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int

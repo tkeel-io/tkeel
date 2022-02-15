@@ -240,6 +240,39 @@
         ]
       }
     },
+    "/oauth/oidc/register": {
+      "post": {
+        "summary": "oauth OIDC provider register",
+        "operationId": "OIDCRegister",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1OIDCRegisterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1OIDCRegisterBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
     "/oauth/pwd": {
       "post": {
         "summary": "oauth reset user password",
@@ -3047,6 +3080,75 @@
         }
       }
     },
+    "v1OIDCEndpoint": {
+      "type": "object",
+      "properties": {
+        "auth_url": {
+          "type": "string"
+        },
+        "token_url": {
+          "type": "string"
+        },
+        "user_info_url": {
+          "type": "string"
+        },
+        "jwksurl": {
+          "type": "string"
+        },
+        "end_session_url": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OIDCRegisterBody": {
+      "type": "object",
+      "properties": {
+        "issuer": {
+          "type": "string"
+        },
+        "client_id": {
+          "type": "string"
+        },
+        "client_secret": {
+          "type": "string"
+        },
+        "redirect_url": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "get_user_info": {
+          "type": "boolean"
+        },
+        "insecure_skip_verify": {
+          "type": "boolean"
+        },
+        "email_key": {
+          "type": "string"
+        },
+        "preferred_username_key": {
+          "type": "string"
+        },
+        "endpoint": {
+          "$ref": "#/definitions/v1OIDCEndpoint"
+        },
+        "tenant_id": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OIDCRegisterResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1Permission": {
       "type": "object",
       "properties": {
@@ -3454,6 +3556,9 @@
           "format": "int64"
         },
         "token_type": {
+          "type": "string"
+        },
+        "redirect_url": {
           "type": "string"
         }
       }

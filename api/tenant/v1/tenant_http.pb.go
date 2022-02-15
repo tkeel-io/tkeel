@@ -101,7 +101,6 @@ func (h *TenantHTTPHandler) AddTenantPlugin(req *go_restful.Request, resp *go_re
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -160,7 +159,6 @@ func (h *TenantHTTPHandler) CreateTenant(req *go_restful.Request, resp *go_restf
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -224,7 +222,6 @@ func (h *TenantHTTPHandler) CreateUser(req *go_restful.Request, resp *go_restful
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -283,7 +280,6 @@ func (h *TenantHTTPHandler) DeleteTenant(req *go_restful.Request, resp *go_restf
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -342,7 +338,6 @@ func (h *TenantHTTPHandler) DeleteTenantPlugin(req *go_restful.Request, resp *go
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -401,7 +396,6 @@ func (h *TenantHTTPHandler) DeleteUser(req *go_restful.Request, resp *go_restful
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -460,7 +454,6 @@ func (h *TenantHTTPHandler) GetResetPasswordKey(req *go_restful.Request, resp *g
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -519,7 +512,6 @@ func (h *TenantHTTPHandler) GetTenant(req *go_restful.Request, resp *go_restful.
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -578,7 +570,6 @@ func (h *TenantHTTPHandler) GetUser(req *go_restful.Request, resp *go_restful.Re
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -632,7 +623,6 @@ func (h *TenantHTTPHandler) ListTenant(req *go_restful.Request, resp *go_restful
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -691,7 +681,6 @@ func (h *TenantHTTPHandler) ListTenantPlugin(req *go_restful.Request, resp *go_r
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -750,7 +739,6 @@ func (h *TenantHTTPHandler) ListUser(req *go_restful.Request, resp *go_restful.R
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -809,7 +797,6 @@ func (h *TenantHTTPHandler) ResetPasswordKeyInfo(req *go_restful.Request, resp *
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -863,7 +850,6 @@ func (h *TenantHTTPHandler) TenantPluginPermissible(req *go_restful.Request, res
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
@@ -927,7 +913,6 @@ func (h *TenantHTTPHandler) UpdateUser(req *go_restful.Request, resp *go_restful
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
-	resp.WriteHeader(http.StatusOK)
 	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
 
 	var remain int
