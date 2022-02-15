@@ -1,3 +1,4 @@
+{{- if (ne .Values.pluginID "keel") -}}
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
@@ -23,3 +24,4 @@ spec:
     value: "x-plugin-jwt"
   - name: authStyle
     value: 1
+{{- end -}}

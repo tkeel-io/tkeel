@@ -275,6 +275,10 @@ message InstallerObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "last change chart timestamp"
       } ];
+  string icon = 10
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer icon url"
+      } ];
 }
 
 message CreateRepoRequest {
@@ -282,7 +286,13 @@ message CreateRepoRequest {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo name"
       } ];
-  string url = 2
+  message RepoUrl {
+    string url = 1
+        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+          description : "repo url"
+        } ];
+  }
+  RepoUrl url = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "repo url"
       } ];

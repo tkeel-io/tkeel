@@ -323,10 +323,10 @@ func (s *PluginServiceV1) TenantEnable(ctx context.Context,
 		}
 	}
 	// openapi tenant/enable.
-	rb, err := s.requestTenantEnable(ctx, req.Id, u.Tenant, req.Extra)
+	rb, err := s.requestTenantEnable(ctx, req.Id, u.Tenant, req.Extra.Extra)
 	if err != nil {
-		log.Errorf("error request(%s) tenant(%s/%s) enable: %s",
-			req.Id, u.Tenant, string(req.Extra), err)
+		log.Errorf("error request(%s) tenant(%s/%s/%s) enable: %s",
+			req.Id, u.Tenant, req.Extra.Desc, string(req.Extra.Extra), err)
 		return nil, pb.PluginErrOpenapiEnabletenant()
 	}
 	rbStack = append(rbStack, rb)
@@ -608,6 +608,7 @@ func (s *PluginServiceV1) checkIdentify(ctx context.Context,
 		return fmt.Errorf("error plugin(%s) depend tkeel version(%s) not invalid",
 			resp.PluginId, resp.TkeelVersion)
 	}
+	// TODO: openapi depence plugin check.
 	return nil
 }
 
