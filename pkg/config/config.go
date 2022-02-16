@@ -18,6 +18,7 @@ package config
 
 import (
 	"io/ioutil"
+	"net/url"
 	"os"
 	"strconv"
 
@@ -77,6 +78,10 @@ type Configuration struct {
 	Log *LogConf `json:"log" yaml:"log"`
 	// SecurityConf security auth config.
 	SecurityConf *SecurityConf `json:"security_conf" yaml:"securityConf"`
+	// CacheUrl security auth`s redis config.
+	CacheUrl string `json:"cache_url" yaml:"cacheUrl"`
+	// DataBaseUrl security auth`s mysql config.
+	DataBaseUrl string `json:"database_url" yaml:"databaseUrl"`
 }
 
 // SecurityConf.
@@ -186,6 +191,32 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.SecurityConf.OAuth.AccessGenerate.SecurityKey, "security.oauth2.access.sk", getEnvStr("TKEEL_SECURITY_ACCESS_SK", "eixn27adg3"), "security key of auth`s access generate")
 	strVar(&c.SecurityConf.OAuth.AccessGenerate.AccessTokenExp, "security.oauth2.access.access_token_exp", getEnvStr("TKEEL_SECURITY_ACCESS_TOKEN_EXP", "30m"), "security token of auth`s access exp")
 	strVar(&c.SecurityConf.Entity.SecurityKey, "security.entity.sk", getEnvStr("TKEEL_SECURITY_ENTITY_SK", "i5s2x3nov894"), "security  key auth`s entity token access")
+	strVar(&c.DataBaseUrl, "security.database_url", getEnvStr("TKEEL_DATABASE", "mysql://root:a3fks=ixmeb82a@tkeel-middleware-mysql:3306/tkeelauth"), "url of auth`s mysql config")
+	strVar(&c.CacheUrl, "security.cache_url", getEnvStr("TKEEL_CACHE", "redis://:Biz0P8Xoup@tkeel-middleware-redis-master:6379/0"), "url of auth`s redis config")
+}
+
+func (c *Configuration) Init() {
+	if c.CacheUrl != "" {
+		cacheUrl, err := url.Parse(c.CacheUrl)
+		if err == nil {
+			c.SecurityConf.OAuth.Redis.Addr = cacheUrl.Host
+			c.SecurityConf.OAuth.Redis.Password, _ = cacheUrl.User.Password()
+			c.SecurityConf.OAuth.Redis.DB, err = strconv.Atoi(cacheUrl.Path[1:])
+			if err != nil {
+				return
+			}
+		}
+	}
+	if c.DataBaseUrl != "" {
+		databaseUrl, err := url.Parse(c.DataBaseUrl)
+		if err == nil {
+			c.SecurityConf.Mysql.Host = databaseUrl.Hostname()
+			c.SecurityConf.Mysql.Port = databaseUrl.Port()
+			c.SecurityConf.Mysql.User = databaseUrl.User.Username()
+			c.SecurityConf.Mysql.Password, _ = databaseUrl.User.Password()
+			c.SecurityConf.Mysql.DBName = databaseUrl.Path[1:]
+		}
+	}
 }
 
 func getEnvStr(env string, defaultValue string) string {

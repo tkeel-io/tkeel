@@ -56,13 +56,13 @@ spec:
             - containerPort: {{ .Values.httpPort }}
           env:
             - name: TKEEL_DEBUG
-              value: {{ .Values.debug }}
+              value: {{ .Values.debug | quote }}
             - name: TKEEL_LOG_LEVEL
               value: {{ .Values.logLevel }}
             - name: TKEEL_HTTP_ADDR
-              value: {{ printf ":%s" .Values.httpPort }}
+              value: {{ printf ":%v" .Values.httpPort }}
             - name: TKEEL_GRPC_ADDR
-              value: {{ printf ":%s" .Values.grpcPort }}
+              value: {{ printf ":%v" .Values.grpcPort }}
             - name: TKEEL_DAPR_PRIVATE_STATE_NAME
               value: {{ .Values.dapr.state.privateName }}
             - name: TKEEL_DAPR_PUBLIC_STATE_NAME
@@ -71,22 +71,6 @@ spec:
               value: {{ .Values.adminPassword }}
             - name: TKEEL_WATCH_INTERVAL
               value: {{ .Values.watchInterval }}
-            - name: TKEEL_SECURITY_MYSQL_DBNAME
-              value: {{ .Values.middleware.mysql.dbname }}
-            - name: TKEEL_SECURITY_MYSQL_USER
-              value: {{ .Values.middleware.mysql.user }}
-            - name: TKEEL_SECURITY_MYSQL_PASSWORD
-              value: {{ .Values.middleware.mysql.password }}
-            - name: TKEEL_SECURITY_MYSQL_HOST
-              value: {{ .Values.middleware.mysql.host }}
-            - name: TKEEL_SECURITY_MYSQL_PORT
-              value: {{ .Values.middleware.mysql.port }}
-            - name: TKEEL_SECURITY_OAUTH2_REDIS_ADDR
-              value: {{ .Values.middleware.redis.addr }}
-            - name: TKEEL_SECURITY_OAUTH2_REDIS_PASSWORD
-              value: {{ .Values.middleware.redis.password }}
-            - name: TKEEL_SECURITY_OAUTH2_REDIS_DB
-              value: {{ .Values.middleware.redis.db }}
             - name: TKEEL_SECURITY_ACCESS_SK
               value: {{ .Values.oauth2.access.sk }}
             - name: TKEEL_SECURITY_OAUTH2_AUTH_TYPE
@@ -99,3 +83,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+            - name: TKEEL_DATABASE
+              value: {{ .Values.middleware.database }}
+            - name: TKEEL_CACHE
+              value: {{ .Values.middleware.cache }}
