@@ -919,9 +919,6 @@ type pluginList []*pb.PluginBrief
 func (a pluginList) Len() int      { return len(a) }
 func (a pluginList) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a pluginList) Less(i, j int) bool {
-	if a[i].TenantEnable != a[j].TenantEnable {
-		return a[j].TenantEnable
-	}
 	if a[i].Id != a[j].Id {
 		return a[i].Id < a[j].Id
 	}
