@@ -80,3 +80,49 @@ func DeletePluginPermissionOnSet(ctx context.Context, kv kv.Operator, pluginID s
 	})
 	return rbStack, nil
 }
+
+func GetPermissionAllDependencePath(p *v1.Permission) ([]string, error) {
+	ret := make([]string, 0, len(p.Dependences))
+	for _, v := range p.Dependences {
+		p, err := model.GetPermissionSet().GetPermission(v.Path)
+		if err != nil {
+			return nil, errors.Wrapf(err, "get permission by path(%s)", v.Path)
+		}
+		ps, err := GetPermissionAllDependencePath(p)
+		if err != nil {
+			return nil, errors.Wrapf(err, "get GetPermissionAllDependencePath(%s)", p.Name)
+		}
+		ret = append(ret, ps...)
+	}
+	return ret, nil
+}
+
+func GetPermissionPathSet(pathList []string) (map[string]struct{}, error) {
+	addPmPathSet := make(map[string]struct{})
+	for _, v := range pathList {
+		pm, err := model.GetPermissionSet().GetPermission(v)
+		if err != nil {
+			if errors.Is(err, model.ErrPermissionNotExist) {
+				return nil, model.ErrPermissionNotExist
+			}
+			return nil, errors.Wrapf(err, "check permission %v", pathList)
+		}
+		addPmPathSet[v] = struct{}{}
+		ps, err := GetPermissionAllDependencePath(pm)
+		if err != nil {
+			return nil, errors.Wrapf(err, "get permission(%s) all dependence path", pm.Name)
+		}
+		for _, v := range ps {
+			addPmPathSet[v] = struct{}{}
+		}
+	}
+	return addPmPathSet, nil
+}
+
+func Set2List(set map[string]struct{}) []string {
+	ret := make([]string, 0, len(set))
+	for k := range set {
+		ret = append(ret, k)
+	}
+	return ret
+}

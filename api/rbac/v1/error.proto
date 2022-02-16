@@ -42,4 +42,7 @@ enum Error {
   // 角色不存在
   // @code=NOT_FOUND
   ERR_ROLE_NOT_FOUND = 5;
+  // 角色已存在
+  // @code=INVALID_ARGUMENT
+  ERR_ROLE_HAS_BEEN_EXSIST = 6;
 }

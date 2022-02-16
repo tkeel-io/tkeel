@@ -159,25 +159,25 @@ message Role {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "tenant role name"
       } ]; // tenant role name.
-  repeated openapi.v1.Permission permissions = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "role permissions"
-      } ];
-  string desc = 3
+  string desc = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "role desc"
       } ];
-  int32 bind_num = 4
+  int32 bind_num = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "role bind user number"
       } ];
-  uint64 upsert_timestamp = 5
+  uint64 upsert_timestamp = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "role upsert timestamp"
       } ];
-  repeated string permission_path_list = 6
+  repeated string permission_path_list = 5
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "permission path list"
+      } ];
+  repeated string permission_name_list = 6
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "permission name list"
       } ];
 }
 

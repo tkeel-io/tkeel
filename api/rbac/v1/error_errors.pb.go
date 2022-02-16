@@ -17,6 +17,7 @@ var errInternalStore *errors.TError
 var errInternalError *errors.TError
 var errPermissionNotFound *errors.TError
 var errRoleNotFound *errors.TError
+var errRoleHasBeenExsist *errors.TError
 
 func init() {
 	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.rudder.api.rbac.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
@@ -31,6 +32,8 @@ func init() {
 	errors.Register(errPermissionNotFound)
 	errRoleNotFound = errors.New(int(codes.NotFound), "io.tkeel.rudder.api.rbac.v1.ERR_ROLE_NOT_FOUND", Error_ERR_ROLE_NOT_FOUND.String())
 	errors.Register(errRoleNotFound)
+	errRoleHasBeenExsist = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.rbac.v1.ERR_ROLE_HAS_BEEN_EXSIST", Error_ERR_ROLE_HAS_BEEN_EXSIST.String())
+	errors.Register(errRoleHasBeenExsist)
 }
 
 func ErrUnknown() errors.Error {
@@ -55,4 +58,8 @@ func ErrPermissionNotFound() errors.Error {
 
 func ErrRoleNotFound() errors.Error {
 	return errRoleNotFound
+}
+
+func ErrRoleHasBeenExsist() errors.Error {
+	return errRoleHasBeenExsist
 }

@@ -54,6 +54,9 @@ const (
 	KeyAdminPassword = "admin_passwd"
 
 	KeyPermissionSet = "permission_set"
+
+	AllRoleUser             = "_tkeel_all_roles_bind"
+	AllowedPermissionAction = "_tkeel_allow"
 )
 
 var (

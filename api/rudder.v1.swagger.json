@@ -3387,13 +3387,6 @@
           "type": "string",
           "description": "tenant role name"
         },
-        "permissions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1Permission"
-          },
-          "description": "role permissions"
-        },
         "desc": {
           "type": "string",
           "description": "role desc"
@@ -3414,6 +3407,13 @@
             "type": "string"
           },
           "description": "permission path list"
+        },
+        "permission_name_list": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "permission name list"
         }
       }
     },
