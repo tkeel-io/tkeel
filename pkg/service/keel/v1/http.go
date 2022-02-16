@@ -21,6 +21,7 @@ import (
 	"errors"
 
 	"github.com/emicklei/go-restful"
+	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/service/keel"
 )
 
@@ -36,7 +37,13 @@ func RegisterPluginProxyHTTPServer(ctx context.Context,
 		return errors.New("error invalid container: nil")
 	}
 	cors := restful.CrossOriginResourceSharing{
-		AllowedHeaders: []string{"Content-Type", "Accept"},
+		AllowedHeaders: []string{
+			restful.HEADER_Accept,
+			restful.HEADER_ContentEncoding,
+			model.AuthorizationHeader,
+			model.XtKeelAuthHeader,
+			model.XPluginJwtHeader,
+		},
 		AllowedMethods: []string{"GET", "POST", "HEAD", "PUT", "DELETE", "OPTIONS"},
 		CookiesAllowed: true,
 		Container:      container,
