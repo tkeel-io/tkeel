@@ -81,6 +81,7 @@ var rootCmd = &cobra.Command{
 			}
 			conf = c
 		}
+		conf.Init()
 		httpSrv := server.NewHTTPServer(conf.HTTPAddr)
 		grpcSrv := server.NewGRPCServer(conf.GRPCAddr)
 
