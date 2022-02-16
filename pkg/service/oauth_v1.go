@@ -131,7 +131,7 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 				log.Error(err)
 				return nil, pb.OauthErrServerError()
 			}
-			tgr := &oauth2v4.TokenGenerateRequest{ClientID: "", ClientSecret: "", UserID: userDao.ID}
+			tgr := &oauth2v4.TokenGenerateRequest{ClientID: DefaultClient, ClientSecret: DefaultClientSecurity, UserID: userDao.ID}
 			ti, err := s.Manager.GenerateAccessToken(ctx, oauth2v4.PasswordCredentials, tgr)
 			if err != nil {
 				log.Error(err)
