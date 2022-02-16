@@ -123,8 +123,25 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 				log.Error(err)
 				return nil, pb.OauthErrUnknown()
 			}
+			userDao := &model.User{}
+			whereDao := model.User{ExternalID: identity.GetExternalID(), TenantID: req.GetTenantId()}
+			assignDao := model.User{UserName: identity.GetUsername(), Email: identity.GetEmail()}
+			err = userDao.FirstOrAssignCreate(s.UserDB, whereDao, assignDao)
+			if err != nil {
+				log.Error(err)
+				return nil, pb.OauthErrServerError()
+			}
+			tgr := &oauth2v4.TokenGenerateRequest{ClientID: DefaultClient, ClientSecret: DefaultClientSecurity, UserID: userDao.ID}
+			ti, err := s.Manager.GenerateAccessToken(ctx, oauth2v4.PasswordCredentials, tgr)
+			if err != nil {
+				log.Error(err)
+				return nil, pb.OauthErrServerError()
+			}
 			return &pb.TokenResponse{
-				AccessToken: identity.GetUserID(),
+				AccessToken:  ti.GetAccess(),
+				RefreshToken: ti.GetRefresh(),
+				ExpiresIn:    int64(ti.GetAccessExpiresIn() / time.Second),
+				TokenType:    s.Config.TokenType,
 			}, nil
 		}
 
