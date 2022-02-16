@@ -52,6 +52,7 @@ var rootCmd = &cobra.Command{
 			}
 			conf = c
 		}
+		conf.Init()
 		httpSrv := server.NewHTTPServer(conf.HTTPAddr)
 		httpSrv.Container.EnableContentEncoding(false)
 		grpcSrv := server.NewGRPCServer(conf.GRPCAddr)

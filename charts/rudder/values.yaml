@@ -8,7 +8,7 @@ replicaCount: 1
 nodePort: 30777
 image:
   repository: tkeelio/rudder
-  tag: v0.3.0
+  tag: v0.4.0
   pullPolicy: Always
 
 # rudder debug mod
@@ -49,13 +49,5 @@ dapr:
 
 # middleware configuration
 middleware:
-  mysql:
-    host: tkeel-middleware-mysql
-    port: 3306
-    dbname: tkeelauth
-    user: root
-    password: a3fks=ixmeb82a
-  redis:
-    addr: tkeel-middleware-redis-master:6379
-    db: 0
-    password: Biz0P8Xoup
+  database: mysql://root:a3fks=ixmeb82a@tkeel-middleware-mysql:3306/tkeelauth
+  cache: redis://:Biz0P8Xoup@tkeel-middleware-redis-master:6379/0
