@@ -60,6 +60,7 @@ func (s *RepoService) ListRepo(ctx context.Context, req *emptypb.Empty) (*pb.Lis
 			for _, v := range repoList {
 				ret = append(ret, convertRepo2PB(v))
 			}
+			sort.Sort(repoSort(ret))
 			return ret
 		}(),
 	}, nil
@@ -317,9 +318,6 @@ func (ib iBriefList) Len() int {
 }
 
 func (ib iBriefList) Less(i, j int) bool {
-	if ib[i].Installed != ib[j].Installed {
-		return ib[j].Installed
-	}
 	if ib[i].Name != ib[j].Name {
 		return ib[i].Name < ib[j].Name
 	}
@@ -337,3 +335,9 @@ func (ib iBriefList) Less(i, j int) bool {
 func (ib iBriefList) Swap(i, j int) {
 	ib[i], ib[j] = ib[j], ib[i]
 }
+
+type repoSort []*pb.RepoObject
+
+func (a repoSort) Len() int           { return len(a) }
+func (a repoSort) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a repoSort) Less(i, j int) bool { return a[i].Name < a[j].Name }
