@@ -509,26 +509,11 @@ func (ps *PermissionSet) GetPermissionByPluginID(pluginID string) []*Permission 
 	ret := make([]*Permission, 0, len(ps.sortList))
 	ps.rwLock.RLock()
 	defer ps.rwLock.RUnlock()
-	s, e, start := 0, 0, false
-	for index, v := range ps.sortList {
+	for _, v := range ps.sortList {
 		if strings.HasPrefix(v.Path, pluginID) {
-			if !start {
-				start = true
-				s = index
-			}
-		} else if start {
-			start = false
-			e = index
+			ret = append(ret, v)
 		}
 	}
-	if e == 0 {
-		if start {
-			e = len(ps.sortList) - 1
-		} else {
-			e = -1
-		}
-	}
-	copy(ret, ps.sortList[s:e+1])
 	return ret
 }
 
@@ -582,28 +567,13 @@ func (ps *PermissionSet) Delete(pluginID string) {
 			delete(ps.pathSet, k)
 		}
 	}
-	s, e, start := 0, 0, false
-	for index, v := range ps.sortList {
-		if strings.HasPrefix(v.Path, pluginID) {
-			if !start {
-				start = true
-				s = index
-			}
-		} else {
-			if start {
-				start = false
-				e = index
-			}
+	tmp := make([]*Permission, 0, len(ps.sortList))
+	for _, v := range ps.sortList {
+		if !strings.HasPrefix(v.Path, pluginID) {
+			tmp = append(tmp, v)
 		}
 	}
-	if e == 0 {
-		if start {
-			e = len(ps.sortList) - 1
-		} else {
-			e = -1
-		}
-	}
-	ps.sortList = append(ps.sortList[0:s], ps.sortList[e+1:]...)
+	ps.sortList = tmp
 }
 
 func (ps *PermissionSet) checkPermission(p *openapi_v1.Permission) error {
@@ -643,6 +613,9 @@ func (ps *PermissionSet) GetPermission(path string) (*Permission, error) {
 func convertPB2Model(parentalPath string, pb *openapi_v1.Permission) []*Permission {
 	ret := make([]*Permission, 0)
 	path := parentalPath + "/" + pb.Id
+	if pb.Id == parentalPath && strings.Count(parentalPath, "/") == 0 {
+		path = pb.Id
+	}
 	ret = append(ret, &Permission{
 		Path: path,
 		Pb:   pb,

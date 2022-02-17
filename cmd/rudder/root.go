@@ -108,6 +108,7 @@ var rootCmd = &cobra.Command{
 			riOp := prepo.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			kvOp := kv.NewDaprStateOperator(conf.Tkeel.WatchInterval, conf.Dapr.PrivateStateName, daprGRPCClient)
 			kvOp.Watch(context.TODO(), model.KeyPermissionSet, func(value []byte, version string) error {
+				log.Debugf("update %s %s", model.KeyPermissionSet, string(value))
 				if err1 := model.GetPermissionSet().Unmarshal(value); err1 != nil {
 					return errors.Wrapf(err1, "unmarshal %s %s", model.KeyPermissionSet, value)
 				}

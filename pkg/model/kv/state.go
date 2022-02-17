@@ -74,7 +74,7 @@ func (o *DaprStateOprator) Create(ctx context.Context, key string, value []byte)
 }
 
 func (o *DaprStateOprator) Update(ctx context.Context, key string, value []byte, version string) error {
-	var cache *DaprStateCache
+	var cacheState *DaprStateCache
 	vi, ok := o.cache.Load(key)
 	if ok {
 		v, ok := vi.(*DaprStateCache)
@@ -82,9 +82,13 @@ func (o *DaprStateOprator) Update(ctx context.Context, key string, value []byte,
 			return errors.New("cache type invalid")
 		}
 		if version == "" {
-			version = v.Version
+			if v.Version == "" {
+				version = "1"
+			} else {
+				version = v.Version
+			}
 		}
-		cache = v
+		cacheState = v
 	}
 	if err := o.daprClient.SaveBulkState(ctx, o.storeName, &dapr.SetStateItem{
 		Key:   key,
@@ -99,13 +103,14 @@ func (o *DaprStateOprator) Update(ctx context.Context, key string, value []byte,
 	}); err != nil {
 		return errors.Wrapf(err, "save KV(%s/%s/%s)", key, value, version)
 	}
-	if cache != nil {
-		cache.Value = value
+	if cacheState != nil {
+		log.Debugf("cache state(%s) %s", key, string(value))
+		cacheState.Value = value
 		vInt, err := strconv.Atoi(version)
 		if err != nil {
 			return errors.Wrapf(err, "atoi version(%s)", version)
 		}
-		cache.Version = strconv.Itoa(vInt + 1)
+		cacheState.Version = strconv.Itoa(vInt + 1)
 	}
 
 	return nil
@@ -142,6 +147,14 @@ func (o *DaprStateOprator) Watch(ctx context.Context, key string, cb func(value 
 	_, ok := o.cache.LoadOrStore(key, c)
 	if ok {
 		return errors.New("already watching")
+	}
+	item, err := o.daprClient.GetState(ctx, o.storeName, key)
+	if err != nil {
+		log.Errorf("error dapr state oprator watch get(%s): %s", key, err)
+		return errors.Wrapf(err, "get state %s", key)
+	}
+	if err = cb(item.Value, item.Etag); err != nil {
+		return errors.Wrapf(err, "kv cache(%s/%s/%s) call back", key, item.Value, item.Etag)
 	}
 	return nil
 }

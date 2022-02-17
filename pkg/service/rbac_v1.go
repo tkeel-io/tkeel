@@ -267,7 +267,6 @@ func (s *RBACService) ListPermissions(ctx context.Context, req *pb.ListPermissio
 		log.Errorf("error get user: %s", err)
 		return nil, pb.ErrInvalidArgument()
 	}
-
 	pList := make([]*model.Permission, 0)
 	if req.Role != "" {
 		daoRole := &s_model.Role{}
@@ -284,7 +283,8 @@ func (s *RBACService) ListPermissions(ctx context.Context, req *pb.ListPermissio
 	} else {
 		plugins := s.tenantPluginOp.ListTenantPlugins(u.Tenant)
 		for _, v := range plugins {
-			pList = append(pList, model.GetPermissionSet().GetPermissionByPluginID(v)...)
+			pluginPermissions := model.GetPermissionSet().GetPermissionByPluginID(v)
+			pList = append(pList, pluginPermissions...)
 		}
 		if !sort.IsSorted(model.PermissionSort(pList)) {
 			sort.Sort(model.PermissionSort(pList))
@@ -331,7 +331,21 @@ func (s *RBACService) CheckRolePermission(ctx context.Context, req *pb.CheckRole
 }
 
 func (s *RBACService) TMAddPolicy(ctx context.Context, req *pb.TMPolicyRequest) (*emptypb.Empty, error) {
-	if _, err := s.rbacOp.AddPolicy(req.Role, req.Tenant,
+	daoRole := &s_model.Role{}
+	ok, err := daoRole.IsExisted(s.db, map[string]interface{}{"name": req.Role, "tenant_id": req.Tenant})
+	if err != nil {
+		log.Errorf("error role exist(%s): %s", req, err)
+		return nil, pb.ErrInternalError()
+	}
+	if !ok {
+		daoRole.Name = req.Role
+		daoRole.TenantID = req.Tenant
+		if err = daoRole.Create(s.db); err != nil {
+			log.Errorf("error create role(%s): %s", req, err)
+			return nil, pb.ErrInternalError()
+		}
+	}
+	if _, err = s.rbacOp.AddPolicy(req.Role, req.Tenant,
 		req.Permission, model.AllowedPermissionAction); err != nil {
 		log.Errorf("error AddPolicy add policy %s/%s/%s/%s: %s",
 			req.Role, req.Tenant, req.Permission, model.AllowedPermissionAction, err)
