@@ -28,6 +28,7 @@ func NewTenantService(db *gorm.DB, tenantPluginOp rbac.TenantPluginMgr, rbacOp *
 	_oncemigrate.Do(func() {
 		db.AutoMigrate(new(model.User))
 		db.AutoMigrate(new(model.Tenant))
+		db.AutoMigrate(new(model.Role))
 	})
 	return &TenantService{DB: db, TenantPluginOp: tenantPluginOp, RBACOp: rbacOp}
 }
