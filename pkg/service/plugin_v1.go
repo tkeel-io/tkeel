@@ -469,8 +469,8 @@ func (s *PluginServiceV1) ListEnabledTenants(ctx context.Context,
 			continue
 		}
 		if exp.MatchString(v.TenantID) {
-			daoTenant.ID = v.TenantID
-			ts, err := daoTenant.List(s.db, nil)
+			where := map[string]interface{}{"id": v.TenantID}
+			_, ts, err := daoTenant.List(s.db, where, nil, "")
 			if err != nil {
 				log.Warnf("error list tenant(%s): %s", v.TenantID, err)
 				continue
