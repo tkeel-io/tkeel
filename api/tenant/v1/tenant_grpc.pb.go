@@ -24,7 +24,9 @@ type TenantClient interface {
 	// get a tenant.
 	GetTenant(ctx context.Context, in *GetTenantRequest, opts ...grpc.CallOption) (*GetTenantResponse, error)
 	// list tenant.
-	ListTenant(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListTenantResponse, error)
+	ListTenant(ctx context.Context, in *ListTenantRequest, opts ...grpc.CallOption) (*ListTenantResponse, error)
+	// update tenant.
+	UpdateTenant(ctx context.Context, in *UpdateTenantRequest, opts ...grpc.CallOption) (*UpdateTenantResponse, error)
 	// delete a tenant.
 	DeleteTenant(ctx context.Context, in *DeleteTenantRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// create a user.
@@ -74,9 +76,18 @@ func (c *tenantClient) GetTenant(ctx context.Context, in *GetTenantRequest, opts
 	return out, nil
 }
 
-func (c *tenantClient) ListTenant(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListTenantResponse, error) {
+func (c *tenantClient) ListTenant(ctx context.Context, in *ListTenantRequest, opts ...grpc.CallOption) (*ListTenantResponse, error) {
 	out := new(ListTenantResponse)
 	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/ListTenant", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tenantClient) UpdateTenant(ctx context.Context, in *UpdateTenantRequest, opts ...grpc.CallOption) (*UpdateTenantResponse, error) {
+	out := new(UpdateTenantResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/UpdateTenant", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +211,9 @@ type TenantServer interface {
 	// get a tenant.
 	GetTenant(context.Context, *GetTenantRequest) (*GetTenantResponse, error)
 	// list tenant.
-	ListTenant(context.Context, *emptypb.Empty) (*ListTenantResponse, error)
+	ListTenant(context.Context, *ListTenantRequest) (*ListTenantResponse, error)
+	// update tenant.
+	UpdateTenant(context.Context, *UpdateTenantRequest) (*UpdateTenantResponse, error)
 	// delete a tenant.
 	DeleteTenant(context.Context, *DeleteTenantRequest) (*emptypb.Empty, error)
 	// create a user.
@@ -235,8 +248,11 @@ func (UnimplementedTenantServer) CreateTenant(context.Context, *CreateTenantRequ
 func (UnimplementedTenantServer) GetTenant(context.Context, *GetTenantRequest) (*GetTenantResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTenant not implemented")
 }
-func (UnimplementedTenantServer) ListTenant(context.Context, *emptypb.Empty) (*ListTenantResponse, error) {
+func (UnimplementedTenantServer) ListTenant(context.Context, *ListTenantRequest) (*ListTenantResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListTenant not implemented")
+}
+func (UnimplementedTenantServer) UpdateTenant(context.Context, *UpdateTenantRequest) (*UpdateTenantResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTenant not implemented")
 }
 func (UnimplementedTenantServer) DeleteTenant(context.Context, *DeleteTenantRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTenant not implemented")
@@ -324,7 +340,7 @@ func _Tenant_GetTenant_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Tenant_ListTenant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(ListTenantRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -336,7 +352,25 @@ func _Tenant_ListTenant_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/ListTenant",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TenantServer).ListTenant(ctx, req.(*emptypb.Empty))
+		return srv.(TenantServer).ListTenant(ctx, req.(*ListTenantRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Tenant_UpdateTenant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTenantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServer).UpdateTenant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/UpdateTenant",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServer).UpdateTenant(ctx, req.(*UpdateTenantRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -575,6 +609,10 @@ var Tenant_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListTenant",
 			Handler:    _Tenant_ListTenant_Handler,
+		},
+		{
+			MethodName: "UpdateTenant",
+			Handler:    _Tenant_UpdateTenant_Handler,
 		},
 		{
 			MethodName: "DeleteTenant",

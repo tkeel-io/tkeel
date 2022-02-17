@@ -1689,6 +1689,40 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "page_num",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "[Security] Tenant"
         ]
@@ -1864,6 +1898,43 @@
             "in": "path",
             "required": true,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      },
+      "put": {
+        "summary": "tenant update",
+        "operationId": "UpdateTenant",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateTenantResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateTenantBody"
+            }
           }
         ],
         "tags": [
@@ -3276,6 +3347,18 @@
     "v1ListTenantResponse": {
       "type": "object",
       "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_num": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32"
+        },
         "tenants": {
           "type": "array",
           "items": {
@@ -3815,6 +3898,20 @@
           "description": "tenant role"
         }
       }
+    },
+    "v1UpdateTenantBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "remark": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UpdateTenantResponse": {
+      "type": "object"
     },
     "v1UpdateUserBody": {
       "type": "object",

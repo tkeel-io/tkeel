@@ -91,8 +91,8 @@ func (s *TenantService) GetTenant(ctx context.Context, req *pb.GetTenantRequest)
 	if req.GetTenantId() == "" {
 		return nil, pb.ErrInvalidArgument()
 	}
-	tenant.ID = req.GetTenantId()
-	tenants, err = tenant.List(s.DB, nil)
+	where := map[string]interface{}{"id": req.GetTenantId()}
+	_, tenants, err = tenant.List(s.DB, where, nil, "")
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrListTenant()
@@ -105,19 +105,23 @@ func (s *TenantService) GetTenant(ctx context.Context, req *pb.GetTenantRequest)
 	return resp, nil
 }
 
-func (s *TenantService) ListTenant(ctx context.Context, _ *emptypb.Empty) (*pb.ListTenantResponse, error) {
+func (s *TenantService) ListTenant(ctx context.Context, req *pb.ListTenantRequest) (*pb.ListTenantResponse, error) {
 	var (
 		err     error
 		tenant  = &model.Tenant{}
 		tenants []*model.Tenant
 		resp    = &pb.ListTenantResponse{}
+		total   int64
 	)
-	tenants, err = tenant.List(s.DB, nil)
+	page := &model.Page{PageSize: int(req.GetPageSize()), PageNum: int(req.PageNum), OrderBy: req.GetOrderBy(), IsDescending: req.GetIsDescending()}
+	total, tenants, err = tenant.List(s.DB, nil, page, req.GetKeyWords())
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrListTenant()
 	}
-
+	resp.Total = int32(total)
+	resp.PageSize = req.GetPageSize()
+	resp.PageNum = req.GetPageNum()
 	resp.Tenants = make([]*pb.TenantDetail, len(tenants))
 	for i, v := range tenants {
 		userDao := &model.User{}
@@ -133,6 +137,17 @@ func (s *TenantService) ListTenant(ctx context.Context, _ *emptypb.Empty) (*pb.L
 	}
 
 	return resp, nil
+}
+func (s *TenantService) UpdateTenant(ctx context.Context, req *pb.UpdateTenantRequest) (*pb.UpdateTenantResponse, error) {
+	tenantDao := &model.Tenant{}
+	where := map[string]interface{}{"id": req.GetTenantId()}
+	updates := map[string]interface{}{"title": req.GetBody().GetTitle(), "remark": req.GetBody().GetRemark()}
+	_, err := tenantDao.Update(s.DB, where, updates)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalStore()
+	}
+	return &pb.UpdateTenantResponse{}, nil
 }
 
 func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRequest) (*emptypb.Empty, error) {
