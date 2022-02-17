@@ -76,13 +76,30 @@ service Tenant {
   }
 
   // list tenant.
-  rpc ListTenant(google.protobuf.Empty) returns (ListTenantResponse) {
+  rpc ListTenant(ListTenantRequest) returns (ListTenantResponse) {
     option (google.api.http) = {
       get : "/tenants"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "tenant list"
       operation_id : "ListTenant"
+      tags : "[Security] Tenant"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
+
+  // update tenant.
+  rpc UpdateTenant(UpdateTenantRequest) returns (UpdateTenantResponse) {
+    option (google.api.http) = {
+      put : "/tenants/{tenant_id}"
+      body : "body"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "tenant update"
+      operation_id : "UpdateTenant"
       tags : "[Security] Tenant"
       responses : [ {
         key : "200"
@@ -393,13 +410,24 @@ message GetTenantResponse {
         description : "tenant remark"
       } ];
 }
+message ListTenantRequest {
+  int32 page_num = 1;
+  int32 page_size = 2;
+  string order_by = 3;
+  bool is_descending = 4;
+  string key_words =5;
+}
 
 message ListTenantResponse {
-  repeated TenantDetail tenants = 1
+  int32 total = 1;
+  int32 page_num = 2;
+  int32 page_size = 3;
+  repeated TenantDetail tenants = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "tenants"
       } ];
 }
+
 
 message TenantDetail {
   string tenant_id = 1
@@ -426,6 +454,20 @@ message TenantDetail {
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     description : "user roles in tenant"
   } ];
+}
+
+
+message UpdateTenantRequest {
+  string tenant_id = 1;
+  UpdateTenantBody body =2;
+
+}
+ message UpdateTenantBody {
+  string title =1;
+  string remark =2;
+ }
+message UpdateTenantResponse{
+
 }
 
 message DeleteTenantRequest {
