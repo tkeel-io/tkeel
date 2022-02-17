@@ -26,7 +26,11 @@ type RBACClient interface {
 	CreateRoleBinding(ctx context.Context, in *CreateRoleBindingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteRoleBinding(ctx context.Context, in *DeleteRoleBindingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ListPermissions(ctx context.Context, in *ListPermissionRequest, opts ...grpc.CallOption) (*ListPermissionResponse, error)
-	CheckRolePermission(ctx context.Context, in *CheckRolePermissionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CheckRolePermission(ctx context.Context, in *CheckRolePermissionRequest, opts ...grpc.CallOption) (*CheckRolePermissionResponse, error)
+	TMAddPolicy(ctx context.Context, in *TMPolicyRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	TMDeletePolicy(ctx context.Context, in *TMPolicyRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	TMAddRoleBinding(ctx context.Context, in *TMRoleBindingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	TMDeleteRoleBinding(ctx context.Context, in *TMRoleBindingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type rBACClient struct {
@@ -100,9 +104,45 @@ func (c *rBACClient) ListPermissions(ctx context.Context, in *ListPermissionRequ
 	return out, nil
 }
 
-func (c *rBACClient) CheckRolePermission(ctx context.Context, in *CheckRolePermissionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *rBACClient) CheckRolePermission(ctx context.Context, in *CheckRolePermissionRequest, opts ...grpc.CallOption) (*CheckRolePermissionResponse, error) {
+	out := new(CheckRolePermissionResponse)
 	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.rbac.v1.RBAC/CheckRolePermission", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rBACClient) TMAddPolicy(ctx context.Context, in *TMPolicyRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.rbac.v1.RBAC/TMAddPolicy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rBACClient) TMDeletePolicy(ctx context.Context, in *TMPolicyRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.rbac.v1.RBAC/TMDeletePolicy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rBACClient) TMAddRoleBinding(ctx context.Context, in *TMRoleBindingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.rbac.v1.RBAC/TMAddRoleBinding", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rBACClient) TMDeleteRoleBinding(ctx context.Context, in *TMRoleBindingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.rbac.v1.RBAC/TMDeleteRoleBinding", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +160,11 @@ type RBACServer interface {
 	CreateRoleBinding(context.Context, *CreateRoleBindingRequest) (*emptypb.Empty, error)
 	DeleteRoleBinding(context.Context, *DeleteRoleBindingRequest) (*emptypb.Empty, error)
 	ListPermissions(context.Context, *ListPermissionRequest) (*ListPermissionResponse, error)
-	CheckRolePermission(context.Context, *CheckRolePermissionRequest) (*emptypb.Empty, error)
+	CheckRolePermission(context.Context, *CheckRolePermissionRequest) (*CheckRolePermissionResponse, error)
+	TMAddPolicy(context.Context, *TMPolicyRequest) (*emptypb.Empty, error)
+	TMDeletePolicy(context.Context, *TMPolicyRequest) (*emptypb.Empty, error)
+	TMAddRoleBinding(context.Context, *TMRoleBindingRequest) (*emptypb.Empty, error)
+	TMDeleteRoleBinding(context.Context, *TMRoleBindingRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedRBACServer()
 }
 
@@ -149,8 +193,20 @@ func (UnimplementedRBACServer) DeleteRoleBinding(context.Context, *DeleteRoleBin
 func (UnimplementedRBACServer) ListPermissions(context.Context, *ListPermissionRequest) (*ListPermissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPermissions not implemented")
 }
-func (UnimplementedRBACServer) CheckRolePermission(context.Context, *CheckRolePermissionRequest) (*emptypb.Empty, error) {
+func (UnimplementedRBACServer) CheckRolePermission(context.Context, *CheckRolePermissionRequest) (*CheckRolePermissionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckRolePermission not implemented")
+}
+func (UnimplementedRBACServer) TMAddPolicy(context.Context, *TMPolicyRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TMAddPolicy not implemented")
+}
+func (UnimplementedRBACServer) TMDeletePolicy(context.Context, *TMPolicyRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TMDeletePolicy not implemented")
+}
+func (UnimplementedRBACServer) TMAddRoleBinding(context.Context, *TMRoleBindingRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TMAddRoleBinding not implemented")
+}
+func (UnimplementedRBACServer) TMDeleteRoleBinding(context.Context, *TMRoleBindingRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TMDeleteRoleBinding not implemented")
 }
 func (UnimplementedRBACServer) mustEmbedUnimplementedRBACServer() {}
 
@@ -309,6 +365,78 @@ func _RBAC_CheckRolePermission_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RBAC_TMAddPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TMPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RBACServer).TMAddPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.rbac.v1.RBAC/TMAddPolicy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RBACServer).TMAddPolicy(ctx, req.(*TMPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RBAC_TMDeletePolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TMPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RBACServer).TMDeletePolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.rbac.v1.RBAC/TMDeletePolicy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RBACServer).TMDeletePolicy(ctx, req.(*TMPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RBAC_TMAddRoleBinding_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TMRoleBindingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RBACServer).TMAddRoleBinding(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.rbac.v1.RBAC/TMAddRoleBinding",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RBACServer).TMAddRoleBinding(ctx, req.(*TMRoleBindingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RBAC_TMDeleteRoleBinding_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TMRoleBindingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RBACServer).TMDeleteRoleBinding(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.rbac.v1.RBAC/TMDeleteRoleBinding",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RBACServer).TMDeleteRoleBinding(ctx, req.(*TMRoleBindingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RBAC_ServiceDesc is the grpc.ServiceDesc for RBAC service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -347,6 +475,22 @@ var RBAC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckRolePermission",
 			Handler:    _RBAC_CheckRolePermission_Handler,
+		},
+		{
+			MethodName: "TMAddPolicy",
+			Handler:    _RBAC_TMAddPolicy_Handler,
+		},
+		{
+			MethodName: "TMDeletePolicy",
+			Handler:    _RBAC_TMDeletePolicy_Handler,
+		},
+		{
+			MethodName: "TMAddRoleBinding",
+			Handler:    _RBAC_TMAddRoleBinding_Handler,
+		},
+		{
+			MethodName: "TMDeleteRoleBinding",
+			Handler:    _RBAC_TMDeleteRoleBinding_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

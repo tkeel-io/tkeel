@@ -18,22 +18,25 @@ var errInternalError *errors.TError
 var errPermissionNotFound *errors.TError
 var errRoleNotFound *errors.TError
 var errRoleHasBeenExsist *errors.TError
+var errUserNotFound *errors.TError
 
 func init() {
-	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.rudder.api.rbac.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
+	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.rudder.api.rbac.v1.ERR_UNKNOWN", "未知类型")
 	errors.Register(errUnknown)
-	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.rbac.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
+	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.rbac.v1.ERR_INVALID_ARGUMENT", "请求参数无效")
 	errors.Register(errInvalidArgument)
-	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.rudder.api.rbac.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
+	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.rudder.api.rbac.v1.ERR_INTERNAL_STORE", "请求后端存储错误")
 	errors.Register(errInternalStore)
-	errInternalError = errors.New(int(codes.Internal), "io.tkeel.rudder.api.rbac.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
+	errInternalError = errors.New(int(codes.Internal), "io.tkeel.rudder.api.rbac.v1.ERR_INTERNAL_ERROR", "内部错误")
 	errors.Register(errInternalError)
-	errPermissionNotFound = errors.New(int(codes.NotFound), "io.tkeel.rudder.api.rbac.v1.ERR_PERMISSION_NOT_FOUND", Error_ERR_PERMISSION_NOT_FOUND.String())
+	errPermissionNotFound = errors.New(int(codes.NotFound), "io.tkeel.rudder.api.rbac.v1.ERR_PERMISSION_NOT_FOUND", "权限不存在")
 	errors.Register(errPermissionNotFound)
-	errRoleNotFound = errors.New(int(codes.NotFound), "io.tkeel.rudder.api.rbac.v1.ERR_ROLE_NOT_FOUND", Error_ERR_ROLE_NOT_FOUND.String())
+	errRoleNotFound = errors.New(int(codes.NotFound), "io.tkeel.rudder.api.rbac.v1.ERR_ROLE_NOT_FOUND", "角色不存在")
 	errors.Register(errRoleNotFound)
-	errRoleHasBeenExsist = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.rbac.v1.ERR_ROLE_HAS_BEEN_EXSIST", Error_ERR_ROLE_HAS_BEEN_EXSIST.String())
+	errRoleHasBeenExsist = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.rbac.v1.ERR_ROLE_HAS_BEEN_EXSIST", "角色已存在")
 	errors.Register(errRoleHasBeenExsist)
+	errUserNotFound = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.rbac.v1.ERR_USER_NOT_FOUND", "用户不存在")
+	errors.Register(errUserNotFound)
 }
 
 func ErrUnknown() errors.Error {
@@ -62,4 +65,8 @@ func ErrRoleNotFound() errors.Error {
 
 func ErrRoleHasBeenExsist() errors.Error {
 	return errRoleHasBeenExsist
+}
+
+func ErrUserNotFound() errors.Error {
+	return errUserNotFound
 }

@@ -55,7 +55,7 @@ func (c *DaprClient) AddonsIdentify(ctx context.Context, sendToPluginID string, 
 		Body:       nil,
 	}, req, res)
 	if err != nil {
-		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) addons identify(%s): %w", sendToPluginID, req.String())
+		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) addons identify(%s)", sendToPluginID, req.String())
 	}
 	return res, nil
 }
@@ -72,7 +72,7 @@ func (c *DaprClient) Status(ctx context.Context, sendToPluginID string) (*openap
 		Body:       nil,
 	}, nil, res)
 	if err != nil {
-		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) status: %w", sendToPluginID)
+		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) status", sendToPluginID)
 	}
 	return res, nil
 }
@@ -130,11 +130,11 @@ func (c *DaprClient) TenantDisable(ctx context.Context, sendToPluginID string, r
 				Body:       nil,
 			}, nil, res)
 			if err != nil {
-				return nil, errors.Wrapf(err, "dapr invoke plugin(%s) tenant disable(%s) GET: %w", sendToPluginID, req.String())
+				return nil, errors.Wrapf(err, "dapr invoke plugin(%s) tenant disable(%s) GET", sendToPluginID, req.String())
 			}
 			return res, nil
 		}
-		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) tenant disable(%s): %w", sendToPluginID, req.String())
+		return nil, errors.Wrapf(err, "dapr invoke plugin(%s) tenant disable(%s)", sendToPluginID, req.String())
 	}
 	return res, nil
 }

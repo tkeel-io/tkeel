@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/casbin/casbin/v2"
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/security/authz/rbac"
@@ -61,9 +62,10 @@ type PluginServiceV1 struct {
 	tenantPluginOp rbac.TenantPluginMgr
 	openapiClient  openapi.Client
 	db             *gorm.DB
+	rbacOp         *casbin.SyncedEnforcer
 }
 
-func NewPluginServiceV1(db *gorm.DB, conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Operator,
+func NewPluginServiceV1(rbacOp *casbin.SyncedEnforcer, db *gorm.DB, conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Operator,
 	prOp proute.Operator, tpOp rbac.TenantPluginMgr, openapi openapi.Client) *PluginServiceV1 {
 	ok, err := tpOp.OnCreateTenant(model.TKeelTenant)
 	if err != nil {
@@ -85,6 +87,7 @@ func NewPluginServiceV1(db *gorm.DB, conf *config.TkeelConf, kvOp kv.Operator, p
 		tenantPluginOp: tpOp,
 		openapiClient:  openapi,
 		db:             db,
+		rbacOp:         rbacOp,
 	}
 }
 
@@ -131,11 +134,12 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 	})
 	// create new plugin.
 	newP := model.NewPlugin(req.Id, &model.Installer{
-		Repo:    installer.Brief().Repo,
-		Name:    installer.Brief().Name,
-		Version: installer.Brief().Version,
-		Icon:    installer.Brief().Icon,
-		Desc:    installer.Brief().Desc,
+		Repo:       installer.Brief().Repo,
+		Name:       installer.Brief().Name,
+		Version:    installer.Brief().Version,
+		Icon:       installer.Brief().Icon,
+		Desc:       installer.Brief().Desc,
+		Maintainer: installer.Brief().Maintainers,
 	})
 	if err = s.pluginOp.Create(ctx, newP); err != nil {
 		log.Errorf("error create plugin(%s): %s", newP, err)
@@ -222,17 +226,19 @@ func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 	}
 	rbStack = append(rbStack, rb)
 	// tkeel tenant disable plugin.
-	if _, err = s.tenantPluginOp.DeleteTenantPlugin(model.TKeelTenant, req.Id); err != nil {
+	rb, err = s.deleteTenantPluginEnable(ctx, req.Id)
+	if err != nil {
 		log.Errorf("error delete tenant(%s) plugin(%s): %s", model.TKeelTenant, req.Id, err)
 		return nil, pb.PluginErrUnknown()
 	}
-	rbStack = append(rbStack, func() error {
-		log.Debugf("uninstall plugin  tenant(%s) plugin(%s) route roll back run.", model.TKeelTenant, req.Id)
-		if _, err = s.tenantPluginOp.AddTenantPlugin(model.TKeelTenant, req.Id); err != nil {
-			return errors.Wrapf(err, "add tenant(%s) plugin(%s)", model.TKeelTenant, req.Id)
-		}
-		return nil
-	})
+	rbStack = append(rbStack, rb)
+	// rbac remove plugin permission.
+	rbList, err := s.deletePermission(ctx, p)
+	if err != nil {
+		log.Errorf("error delete permission: %s", req.GetId(), err)
+		return nil, pb.PluginErrUninstallPlugin()
+	}
+	rbStack = append(rbStack, rbList...)
 	// uninstall plugin.
 	if err = hub.GetInstance().Uninstall(req.GetId(), &repository.InstallerBrief{
 		Name:      p.Installer.Name,
@@ -294,17 +300,20 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 	for _, p := range ps {
 		pList = append(pList, util.ConvertModel2PluginBriefObjectPb(p, u.Tenant))
 	}
-
 	regular := getReglarStringKeyWords(req.KeyWords)
 	exp, err := regexp.Compile(regular)
 	if err != nil {
 		log.Errorf("error compile regular(%s): %s", regular, err)
 		return nil, pb.PluginErrInvalidArgument()
 	}
+	enableNum := 0
 	ret := make(pluginList, 0, len(pList))
 	for _, v := range pList {
 		if exp.MatchString(v.Id) {
 			ret = append(ret, v)
+			if v.TenantEnable {
+				enableNum++
+			}
 		}
 	}
 	total := ret.Len()
@@ -315,6 +324,7 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 		PageNum:    req.PageNum,
 		PageSize:   req.PageSize,
 		PluginList: ret[start:end],
+		EnableNum:  int32(enableNum),
 	}, nil
 }
 
@@ -591,6 +601,12 @@ func (s *PluginServiceV1) verifyPluginIdentity(ctx context.Context, resp *openap
 		return errors.Wrapf(err, "register implemented plugin(%s) route", resp.PluginId)
 	}
 	rbStack = append(rbStack, rbs...)
+	// add plugin permissions.
+	rbs, err = util.AddPluginPermissionOnSet(ctx, s.kvOp, resp.PluginId, resp.Permissions)
+	if err != nil {
+		return errors.Wrapf(err, "AddPluginPermissionOnSet %s", resp.PluginId)
+	}
+	rbStack = append(rbStack, rbs...)
 	// update register plugin and update plugin route.
 	p, err := s.pluginOp.Get(ctx, resp.PluginId)
 	if err != nil {
@@ -635,7 +651,7 @@ func (s *PluginServiceV1) checkImplementedPluginRoute(ctx context.Context,
 		addonsResp, err := s.openapiClient.AddonsIdentify(ctx, v.Plugin.Id, addonsReq)
 		if err != nil {
 			rbStack.Run()
-			return nil, errors.Wrapf(err, "addons identify(%s/%s): %w", v.Plugin.Id, addonsReq)
+			return nil, errors.Wrapf(err, "addons identify(%s/%s)", v.Plugin.Id, addonsReq)
 		}
 		if addonsResp.Res == nil {
 			rbStack.Run()
@@ -674,14 +690,13 @@ func (s *PluginServiceV1) tenantEnablePlugin(ctx context.Context, isDependence b
 	if p.CheckTenantEnable(tenantID) {
 		if !isDependence {
 			return nil, pb.PluginErrDuplicateEnableTenant(), errors.Errorf("error tenant(%s) has been enabled", tenantID)
-		} else {
-			return rbStack, nil, nil
 		}
+		return rbStack, nil, nil
 	}
 	for _, v := range p.PluginDependences {
-		rbs, terr, err := s.tenantEnablePlugin(ctx, true, tenantID, userID, v.Id, extra)
-		if err != nil {
-			return nil, terr, errors.Wrapf(err, "enant(%s) enable plugin(%s) enable dependence(%s)", tenantID, pluginID, v.Id)
+		rbs, terr, err1 := s.tenantEnablePlugin(ctx, true, tenantID, userID, v.Id, extra)
+		if err1 != nil {
+			return nil, terr, errors.Wrapf(err1, "enant(%s) enable plugin(%s) enable dependence(%s)", tenantID, pluginID, v.Id)
 		}
 		rbStack = append(rbStack, rbs...)
 	}
@@ -696,7 +711,7 @@ func (s *PluginServiceV1) tenantEnablePlugin(ctx context.Context, isDependence b
 	// add tenant plugin rbac.
 	if _, err = s.tenantPluginOp.AddTenantPlugin(tenantID, pluginID); err != nil {
 		rbStack.Run()
-		return nil, pb.PluginErrUnknown(), errors.Wrapf(err, "add tenant(%s) plugin(%s) rbac: %s", tenantID, p)
+		return nil, pb.PluginErrUnknown(), errors.Wrapf(err, "add tenant(%s) plugin(%s) rbac", tenantID, p)
 	}
 	// update plugin.
 	tmpP := p.Clone()
@@ -708,7 +723,7 @@ func (s *PluginServiceV1) tenantEnablePlugin(ctx context.Context, isDependence b
 	rb, err = s.updatePlugin(ctx, tmpP, p)
 	if err != nil {
 		rbStack.Run()
-		return nil, pb.PluginErrInternalStore(), errors.Wrapf(err, "tenant(%s) enable(%s) update plugin: %s", tenantID, p)
+		return nil, pb.PluginErrInternalStore(), errors.Wrapf(err, "tenant(%s) enable(%s) update plugin", tenantID, p)
 	}
 	rbStack = append(rbStack, rb)
 	return rbStack, nil, nil
@@ -739,7 +754,7 @@ func (s *PluginServiceV1) requestTenantEnable(ctx context.Context, pluginID stri
 			Extra:    extra,
 		})
 		if err1 != nil {
-			return errors.Wrapf(err1, "request plugin(%s) tenant disable: %w", pluginID)
+			return errors.Wrapf(err1, "request plugin(%s) tenant disable", pluginID)
 		}
 		if resp.Res == nil {
 			return errors.Errorf("request plugin(%s) tenant disable: Res is nil", pluginID)
@@ -822,19 +837,19 @@ func (s *PluginServiceV1) resetImplementedPluginRoute(ctx context.Context,
 	return rbStack, nil
 }
 
-func (s *PluginServiceV1) updatePlugin(ctx context.Context, old, new *model.Plugin) (util.RollbackFunc, error) {
-	if err := s.pluginOp.Update(ctx, new); err != nil {
-		return nil, errors.Wrapf(err, "update plugin(%s)", new)
+func (s *PluginServiceV1) updatePlugin(ctx context.Context, oldP, newP *model.Plugin) (util.RollbackFunc, error) {
+	if err := s.pluginOp.Update(ctx, newP); err != nil {
+		return nil, errors.Wrapf(err, "update plugin(%s)", newP)
 	}
 	return func() error {
-		log.Debugf("roll back update plugin: %s --> %s", new, old)
-		if _, err := s.pluginOp.Delete(ctx, old.ID); err != nil {
-			log.Errorf("error roll back update plugin(%s) delete: %s", old, err)
+		log.Debugf("roll back update plugin: %s --> %s", newP, oldP)
+		if _, err := s.pluginOp.Delete(ctx, oldP.ID); err != nil {
+			log.Errorf("error roll back update plugin(%s) delete: %s", oldP, err)
 			return errors.Wrap(err, "plugin delete")
 		}
-		old.Version = "1"
-		if err := s.pluginOp.Create(ctx, old); err != nil {
-			log.Errorf("error roll back update plugin(%s) create: %s", old, err)
+		oldP.Version = "1"
+		if err := s.pluginOp.Create(ctx, oldP); err != nil {
+			log.Errorf("error roll back update plugin(%s) create: %s", oldP, err)
 			return errors.Wrap(err, "plugin create")
 		}
 		return nil
@@ -876,6 +891,49 @@ func (s *PluginServiceV1) deletePluginRoute(ctx context.Context, pID string) (ut
 		}
 		return nil
 	}, nil
+}
+
+func (s *PluginServiceV1) deleteTenantPluginEnable(ctx context.Context, pID string) (util.RollbackFunc, error) {
+	if _, err := s.tenantPluginOp.DeleteTenantPlugin(model.TKeelTenant, pID); err != nil {
+		log.Errorf("error delete tenant(%s) plugin(%s): %s", model.TKeelTenant, pID, err)
+		return nil, pb.PluginErrUnknown()
+	}
+	return func() error {
+		log.Debugf("uninstall plugin  tenant(%s) plugin(%s) route roll back run.", model.TKeelTenant, pID)
+		if _, err := s.tenantPluginOp.AddTenantPlugin(model.TKeelTenant, pID); err != nil {
+			return errors.Wrapf(err, "add tenant(%s) plugin(%s)", model.TKeelTenant, pID)
+		}
+		return nil
+	}, nil
+}
+
+func (s *PluginServiceV1) deletePermission(ctx context.Context, p *model.Plugin) (util.RollBackStack, error) {
+	rbStack := util.NewRollbackStack()
+	pList := model.GetPermissionSet().GetPermissionByPluginID(p.ID)
+	removePolicies := make([][]string, 0)
+	for _, v := range pList {
+		removePolicies = append(removePolicies,
+			s.rbacOp.GetFilteredPolicy(2, v.Path, model.AllowedPermissionAction)...)
+	}
+	if _, err := s.rbacOp.RemovePolicies(removePolicies); err != nil {
+		return nil, errors.Wrapf(err, "RemovePolicies %v", removePolicies)
+	}
+	rbStack = append(rbStack, func() error {
+		log.Debugf("deletePermission %s RemovePolicies roll back run", p.ID)
+		if _, err := s.rbacOp.AddPolicies(removePolicies); err != nil {
+			return errors.Wrapf(err, "AddPolicies %v", removePolicies)
+		}
+		return nil
+	})
+	model.GetPermissionSet().Delete(p.ID)
+	rbStack = append(rbStack, func() error {
+		log.Debugf("deletePermission %s Delete permission set roll back run", p.ID)
+		if _, err := util.AddPluginPermissionOnSet(ctx, s.kvOp, p.ID, p.Permissions); err != nil {
+			return errors.Wrapf(err, "AddPluginPermissionOnSet %s", p.ID)
+		}
+		return nil
+	})
+	return rbStack, nil
 }
 
 func getInstallerConfiguration(req *pb.InstallPluginRequest) (map[string]interface{}, error) {

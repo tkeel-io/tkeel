@@ -138,9 +138,10 @@ service RBAC {
   };
 
   rpc CheckRolePermission(CheckRolePermissionRequest)
-      returns (google.protobuf.Empty) {
+      returns (CheckRolePermissionResponse) {
     option (google.api.http) = {
-      get : "/rbac/permissions/{permission}/check"
+      post : "/rbac/permissions/check"
+      body : "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "check role has the permission"
@@ -152,6 +153,90 @@ service RBAC {
       } ]
     };
   };
+  rpc TMAddPolicy(TMPolicyRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/tkeel-manager/rbac/policy"
+      body : "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "TM add policy"
+      operation_id : "TMAddPolicy"
+      tags : "RBAC"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  };
+  rpc TMDeletePolicy(TMPolicyRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/tkeel-manager/rbac/policy/delete"
+      body : "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "TM delete policy"
+      operation_id : "TMDeletePolicy"
+      tags : "RBAC"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  };
+  rpc TMAddRoleBinding(TMRoleBindingRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/tkeel-manager/rbac/binding"
+      body : "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "TM add policy"
+      operation_id : "TMAddRoleBinding"
+      tags : "RBAC"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  };
+  rpc TMDeleteRoleBinding(TMRoleBindingRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/tkeel-manager/rbac/binding/delete"
+      body : "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "TM delete policy"
+      operation_id : "TMDeleteRoleBinding"
+      tags : "RBAC"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  };
+}
+
+message TMPolicyRequest {
+  string role = 1;
+  string tenant = 2;
+  string permission = 3;
+}
+
+message TMRoleBindingRequest {
+  string user = 1;
+  string role = 2;
+  string tenant = 3;
+}
+
+message Permission {
+  string path = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "permission path"
+      } ];
+  openapi.v1.Permission permission = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "permission"
+      } ];
 }
 
 message Role {
@@ -171,13 +256,9 @@ message Role {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "role upsert timestamp"
       } ];
-  repeated string permission_path_list = 5
+  repeated Permission permission_list = 5
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "permission path list"
-      } ];
-  repeated string permission_name_list = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "permission name list"
       } ];
 }
 
@@ -319,15 +400,22 @@ message ListPermissionRequest {
       } ]; // tenant role name.
 }
 message ListPermissionResponse {
-  repeated openapi.v1.Permission permissions = 1
+  repeated Permission permissions = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "role permissions"
       } ];
 }
 
 message CheckRolePermissionRequest {
-  string permission = 1
+  string path = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "permission path"
+      } ];
+}
+
+message CheckRolePermissionResponse {
+  bool allowed = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "permission allowed"
       } ];
 }

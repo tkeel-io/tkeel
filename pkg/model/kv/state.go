@@ -44,7 +44,7 @@ func NewDaprStateOperator(interval, storeName string, c dapr.Client) *DaprStateO
 		storeName:  storeName,
 		daprClient: c,
 	}
-	d.watcher(context.TODO(), interval)
+	go d.watcher(context.TODO(), interval)
 	return d
 }
 

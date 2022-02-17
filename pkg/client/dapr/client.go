@@ -77,7 +77,7 @@ func NewGPRCClient(retry int, interval, gprcPort string) (dapr.Client, error) {
 		}
 
 		time.Sleep(inval)
-		log.Debugf("error new client: %s retry: %d", err, i)
+		log.Debugf("error new client: %s retry: %d/%d", err, i, retry)
 	}
 	if err != nil {
 		return nil, errors.Wrapf(err, "new client with port(%s)", gprcPort)

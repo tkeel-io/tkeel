@@ -63,10 +63,9 @@ import (
 )
 
 var (
-	configFile      string
-	initServiceFunc []func() error
-	conf            *config.Configuration
-	rudderApp       *app.App
+	configFile string
+	conf       *config.Configuration
+	rudderApp  *app.App
 )
 
 var rootCmd = &cobra.Command{
@@ -96,7 +95,7 @@ var rootCmd = &cobra.Command{
 		{
 			// init client.
 			// dapr grpc client.
-			daprGRPCClient, err := t_dapr.NewGPRCClient(10, "5s", conf.Dapr.GRPCPort)
+			daprGRPCClient, err := t_dapr.NewGPRCClient(10, "1s", conf.Dapr.GRPCPort)
 			if err != nil {
 				log.Fatal("fatal new dapr client: %s", err)
 				os.Exit(-1)
@@ -109,8 +108,8 @@ var rootCmd = &cobra.Command{
 			riOp := prepo.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
 			kvOp := kv.NewDaprStateOperator(conf.Tkeel.WatchInterval, conf.Dapr.PrivateStateName, daprGRPCClient)
 			kvOp.Watch(context.TODO(), model.KeyPermissionSet, func(value []byte, version string) error {
-				if err := model.GetPermissionSet().Unmarshal(value); err != nil {
-					return errors.Wrapf(err, "unmarshal %s %s", model.KeyPermissionSet, value)
+				if err1 := model.GetPermissionSet().Unmarshal(value); err1 != nil {
+					return errors.Wrapf(err1, "unmarshal %s %s", model.KeyPermissionSet, value)
 				}
 				return nil
 			})
@@ -190,7 +189,8 @@ var rootCmd = &cobra.Command{
 
 			// init service.
 			// plugin service.
-			pluginSrvV1 := service.NewPluginServiceV1(gormdb, conf.Tkeel, kvOp, pOp, prOp, tenantPluginOp, openapiCli)
+			pluginSrvV1 := service.NewPluginServiceV1(rbacOp, gormdb, conf.Tkeel,
+				kvOp, pOp, prOp, tenantPluginOp, openapiCli)
 			plugin_v1.RegisterPluginHTTPServer(httpSrv.Container, pluginSrvV1)
 			plugin_v1.RegisterPluginServer(grpcSrv.GetServe(), pluginSrvV1)
 			// oauth2 service.
@@ -202,7 +202,7 @@ var rootCmd = &cobra.Command{
 			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
 			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
 			// entries service.
-			entriesSrvV1 := service.NewEntryService(pOp, tenantPluginOp)
+			entriesSrvV1 := service.NewEntryService(pOp, tenantPluginOp, rbacOp)
 			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, entriesSrvV1)
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), entriesSrvV1)
 
@@ -222,7 +222,7 @@ var rootCmd = &cobra.Command{
 			entity_token_v1.RegisterEntityTokenServer(grpcSrv.GetServe(), EntityTokenSrv)
 
 			// rbac service.
-			rbacSrv := service.NewRBACService(kvOp, rbacOp)
+			rbacSrv := service.NewRBACService(gormdb, rbacOp, tenantPluginOp)
 			rbac_v1.RegisterRBACHTTPServer(httpSrv.Container, rbacSrv)
 			rbac_v1.RegisterRBACServer(grpcSrv.GetServe(), rbacSrv)
 
@@ -236,12 +236,6 @@ var rootCmd = &cobra.Command{
 		if err := rudderApp.Run(context.TODO()); err != nil {
 			log.Fatal("fatal rudder app run: %s", err)
 			os.Exit(-2)
-		}
-		for _, v := range initServiceFunc {
-			if err := v(); err != nil {
-				log.Fatalf("init service: %s", err)
-				os.Exit(-2)
-			}
 		}
 
 		stop := make(chan os.Signal, 1)

@@ -77,7 +77,7 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 	if !util.IsNil(respJSON) && respJSON != nil {
 		err = json.Unmarshal(out, respJSON)
 		if err != nil {
-			return nil, errors.Wrapf(err, "unmarshal out(%s)", string(out), err)
+			return nil, errors.Wrapf(err, "unmarshal out(%s)", string(out))
 		}
 	}
 	return out, nil

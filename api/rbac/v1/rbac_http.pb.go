@@ -28,13 +28,17 @@ var (
 )
 
 type RBACHTTPServer interface {
-	CheckRolePermission(context.Context, *CheckRolePermissionRequest) (*emptypb.Empty, error)
+	CheckRolePermission(context.Context, *CheckRolePermissionRequest) (*CheckRolePermissionResponse, error)
 	CreateRoleBinding(context.Context, *CreateRoleBindingRequest) (*emptypb.Empty, error)
 	CreateRoles(context.Context, *CreateRoleRequest) (*CreateRoleResponse, error)
 	DeleteRole(context.Context, *DeleteRoleRequest) (*DeleteRoleResponse, error)
 	DeleteRoleBinding(context.Context, *DeleteRoleBindingRequest) (*emptypb.Empty, error)
 	ListPermissions(context.Context, *ListPermissionRequest) (*ListPermissionResponse, error)
 	ListRole(context.Context, *ListRolesRequest) (*ListRolesResponse, error)
+	TMAddPolicy(context.Context, *TMPolicyRequest) (*emptypb.Empty, error)
+	TMAddRoleBinding(context.Context, *TMRoleBindingRequest) (*emptypb.Empty, error)
+	TMDeletePolicy(context.Context, *TMPolicyRequest) (*emptypb.Empty, error)
+	TMDeleteRoleBinding(context.Context, *TMRoleBindingRequest) (*emptypb.Empty, error)
 	UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleResponse, error)
 }
 
@@ -48,12 +52,7 @@ func newRBACHTTPHandler(s RBACHTTPServer) *RBACHTTPHandler {
 
 func (h *RBACHTTPHandler) CheckRolePermission(req *go_restful.Request, resp *go_restful.Response) {
 	in := CheckRolePermissionRequest{}
-	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
-		return
-	}
-	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+	if err := transportHTTP.GetBody(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
@@ -452,6 +451,218 @@ func (h *RBACHTTPHandler) ListRole(req *go_restful.Request, resp *go_restful.Res
 	}
 }
 
+func (h *RBACHTTPHandler) TMAddPolicy(req *go_restful.Request, resp *go_restful.Response) {
+	in := TMPolicyRequest{}
+	if err := transportHTTP.GetBody(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.TMAddPolicy(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *RBACHTTPHandler) TMAddRoleBinding(req *go_restful.Request, resp *go_restful.Response) {
+	in := TMRoleBindingRequest{}
+	if err := transportHTTP.GetBody(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.TMAddRoleBinding(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *RBACHTTPHandler) TMDeletePolicy(req *go_restful.Request, resp *go_restful.Response) {
+	in := TMPolicyRequest{}
+	if err := transportHTTP.GetBody(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.TMDeletePolicy(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *RBACHTTPHandler) TMDeleteRoleBinding(req *go_restful.Request, resp *go_restful.Response) {
+	in := TMRoleBindingRequest{}
+	if err := transportHTTP.GetBody(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.TMDeleteRoleBinding(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
 func (h *RBACHTTPHandler) UpdateRole(req *go_restful.Request, resp *go_restful.Response) {
 	in := UpdateRoleRequest{}
 	if err := transportHTTP.GetBody(req, &in.Role); err != nil {
@@ -545,6 +756,14 @@ func RegisterRBACHTTPServer(container *go_restful.Container, srv RBACHTTPServer)
 		To(handler.DeleteRoleBinding))
 	ws.Route(ws.GET("/rbac/permissions").
 		To(handler.ListPermissions))
-	ws.Route(ws.GET("/rbac/permissions/{permission}/check").
+	ws.Route(ws.POST("/rbac/permissions/check").
 		To(handler.CheckRolePermission))
+	ws.Route(ws.POST("/tkeel-manager/rbac/policy").
+		To(handler.TMAddPolicy))
+	ws.Route(ws.POST("/tkeel-manager/rbac/policy/delete").
+		To(handler.TMDeletePolicy))
+	ws.Route(ws.POST("/tkeel-manager/rbac/binding").
+		To(handler.TMAddRoleBinding))
+	ws.Route(ws.POST("/tkeel-manager/rbac/binding/delete").
+		To(handler.TMDeleteRoleBinding))
 }

@@ -1026,15 +1026,15 @@
         ]
       }
     },
-    "/rbac/permissions/{permission}/check": {
-      "get": {
+    "/rbac/permissions/check": {
+      "post": {
         "summary": "check role has the permission",
         "operationId": "CheckRolePermission",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "properties": {}
+              "$ref": "#/definitions/v1CheckRolePermissionResponse"
             }
           },
           "default": {
@@ -1046,11 +1046,12 @@
         },
         "parameters": [
           {
-            "name": "permission",
-            "description": "permission path",
-            "in": "path",
+            "name": "body",
+            "in": "body",
             "required": true,
-            "type": "string"
+            "schema": {
+              "$ref": "#/definitions/v1CheckRolePermissionRequest"
+            }
           }
         ],
         "tags": [
@@ -2229,6 +2230,138 @@
           "[Security] Tenant"
         ]
       }
+    },
+    "/tkeel-manager/rbac/binding": {
+      "post": {
+        "summary": "TM add policy",
+        "operationId": "TMAddRoleBinding",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TMRoleBindingRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/tkeel-manager/rbac/binding/delete": {
+      "post": {
+        "summary": "TM delete policy",
+        "operationId": "TMDeleteRoleBinding",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TMRoleBindingRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/tkeel-manager/rbac/policy": {
+      "post": {
+        "summary": "TM add policy",
+        "operationId": "TMAddPolicy",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TMPolicyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/tkeel-manager/rbac/policy/delete": {
+      "post": {
+        "summary": "TM delete policy",
+        "operationId": "TMDeletePolicy",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TMPolicyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
     }
   },
   "definitions": {
@@ -2247,23 +2380,6 @@
         "id": {
           "type": "string",
           "description": "bind user id"
-        }
-      }
-    },
-    "InstallerObjectmaintainer": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "maintainer name"
-        },
-        "email": {
-          "type": "string",
-          "description": "maintainer email"
-        },
-        "url": {
-          "type": "string",
-          "description": "maintainer url"
         }
       }
     },
@@ -2345,6 +2461,46 @@
           "type": "string"
         }
       }
+    },
+    "apirbacv1Permission": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "permission path"
+        },
+        "permission": {
+          "$ref": "#/definitions/openapiv1Permission",
+          "description": "permission"
+        }
+      }
+    },
+    "openapiv1Permission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "dependences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PermissionDependence"
+          }
+        },
+        "desc": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/openapiv1Permission"
+          }
+        }
+      },
+      "description": "plugin define permission."
     },
     "protobufAny": {
       "type": "object",
@@ -2429,6 +2585,24 @@
         }
       },
       "description": "*\nmessage brief plugin information."
+    },
+    "v1CheckRolePermissionRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "permission path"
+        }
+      }
+    },
+    "v1CheckRolePermissionResponse": {
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "boolean",
+          "description": "permission allowed"
+        }
+      }
     },
     "v1ConfigurationType": {
       "type": "string",
@@ -2774,6 +2948,13 @@
         "type": {
           "$ref": "#/definitions/v1ConfigurationType",
           "description": "configuration type"
+        },
+        "maintainers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Installermaintainer"
+          },
+          "description": "installer maintainers"
         }
       },
       "description": "*\nInstaller."
@@ -2811,7 +2992,7 @@
         "maintainers": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/InstallerObjectmaintainer"
+            "$ref": "#/definitions/v1InstallerObjectmaintainer"
           },
           "description": "installer maintainers"
         },
@@ -2831,6 +3012,40 @@
         "icon": {
           "type": "string",
           "description": "installer icon url"
+        }
+      }
+    },
+    "v1InstallerObjectmaintainer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "maintainer name"
+        },
+        "email": {
+          "type": "string",
+          "description": "maintainer email"
+        },
+        "url": {
+          "type": "string",
+          "description": "maintainer url"
+        }
+      }
+    },
+    "v1Installermaintainer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "maintainer name"
+        },
+        "email": {
+          "type": "string",
+          "description": "maintainer email"
+        },
+        "url": {
+          "type": "string",
+          "description": "maintainer url"
         }
       }
     },
@@ -2934,7 +3149,7 @@
         "permissions": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/v1Permission"
+            "$ref": "#/definitions/apirbacv1Permission"
           },
           "description": "role permissions"
         }
@@ -2964,6 +3179,11 @@
             "$ref": "#/definitions/v1PluginBrief"
           },
           "description": "plugin object list"
+        },
+        "enable_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "enable plugin number"
         }
       }
     },
@@ -3156,33 +3376,6 @@
           "type": "boolean"
         }
       }
-    },
-    "v1Permission": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "dependences": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/PermissionDependence"
-          }
-        },
-        "desc": {
-          "type": "string"
-        },
-        "children": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1Permission"
-          }
-        }
-      },
-      "description": "plugin define permission."
     },
     "v1PluginBrief": {
       "type": "object",
@@ -3401,19 +3594,40 @@
           "format": "uint64",
           "description": "role upsert timestamp"
         },
-        "permission_path_list": {
+        "permission_list": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/apirbacv1Permission"
           },
           "description": "permission path list"
+        }
+      }
+    },
+    "v1TMPolicyRequest": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
         },
-        "permission_name_list": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "permission name list"
+        "tenant": {
+          "type": "string"
+        },
+        "permission": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TMRoleBindingRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "tenant": {
+          "type": "string"
         }
       }
     },

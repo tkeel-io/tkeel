@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -38,11 +39,12 @@ type Secret struct {
 }
 
 type Installer struct {
-	Repo    string `json:"repo,omitempty"`    // repo name.
-	Name    string `json:"name,omitempty"`    // installer name.
-	Version string `json:"version,omitempty"` // installer version.
-	Icon    string `json:"icon,omitempty"`    // installer icon.
-	Desc    string `json:"desc,omitempty"`    // installer desc.
+	Repo       string                   `json:"repo,omitempty"`       // repo name.
+	Name       string                   `json:"name,omitempty"`       // installer name.
+	Version    string                   `json:"version,omitempty"`    // installer version.
+	Icon       string                   `json:"icon,omitempty"`       // installer icon.
+	Desc       string                   `json:"desc,omitempty"`       // installer desc.
+	Maintainer []*repository.Maintainer `json:"maintainer,omitempty"` // installer maintainer.
 }
 
 const (
@@ -55,8 +57,10 @@ const (
 
 	KeyPermissionSet = "permission_set"
 
-	AllRoleUser             = "_tkeel_all_roles_bind"
 	AllowedPermissionAction = "_tkeel_allow"
+
+	_allowedPluginAccessName = " 允许访问"
+	_allowedPluginAccessDesc = "访问插件的权限，当权限被允许时，插件声明的菜单将会开放"
 )
 
 var (
@@ -100,6 +104,7 @@ type Plugin struct {
 	ImplementedPlugin []*openapi_v1.ImplementedPlugin `json:"implemented_plugin,omitempty"` // plugin implemented plugin list.
 	ConsoleEntries    []*openapi_v1.ConsoleEntry      `json:"console_entries,omitempty"`    // plugin console entries.
 	PluginDependences []*openapi_v1.BriefPluginInfo   `json:"plugin_dependences,omitempty"` // plugin dependences.
+	Permissions       []*openapi_v1.Permission        `json:"permissions,omitempty"`        // plugin permissions.
 	Secret            string                          `json:"secret,omitempty"`             // plugin registered secret.
 	RegisterTimestamp int64                           `json:"register_timestamp,omitempty"` // register timestamp.
 	Version           string                          `json:"version,omitempty"`            // model version.
@@ -138,6 +143,7 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.ImplementedPlugin = resp.ImplementedPlugin
 	p.PluginDependences = resp.Dependence
 	p.ConsoleEntries = resp.Entries
+	p.Permissions = resp.Permissions
 	p.Secret = secret
 	p.RegisterTimestamp = time.Now().Unix()
 }
@@ -437,15 +443,24 @@ func ClonePermission(pb *openapi_v1.Permission) *openapi_v1.Permission {
 	return clonePb
 }
 
+type Permission struct {
+	Path string
+	Pb   *openapi_v1.Permission
+}
+
 type PermissionSet struct {
-	rwLock *sync.RWMutex
-	set    map[string][]*openapi_v1.Permission
+	rwLock   *sync.RWMutex
+	rawSet   map[string][]*openapi_v1.Permission
+	sortList []*Permission
+	pathSet  map[string]*Permission
 }
 
 func NewPermissionSet() *PermissionSet {
 	return &PermissionSet{
-		rwLock: new(sync.RWMutex),
-		set:    make(map[string][]*openapi_v1.Permission),
+		rwLock:   new(sync.RWMutex),
+		rawSet:   make(map[string][]*openapi_v1.Permission),
+		sortList: make([]*Permission, 0),
+		pathSet:  make(map[string]*Permission),
 	}
 }
 
@@ -454,9 +469,9 @@ func GetPermissionSet() *PermissionSet {
 }
 
 func (ps *PermissionSet) Marshall() ([]byte, error) {
-	ps.rwLock.Lock()
-	defer ps.rwLock.Unlock()
-	b, err := json.Marshal(&(ps.set))
+	ps.rwLock.RLock()
+	defer ps.rwLock.RUnlock()
+	b, err := json.Marshal(&(ps.rawSet))
 	if err != nil {
 		return nil, errors.Wrap(err, "marshal permission set")
 	}
@@ -464,38 +479,131 @@ func (ps *PermissionSet) Marshall() ([]byte, error) {
 }
 
 func (ps *PermissionSet) Unmarshal(b []byte) error {
-	ps.rwLock.RLock()
-	defer ps.rwLock.RUnlock()
-	if err := json.Unmarshal(b, &(ps.set)); err != nil {
+	ps.rwLock.Lock()
+	defer ps.rwLock.Unlock()
+	if err := json.Unmarshal(b, &(ps.rawSet)); err != nil {
 		return errors.Wrapf(err, "unmarshal permission set(%s)", string(b))
 	}
+	for pluginID, pbList := range ps.rawSet {
+		for _, v := range pbList {
+			pList := convertPB2Model(pluginID, v)
+			for _, p := range pList {
+				ps.sortList = append(ps.sortList, p)
+				ps.pathSet[p.Path] = p
+			}
+		}
+	}
+	sort.Sort(PermissionSort(ps.sortList))
 	return nil
 }
 
-func (ps *PermissionSet) Add(pluginID string, permission *openapi_v1.Permission) (bool, error) {
-	ps.rwLock.Lock()
-	defer ps.rwLock.Unlock()
-	list, ok := (ps.set)[pluginID]
+func (ps *PermissionSet) GetSortList() []*Permission {
+	ret := make([]*Permission, 0, len(ps.sortList))
+	ps.rwLock.RLock()
+	defer ps.rwLock.RUnlock()
+	copy(ret, ps.sortList)
+	return ret
+}
+
+func (ps *PermissionSet) GetPermissionByPluginID(pluginID string) []*Permission {
+	ret := make([]*Permission, 0, len(ps.sortList))
+	ps.rwLock.RLock()
+	defer ps.rwLock.RUnlock()
+	s, e, start := 0, 0, false
+	for index, v := range ps.sortList {
+		if strings.HasPrefix(v.Path, pluginID) {
+			if !start {
+				start = true
+				s = index
+			}
+		} else if start {
+			start = false
+			e = index
+		}
+	}
+	if e == 0 {
+		if start {
+			e = len(ps.sortList) - 1
+		} else {
+			e = -1
+		}
+	}
+	copy(ret, ps.sortList[s:e+1])
+	return ret
+}
+
+func (ps *PermissionSet) NewPluginAllowedPermission(pluginID string) *Permission {
+	return &Permission{
+		Path: pluginID,
+		Pb: &openapi_v1.Permission{
+			Id:   pluginID,
+			Name: pluginID + _allowedPluginAccessName,
+			Desc: _allowedPluginAccessDesc,
+		},
+	}
+}
+
+func (ps *PermissionSet) Add(pluginID string, pb *openapi_v1.Permission) (bool, error) {
+	ps.rwLock.RLock()
+	list, ok := (ps.rawSet)[pluginID]
 	if !ok {
 		list = make([]*openapi_v1.Permission, 0, 1)
 	}
-	for _, v := range list {
-		if v.Id == permission.Id || v.Name == permission.Name {
+	readList := make([]*openapi_v1.Permission, 0, len(list))
+	copy(readList, list)
+	ps.rwLock.RUnlock()
+	for _, v := range readList {
+		if v.Id == pb.Id || v.Name == pb.Name {
 			return false, ErrPermissionExist
 		}
 	}
-	if err := ps.checkPermission(permission); err != nil {
+	if err := ps.checkPermission(pb); err != nil {
 		return false, errors.Wrap(err, "check permission")
 	}
-	list = append(list, permission)
-	(ps.set)[pluginID] = list
+	pList := convertPB2Model(pluginID, pb)
+	readList = append(readList, pb)
+	ps.rwLock.Lock()
+	defer ps.rwLock.Unlock()
+	(ps.rawSet)[pluginID] = readList
+	for _, v := range pList {
+		ps.pathSet[v.Path] = v
+		ps.sortList = append(ps.sortList, v)
+	}
+	sort.Sort(PermissionSort(ps.sortList))
 	return true, nil
 }
 
 func (ps *PermissionSet) Delete(pluginID string) {
 	ps.rwLock.Lock()
 	defer ps.rwLock.Unlock()
-	delete((ps.set), pluginID)
+	delete((ps.rawSet), pluginID)
+	for k := range ps.pathSet {
+		if strings.HasPrefix(k, pluginID) {
+			delete(ps.pathSet, k)
+		}
+	}
+	s, e, start := 0, 0, false
+	for index, v := range ps.sortList {
+		if strings.HasPrefix(v.Path, pluginID) {
+			if !start {
+				start = true
+				s = index
+			}
+		} else {
+			if start {
+				start = false
+				e = index
+			}
+		}
+	}
+	if e == 0 {
+		if start {
+			e = len(ps.sortList) - 1
+		} else {
+			e = -1
+		}
+	}
+	ps.sortList = append(ps.sortList[0:s], ps.sortList[e+1:]...)
 }
 
 func (ps *PermissionSet) checkPermission(p *openapi_v1.Permission) error {
@@ -519,50 +627,54 @@ func (ps *PermissionSet) checkPermission(p *openapi_v1.Permission) error {
 	return nil
 }
 
-func (ps *PermissionSet) GetPermission(path string) (*openapi_v1.Permission, error) {
+func (ps *PermissionSet) GetPermission(path string) (*Permission, error) {
 	ps.rwLock.RLock()
 	defer ps.rwLock.RUnlock()
 	if path == "" {
 		return nil, ErrPermissionNotExist
 	}
-	ids := strings.Split(path, "/")
-	if len(ids) < 2 {
-		return nil, ErrPermissionNotExist
-	}
-	list, ok := (ps.set)[ids[0]]
+	p, ok := ps.pathSet[path]
 	if !ok {
 		return nil, ErrPermissionNotExist
 	}
-	var ret *openapi_v1.Permission
-	for _, v := range list {
-		if v.Id == ids[1] {
-			ret = v
-			if len(ids) > 2 {
-				ret = getChildPermission(v, ids[2:])
-			}
-		}
-	}
-	if ret == nil {
-		return nil, ErrPermissionNotExist
-	}
-	return ret, nil
+	return p, nil
 }
 
-func getChildPermission(p *openapi_v1.Permission, path []string) *openapi_v1.Permission {
-	if len(path) == 0 {
-		return p
+func convertPB2Model(parentalPath string, pb *openapi_v1.Permission) []*Permission {
+	ret := make([]*Permission, 0)
+	path := parentalPath + "/" + pb.Id
+	ret = append(ret, &Permission{
+		Path: path,
+		Pb:   pb,
+	})
+	for _, v := range pb.Children {
+		ret = append(ret, convertPB2Model(path, v)...)
 	}
-	for _, v := range p.Children {
-		if v.Id == p.Id {
-			getChildPermission(v, path[1:])
+	return ret
+}
+
+type PermissionSort []*Permission
+
+func (a PermissionSort) Len() int      { return len(a) }
+func (a PermissionSort) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a PermissionSort) Less(i, j int) bool {
+	si := strings.Split(a[i].Path, "/")
+	sj := strings.Split(a[j].Path, "/")
+	lenth := len(si)
+	if len(si) > len(sj) {
+		lenth = len(sj)
+	}
+	for index := 0; index < lenth; index++ {
+		if si[index] != sj[index] {
+			return si[index] < sj[index]
 		}
 	}
-	return nil
+	return len(si) < len(sj)
 }
 
 type Role struct {
-	TenantID      string   `json:"tenant_id"`
-	Name          string   `json:"name"`
-	Desc          string   `json:"desc"`
-	PermissonPath []string `json:"permission_path"`
+	TenantID       string   `json:"tenant_id"`
+	Name           string   `json:"name"`
+	Desc           string   `json:"desc"`
+	PermissionPath []string `json:"permission_path"`
 }

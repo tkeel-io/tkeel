@@ -67,6 +67,11 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdminRole()
 		}
+		_, err = s.RBACOp.AddPolicy("admin", tenant.ID, "*", t_model.AllowedPermissionAction)
+		if err != nil {
+			log.Error(err)
+			return resp, pb.ErrStoreCreatAdminRole()
+		}
 	}
 	s.TenantPluginOp.OnCreateTenant(tenant.ID)
 	for _, v := range t_model.TKeelComponents {
@@ -137,6 +142,10 @@ func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRe
 		resp   = &emptypb.Empty{}
 	)
 	tenant.ID = req.TenantId
+	if _, err = s.RBACOp.RemoveFilteredPolicy(1, req.TenantId); err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalStore()
+	}
 	err = tenant.Delete(s.DB)
 	if err != nil {
 		log.Error(err)
@@ -241,8 +250,10 @@ func (s *TenantService) ListUser(ctx context.Context, req *pb.ListUserRequest) (
 	}
 	userList := make([]*pb.UserListData, len(users))
 	for i, v := range users {
-		detail := &pb.UserListData{TenantId: v.TenantID, UserId: v.ID, Username: v.UserName,
-			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName, CreatedAt: v.CreatedAt.UnixMilli()}
+		detail := &pb.UserListData{
+			TenantId: v.TenantID, UserId: v.ID, Username: v.UserName,
+			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName, CreatedAt: v.CreatedAt.UnixMilli(),
+		}
 		detail.Roles = s.RBACOp.GetRolesForUserInDomain(v.ID, v.TenantID)
 		userList[i] = detail
 	}
