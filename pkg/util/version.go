@@ -37,10 +37,8 @@ const (
 )
 
 func NewVersion(ver string) (*Version, error) {
-	if !strings.HasPrefix(ver, "v") {
-		return nil, fmt.Errorf("wrong format: %s", ver)
-	}
-	vs := strings.Split(strings.TrimPrefix(ver, "v"), ".")
+	ver = strings.TrimPrefix(ver, "v")
+	vs := strings.Split(ver, ".")
 	ret := &Version{Main: 0, Sub: 0, Revision: 0}
 	for i, v := range vs {
 		vInt, err := strconv.Atoi(v)

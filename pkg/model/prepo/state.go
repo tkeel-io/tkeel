@@ -19,11 +19,12 @@ package prepo
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/tkeel/pkg/model"

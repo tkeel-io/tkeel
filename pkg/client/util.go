@@ -19,7 +19,6 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -73,12 +72,12 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 	}
 	out, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "read resp body err")
+		return nil, errors.Wrap(err, "read resp body")
 	}
 	if !util.IsNil(respJSON) && respJSON != nil {
 		err = json.Unmarshal(out, respJSON)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshal out(%s): %w", string(out), err)
+			return nil, errors.Wrapf(err, "unmarshal out(%s)", string(out))
 		}
 	}
 	return out, nil

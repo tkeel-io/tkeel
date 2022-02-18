@@ -171,28 +171,21 @@ func (r *Repo) Search(word string) ([]*repository.InstallerBrief, error) {
 	}
 	briefs := res.ToInstallerBrief()
 
-	// modify briefs Installed status
-	// 1. get this repo installed
-	// 2. range briefs and change Installed status.
+	// modify briefs Installed status.
 	rls, err := r.list()
 	if err != nil {
 		return nil, errors.Wrap(err, "get helm release")
 	}
 
-	installedMap := make(map[string]map[string]struct{}, len(rls))
+	installedMap := make(map[string]struct{}, len(rls))
 	for _, v := range rls {
-		vMap, ok := installedMap[v.Chart.Metadata.Name]
-		if !ok {
-			vMap = make(map[string]struct{})
-			installedMap[v.Chart.Metadata.Name] = vMap
+		if _, ok := installedMap[v.Chart.Metadata.Name]; !ok {
+			installedMap[v.Chart.Metadata.Name] = struct{}{}
 		}
-		vMap[v.Chart.Metadata.Version] = struct{}{}
 	}
 	for _, v := range briefs {
-		if vMap, ok := installedMap[v.Name]; ok {
-			if _, ok := vMap[v.Version]; ok {
-				v.Installed = true
-			}
+		if _, ok := installedMap[v.Name]; ok {
+			v.Installed = true
 		}
 	}
 

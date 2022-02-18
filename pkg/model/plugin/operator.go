@@ -18,7 +18,8 @@ package plugin
 
 import (
 	"context"
-	"errors"
+
+	"github.com/pkg/errors"
 
 	"github.com/tkeel-io/tkeel/pkg/model"
 )

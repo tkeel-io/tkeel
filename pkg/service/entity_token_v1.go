@@ -5,11 +5,12 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 
 	pb "github.com/tkeel-io/tkeel/api/entity/v1"
 

@@ -15,7 +15,8 @@ package kv
 
 import (
 	"context"
-	"errors"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -34,4 +35,6 @@ type Operator interface {
 	Get(ctx context.Context, key string) (value []byte, version string, err error)
 	// Delete KV.
 	Delete(ctx context.Context, key string) error
+	// Watch KV.
+	Watch(ctx context.Context, key string, cb func(value []byte, version string) error) error
 }
