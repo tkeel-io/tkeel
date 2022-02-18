@@ -473,20 +473,6 @@ message UpdateTenantResponse{
 
 }
 
-
-message UpdateTenantRequest {
-  string tenant_id = 1;
-  UpdateTenantBody body =2;
-
-}
- message UpdateTenantBody {
-  string title =1;
-  string remark =2;
- }
-message UpdateTenantResponse{
-
-}
-
 message DeleteTenantRequest {
   string tenant_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
