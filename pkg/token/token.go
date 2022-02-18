@@ -18,10 +18,11 @@ package token
 
 import (
 	"crypto/rsa"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"

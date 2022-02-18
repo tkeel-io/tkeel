@@ -3,9 +3,10 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"sort"
 	"strconv"
+
+	"github.com/pkg/errors"
 
 	"github.com/tkeel-io/kit/log"
 	pb "github.com/tkeel-io/tkeel/api/repo/v1"

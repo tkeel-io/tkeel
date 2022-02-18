@@ -1,6 +1,10 @@
 package service
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/tkeel-io/tkeel/pkg/model"
+)
 
 func getReglarStringKeyWords(keyWords string) string {
 	words := strings.TrimSpace(keyWords)
@@ -38,4 +42,13 @@ func getQueryItemsStartAndEnd(pageNum, pageSize, listLen int) (int, int) {
 		start = 0
 	}
 	return start, end
+}
+
+func pluginIsTkeelComponent(pluginID string) bool {
+	for _, v := range model.TKeelComponents {
+		if v == pluginID {
+			return true
+		}
+	}
+	return false
 }

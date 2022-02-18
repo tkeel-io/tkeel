@@ -269,6 +269,24 @@ message Installer {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "configuration type"
       } ];
+  message maintainer {
+    string name = 1
+        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+          description : "maintainer name"
+        } ];
+    string email = 2
+        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+          description : "maintainer email"
+        } ];
+    string url = 3
+        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+          description : "maintainer url"
+        } ];
+  }
+  repeated maintainer maintainers = 8
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer maintainers"
+      } ];
 }
 
 /**
@@ -454,6 +472,10 @@ message ListPluginResponse {
   repeated PluginBrief plugin_list = 10
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin object list"
+      } ];
+  int32 enable_num = 11
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "enable plugin number"
       } ];
 }
 

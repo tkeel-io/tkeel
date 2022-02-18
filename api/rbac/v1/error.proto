@@ -15,28 +15,37 @@ limitations under the License.
 
 syntax = "proto3";
 
-package io.tkeel.security.api.rbac.v1;
+package io.tkeel.rudder.api.rbac.v1;
 
 option go_package = "github.com/tkeel-io/tkeel/api/rbac/v1;v1";
 option java_multiple_files = true;
-option java_package = "io.tkeel.security.api.rbac.v1";
+option java_package = "io.tkeel.rudder.api.rbac.v1";
 
 // @plugins=protoc-gen-go-errors
 // 错误
 enum Error {
-  // 未知类型
+  // @msg=未知类型
   // @code=UNKNOWN
   ERR_UNKNOWN = 0;
-  // 请求参数无效
+  // @msg=请求参数无效
   // @code=INVALID_ARGUMENT
   ERR_INVALID_ARGUMENT = 1;
-  // 请求后端存储错误
+  // @msg=请求后端存储错误
   // @code=INTERNAL
   ERR_INTERNAL_STORE = 2;
-  // 内部错误
+  // @msg=内部错误
   // @code=INTERNAL
   ERR_INTERNAL_ERROR = 3;
-  // 资源不存在
-  // @code=INTERNAL
-  ERR_RESOURCE_NOT_FOUND = 4;
+  // @msg=权限不存在
+  // @code=NOT_FOUND
+  ERR_PERMISSION_NOT_FOUND = 4;
+  // @msg=角色不存在
+  // @code=NOT_FOUND
+  ERR_ROLE_NOT_FOUND = 5;
+  // @msg=角色已存在
+  // @code=INVALID_ARGUMENT
+  ERR_ROLE_HAS_BEEN_EXSIST = 6;
+  // @msg=用户不存在
+  // @code=INVALID_ARGUMENT
+  ERR_USER_NOT_FOUND = 7;
 }

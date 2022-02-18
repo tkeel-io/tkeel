@@ -19,7 +19,8 @@ package repository
 import (
 	"context"
 	"encoding/json"
-	"errors"
+
+	"github.com/pkg/errors"
 )
 
 const (

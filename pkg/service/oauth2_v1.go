@@ -3,10 +3,11 @@ package service
 import (
 	"context"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/tkeel-io/kit/log"
 	transport_http "github.com/tkeel-io/kit/transport/http"

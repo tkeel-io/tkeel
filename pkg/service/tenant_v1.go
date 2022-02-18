@@ -57,13 +57,22 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 	resp.TenantTitle = tenant.Title
 	if req.Body.Admin != nil {
 		user := model.User{TenantID: tenant.ID, UserName: req.Body.Admin.Username, Password: req.Body.Admin.Password}
-		err = user.Create(s.DB)
-		if err != nil {
+		if err = user.Create(s.DB); err != nil {
+			log.Error(err)
+			return resp, pb.ErrStoreCreatAdmin()
+		}
+		role := model.Role{Name: "admin", TenantID: tenant.ID, Description: "system admin"}
+		if err = role.Create(s.DB); err != nil {
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdmin()
 		}
 		resp.AdminUsername = user.UserName
 		_, err = s.RBACOp.AddGroupingPolicy(user.ID, "admin", tenant.ID)
+		if err != nil {
+			log.Error(err)
+			return resp, pb.ErrStoreCreatAdminRole()
+		}
+		_, err = s.RBACOp.AddPolicy("admin", tenant.ID, "*", t_model.AllowedPermissionAction)
 		if err != nil {
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdminRole()
@@ -146,6 +155,7 @@ func (s *TenantService) ListTenant(ctx context.Context, req *pb.ListTenantReques
 
 	return resp, nil
 }
+
 func (s *TenantService) UpdateTenant(ctx context.Context, req *pb.UpdateTenantRequest) (*pb.UpdateTenantResponse, error) {
 	tenantDao := &model.Tenant{}
 	where := map[string]interface{}{"id": req.GetTenantId()}
@@ -165,6 +175,10 @@ func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRe
 		resp   = &emptypb.Empty{}
 	)
 	tenant.ID = req.TenantId
+	if _, err = s.RBACOp.RemoveFilteredPolicy(1, req.TenantId); err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalStore()
+	}
 	err = tenant.Delete(s.DB)
 	if err != nil {
 		log.Error(err)
@@ -269,8 +283,10 @@ func (s *TenantService) ListUser(ctx context.Context, req *pb.ListUserRequest) (
 	}
 	userList := make([]*pb.UserListData, len(users))
 	for i, v := range users {
-		detail := &pb.UserListData{TenantId: v.TenantID, UserId: v.ID, Username: v.UserName,
-			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName, CreatedAt: v.CreatedAt.UnixMilli()}
+		detail := &pb.UserListData{
+			TenantId: v.TenantID, UserId: v.ID, Username: v.UserName,
+			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName, CreatedAt: v.CreatedAt.UnixMilli(),
+		}
 		detail.Roles = s.RBACOp.GetRolesForUserInDomain(v.ID, v.TenantID)
 		userList[i] = detail
 	}

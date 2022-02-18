@@ -3,11 +3,12 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/go-oauth2/oauth2/v4/manage"
@@ -185,15 +186,6 @@ func checkXtKeelAtuh(ctx context.Context, header http.Header) (*model.User, erro
 		return nil, fmt.Errorf("error decode x-tKeel-auth(%s): %w", xtKeelAuthString, err)
 	}
 	return user, nil
-}
-
-func pluginIsTkeelComponent(pluginID string) bool {
-	for _, v := range model.TKeelComponents {
-		if v == pluginID {
-			return true
-		}
-	}
-	return false
 }
 
 func (s *AuthenticationService) setDstAndMethod(ctx context.Context, sess *session, path string) error {

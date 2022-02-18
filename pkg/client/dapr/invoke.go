@@ -21,6 +21,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 const daprInvokeURLTemplate = "http://%s/v1.0/invoke/%s/method/%s"
@@ -34,14 +36,14 @@ func (c *HTTPClient) Call(ctx context.Context,
 	}
 	httpReq, err := http.NewRequestWithContext(ctx, req.Verb, url, bytes.NewReader(req.Body))
 	if err != nil {
-		return nil, fmt.Errorf("error http new request: %w", err)
+		return nil, errors.Wrap(err, "http new request")
 	}
 	if len(req.Header) != 0 {
 		httpReq.Header = req.Header.Clone()
 	}
 	resp, err := http.DefaultClient.Do(httpReq)
 	if err != nil {
-		return nil, fmt.Errorf("error http default client do: %w", err)
+		return nil, errors.Wrap(err, "error http default client do")
 	}
 	return resp, nil
 }

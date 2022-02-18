@@ -23,6 +23,17 @@ func ConvertModel2PluginBriefObjectPb(p *model.Plugin, tenantID string) *pb.Plug
 				Repo:    p.Installer.Repo,
 				Icon:    p.Installer.Icon,
 				Desc:    p.Installer.Desc,
+				Maintainers: func() []*pb.InstallerMaintainer {
+					ret := make([]*pb.InstallerMaintainer, 0, len(p.Installer.Maintainer))
+					for _, v := range p.Installer.Maintainer {
+						ret = append(ret, &pb.InstallerMaintainer{
+							Name:  v.Name,
+							Email: v.Email,
+							Url:   v.URL,
+						})
+					}
+					return ret
+				}(),
 			}
 		}(),
 		TenantEnable: func() bool {

@@ -17,7 +17,7 @@ limitations under the License.
 package prepo
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/repository"

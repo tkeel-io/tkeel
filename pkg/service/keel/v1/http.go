@@ -18,7 +18,8 @@ package v1
 
 import (
 	"context"
-	"errors"
+
+	"github.com/pkg/errors"
 
 	"github.com/emicklei/go-restful"
 	"github.com/tkeel-io/tkeel/pkg/model"
