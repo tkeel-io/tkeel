@@ -53,26 +53,31 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
 	}
+	role := model.Role{Name: "admin", TenantID: tenant.ID, Description: tenant.Title + " admin"}
+	if err = role.Create(s.DB); err != nil {
+		log.Error(err)
+		return resp, pb.ErrStoreCreatAdmin()
+	}
 	resp.TenantId = tenant.ID
 	resp.TenantTitle = tenant.Title
 	if req.Body.Admin != nil {
-		user := model.User{TenantID: tenant.ID, UserName: req.Body.Admin.Username, Password: req.Body.Admin.Password}
+		pwd := req.GetBody().GetAdmin().GetPassword()
+		if pwd == "" {
+			pwd = "default"
+		}
+		user := model.User{TenantID: tenant.ID, UserName: req.Body.Admin.Username, Password: pwd}
 		if err = user.Create(s.DB); err != nil {
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdmin()
 		}
-		role := model.Role{Name: "admin", TenantID: tenant.ID, Description: "system admin"}
-		if err = role.Create(s.DB); err != nil {
-			log.Error(err)
-			return resp, pb.ErrStoreCreatAdmin()
-		}
 		resp.AdminUsername = user.UserName
+		resp.ResetKey = user.Password
 		_, err = s.RBACOp.AddGroupingPolicy(user.ID, "admin", tenant.ID)
 		if err != nil {
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdminRole()
 		}
-		_, err = s.RBACOp.AddPolicy("admin", tenant.ID, "*", t_model.AllowedPermissionAction)
+		_, err = s.RBACOp.AddPolicy(role.ID, tenant.ID, "*", t_model.AllowedPermissionAction)
 		if err != nil {
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdminRole()
@@ -82,7 +87,6 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 	for _, v := range t_model.TKeelComponents {
 		s.TenantPluginOp.AddTenantPlugin(tenant.ID, v)
 	}
-
 	return resp, nil
 }
 
@@ -179,6 +183,9 @@ func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRe
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
 	}
+	s.RBACOp.RemoveFilteredGroupingPolicy(2, req.GetTenantId())
+	r := &model.Role{}
+	s.DB.Delete(r, map[string]interface{}{"tenant_id": req.GetTenantId()})
 	err = tenant.Delete(s.DB)
 	if err != nil {
 		log.Error(err)

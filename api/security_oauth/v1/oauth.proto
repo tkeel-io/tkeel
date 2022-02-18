@@ -89,6 +89,22 @@ service Oauth {
     };
   }
 
+  rpc UpdatePassword(UpdatePasswordRequest)returns(UpdatePasswordResponse){
+    option (google.api.http) = {
+      put : "/oauth/pwd"
+      body : "body"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "oauth update user password"
+      operation_id : "UpdatePassword"
+      tags : "[Security] OAuth"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
+
   rpc OIDCRegister(OIDCRegisterRequest) returns (OIDCRegisterResponse) {
     option (google.api.http) = {
       post : "/oauth/oidc/register"
@@ -282,4 +298,16 @@ message TokenRevokeBody {
 message TokenRevokeResponse {
   string tenant_id=1;
   bool revoked =2;
+}
+
+message UpdatePasswordRequest {
+  UpdatePasswordBody body =1;
+}
+
+message UpdatePasswordBody {
+ string new_password =1;
+}
+
+message UpdatePasswordResponse {
+  string tenant_id =1;
 }
