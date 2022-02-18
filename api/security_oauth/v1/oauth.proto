@@ -306,6 +306,7 @@ message UpdatePasswordRequest {
 
 message UpdatePasswordBody {
  string new_password =1;
+ string refresh_token =2;
 }
 
 message UpdatePasswordResponse {
