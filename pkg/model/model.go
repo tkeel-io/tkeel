@@ -61,6 +61,9 @@ const (
 
 	_allowedPluginAccessName = " 允许访问"
 	_allowedPluginAccessDesc = "访问插件的权限，当权限被允许时，插件声明的菜单将会开放"
+
+	TkeelTenantAdminRole = "管理员"
+	TKeelTenantAdminDesc = "默认拥有租户空间下所有权限"
 )
 
 var (

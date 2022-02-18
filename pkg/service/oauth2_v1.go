@@ -157,7 +157,7 @@ func (s *Oauth2ServiceV1) UpdateAdminPassword(ctx context.Context, req *pb.Updat
 		return nil, pb.Oauth2ErrInternalStore()
 	}
 	baseStr := base64.StdEncoding.EncodeToString([]byte(req.NewPassword))
-	if err = s.kvOp.Create(context.TODO(), model.KeyAdminPassword,
+	if err = s.kvOp.Create(ctx, model.KeyAdminPassword,
 		[]byte(baseStr)); err != nil {
 		log.Errorf("error create rudder admin password: %s", err)
 		return nil, pb.Oauth2ErrInternalStore()
@@ -208,8 +208,5 @@ func (s *Oauth2ServiceV1) checkPluginWhiteList(id string) bool {
 }
 
 func checkPassword(password string) bool {
-	if len(password) < 6 {
-		return false
-	}
-	return true
+	return len(password) >= 6
 }

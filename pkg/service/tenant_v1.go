@@ -61,7 +61,7 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdmin()
 		}
-		role := model.Role{Name: "admin", TenantID: tenant.ID, Description: "system admin"}
+		role := model.Role{Name: t_model.TkeelTenantAdminRole, TenantID: tenant.ID, Description: t_model.TKeelTenantAdminDesc}
 		if err = role.Create(s.DB); err != nil {
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdmin()
