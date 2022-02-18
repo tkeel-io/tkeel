@@ -17,11 +17,11 @@ func AddPluginPermissionOnSet(ctx context.Context, kv kv.Operator, pluginID stri
 	if err != nil {
 		return nil, errors.Wrap(err, "permission set marshal")
 	}
-	for _, p := range append(ps, model.GetPermissionSet().NewPluginAllowedPermission(pluginID).Pb) {
-		_, err = model.GetPermissionSet().Add(pluginID, p)
-		if err != nil {
-			return nil, errors.Wrapf(err, "permission set add(%s/%s)", pluginID, p)
-		}
+	rootPB := model.GetPermissionSet().NewPluginAllowedPermission(pluginID).Pb
+	rootPB.Children = ps
+	_, err = model.GetPermissionSet().Add(pluginID, rootPB)
+	if err != nil {
+		return nil, errors.Wrapf(err, "permission set add(%s/%s)", pluginID, rootPB)
 	}
 	rbStack = append(rbStack, func() error {
 		log.Debugf("add permission set roll back run")

@@ -39,37 +39,37 @@ const (
 type Error int32
 
 const (
-	// 未知类型
+	// @msg=未知类型
 	// @code=UNKNOWN
 	Error_ERR_UNKNOWN Error = 0
-	// 找不到 REPO
+	// @msg=找不到 REPO
 	// @code=INTERNAL
 	Error_ERR_TENANT_ALREADY_EXISTED Error = 1
-	// 获取 租户列表数据出错
+	// @msg=获取 租户列表数据出错
 	// @code=INTERNAL
 	Error_ERR_LIST_TENANT Error = 2
-	// 请求参数无效
+	// @msg=请求参数无效
 	// @code=INVALID_ARGUMENT
 	Error_ERR_INVALID_ARGUMENT Error = 3
-	// 请求后端存储错误
+	// @msg=请求后端存储错误
 	// @code=INTERNAL
 	Error_ERR_INTERNAL_STORE Error = 4
-	// 内部错误
+	// @msg=内部错误
 	// @code=INTERNAL
 	Error_ERR_INTERNAL_ERROR Error = 5
-	// 创建租户错误
+	// @msg=创建租户错误
 	// @code=INTERNAL
 	Error_ERR_STORE_CREAT_TENANT Error = 6
-	// 创建已存在的用户
+	// @msg=创建已存在的用户
 	// @code=INTERNAL
 	Error_ERR_ALREADY_EXISTED_USER_ Error = 7
-	// 资源不存在
+	// @msg=资源不存在
 	// @code=INTERNAL
 	Error_ERR_RESOURCE_NOT_FOUND Error = 8
-	// 创建租户管理员用户错误
+	// @msg=创建租户管理员用户错误
 	// @code=INTERNAL
 	Error_ERR_STORE_CREAT_ADMIN Error = 9
-	// 创建租户管理员角色错误
+	// @msg=创建租户管理员角色错误
 	// @code=INTERNAL
 	Error_ERR_STORE_CREAT_ADMIN_ROLE Error = 10
 )

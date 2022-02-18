@@ -140,6 +140,32 @@ func (s *Oauth2ServiceV1) VerifyToken(ctx context.Context, empty *emptypb.Empty)
 	return &emptypb.Empty{}, nil
 }
 
+func (s *Oauth2ServiceV1) UpdateAdminPassword(ctx context.Context, req *pb.UpdateAdminPasswordRequest) (*emptypb.Empty, error) {
+	u, err := util.GetUser(ctx)
+	if err != nil {
+		log.Errorf("error get user: %s", err)
+		return nil, pb.Oauth2ErrUnknown()
+	}
+	if u.Tenant != model.TKeelTenant || u.User != model.TKeelUser {
+		return nil, pb.Oauth2ErrPermissionDenied()
+	}
+	if checkPassword(req.NewPassword) {
+		return nil, pb.Oauth2ErrPasswordNotCompliant()
+	}
+	if err = s.kvOp.Delete(ctx, model.KeyAdminPassword); err != nil {
+		log.Errorf("error delete rudder admin password: %s", err)
+		return nil, pb.Oauth2ErrInternalStore()
+	}
+	baseStr := base64.StdEncoding.EncodeToString([]byte(req.NewPassword))
+	if err = s.kvOp.Create(context.TODO(), model.KeyAdminPassword,
+		[]byte(baseStr)); err != nil {
+		log.Errorf("error create rudder admin password: %s", err)
+		return nil, pb.Oauth2ErrInternalStore()
+	}
+	log.Debugf("new admin password: %s -- %s", req.NewPassword, baseStr)
+	return &emptypb.Empty{}, nil
+}
+
 func (s *Oauth2ServiceV1) checkPluginSecret(ps, os string) error {
 	if ps == os {
 		return nil
@@ -179,4 +205,11 @@ func (s *Oauth2ServiceV1) checkPluginWhiteList(id string) bool {
 		}
 	}
 	return false
+}
+
+func checkPassword(password string) bool {
+	if len(password) < 6 {
+		return false
+	}
+	return true
 }

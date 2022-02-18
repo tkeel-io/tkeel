@@ -39,28 +39,28 @@ const (
 type Error int32
 
 const (
-	// 未知类型
+	// @msg=未知类型
 	// @code=UNKNOWN
 	Error_ERR_UNKNOWN Error = 0
-	// 找不到 REPO
+	// @msg=找不到 REPO
 	// @code=NOT_FOUND
 	Error_ERR_REPO_NOT_FOUND Error = 1
-	// 获取 REPO 列表数据出错
+	// @msg=获取 REPO 列表数据出错
 	// @code=INTERNAL
 	Error_ERR_LIST_PLUGIN Error = 2
-	// 请求参数无效
+	// @msg=请求参数无效
 	// @code=INVALID_ARGUMENT
 	Error_ERR_INVALID_ARGUMENT Error = 3
-	// 请求后端存储错误
+	// @msg=请求后端存储错误
 	// @code=INTERNAL
 	Error_ERR_INTERNAL_STORE Error = 4
-	// 内部错误
+	// @msg=内部错误
 	// @code=INTERNAL
 	Error_ERR_INTERNAL_ERROR Error = 5
-	// REPO 已存在
+	// @msg=REPO 已存在
 	// @code=INVALID_ARGUMENT
 	Error_ERR_REPO_EXIST Error = 6
-	// INSTALLER 不存在
+	// @msg=INSTALLER 不存在
 	// @code=NOT_FOUND
 	Error_ERR_INSTALLER_NOT_FOUND Error = 7
 )

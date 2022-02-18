@@ -131,6 +131,32 @@ service Oauth2 {
         }
       ]
     };
+  };
+  rpc UpdateAdminPassword(UpdateAdminPasswordRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/oauth2/pwd"
+      body : "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "admin 重设密码接口"
+      operation_id : "UpdateAdminPassword"
+      tags : "Oauth2"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "401"
+          value : {description : "TOKEN_INVALID"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
   }
 }
 
@@ -175,5 +201,12 @@ message IssueAdminTokenRequest {
   string password = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "admin password"
+      } ];
+}
+
+message UpdateAdminPasswordRequest {
+  string new_password = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "new admin password"
       } ];
 }

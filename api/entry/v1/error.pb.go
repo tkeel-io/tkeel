@@ -39,13 +39,13 @@ const (
 type Error int32
 
 const (
-	// 未知类型
+	// @msg=未知类型
 	// @code=UNKNOWN
 	Error_ENTRY_ERR_UNKNOWN Error = 0
-	// 无效的租户 ID
+	// @msg=无效的租户 ID
 	// @code=INVALID_ARGUMENT
 	Error_ENTRY_ERR_INVALID_TENANT Error = 1
-	// 请求后端内部错误
+	// @msg=请求后端内部错误
 	// @code=INTERNAL
 	Error_ENTRY_ERR_INTERNAL_ERROR Error = 2
 )

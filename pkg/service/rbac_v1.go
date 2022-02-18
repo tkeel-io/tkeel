@@ -26,6 +26,11 @@ type RBACService struct {
 }
 
 func NewRBACService(db *gorm.DB, rbac *casbin.SyncedEnforcer, tenantPluginOp rbac.TenantPluginMgr) *RBACService {
+	if _, err := rbac.AddPolicy(model.TKeelUser, model.TKeelTenant,
+		"*", model.AllowedPermissionAction); err != nil {
+		log.Fatalf("error init tkeel user rbac: %s", err)
+		return nil
+	}
 	return &RBACService{
 		tenantPluginOp: tenantPluginOp,
 		db:             db,
@@ -40,9 +45,9 @@ func (s *RBACService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest
 		return nil, pb.ErrInvalidArgument()
 	}
 	newRole := &s_model.Role{}
-	exist, err := newRole.IsExisted(s.db, map[string]interface{}{"name": req.Name, "tenant_id": u.Tenant})
+	exist, err := newRole.IsExisted(s.db, map[string]interface{}{"name": req.Role.Name, "tenant_id": u.Tenant})
 	if err != nil {
-		log.Errorf("error role(%s/%s) exist: %s", req.Name, u.Tenant, err)
+		log.Errorf("error role(%s/%s) exist: %s", req.Role.Name, u.Tenant, err)
 		return nil, pb.ErrInternalStore()
 	}
 	if exist {
@@ -51,20 +56,24 @@ func (s *RBACService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest
 	addPmPathSet, err := util.GetPermissionPathSet(req.Role.PermissionList)
 	if err != nil {
 		log.Errorf("error GetPermissionPathSet(%s/%s) %s",
-			req.Name, u.Tenant, req.Role.String())
+			req.Role.Name, u.Tenant, req.Role.String())
 		return nil, pb.ErrInternalStore()
 	}
-	rblist, err := s.addRolePermissionSet(req.Name, u.Tenant, addPmPathSet)
-	if err != nil {
-		log.Errorf("error add role(%s/%s/%s) permission list: %s", err)
-		return nil, pb.ErrInternalStore()
-	}
-	defer rblist.Run()
-	newRole.Name = req.Name
+
+	newRole.Name = req.Role.Name
 	newRole.TenantID = u.Tenant
 	newRole.Description = req.Role.Desc
 	if err = newRole.Create(s.db); err != nil {
 		log.Errorf("error create role(%s): %s", newRole, err)
+		return nil, pb.ErrInternalStore()
+	}
+	rblist := append(util.NewRollbackStack(), func() error {
+		newRole.Delete(s.db)
+		return nil
+	})
+	defer rblist.Run()
+	if _, err = s.addRolePermissionSet(req.Role.Id, u.Tenant, addPmPathSet); err != nil {
+		log.Errorf("error add role(%s/%s/%s) permission list: %s", err)
 		return nil, pb.ErrInternalStore()
 	}
 	rblist = util.NewRollbackStack()
@@ -120,15 +129,15 @@ func (s *RBACService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest)
 		log.Errorf("error get user: %s", err)
 		return nil, pb.ErrInvalidArgument()
 	}
-	deleteRole, err := s.getDBRole(req.Name, u.Tenant)
+	deleteRole, err := s.getDBRole(req.Id, u.Tenant)
 	if err != nil {
-		log.Errorf("error getDBRole(%s/%s): %s", req.Name, u.Tenant, err)
+		log.Errorf("error getDBRole(%s/%s): %s", req.Id, u.Tenant, err)
 		return nil, pb.ErrInternalStore()
 	}
 	retPB := s.convertModelRole2PB(deleteRole)
-	rbStack, err := s.deleteRoleInTenant(req.Name, u.Tenant)
+	rbStack, err := s.deleteRoleInTenant(req.Id, u.Tenant)
 	if err != nil {
-		log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Name, u.Tenant, err)
+		log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Id, u.Tenant, err)
 		return nil, pb.ErrInternalError()
 	}
 	defer rbStack.Run()
@@ -152,28 +161,28 @@ func (s *RBACService) UpdateRole(ctx context.Context, req *pb.UpdateRoleRequest)
 		log.Errorf("error get user: %s", err)
 		return nil, pb.ErrInvalidArgument()
 	}
-	updateRole, err := s.getDBRole(req.Name, u.Tenant)
+	updateRole, err := s.getDBRole(req.Id, u.Tenant)
 	if err != nil {
-		log.Errorf("error getDBRole(%s/%s): %s", req.Name, u.Tenant, err)
+		log.Errorf("error getDBRole(%s/%s): %s", req.Id, u.Tenant, err)
 		return nil, pb.ErrInternalStore()
 	}
 	dbUpdateMap := setPB2Model(req.Role, updateRole)
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
 	if len(req.Role.PermissionList) != 0 {
-		rbList, err := s.deleteRoleInTenant(req.Name, u.Tenant)
+		rbList, err := s.deleteRoleInTenant(req.Id, u.Tenant)
 		if err != nil {
-			log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Name, u.Tenant, err)
+			log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Id, u.Tenant, err)
 			return nil, pb.ErrInternalError()
 		}
 		rbStack = append(rbStack, rbList...)
 		addPmPathSet, err := util.GetPermissionPathSet(req.Role.PermissionList)
 		if err != nil {
 			log.Errorf("error GetPermissionPathSet(%s/%s) %s",
-				req.Name, u.Tenant, req.Role.String())
+				req.Id, u.Tenant, req.Role.String())
 			return nil, pb.ErrInternalStore()
 		}
-		rblist, err := s.addRolePermissionSet(req.Name, u.Tenant, addPmPathSet)
+		rblist, err := s.addRolePermissionSet(req.Id, u.Tenant, addPmPathSet)
 		if err != nil {
 			log.Errorf("error add role(%s/%s/%s) permission list: %s", err)
 			return nil, pb.ErrInternalStore()
@@ -182,20 +191,58 @@ func (s *RBACService) UpdateRole(ctx context.Context, req *pb.UpdateRoleRequest)
 	}
 	if len(dbUpdateMap) != 0 {
 		count, err := updateRole.Update(s.db,
-			map[string]interface{}{"name": updateRole.Name, "tenant_id": updateRole.TenantID},
+			map[string]interface{}{"id": req.Id, "tenant_id": updateRole.TenantID},
 			dbUpdateMap)
 		if err != nil {
-			log.Errorf("error update role(%s/%s): %s",
-				updateRole.Name, updateRole.TenantID, err)
+			log.Errorf("error update role(%s/%s/%s): %s",
+				req.Id, updateRole.Name, updateRole.TenantID, err)
 			return nil, pb.ErrInternalStore()
 		}
 		if count != 1 {
-			log.Errorf("error update role(%s/%s): count(%d) is invalid",
-				updateRole.Name, updateRole.TenantID, count)
+			log.Errorf("error update role(%s/%s/%s): count(%d) is invalid",
+				req.Id, updateRole.Name, updateRole.TenantID, count)
 		}
 	}
 	rbStack = util.NewRollbackStack()
 	return &pb.UpdateRoleResponse{}, nil
+}
+
+func (s *RBACService) UpdateUserRoleBinding(ctx context.Context, req *pb.UpdateUserRoleBindingRequest) (*emptypb.Empty, error) {
+	u, err := util.GetUser(ctx)
+	if err != nil {
+		log.Errorf("error get user: %s", err)
+		return nil, pb.ErrInvalidArgument()
+	}
+	daoUser := &s_model.User{
+		ID:       req.UserId,
+		TenantID: u.Tenant,
+	}
+	exist, err := daoUser.Existed(s.db)
+	if err != nil {
+		log.Errorf("error user(%s/%s) exist: %s", req.UserId, u.Tenant, err)
+		return nil, pb.ErrInternalStore()
+	}
+	if !exist {
+		log.Errorf("error user(%s/%s): not found", req.UserId, u.Tenant)
+		return nil, pb.ErrUserNotFound()
+	}
+	daoRole := &s_model.Role{}
+	count, Roles, err := daoRole.List(s.db, map[string]interface{}{"id": req.RoleIdList.Roles}, nil, "")
+	if err != nil {
+		log.Errorf("error role(%v/%s) list: %s", req.RoleIdList.Roles, u.Tenant, err)
+		return nil, pb.ErrInternalStore()
+	}
+	if count != int64(len(req.RoleIdList.Roles)) {
+		log.Errorf("error role(%v/%s) %d list: not all found", req.RoleIdList.Roles, u.Tenant, count, err)
+		return nil, pb.ErrRoleNotFound()
+	}
+	for _, v := range Roles {
+		if _, err = s.rbacOp.AddGroupingPolicy(req.UserId, v, u.Tenant); err != nil {
+			log.Errorf("error AddGroupingPolicy(%s/%s/%s): %s", req.UserId, v, u.Tenant, err)
+			return nil, pb.ErrInternalStore()
+		}
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func (s *RBACService) CreateRoleBinding(ctx context.Context, req *pb.CreateRoleBindingRequest) (*emptypb.Empty, error) {
@@ -205,31 +252,42 @@ func (s *RBACService) CreateRoleBinding(ctx context.Context, req *pb.CreateRoleB
 		return nil, pb.ErrInvalidArgument()
 	}
 	daoRole := &s_model.Role{}
-	exist, err := daoRole.IsExisted(s.db, map[string]interface{}{"name": req.RoleName, "tenant_id": u.Tenant})
+	exist, err := daoRole.IsExisted(s.db, map[string]interface{}{"id": req.RoleId, "tenant_id": u.Tenant})
 	if err != nil {
-		log.Errorf("error role(%s/%s) exist: %s", req.RoleName, u.Tenant, err)
+		log.Errorf("error role(%s/%s) exist: %s", req.RoleId, u.Tenant, err)
 		return nil, pb.ErrInternalStore()
 	}
 	if !exist {
-		log.Errorf("error role(%s/%s): not found", req.RoleName, u.Tenant)
+		log.Errorf("error role(%s/%s): not found", req.RoleId, u.Tenant)
 		return nil, pb.ErrRoleNotFound()
 	}
-	daoUser := &s_model.User{
-		ID: req.User.Id,
-	}
-	exist, err = daoUser.Existed(s.db)
+	daoUser := &s_model.User{}
+	count, Users, err := daoUser.QueryByCondition(s.db, map[string]interface{}{"id": req.Users.Id}, nil, "")
 	if err != nil {
-		log.Errorf("error user(%s/%s) exist: %s", req.User.Id, u.Tenant, err)
+		log.Errorf("error user(%s/%s) exist: %s", req.Users.Id, u.Tenant, err)
 		return nil, pb.ErrInternalStore()
 	}
-	if !exist {
-		log.Errorf("error user(%s/%s): not found", req.User.Id, u.Tenant)
+	if count == 0 {
+		log.Errorf("error user(%s/%s): not found", req.Users.Id, u.Tenant)
 		return nil, pb.ErrUserNotFound()
 	}
-	if _, err = s.rbacOp.AddGroupingPolicy(req.User.Id, req.RoleName, u.Tenant); err != nil {
-		log.Errorf("error AddGroupingPolicy(%s/%s/%s): %s", req.User.Id, req.RoleName, u.Tenant, err)
-		return nil, pb.ErrInternalStore()
+	rbStack := util.NewRollbackStack()
+	defer rbStack.Run()
+	for _, v := range Users {
+		if _, err = s.rbacOp.AddGroupingPolicy(v, req.RoleId, u.Tenant); err != nil {
+			log.Errorf("error AddGroupingPolicy(%s/%s/%s): %s", v, req.RoleId, u.Tenant, err)
+			return nil, pb.ErrInternalStore()
+		}
+		rbStack = append(rbStack, func() error {
+			log.Debugf("AddGroupingPolicy(%s/%s/%s) roll back run", v, req.RoleId, u.Tenant)
+			if _, err = s.rbacOp.RemoveGroupingPolicy(v, req.RoleId, u.Tenant); err != nil {
+				log.Errorf("error RemoveGroupingPolicy(%s/%s/%s): %s", v, req.RoleId, u.Tenant, err)
+				return pb.ErrInternalStore()
+			}
+			return nil
+		})
 	}
+	rbStack = util.NewRollbackStack()
 	return &emptypb.Empty{}, nil
 }
 
@@ -243,7 +301,7 @@ func (s *RBACService) DeleteRoleBinding(ctx context.Context, req *pb.DeleteRoleB
 	exist := false
 	roles := s.rbacOp.GetRolesForUserInDomain(req.UserId, u.Tenant)
 	for _, v := range roles {
-		if v == req.RoleName {
+		if v == req.RoleId {
 			exist = true
 			break
 		}
@@ -252,9 +310,9 @@ func (s *RBACService) DeleteRoleBinding(ctx context.Context, req *pb.DeleteRoleB
 		log.Errorf("error DeleteRoleBinding req(%s): not exist", req)
 		return nil, pb.ErrRoleNotFound()
 	}
-	if _, err = s.rbacOp.RemoveGroupingPolicy(req.UserId, req.RoleName, u.Tenant); err != nil {
+	if _, err = s.rbacOp.RemoveGroupingPolicy(req.UserId, req.RoleId, u.Tenant); err != nil {
 		log.Errorf("error RemoveGroupingPolicy(%s/%s/%s): %s",
-			req.UserId, req.RoleName, u.Tenant, err)
+			req.UserId, req.RoleId, u.Tenant, err)
 		return nil, pb.ErrRoleNotFound()
 	}
 
@@ -270,7 +328,7 @@ func (s *RBACService) ListPermissions(ctx context.Context, req *pb.ListPermissio
 	pList := make([]*model.Permission, 0)
 	if req.Role != "" {
 		daoRole := &s_model.Role{}
-		exist, err1 := daoRole.IsExisted(s.db, map[string]interface{}{"name": req.Role, "tenant_id": u.Tenant})
+		exist, err1 := daoRole.IsExisted(s.db, map[string]interface{}{"id": req.Role, "tenant_id": u.Tenant})
 		if err1 != nil {
 			log.Errorf("error role(%s/%s) exist: %s", req.Role, u.Tenant, err1)
 			return nil, pb.ErrInternalStore()
@@ -332,20 +390,22 @@ func (s *RBACService) CheckRolePermission(ctx context.Context, req *pb.CheckRole
 
 func (s *RBACService) TMAddPolicy(ctx context.Context, req *pb.TMPolicyRequest) (*emptypb.Empty, error) {
 	daoRole := &s_model.Role{}
-	ok, err := daoRole.IsExisted(s.db, map[string]interface{}{"name": req.Role, "tenant_id": req.Tenant})
+	count, roles, err := daoRole.List(s.db, map[string]interface{}{"name": req.Role, "tenant_id": req.Tenant}, nil, "")
 	if err != nil {
 		log.Errorf("error role exist(%s): %s", req, err)
 		return nil, pb.ErrInternalError()
 	}
-	if !ok {
+	if count == 0 {
 		daoRole.Name = req.Role
 		daoRole.TenantID = req.Tenant
 		if err = daoRole.Create(s.db); err != nil {
 			log.Errorf("error create role(%s): %s", req, err)
 			return nil, pb.ErrInternalError()
 		}
+	} else {
+		daoRole = roles[0]
 	}
-	if _, err = s.rbacOp.AddPolicy(req.Role, req.Tenant,
+	if _, err = s.rbacOp.AddPolicy(daoRole.ID, req.Tenant,
 		req.Permission, model.AllowedPermissionAction); err != nil {
 		log.Errorf("error AddPolicy add policy %s/%s/%s/%s: %s",
 			req.Role, req.Tenant, req.Permission, model.AllowedPermissionAction, err)
@@ -355,7 +415,16 @@ func (s *RBACService) TMAddPolicy(ctx context.Context, req *pb.TMPolicyRequest) 
 }
 
 func (s *RBACService) TMDeletePolicy(ctx context.Context, req *pb.TMPolicyRequest) (*emptypb.Empty, error) {
-	if _, err := s.rbacOp.RemovePolicy(req.Role, req.Tenant,
+	daoRole := &s_model.Role{}
+	count, roles, err := daoRole.List(s.db, map[string]interface{}{"name": req.Role, "tenant_id": req.Tenant}, nil, "")
+	if err != nil {
+		log.Errorf("error role exist(%s): %s", req, err)
+		return nil, pb.ErrInternalError()
+	}
+	if count == 0 {
+		return &emptypb.Empty{}, nil
+	}
+	if _, err := s.rbacOp.RemovePolicy(roles[0].ID, req.Tenant,
 		req.Permission, model.AllowedPermissionAction); err != nil {
 		log.Errorf("error RemovePolicy add policy %s/%s/%s/%s: %s",
 			req.Role, req.Tenant, req.Permission, model.AllowedPermissionAction, err)
@@ -365,7 +434,16 @@ func (s *RBACService) TMDeletePolicy(ctx context.Context, req *pb.TMPolicyReques
 }
 
 func (s *RBACService) TMAddRoleBinding(ctx context.Context, req *pb.TMRoleBindingRequest) (*emptypb.Empty, error) {
-	if _, err := s.rbacOp.AddGroupingPolicy(req.User, req.Role, req.Tenant); err != nil {
+	daoRole := &s_model.Role{}
+	count, roles, err := daoRole.List(s.db, map[string]interface{}{"name": req.Role, "tenant_id": req.Tenant}, nil, "")
+	if err != nil {
+		log.Errorf("error role exist(%s): %s", req, err)
+		return nil, pb.ErrInternalError()
+	}
+	if count == 0 {
+		return nil, pb.ErrRoleNotFound()
+	}
+	if _, err := s.rbacOp.AddGroupingPolicy(req.User, roles[0].ID, req.Tenant); err != nil {
 		log.Errorf("error AddGroupingPolicy(%s/%s/%s): %s", req.User, req.Role, req.Tenant, err)
 		return nil, pb.ErrInternalStore()
 	}
@@ -373,7 +451,16 @@ func (s *RBACService) TMAddRoleBinding(ctx context.Context, req *pb.TMRoleBindin
 }
 
 func (s *RBACService) TMDeleteRoleBinding(ctx context.Context, req *pb.TMRoleBindingRequest) (*emptypb.Empty, error) {
-	if _, err := s.rbacOp.RemoveGroupingPolicy(req.User, req.Role, req.Tenant); err != nil {
+	daoRole := &s_model.Role{}
+	count, roles, err := daoRole.List(s.db, map[string]interface{}{"name": req.Role, "tenant_id": req.Tenant}, nil, "")
+	if err != nil {
+		log.Errorf("error role exist(%s): %s", req, err)
+		return nil, pb.ErrInternalError()
+	}
+	if count == 0 {
+		return nil, pb.ErrRoleNotFound()
+	}
+	if _, err := s.rbacOp.RemoveGroupingPolicy(req.User, roles[0].ID, req.Tenant); err != nil {
 		log.Errorf("error RemoveGroupingPolicy(%s/%s/%s): %s", req.User, req.Role, req.Tenant, err)
 		return nil, pb.ErrInternalStore()
 	}
@@ -403,6 +490,7 @@ func (s *RBACService) addRolePermissionSet(role, tenantID string, pathSet map[st
 
 func (s *RBACService) convertModelRole2PB(role *s_model.Role) *pb.Role {
 	ret := &pb.Role{
+		Id:              role.ID,
 		Name:            role.Name,
 		Desc:            role.Description,
 		UpsertTimestamp: uint64(role.UpdatedAt.Unix()),
@@ -454,7 +542,7 @@ func (s *RBACService) deleteRoleInTenant(role, tenant string) (util.RollBackStac
 func (s *RBACService) getDBRole(role, tenant string) (*s_model.Role, error) {
 	daoRole := &s_model.Role{}
 	count, roles, err := daoRole.List(s.db,
-		map[string]interface{}{"name": role, "tenant_id": tenant}, nil, "")
+		map[string]interface{}{"id": role, "tenant_id": tenant}, nil, "")
 	if err != nil {
 		return nil, errors.Wrapf(err, "role(%s/%s) List", role, tenant)
 	}

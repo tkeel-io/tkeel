@@ -40,6 +40,7 @@ type RBACHTTPServer interface {
 	TMDeletePolicy(context.Context, *TMPolicyRequest) (*emptypb.Empty, error)
 	TMDeleteRoleBinding(context.Context, *TMRoleBindingRequest) (*emptypb.Empty, error)
 	UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleResponse, error)
+	UpdateUserRoleBinding(context.Context, *UpdateUserRoleBindingRequest) (*emptypb.Empty, error)
 }
 
 type RBACHTTPHandler struct {
@@ -105,7 +106,7 @@ func (h *RBACHTTPHandler) CheckRolePermission(req *go_restful.Request, resp *go_
 
 func (h *RBACHTTPHandler) CreateRoleBinding(req *go_restful.Request, resp *go_restful.Response) {
 	in := CreateRoleBindingRequest{}
-	if err := transportHTTP.GetBody(req, &in.User); err != nil {
+	if err := transportHTTP.GetBody(req, &in.Users); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
@@ -174,11 +175,6 @@ func (h *RBACHTTPHandler) CreateRoles(req *go_restful.Request, resp *go_restful.
 		return
 	}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
-		resp.WriteHeaderAndJson(http.StatusBadRequest,
-			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
-		return
-	}
-	if err := transportHTTP.GetPathValue(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
@@ -726,6 +722,69 @@ func (h *RBACHTTPHandler) UpdateRole(req *go_restful.Request, resp *go_restful.R
 	}
 }
 
+func (h *RBACHTTPHandler) UpdateUserRoleBinding(req *go_restful.Request, resp *go_restful.Response) {
+	in := UpdateUserRoleBindingRequest{}
+	if err := transportHTTP.GetBody(req, &in.RoleIdList); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.UpdateUserRoleBinding(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
 func RegisterRBACHTTPServer(container *go_restful.Container, srv RBACHTTPServer) {
 	var ws *go_restful.WebService
 	for _, v := range container.RegisteredWebServices() {
@@ -742,17 +801,19 @@ func RegisterRBACHTTPServer(container *go_restful.Container, srv RBACHTTPServer)
 	}
 
 	handler := newRBACHTTPHandler(srv)
-	ws.Route(ws.POST("/rbac/roles/{name}").
+	ws.Route(ws.POST("/rbac/roles").
 		To(handler.CreateRoles))
 	ws.Route(ws.GET("/rbac/roles").
 		To(handler.ListRole))
-	ws.Route(ws.DELETE("/rbac/roles/{name}").
+	ws.Route(ws.DELETE("/rbac/roles/{id}").
 		To(handler.DeleteRole))
-	ws.Route(ws.PUT("/rbac/roles/{name}").
+	ws.Route(ws.PUT("/rbac/roles/{id}").
 		To(handler.UpdateRole))
-	ws.Route(ws.POST("/rbac/roles/{role_name}/users").
+	ws.Route(ws.PUT("/rbac/users/{user_id}/roles").
+		To(handler.UpdateUserRoleBinding))
+	ws.Route(ws.POST("/rbac/roles/{role_id}/users").
 		To(handler.CreateRoleBinding))
-	ws.Route(ws.DELETE("/rbac/roles/{role_name}/users/{user_id}").
+	ws.Route(ws.DELETE("/rbac/roles/{role_id}/users/{user_id}").
 		To(handler.DeleteRoleBinding))
 	ws.Route(ws.GET("/rbac/permissions").
 		To(handler.ListPermissions))
