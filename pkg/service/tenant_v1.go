@@ -77,7 +77,7 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdminRole()
 		}
-		_, err = s.RBACOp.AddPolicy("admin", tenant.ID, "*", t_model.AllowedPermissionAction)
+		_, err = s.RBACOp.AddPolicy(role.ID, tenant.ID, "*", t_model.AllowedPermissionAction)
 		if err != nil {
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdminRole()
@@ -183,6 +183,9 @@ func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRe
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
 	}
+	s.RBACOp.RemoveFilteredGroupingPolicy(2, req.GetTenantId())
+	r := &model.Role{}
+	s.DB.Delete(r, map[string]interface{}{"tenant_id": req.GetTenantId()})
 	err = tenant.Delete(s.DB)
 	if err != nil {
 		log.Error(err)
