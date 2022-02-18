@@ -21,21 +21,21 @@ var errRepoExist *errors.TError
 var errInstallerNotFound *errors.TError
 
 func init() {
-	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.plugin.api.repo.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
+	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.plugin.api.repo.v1.ERR_UNKNOWN", "未知类型")
 	errors.Register(errUnknown)
-	errRepoNotFound = errors.New(int(codes.NotFound), "io.tkeel.plugin.api.repo.v1.ERR_REPO_NOT_FOUND", Error_ERR_REPO_NOT_FOUND.String())
+	errRepoNotFound = errors.New(int(codes.NotFound), "io.tkeel.plugin.api.repo.v1.ERR_REPO_NOT_FOUND", "找不到")
 	errors.Register(errRepoNotFound)
-	errListPlugin = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_LIST_PLUGIN", Error_ERR_LIST_PLUGIN.String())
+	errListPlugin = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_LIST_PLUGIN", "获取")
 	errors.Register(errListPlugin)
-	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.plugin.api.repo.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
+	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.plugin.api.repo.v1.ERR_INVALID_ARGUMENT", "请求参数无效")
 	errors.Register(errInvalidArgument)
-	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
+	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_INTERNAL_STORE", "请求后端存储错误")
 	errors.Register(errInternalStore)
-	errInternalError = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
+	errInternalError = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_INTERNAL_ERROR", "内部错误")
 	errors.Register(errInternalError)
-	errRepoExist = errors.New(int(codes.InvalidArgument), "io.tkeel.plugin.api.repo.v1.ERR_REPO_EXIST", Error_ERR_REPO_EXIST.String())
+	errRepoExist = errors.New(int(codes.InvalidArgument), "io.tkeel.plugin.api.repo.v1.ERR_REPO_EXIST", "REPO")
 	errors.Register(errRepoExist)
-	errInstallerNotFound = errors.New(int(codes.NotFound), "io.tkeel.plugin.api.repo.v1.ERR_INSTALLER_NOT_FOUND", Error_ERR_INSTALLER_NOT_FOUND.String())
+	errInstallerNotFound = errors.New(int(codes.NotFound), "io.tkeel.plugin.api.repo.v1.ERR_INSTALLER_NOT_FOUND", "INSTALLER")
 	errors.Register(errInstallerNotFound)
 }
 

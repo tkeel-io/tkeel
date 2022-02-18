@@ -25,6 +25,7 @@ type Oauth2Client interface {
 	AddPluginWhiteList(ctx context.Context, in *AddPluginWhiteListRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	IssueAdminToken(ctx context.Context, in *IssueAdminTokenRequest, opts ...grpc.CallOption) (*IssueTokenResponse, error)
 	VerifyToken(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	UpdateAdminPassword(ctx context.Context, in *UpdateAdminPasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type oauth2Client struct {
@@ -71,6 +72,15 @@ func (c *oauth2Client) VerifyToken(ctx context.Context, in *emptypb.Empty, opts 
 	return out, nil
 }
 
+func (c *oauth2Client) UpdateAdminPassword(ctx context.Context, in *UpdateAdminPasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.oauth2.v1.Oauth2/UpdateAdminPassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Oauth2Server is the server API for Oauth2 service.
 // All implementations must embed UnimplementedOauth2Server
 // for forward compatibility
@@ -81,6 +91,7 @@ type Oauth2Server interface {
 	AddPluginWhiteList(context.Context, *AddPluginWhiteListRequest) (*emptypb.Empty, error)
 	IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error)
 	VerifyToken(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	UpdateAdminPassword(context.Context, *UpdateAdminPasswordRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedOauth2Server()
 }
 
@@ -99,6 +110,9 @@ func (UnimplementedOauth2Server) IssueAdminToken(context.Context, *IssueAdminTok
 }
 func (UnimplementedOauth2Server) VerifyToken(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VerifyToken not implemented")
+}
+func (UnimplementedOauth2Server) UpdateAdminPassword(context.Context, *UpdateAdminPasswordRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAdminPassword not implemented")
 }
 func (UnimplementedOauth2Server) mustEmbedUnimplementedOauth2Server() {}
 
@@ -185,6 +199,24 @@ func _Oauth2_VerifyToken_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Oauth2_UpdateAdminPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAdminPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Oauth2Server).UpdateAdminPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.oauth2.v1.Oauth2/UpdateAdminPassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Oauth2Server).UpdateAdminPassword(ctx, req.(*UpdateAdminPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Oauth2_ServiceDesc is the grpc.ServiceDesc for Oauth2 service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -207,6 +239,10 @@ var Oauth2_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "VerifyToken",
 			Handler:    _Oauth2_VerifyToken_Handler,
+		},
+		{
+			MethodName: "UpdateAdminPassword",
+			Handler:    _Oauth2_UpdateAdminPassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -39,52 +39,52 @@ const (
 type Error int32
 
 const (
-	// 未知类型
+	// @msg=未知类型
 	// @code=UNKNOWN
 	Error_PLUGIN_ERR_UNKNOWN Error = 0
-	// 找不到 Plugin
+	// @msg=找不到 Plugin
 	// @code=NOT_FOUND
 	Error_PLUGIN_ERR_PLUGIN_NOT_FOUND Error = 1
-	// 找不到 Plugin Route
+	// @msg=找不到 Plugin Route
 	// @code=NOT_FOUND
 	Error_PLUGIN_ERR_PLUGIN_ROUTE_NOT_FOUND Error = 2
-	// 找不到 Plugin Route
+	// @msg=找不到 Plugin Route
 	// @code=ALREADY_EXISTS
 	Error_PLUGIN_ERR_PLUGIN_ALREADY_EXISTS Error = 3
-	// 获取 Plugin 列表数据出错
+	// @msg=获取 Plugin 列表数据出错
 	// @code=INTERNAL
 	Error_PLUGIN_ERR_LIST_PLUGIN Error = 4
-	// 请求参数无效
+	// @msg=请求参数无效
 	// @code=INVALID_ARGUMENT
 	Error_PLUGIN_ERR_INVALID_ARGUMENT Error = 5
-	// 请求 Plugin OPENAPI 错误
+	// @msg=请求 Plugin OPENAPI 错误
 	// @code=INTERNAL
 	Error_PLUGIN_ERR_INTERNAL_QUERY_PLUGIN_OPENAPI Error = 6
-	// 请求后端存储错误
+	// @msg=请求后端存储错误
 	// @code=INTERNAL
 	Error_PLUGIN_ERR_INTERNAL_STORE Error = 7
-	// 删除的插件被依赖
+	// @msg=删除的插件被依赖
 	// @code=INTERNAL
 	Error_PLUGIN_ERR_UNINSTALL_PLUGIN_HAS_BEEN_DEPENDED Error = 8
-	// 租户重复启用插件
+	// @msg=租户重复启用插件
 	// @code=ALREADY_EXISTS
 	Error_PLUGIN_ERR_DUPLICATE_ENABLE_TENANT Error = 9
-	// 插件安装包未找到
+	// @msg=插件安装包未找到
 	// @code=NOT_FOUND
 	Error_PLUGIN_ERR_INSTALLER_NOT_FOUND Error = 10
-	// 安装包安装插件错误
+	// @msg=安装包安装插件错误
 	// @code=INTERNAL
 	Error_PLUGIN_ERR_INSTALL_INSTALLER Error = 11
-	// 卸载插件错误
+	// @msg=卸载插件错误
 	// @code=INTERNAL
 	Error_PLUGIN_ERR_UNINSTALL_PLUGIN Error = 12
-	// 租户启用访问 OPENAPI 错误
+	// @msg=租户启用访问 OPENAPI 错误
 	// @code=INVALID_ARGUMENT
 	Error_PLUGIN_ERR_OPENAPI_ENABLETENANT Error = 13
-	// 插件有租户仍启用
+	// @msg=插件有租户仍启用
 	// @code=INVALID_ARGUMENT
 	Error_PLUGIN_ERR_PLUGIN_HAS_TENANT_ENABLED Error = 14
-	// 租户停用访问 OPENAPI 错误
+	// @msg=租户停用访问 OPENAPI 错误
 	// @code=INVALID_ARGUMENT
 	Error_PLUGIN_ERR_OPENAPI_DISABLE_TENANT Error = 15
 )

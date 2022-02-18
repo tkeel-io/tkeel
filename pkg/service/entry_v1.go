@@ -43,6 +43,10 @@ func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.
 		log.Errorf("error decode auth(%s): %s", auths[0], err)
 		return nil, pb.EntryErrInvalidTenant()
 	}
+	portal := v1.ConsolePortal_admin
+	if u.User != model.TKeelUser {
+		portal = v1.ConsolePortal_tenant
+	}
 	ret := make([]*v1.ConsoleEntry, 0)
 	for _, v := range s.tpOp.ListTenantPlugins(u.Tenant) {
 		allow, err := s.rbacOp.Enforce(u.User, u.Tenant, v, model.AllowedPermissionAction)
@@ -60,7 +64,11 @@ func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.
 				}
 				continue
 			}
-			ret = append(ret, p.ConsoleEntries...)
+			for _, v := range p.ConsoleEntries {
+				if v.Portal == portal {
+					ret = append(ret, v)
+				}
+			}
 		}
 	}
 

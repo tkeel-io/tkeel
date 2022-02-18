@@ -61,11 +61,15 @@ const (
 
 	_allowedPluginAccessName = " 允许访问"
 	_allowedPluginAccessDesc = "访问插件的权限，当权限被允许时，插件声明的菜单将会开放"
+
+	TkeelTenantAdminRole = "管理员"
+	TKeelTenantAdminDesc = "默认拥有租户空间下所有权限"
 )
 
 var (
 	ErrPermissionExist                   = errors.New("Permission exist")
 	ErrPermissionNotExist                = errors.New("Permission not exist")
+	ErrPermissionNotRoot                 = errors.New("Permission not be root")
 	ErrDuplicatePermissionAsTheSameLevel = errors.New("Duplicate permissions at the same level")
 	ErrPermissionDependencyNotExist      = errors.New("Permission dependency does not exist")
 )
@@ -450,7 +454,7 @@ type Permission struct {
 
 type PermissionSet struct {
 	rwLock   *sync.RWMutex
-	rawSet   map[string][]*openapi_v1.Permission
+	rawSet   map[string]*openapi_v1.Permission
 	sortList []*Permission
 	pathSet  map[string]*Permission
 }
@@ -458,7 +462,7 @@ type PermissionSet struct {
 func NewPermissionSet() *PermissionSet {
 	return &PermissionSet{
 		rwLock:   new(sync.RWMutex),
-		rawSet:   make(map[string][]*openapi_v1.Permission),
+		rawSet:   make(map[string]*openapi_v1.Permission),
 		sortList: make([]*Permission, 0),
 		pathSet:  make(map[string]*Permission),
 	}
@@ -484,10 +488,9 @@ func (ps *PermissionSet) Unmarshal(b []byte) error {
 	if err := json.Unmarshal(b, &(ps.rawSet)); err != nil {
 		return errors.Wrapf(err, "unmarshal permission set(%s)", string(b))
 	}
-	for pluginID, pbList := range ps.rawSet {
-		for _, v := range pbList {
-			pList := convertPB2Model(pluginID, v)
-			for _, p := range pList {
+	for pluginID, v := range ps.rawSet {
+		if pluginID == v.Id {
+			for _, p := range convertPB2Model(pluginID, v) {
 				ps.sortList = append(ps.sortList, p)
 				ps.pathSet[p.Path] = p
 			}
@@ -529,27 +532,21 @@ func (ps *PermissionSet) NewPluginAllowedPermission(pluginID string) *Permission
 }
 
 func (ps *PermissionSet) Add(pluginID string, pb *openapi_v1.Permission) (bool, error) {
+	if pluginID != pb.Id {
+		return false, ErrPermissionNotRoot
+	}
 	ps.rwLock.RLock()
-	list, ok := (ps.rawSet)[pluginID]
-	if !ok {
-		list = make([]*openapi_v1.Permission, 0, 1)
+	if _, ok := (ps.rawSet)[pluginID]; ok {
+		return false, ErrPermissionExist
 	}
-	readList := make([]*openapi_v1.Permission, 0, len(list))
-	copy(readList, list)
 	ps.rwLock.RUnlock()
-	for _, v := range readList {
-		if v.Id == pb.Id || v.Name == pb.Name {
-			return false, ErrPermissionExist
-		}
-	}
 	if err := ps.checkPermission(pb); err != nil {
 		return false, errors.Wrap(err, "check permission")
 	}
-	pList := convertPB2Model(pluginID, pb)
-	readList = append(readList, pb)
+	pList := convertPB2Model("", pb)
 	ps.rwLock.Lock()
 	defer ps.rwLock.Unlock()
-	(ps.rawSet)[pluginID] = readList
+	(ps.rawSet)[pluginID] = pb
 	for _, v := range pList {
 		ps.pathSet[v.Path] = v
 		ps.sortList = append(ps.sortList, v)
@@ -613,7 +610,7 @@ func (ps *PermissionSet) GetPermission(path string) (*Permission, error) {
 func convertPB2Model(parentalPath string, pb *openapi_v1.Permission) []*Permission {
 	ret := make([]*Permission, 0)
 	path := parentalPath + "/" + pb.Id
-	if pb.Id == parentalPath && strings.Count(parentalPath, "/") == 0 {
+	if parentalPath == "" {
 		path = pb.Id
 	}
 	ret = append(ret, &Permission{

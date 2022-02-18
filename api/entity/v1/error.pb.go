@@ -39,19 +39,19 @@ const (
 type Error int32
 
 const (
-	// 未知类型
+	// @msg=未知类型
 	// @code=UNKNOWN
 	Error_ERR_UNKNOWN Error = 0
-	// 请求参数无效
+	// @msg=请求参数无效
 	// @code=INVALID_ARGUMENT
 	Error_ERR_INVALID_ARGUMENT Error = 1
-	// 请求后端存储错误
+	// @msg=请求后端存储错误
 	// @code=INTERNAL
 	Error_ERR_INTERNAL_STORE Error = 2
-	// 内部错误
+	// @msg=内部错误
 	// @code=INTERNAL
 	Error_ERR_INTERNAL_ERROR Error = 3
-	// 资源不存在
+	// @msg=资源不存在
 	// @code=INTERNAL
 	Error_ERR_RESOURCE_NOT_FOUND Error = 4
 )

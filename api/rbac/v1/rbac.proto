@@ -29,7 +29,7 @@ option java_package = "io.tkeel.rudder.api.rbac.v1";
 service RBAC {
   rpc CreateRoles(CreateRoleRequest) returns (CreateRoleResponse) {
     option (google.api.http) = {
-      post : "/rbac/roles/{name}"
+      post : "/rbac/roles"
       body : "role"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -60,7 +60,7 @@ service RBAC {
 
   rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleResponse) {
     option (google.api.http) = {
-      delete : "/rbac/roles/{name}"
+      delete : "/rbac/roles/{id}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "delete role in tenant "
@@ -75,7 +75,7 @@ service RBAC {
 
   rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleResponse) {
     option (google.api.http) = {
-      put : "/rbac/roles/{name}"
+      put : "/rbac/roles/{id}"
       body : "role"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -89,14 +89,31 @@ service RBAC {
     };
   };
 
+  rpc UpdateUserRoleBinding(UpdateUserRoleBindingRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put : "/rbac/users/{user_id}/roles"
+      body : "role_id_list"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "create binding to bind user_id with roles"
+      operation_id : "UpdateUserRoleBinding"
+      tags : "RBAC"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  };
+
   rpc CreateRoleBinding(CreateRoleBindingRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post : "/rbac/roles/{role_name}/users"
-      body : "user"
+      post : "/rbac/roles/{role_id}/users"
+      body : "users"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "create binding to bind role_name with user_id"
+      summary : "create binding to bind role_id with user_id"
       operation_id : "CreateRoleBinding"
       tags : "RBAC"
       responses : [ {
@@ -109,7 +126,7 @@ service RBAC {
   rpc DeleteRoleBinding(DeleteRoleBindingRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      delete : "/rbac/roles/{role_name}/users/{user_id}"
+      delete : "/rbac/roles/{role_id}/users/{user_id}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "delete binding of the bind role_name with user_id"
@@ -240,34 +257,34 @@ message Permission {
 }
 
 message Role {
-  string name = 1
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant role id"
+      } ]; // tenant role name.
+  string name = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "tenant role name"
       } ]; // tenant role name.
-  string desc = 2
+  string desc = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "role desc"
       } ];
-  int32 bind_num = 3
+  int32 bind_num = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "role bind user number"
       } ];
-  uint64 upsert_timestamp = 4
+  uint64 upsert_timestamp = 5
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "role upsert timestamp"
       } ];
-  repeated Permission permission_list = 5
+  repeated Permission permission_list = 6
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "permission path list"
       } ];
 }
 
 message CreateRoleRequest {
-  string name = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role name"
-      } ];
-  Role role = 2
+  Role role = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "tenant role"
       } ];
@@ -281,9 +298,9 @@ message CreateRoleResponse {
 }
 
 message DeleteRoleRequest {
-  string name = 1
+  string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role name"
+        description : "tenant role id"
       } ];
 }
 
@@ -295,9 +312,9 @@ message DeleteRoleResponse {
 }
 
 message UpdateRoleRequest {
-  string name = 1
+  string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role name"
+        description : "tenant role id"
       } ];
   Role role = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -338,6 +355,7 @@ message ListRolesRequest {
         description : "tenant id, default is current tenant"
       } ];
 }
+
 message ListRolesResponse {
   int32 page_num = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -362,26 +380,26 @@ message ListRolesResponse {
 }
 
 message CreateRoleBindingRequest {
-  string role_name = 1
+  string role_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "bind role name"
       } ];
-  message User {
-    string id = 1
+  message UserList {
+    repeated string id = 1
         [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
           description : "bind user id"
         } ];
   }
-  User user = 2
+  UserList users = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "bind user id"
       } ];
 }
 
 message DeleteRoleBindingRequest {
-  string role_name = 1
+  string role_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "bind role name"
+        description : "bind role id"
       } ];
   string user_id = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -417,5 +435,22 @@ message CheckRolePermissionResponse {
   bool allowed = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "permission allowed"
+      } ];
+}
+
+message UpdateUserRoleBindingRequest {
+  string user_id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "binding user id"
+      } ];
+  message RoleIDList {
+    repeated string roles = 1
+        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+          description : "binding roles"
+        } ];
+  }
+  RoleIDList role_id_list = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "binding role id list"
       } ];
 }

@@ -22,23 +22,23 @@ var errInvalidXTkeelAuthToken *errors.TError
 var errUpstreamNotFound *errors.TError
 
 func init() {
-	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.authentication.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
+	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.authentication.v1.ERR_UNKNOWN", "未知类型")
 	errors.Register(errUnknown)
-	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.authentication.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
+	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.authentication.v1.ERR_INVALID_ARGUMENT", "请求参数无效")
 	errors.Register(errInvalidArgument)
-	errUnauthenticated = errors.New(int(codes.Unauthenticated), "io.tkeel.security.api.authentication.v1.ERR_UNAUTHENTICATED", Error_ERR_UNAUTHENTICATED.String())
+	errUnauthenticated = errors.New(int(codes.Unauthenticated), "io.tkeel.security.api.authentication.v1.ERR_UNAUTHENTICATED", "认证错误")
 	errors.Register(errUnauthenticated)
-	errInternalError = errors.New(int(codes.Internal), "io.tkeel.security.api.authentication.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
+	errInternalError = errors.New(int(codes.Internal), "io.tkeel.security.api.authentication.v1.ERR_INTERNAL_ERROR", "内部错误")
 	errors.Register(errInternalError)
-	errUpstreamNotEnable = errors.New(int(codes.PermissionDenied), "io.tkeel.security.api.authentication.v1.ERR_UPSTREAM_NOT_ENABLE", Error_ERR_UPSTREAM_NOT_ENABLE.String())
+	errUpstreamNotEnable = errors.New(int(codes.PermissionDenied), "io.tkeel.security.api.authentication.v1.ERR_UPSTREAM_NOT_ENABLE", "上游插件未启用")
 	errors.Register(errUpstreamNotEnable)
-	errNoPermission = errors.New(int(codes.PermissionDenied), "io.tkeel.security.api.authentication.v1.ERR_NO_PERMISSION", Error_ERR_NO_PERMISSION.String())
+	errNoPermission = errors.New(int(codes.PermissionDenied), "io.tkeel.security.api.authentication.v1.ERR_NO_PERMISSION", "无权限")
 	errors.Register(errNoPermission)
-	errInvalidXPluginJwtToken = errors.New(int(codes.Unauthenticated), "io.tkeel.security.api.authentication.v1.ERR_INVALID_X_PLUGIN_JWT_TOKEN", Error_ERR_INVALID_X_PLUGIN_JWT_TOKEN.String())
+	errInvalidXPluginJwtToken = errors.New(int(codes.Unauthenticated), "io.tkeel.security.api.authentication.v1.ERR_INVALID_X_PLUGIN_JWT_TOKEN", "无效的")
 	errors.Register(errInvalidXPluginJwtToken)
-	errInvalidXTkeelAuthToken = errors.New(int(codes.Unauthenticated), "io.tkeel.security.api.authentication.v1.ERR_INVALID_X_TKEEL_AUTH_TOKEN", Error_ERR_INVALID_X_TKEEL_AUTH_TOKEN.String())
+	errInvalidXTkeelAuthToken = errors.New(int(codes.Unauthenticated), "io.tkeel.security.api.authentication.v1.ERR_INVALID_X_TKEEL_AUTH_TOKEN", "无效的")
 	errors.Register(errInvalidXTkeelAuthToken)
-	errUpstreamNotFound = errors.New(int(codes.NotFound), "io.tkeel.security.api.authentication.v1.ERR_UPSTREAM_NOT_FOUND", Error_ERR_UPSTREAM_NOT_FOUND.String())
+	errUpstreamNotFound = errors.New(int(codes.NotFound), "io.tkeel.security.api.authentication.v1.ERR_UPSTREAM_NOT_FOUND", "上游插件未找到")
 	errors.Register(errUpstreamNotFound)
 }
 

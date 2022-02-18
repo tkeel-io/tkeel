@@ -25,13 +25,13 @@ option java_outer_classname = "OpenapiProtoV1";
 // @plugins=protoc-gen-go-errors
 // 错误
 enum Error {
-  // 未知类型
+  // @msg=未知类型
   // @code=UNKNOWN
   ENTRY_ERR_UNKNOWN = 0;
-  // 无效的租户 ID
+  // @msg=无效的租户 ID
   // @code=INVALID_ARGUMENT
   ENTRY_ERR_INVALID_TENANT = 1;
-  // 请求后端内部错误
+  // @msg=请求后端内部错误
   // @code=INTERNAL
   ENTRY_ERR_INTERNAL_ERROR = 2;
 }

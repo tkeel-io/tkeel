@@ -39,37 +39,37 @@ const (
 type Error int32
 
 const (
-	// 未知类型
+	// @msg=未知类型
 	// @code=UNKNOWN
 	Error_OAUTH_ERR_UNKNOWN Error = 0
-	// 无效请求
+	// @msg=无效请求
 	// @code=INVALID_ARGUMENT
 	Error_OAUTH_ERR_INVALID_REQUEST Error = 1 // 400
-	// 未授权
+	// @msg=未授权
 	// @code=INVALID_ARGUMENT
 	Error_OAUTH_ERR_UNAUTHORIZED_CLIENT Error = 2 // 401
-	// 限制访问
+	// @msg=限制访问
 	// @code=INVALID_ARGUMENT
 	Error_OAUTH_ERR_ACCESS_DENIED Error = 3 // 403
-	// 不支持的授权返回类型
+	// @msg=不支持的授权返回类型
 	// @code=INVALID_ARGUMENT
 	Error_OAUTH_ERR_UNSUPPORTED_RESPONSE_TYPE Error = 4 // 401
-	// 无效范围
+	// @msg=无效范围
 	// @code=INVALID_ARGUMENT
 	Error_OAUTH_ERR_INVALID_SCOPE Error = 5 // 400
-	// 服务错误
+	// @msg=服务错误
 	// @code=INTERNAL
 	Error_OAUTH_ERR_SERVER_ERROR Error = 6 // 500
-	// 无效客户端
+	// @msg=无效客户端
 	// @code=PERMISSION_DENIED
 	Error_OAUTH_ERR_INVALID_CLIENT Error = 7 // 401
-	// 无效授权
+	// @msg=无效授权
 	// @code=INTERNAL
 	Error_OAUTH_ERR_INVALID_GRANT Error = 8 // 401
-	// 不支持的授予类型
+	// @msg=不支持的授予类型
 	// @code=INVALID_ARGUMENT
 	Error_OAUTH_ERR_UNSUPPORTED_GRANT_TYPE Error = 9 // 401
-	// 不支持的授予类型
+	// @msg=不支持的授予类型
 	// @code=INVALID_ARGUMENT
 	Error_OAUTH_ERR_INVALID_ACCESS_TOKEN Error = 10 // 401
 )

@@ -39,31 +39,31 @@ const (
 type Error int32
 
 const (
-	// 未知类型
+	// @msg=未知类型
 	// @code=UNKNOWN
 	Error_ERR_UNKNOWN Error = 0
-	// 请求参数无效
+	// @msg=请求参数无效
 	// @code=INVALID_ARGUMENT
 	Error_ERR_INVALID_ARGUMENT Error = 1
-	// 认证错误
+	// @msg=认证错误
 	// @code=UNAUTHENTICATED
 	Error_ERR_UNAUTHENTICATED Error = 2
-	// 内部错误
+	// @msg=内部错误
 	// @code=INTERNAL
 	Error_ERR_INTERNAL_ERROR Error = 3
-	// 上游插件未启用
+	// @msg=上游插件未启用
 	// @code=PERMISSION_DENIED
 	Error_ERR_UPSTREAM_NOT_ENABLE Error = 4
-	// 无权限
+	// @msg=无权限
 	// @code=PERMISSION_DENIED
 	Error_ERR_NO_PERMISSION Error = 5
-	// 无效的 x-plugin-jwt token
+	// @msg=无效的 x-plugin-jwt token
 	// @code=UNAUTHENTICATED
 	Error_ERR_INVALID_X_PLUGIN_JWT_TOKEN Error = 6
-	// 无效的 x-tKeel-auth token
+	// @msg=无效的 x-tKeel-auth token
 	// @code=UNAUTHENTICATED
 	Error_ERR_INVALID_X_TKEEL_AUTH_TOKEN Error = 7
-	// 上游插件未找到
+	// @msg=上游插件未找到
 	// @code=NOT_FOUND
 	Error_ERR_UPSTREAM_NOT_FOUND Error = 8
 )

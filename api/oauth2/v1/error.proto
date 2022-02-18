@@ -25,28 +25,34 @@ option java_outer_classname = "OpenapiProtoV1";
 // @plugins=protoc-gen-go-errors
 // 错误
 enum Error {
-  // 未知类型
+  // @msg=未知类型
   // @code=UNKNOWN
   OAUTH2_ERR_UNKNOWN = 0;
-  // Secret 不匹配
+  // @msg=Secret 不匹配
   // @code=PERMISSION_DENIED
   OAUTH2_ERR_SECRET_NOT_MATCH = 1;
-  // 白名单中已存在
+  // @msg=白名单中已存在
   // @code=ALREADY_EXISTS
   OAUTH2_ERR_CLIENT_ID_ALREADY_EXISTS = 2;
-  // 无效的插件ID
+  // @msg=无效的插件ID
   // @code=PERMISSION_DENIED
   OAUTH2_ERR_INVALID_PLUGIN_ID = 3;
-  // 请求后端存储错误
+  // @msg=请求后端存储错误
   // @code=INTERNAL
   OAUTH2_ERR_INTERNAL_STORE = 4;
-  // 内部错误
+  // @msg=内部错误
   // @code=INTERNAL
   OAUTH2_ERR_INTERNAL_ERROR = 5;
-  // password 不匹配
+  // @msg=password 不匹配
   // @code=PERMISSION_DENIED
   OAUTH2_ERR_PASSWORD_NOT_MATCH = 6;
-  // token 无效
+  // @msg=token 无效
   // @code=PERMISSION_DENIED
   OAUTH2_ERR_INVALID_TOKEN = 7;
+  // @msg=无权限
+  // @code=PERMISSION_DENIED
+  OAUTH2_ERR_PERMISSION_DENIED = 8;
+  // @msg=密码不合规范
+  // @code=UNKNOWN
+  OAUTH2_ERR_PASSWORD_NOT_COMPLIANT = 9;
 }

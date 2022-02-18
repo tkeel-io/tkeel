@@ -18,15 +18,15 @@ var errInternalError *errors.TError
 var errResourceNotFound *errors.TError
 
 func init() {
-	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.entity.v1.ERR_UNKNOWN", Error_ERR_UNKNOWN.String())
+	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.entity.v1.ERR_UNKNOWN", "未知类型")
 	errors.Register(errUnknown)
-	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.entity.v1.ERR_INVALID_ARGUMENT", Error_ERR_INVALID_ARGUMENT.String())
+	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.entity.v1.ERR_INVALID_ARGUMENT", "请求参数无效")
 	errors.Register(errInvalidArgument)
-	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.security.api.entity.v1.ERR_INTERNAL_STORE", Error_ERR_INTERNAL_STORE.String())
+	errInternalStore = errors.New(int(codes.Internal), "io.tkeel.security.api.entity.v1.ERR_INTERNAL_STORE", "请求后端存储错误")
 	errors.Register(errInternalStore)
-	errInternalError = errors.New(int(codes.Internal), "io.tkeel.security.api.entity.v1.ERR_INTERNAL_ERROR", Error_ERR_INTERNAL_ERROR.String())
+	errInternalError = errors.New(int(codes.Internal), "io.tkeel.security.api.entity.v1.ERR_INTERNAL_ERROR", "内部错误")
 	errors.Register(errInternalError)
-	errResourceNotFound = errors.New(int(codes.Internal), "io.tkeel.security.api.entity.v1.ERR_RESOURCE_NOT_FOUND", Error_ERR_RESOURCE_NOT_FOUND.String())
+	errResourceNotFound = errors.New(int(codes.Internal), "io.tkeel.security.api.entity.v1.ERR_RESOURCE_NOT_FOUND", "资源不存在")
 	errors.Register(errResourceNotFound)
 }
 

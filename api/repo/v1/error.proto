@@ -25,28 +25,28 @@ option java_outer_classname = "OpenapiProtoV1";
 // @plugins=protoc-gen-go-errors
 // 错误
 enum Error {
-  // 未知类型
+  // @msg=未知类型
   // @code=UNKNOWN
   ERR_UNKNOWN = 0;
-  // 找不到 REPO
+  // @msg=找不到 REPO
   // @code=NOT_FOUND
   ERR_REPO_NOT_FOUND = 1;
-  // 获取 REPO 列表数据出错
+  // @msg=获取 REPO 列表数据出错
   // @code=INTERNAL
   ERR_LIST_PLUGIN = 2;
-  // 请求参数无效
+  // @msg=请求参数无效
   // @code=INVALID_ARGUMENT
   ERR_INVALID_ARGUMENT = 3;
-  // 请求后端存储错误
+  // @msg=请求后端存储错误
   // @code=INTERNAL
   ERR_INTERNAL_STORE = 4;
-  // 内部错误
+  // @msg=内部错误
   // @code=INTERNAL
   ERR_INTERNAL_ERROR = 5;
-  // REPO 已存在
+  // @msg=REPO 已存在
   // @code=INVALID_ARGUMENT
   ERR_REPO_EXIST = 6;
-  // INSTALLER 不存在
+  // @msg=INSTALLER 不存在
   // @code=NOT_FOUND
   ERR_INSTALLER_NOT_FOUND = 7;
 }

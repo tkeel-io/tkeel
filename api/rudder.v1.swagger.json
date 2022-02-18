@@ -668,6 +668,47 @@
         ]
       }
     },
+    "/oauth2/pwd": {
+      "put": {
+        "summary": "admin 重设密码接口",
+        "operationId": "UpdateAdminPassword",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "401": {
+            "description": "TOKEN_INVALID",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateAdminPasswordRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Oauth2"
+        ]
+      }
+    },
     "/plugins": {
       "get": {
         "summary": "获取插件列表接口",
@@ -1190,38 +1231,6 @@
         "tags": [
           "RBAC"
         ]
-      }
-    },
-    "/rbac/roles/{name}": {
-      "delete": {
-        "summary": "delete role in tenant ",
-        "operationId": "DeleteRole",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/v1DeleteRoleResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "name",
-            "description": "tenant role name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "RBAC"
-        ]
       },
       "post": {
         "summary": "create role in tenant ",
@@ -1242,13 +1251,6 @@
         },
         "parameters": [
           {
-            "name": "name",
-            "description": "tenant role name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
             "name": "body",
             "description": "tenant role",
             "in": "body",
@@ -1257,6 +1259,38 @@
               "$ref": "#/definitions/v1Role",
               "description": "tenant role"
             }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/rbac/roles/{id}": {
+      "delete": {
+        "summary": "delete role in tenant ",
+        "operationId": "DeleteRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "tenant role id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1282,8 +1316,8 @@
         },
         "parameters": [
           {
-            "name": "name",
-            "description": "tenant role name",
+            "name": "id",
+            "description": "tenant role id",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1304,9 +1338,9 @@
         ]
       }
     },
-    "/rbac/roles/{role_name}/users": {
+    "/rbac/roles/{role_id}/users": {
       "post": {
-        "summary": "create binding to bind role_name with user_id",
+        "summary": "create binding to bind role_id with user_id",
         "operationId": "CreateRoleBinding",
         "responses": {
           "200": {
@@ -1324,7 +1358,7 @@
         },
         "parameters": [
           {
-            "name": "role_name",
+            "name": "role_id",
             "description": "bind role name",
             "in": "path",
             "required": true,
@@ -1336,7 +1370,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/CreateRoleBindingRequestUser",
+              "$ref": "#/definitions/CreateRoleBindingRequestUserList",
               "description": "bind user id"
             }
           }
@@ -1346,7 +1380,7 @@
         ]
       }
     },
-    "/rbac/roles/{role_name}/users/{user_id}": {
+    "/rbac/roles/{role_id}/users/{user_id}": {
       "delete": {
         "summary": "delete binding of the bind role_name with user_id",
         "operationId": "DeleteRoleBinding",
@@ -1366,8 +1400,8 @@
         },
         "parameters": [
           {
-            "name": "role_name",
-            "description": "bind role name",
+            "name": "role_id",
+            "description": "bind role id",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1378,6 +1412,48 @@
             "in": "path",
             "required": true,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/rbac/users/{user_id}/roles": {
+      "put": {
+        "summary": "create binding to bind user_id with roles",
+        "operationId": "UpdateUserRoleBinding",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "description": "binding user id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "binding role id list",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateUserRoleBindingRequestRoleIDList",
+              "description": "binding role id list"
+            }
           }
         ],
         "tags": [
@@ -2509,11 +2585,14 @@
         }
       }
     },
-    "CreateRoleBindingRequestUser": {
+    "CreateRoleBindingRequestUserList": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "description": "bind user id"
         }
       }
@@ -2541,6 +2620,18 @@
           "type": "string",
           "format": "byte",
           "description": "extra data"
+        }
+      }
+    },
+    "UpdateUserRoleBindingRequestRoleIDList": {
+      "type": "object",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "binding roles"
         }
       }
     },
@@ -2770,9 +2861,21 @@
           "items": {
             "$ref": "#/definitions/v1ConsoleEntry"
           }
+        },
+        "portal": {
+          "$ref": "#/definitions/v1ConsolePortal"
         }
       },
       "description": "plugin console entry."
+    },
+    "v1ConsolePortal": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "tenant"
+      ],
+      "default": "admin",
+      "description": "console portal enum."
     },
     "v1CreateEntityTokenResponse": {
       "type": "object",
@@ -3727,6 +3830,10 @@
     "v1Role": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "description": "tenant role id"
+        },
         "name": {
           "type": "string",
           "description": "tenant role name"
@@ -3981,6 +4088,15 @@
         "plugin": {
           "$ref": "#/definitions/v1PluginObject",
           "description": "plugin object"
+        }
+      }
+    },
+    "v1UpdateAdminPasswordRequest": {
+      "type": "object",
+      "properties": {
+        "new_password": {
+          "type": "string",
+          "description": "new admin password"
         }
       }
     },

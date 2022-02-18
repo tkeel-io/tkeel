@@ -31,6 +31,7 @@ type Oauth2HTTPServer interface {
 	AddPluginWhiteList(context.Context, *AddPluginWhiteListRequest) (*emptypb.Empty, error)
 	IssueAdminToken(context.Context, *IssueAdminTokenRequest) (*IssueTokenResponse, error)
 	IssuePluginToken(context.Context, *IssuePluginTokenRequest) (*IssueTokenResponse, error)
+	UpdateAdminPassword(context.Context, *UpdateAdminPasswordRequest) (*emptypb.Empty, error)
 	VerifyToken(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 }
 
@@ -169,6 +170,59 @@ func (h *Oauth2HTTPHandler) IssuePluginToken(req *go_restful.Request, resp *go_r
 	resp.WriteHeaderAndJson(http.StatusOK, out, "application/json")
 }
 
+func (h *Oauth2HTTPHandler) UpdateAdminPassword(req *go_restful.Request, resp *go_restful.Response) {
+	in := UpdateAdminPasswordRequest{}
+	if err := transportHTTP.GetBody(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.UpdateAdminPassword(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
 func (h *Oauth2HTTPHandler) VerifyToken(req *go_restful.Request, resp *go_restful.Response) {
 	in := emptypb.Empty{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
@@ -246,4 +300,6 @@ func RegisterOauth2HTTPServer(container *go_restful.Container, srv Oauth2HTTPSer
 		To(handler.IssueAdminToken))
 	ws.Route(ws.GET("/oauth2/authorize").
 		To(handler.VerifyToken))
+	ws.Route(ws.PUT("/oauth2/pwd").
+		To(handler.UpdateAdminPassword))
 }

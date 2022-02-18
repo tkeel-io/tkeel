@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
@@ -17,11 +18,11 @@ func AddPluginPermissionOnSet(ctx context.Context, kv kv.Operator, pluginID stri
 	if err != nil {
 		return nil, errors.Wrap(err, "permission set marshal")
 	}
-	for _, p := range append(ps, model.GetPermissionSet().NewPluginAllowedPermission(pluginID).Pb) {
-		_, err = model.GetPermissionSet().Add(pluginID, p)
-		if err != nil {
-			return nil, errors.Wrapf(err, "permission set add(%s/%s)", pluginID, p)
-		}
+	rootPB := model.GetPermissionSet().NewPluginAllowedPermission(pluginID).Pb
+	rootPB.Children = ps
+	_, err = model.GetPermissionSet().Add(pluginID, rootPB)
+	if err != nil {
+		return nil, errors.Wrapf(err, "permission set add(%s/%s)", pluginID, rootPB)
 	}
 	rbStack = append(rbStack, func() error {
 		log.Debugf("add permission set roll back run")
@@ -98,17 +99,27 @@ func GetPermissionAllDependence(p *v1.Permission) ([]*model.Permission, error) {
 	return ret, nil
 }
 
-func GetPermissionPathSet(pathList []*pb.Permission) (map[string]*model.Permission, error) {
+func GetPermissionPathSet(pbList []*pb.Permission) (map[string]*model.Permission, error) {
 	addPmPathSet := make(map[string]*model.Permission)
+	pathList := make([]string, 0, len(pbList))
+	for _, v := range pbList {
+		pLevel := strings.Split(v.Path, "/")
+		path := ""
+		for _, l := range pLevel {
+			path += l
+			pathList = append(pathList, path)
+			path += "/"
+		}
+	}
 	for _, v := range pathList {
-		pm, err := model.GetPermissionSet().GetPermission(v.Path)
+		pm, err := model.GetPermissionSet().GetPermission(v)
 		if err != nil {
 			if errors.Is(err, model.ErrPermissionNotExist) {
 				return nil, model.ErrPermissionNotExist
 			}
 			return nil, errors.Wrapf(err, "check permission %v", pathList)
 		}
-		addPmPathSet[v.Path] = pm
+		addPmPathSet[v] = pm
 		ps, err := GetPermissionAllDependence(pm.Pb)
 		if err != nil {
 			return nil, errors.Wrapf(err, "get permission(%s) all dependence path", pm.Path)

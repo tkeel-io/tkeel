@@ -53,10 +53,15 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
 	}
-	role := model.Role{Name: "admin", TenantID: tenant.ID, Description: tenant.Title + " admin"}
+	role := model.Role{Name: t_model.TkeelTenantAdminRole, TenantID: tenant.ID, Description: t_model.TKeelTenantAdminDesc}
 	if err = role.Create(s.DB); err != nil {
 		log.Error(err)
 		return resp, pb.ErrStoreCreatAdmin()
+	}
+	_, err = s.RBACOp.AddPolicy(role.ID, tenant.ID, "*", t_model.AllowedPermissionAction)
+	if err != nil {
+		log.Error(err)
+		return resp, pb.ErrStoreCreatAdminRole()
 	}
 	resp.TenantId = tenant.ID
 	resp.TenantTitle = tenant.Title
@@ -72,12 +77,7 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 		}
 		resp.AdminUsername = user.UserName
 		resp.ResetKey = user.Password
-		_, err = s.RBACOp.AddGroupingPolicy(user.ID, "admin", tenant.ID)
-		if err != nil {
-			log.Error(err)
-			return resp, pb.ErrStoreCreatAdminRole()
-		}
-		_, err = s.RBACOp.AddPolicy(role.ID, tenant.ID, "*", t_model.AllowedPermissionAction)
+		_, err = s.RBACOp.AddGroupingPolicy(user.ID, role.ID, tenant.ID)
 		if err != nil {
 			log.Error(err)
 			return resp, pb.ErrStoreCreatAdminRole()
@@ -200,6 +200,15 @@ func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRe
 	}
 	for _, v := range s.TenantPluginOp.ListTenantPlugins(tenant.ID) {
 		s.TenantPluginOp.DeleteTenantPlugin(tenant.ID, v)
+	}
+
+	role := model.Role{
+		TenantID: tenant.ID,
+	}
+	_, err = role.Delete(s.DB)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInternalStore()
 	}
 	return resp, nil
 }

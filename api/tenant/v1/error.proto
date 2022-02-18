@@ -24,37 +24,37 @@ option java_package = "io.tkeel.security.api.tenant.v1";
 // @plugins=protoc-gen-go-errors
 // 错误
 enum Error {
-  // 未知类型
+  // @msg=未知类型
   // @code=UNKNOWN
   ERR_UNKNOWN = 0;
-  // 找不到 REPO
+  // @msg=找不到 REPO
   // @code=INTERNAL
   ERR_TENANT_ALREADY_EXISTED = 1;
-  // 获取 租户列表数据出错
+  // @msg=获取 租户列表数据出错
   // @code=INTERNAL
   ERR_LIST_TENANT = 2;
-  // 请求参数无效
+  // @msg=请求参数无效
   // @code=INVALID_ARGUMENT
   ERR_INVALID_ARGUMENT = 3;
-  // 请求后端存储错误
+  // @msg=请求后端存储错误
   // @code=INTERNAL
   ERR_INTERNAL_STORE = 4;
-  // 内部错误
+  // @msg=内部错误
   // @code=INTERNAL
   ERR_INTERNAL_ERROR = 5;
-  // 创建租户错误
+  // @msg=创建租户错误
   // @code=INTERNAL
   ERR_STORE_CREAT_TENANT = 6;
-  // 创建已存在的用户
+  // @msg=创建已存在的用户
   // @code=INTERNAL
   ERR_ALREADY_EXISTED_USER_ = 7;
-  // 资源不存在
+  // @msg=资源不存在
   // @code=INTERNAL
   ERR_RESOURCE_NOT_FOUND = 8;
-  // 创建租户管理员用户错误
+  // @msg=创建租户管理员用户错误
   // @code=INTERNAL
   ERR_STORE_CREAT_ADMIN = 9;
-  // 创建租户管理员角色错误
+  // @msg=创建租户管理员角色错误
   // @code=INTERNAL
   ERR_STORE_CREAT_ADMIN_ROLE = 10;
 }
