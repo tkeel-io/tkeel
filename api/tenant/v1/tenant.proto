@@ -384,6 +384,10 @@ message CreateTenantResponse {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "created tenant admin username"
       } ];
+  string reset_key =4
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : " tenant admin password reset key"
+  } ];
 }
 
 message GetTenantRequest {

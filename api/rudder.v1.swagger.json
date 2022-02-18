@@ -304,6 +304,37 @@
         "tags": [
           "[Security] OAuth"
         ]
+      },
+      "put": {
+        "summary": "oauth update user password",
+        "operationId": "UpdatePassword",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1UpdatePasswordResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdatePasswordBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
       }
     },
     "/oauth/token/revoke": {
@@ -2774,6 +2805,10 @@
         "admin_username": {
           "type": "string",
           "description": "created tenant admin username"
+        },
+        "reset_key": {
+          "type": "string",
+          "description": " tenant admin password reset key"
         }
       },
       "title": "The response message containing the greetings"
@@ -3946,6 +3981,22 @@
         "plugin": {
           "$ref": "#/definitions/v1PluginObject",
           "description": "plugin object"
+        }
+      }
+    },
+    "v1UpdatePasswordBody": {
+      "type": "object",
+      "properties": {
+        "new_password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UpdatePasswordResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
         }
       }
     },
