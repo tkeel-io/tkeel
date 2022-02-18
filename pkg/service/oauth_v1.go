@@ -339,7 +339,6 @@ func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterReq
 	return &pb.OIDCRegisterResponse{Ok: true}, nil
 }
 func (s *OauthService) TokenRevoke(ctx context.Context, req *pb.TokenRevokeRequest) (*pb.TokenRevokeResponse, error) {
-
 	ti, err := s.Manager.LoadRefreshToken(ctx, req.GetBody().GetRefreshToken())
 	if err != nil {
 		log.Error(err)
