@@ -568,6 +568,9 @@ func (s *PluginServiceV1) checkIdentify(ctx context.Context,
 			resp.PluginId, resp.TkeelVersion)
 	}
 	for _, v := range resp.Dependence {
+		if pluginIsTkeelComponent(v.Id) {
+			continue
+		}
 		if _, err := s.pluginOp.Get(ctx, v.Id); err != nil {
 			return errors.Wrapf(err, "get dependence plugin(%s)", v.Id)
 		}

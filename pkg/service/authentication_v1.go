@@ -188,15 +188,6 @@ func checkXtKeelAtuh(ctx context.Context, header http.Header) (*model.User, erro
 	return user, nil
 }
 
-func pluginIsTkeelComponent(pluginID string) bool {
-	for _, v := range model.TKeelComponents {
-		if v == pluginID {
-			return true
-		}
-	}
-	return false
-}
-
 func (s *AuthenticationService) setDstAndMethod(ctx context.Context, sess *session, path string) error {
 	sess.Dst = &endpoint{}
 	if isAddons(path) {
