@@ -5,8 +5,6 @@ import (
 	"regexp"
 	"sort"
 
-	"gorm.io/gorm"
-
 	"github.com/casbin/casbin/v2"
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
@@ -16,6 +14,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"gorm.io/gorm"
 )
 
 type RBACService struct {
@@ -68,7 +67,7 @@ func (s *RBACService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest
 		return nil, pb.ErrInternalStore()
 	}
 	rblist := append(util.NewRollbackStack(), func() error {
-		newRole.Delete(s.db)
+		newRole.Delete(s.db, nil)
 		return nil
 	})
 	defer rblist.Run()
@@ -141,7 +140,7 @@ func (s *RBACService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest)
 		return nil, pb.ErrInternalError()
 	}
 	defer rbStack.Run()
-	count, err := deleteRole.Delete(s.db)
+	count, err := deleteRole.Delete(s.db, nil)
 	if err != nil {
 		log.Errorf("error delete role(%s): %s", deleteRole, err)
 		return nil, pb.ErrInternalError()

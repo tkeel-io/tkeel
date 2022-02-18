@@ -17,6 +17,7 @@ import (
 	oidcprovider "github.com/tkeel-io/security/authn/idprovider/oidc"
 	"github.com/tkeel-io/security/model"
 	pb "github.com/tkeel-io/tkeel/api/security_oauth/v1"
+	"github.com/tkeel-io/tkeel/pkg/util"
 	"golang.org/x/oauth2"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
@@ -356,4 +357,28 @@ func (s *OauthService) TokenRevoke(ctx context.Context, req *pb.TokenRevokeReque
 		Revoked:  true,
 		TenantId: users[0].TenantID,
 	}, nil
+}
+
+func (s *OauthService) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordRequest) (*pb.UpdatePasswordResponse, error) {
+	user, err := util.GetUser(ctx)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.OauthErrInvalidAccessToken()
+	}
+	useraDao := &model.User{Password: req.GetBody().GetNewPassword()}
+	useraDao.Encrypt()
+	err = useraDao.Update(s.UserDB, user.Tenant, user.User, map[string]interface{}{"password": useraDao.Password})
+	if err != nil {
+		log.Error(err)
+		return nil, pb.OauthErrServerError()
+	}
+	ti, err := s.Manager.LoadRefreshToken(ctx, req.GetBody().GetRefreshToken())
+	if err != nil {
+		log.Error(err)
+		return nil, pb.OauthErrInvalidAccessToken()
+	}
+	s.Manager.RemoveRefreshToken(ctx, ti.GetRefresh())
+	s.Manager.RemoveAccessToken(ctx, ti.GetAccess())
+
+	return &pb.UpdatePasswordResponse{TenantId: user.Tenant}, nil
 }

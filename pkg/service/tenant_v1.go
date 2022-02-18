@@ -201,15 +201,6 @@ func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRe
 	for _, v := range s.TenantPluginOp.ListTenantPlugins(tenant.ID) {
 		s.TenantPluginOp.DeleteTenantPlugin(tenant.ID, v)
 	}
-
-	role := model.Role{
-		TenantID: tenant.ID,
-	}
-	_, err = role.Delete(s.DB)
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInternalStore()
-	}
 	return resp, nil
 }
 
