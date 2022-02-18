@@ -171,7 +171,7 @@ func (r *Repo) Search(word string) ([]*repository.InstallerBrief, error) {
 	}
 	briefs := res.ToInstallerBrief()
 
-	// modify briefs Installed status
+	// modify briefs Installed status.
 	rls, err := r.list()
 	if err != nil {
 		return nil, errors.Wrap(err, "get helm release")
