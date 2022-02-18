@@ -127,8 +127,20 @@ func (s *TenantService) ListTenant(ctx context.Context, req *pb.ListTenantReques
 			log.Error(err)
 			return nil, pb.ErrListTenant()
 		}
-
+		userIds, err := s.RBACOp.GetUsersForRole("admin", v.ID)
+		if err != nil {
+			log.Error(err)
+		}
+		admins := []*pb.TenantAdmin{}
+		for _, v := range userIds {
+			userNum, user, _ := userDao.QueryByCondition(s.DB, map[string]interface{}{"id": v}, nil, "")
+			if userNum == 1 {
+				admin := &pb.TenantAdmin{Username: user[0].UserName}
+				admins = append(admins, admin)
+			}
+		}
 		detail.NumUser = int32(numUser)
+		detail.Admins = admins
 		resp.Tenants[i] = detail
 	}
 

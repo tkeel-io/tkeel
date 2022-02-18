@@ -454,6 +454,23 @@ message TenantDetail {
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     description : "user roles in tenant"
   } ];
+  repeated TenantAdmin admins = 7
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "admins in tenant"
+  } ];
+}
+
+message UpdateTenantRequest {
+  string tenant_id = 1;
+  UpdateTenantBody body =2;
+
+}
+ message UpdateTenantBody {
+  string title =1;
+  string remark =2;
+ }
+message UpdateTenantResponse{
+
 }
 
 
