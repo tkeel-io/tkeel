@@ -338,3 +338,22 @@ func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterReq
 
 	return &pb.OIDCRegisterResponse{Ok: true}, nil
 }
+func (s *OauthService) TokenRevoke(ctx context.Context, req *pb.TokenRevokeRequest) (*pb.TokenRevokeResponse, error) {
+	ti, err := s.Manager.LoadRefreshToken(ctx, req.GetBody().GetRefreshToken())
+	if err != nil {
+		log.Error(err)
+		return nil, pb.OauthErrInvalidAccessToken()
+	}
+	userDao := &model.User{}
+	num, users, err := userDao.QueryByCondition(s.UserDB, map[string]interface{}{"id": ti.GetUserID()}, nil, "")
+	if err != nil || num != 1 {
+		log.Error(err)
+		return nil, pb.OauthErrInvalidRequest()
+	}
+	s.Manager.RemoveRefreshToken(ctx, ti.GetRefresh())
+	s.Manager.RemoveAccessToken(ctx, ti.GetAccess())
+	return &pb.TokenRevokeResponse{
+		Revoked:  true,
+		TenantId: users[0].TenantID,
+	}, nil
+}
