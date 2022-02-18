@@ -104,6 +104,22 @@ service Oauth {
       } ]
     };
   }
+
+  rpc TokenRevoke (TokenRevokeRequest) returns(TokenRevokeResponse){
+    option (google.api.http) = {
+      post : "/oauth/token/revoke"
+      body : "body"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "oauth token revoke with refresh token"
+      operation_id : "TokenRevoke"
+      tags : "[Security] OAuth"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
 }
 
 //
@@ -254,4 +270,16 @@ message OIDCEndpoint {
 
 message OIDCRegisterResponse {
   bool ok =1;
+}
+
+message TokenRevokeRequest {
+  TokenRevokeBody body =1;
+}
+message TokenRevokeBody {
+  string refresh_token =1;
+}
+
+message TokenRevokeResponse {
+  string tenant_id=1;
+  bool revoked =2;
 }

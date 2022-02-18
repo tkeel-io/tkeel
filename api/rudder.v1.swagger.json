@@ -306,6 +306,39 @@
         ]
       }
     },
+    "/oauth/token/revoke": {
+      "post": {
+        "summary": "oauth token revoke with refresh token",
+        "operationId": "TokenRevoke",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1TokenRevokeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TokenRevokeBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
     "/oauth/{tenant_id}/authorize": {
       "get": {
         "summary": "oauth authorize code with username and password",
@@ -3795,6 +3828,13 @@
             "type": "string"
           },
           "description": "user roles in tenant"
+        },
+        "admins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TenantAdmin"
+          },
+          "description": "admins in tenant"
         }
       }
     },
@@ -3878,6 +3918,25 @@
         },
         "redirect_url": {
           "type": "string"
+        }
+      }
+    },
+    "v1TokenRevokeBody": {
+      "type": "object",
+      "properties": {
+        "refresh_token": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TokenRevokeResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "revoked": {
+          "type": "boolean"
         }
       }
     },
