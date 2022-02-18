@@ -23,6 +23,7 @@ type OauthClient interface {
 	Token(ctx context.Context, in *TokenRequest, opts ...grpc.CallOption) (*TokenResponse, error)
 	Authenticate(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AuthenticateResponse, error)
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*ResetPasswordResponse, error)
+	UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
 	OIDCRegister(ctx context.Context, in *OIDCRegisterRequest, opts ...grpc.CallOption) (*OIDCRegisterResponse, error)
 	TokenRevoke(ctx context.Context, in *TokenRevokeRequest, opts ...grpc.CallOption) (*TokenRevokeResponse, error)
 }
@@ -71,6 +72,15 @@ func (c *oauthClient) ResetPassword(ctx context.Context, in *ResetPasswordReques
 	return out, nil
 }
 
+func (c *oauthClient) UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error) {
+	out := new(UpdatePasswordResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.oauth.v1.Oauth/UpdatePassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *oauthClient) OIDCRegister(ctx context.Context, in *OIDCRegisterRequest, opts ...grpc.CallOption) (*OIDCRegisterResponse, error) {
 	out := new(OIDCRegisterResponse)
 	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.oauth.v1.Oauth/OIDCRegister", in, out, opts...)
@@ -97,6 +107,7 @@ type OauthServer interface {
 	Token(context.Context, *TokenRequest) (*TokenResponse, error)
 	Authenticate(context.Context, *emptypb.Empty) (*AuthenticateResponse, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error)
+	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error)
 	OIDCRegister(context.Context, *OIDCRegisterRequest) (*OIDCRegisterResponse, error)
 	TokenRevoke(context.Context, *TokenRevokeRequest) (*TokenRevokeResponse, error)
 	mustEmbedUnimplementedOauthServer()
@@ -117,6 +128,9 @@ func (UnimplementedOauthServer) Authenticate(context.Context, *emptypb.Empty) (*
 }
 func (UnimplementedOauthServer) ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResetPassword not implemented")
+}
+func (UnimplementedOauthServer) UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePassword not implemented")
 }
 func (UnimplementedOauthServer) OIDCRegister(context.Context, *OIDCRegisterRequest) (*OIDCRegisterResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OIDCRegister not implemented")
@@ -209,6 +223,24 @@ func _Oauth_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Oauth_UpdatePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OauthServer).UpdatePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.security.api.oauth.v1.Oauth/UpdatePassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OauthServer).UpdatePassword(ctx, req.(*UpdatePasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Oauth_OIDCRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(OIDCRegisterRequest)
 	if err := dec(in); err != nil {
@@ -267,6 +299,10 @@ var Oauth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ResetPassword",
 			Handler:    _Oauth_ResetPassword_Handler,
+		},
+		{
+			MethodName: "UpdatePassword",
+			Handler:    _Oauth_UpdatePassword_Handler,
 		},
 		{
 			MethodName: "OIDCRegister",
