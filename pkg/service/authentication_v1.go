@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
+
+	regexp "github.com/dlclark/regexp2"
 
 	"github.com/pkg/errors"
 
@@ -70,7 +71,7 @@ type AuthenticationService struct {
 	secretProvider token.Provider
 	tenantPluginOp rbac.TenantPluginMgr
 
-	regExpWhiteList []string
+	regExpCompile []*regexp.Regexp
 }
 
 func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenConf,
@@ -81,6 +82,20 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 		tokenConf.AccessTokenExp = conf.AccessTokenExp
 		tokenConf.RefreshTokenExp = conf.RefreshTokenExp
 	}
+	pathList := []string{
+		"/static/*",
+		"/apis/rudder/v1/oauth2(?!/pwd).*",
+		"/apis/security/v1/oauth(?!/pwd).*",
+		"/apis/security/v1/tenants/users/rpk/info",
+	}
+	regExpCompile := make([]*regexp.Regexp, 0, len(pathList))
+	for _, v := range pathList {
+		regCom, err := regexp.Compile(v, regexp.None)
+		if err != nil {
+			log.Fatalf("error compile regular expression(%s): %s", v, err)
+		}
+		regExpCompile = append(regExpCompile, regCom)
+	}
 	return &AuthenticationService{
 		secretProvider: token.InitProvider(secret, "", ""),
 		userDB:         userDB,
@@ -89,12 +104,7 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 		rbacOp:         rbacOp,
 		prOp:           prOp,
 		tenantPluginOp: tpOp,
-		regExpWhiteList: []string{
-			"/static/*",
-			"/apis/rudder/v1/oauth2(?!/pwd).*",
-			"/apis/security/v1/oauth(?!/pwd).*",
-			"/apis/security/v1/tenants/users/rpk/info",
-		},
+		regExpCompile:  regExpCompile,
 	}
 }
 
@@ -370,8 +380,8 @@ func (s *AuthenticationService) isManagerToken(token string) (bool, error) {
 }
 
 func (s *AuthenticationService) matchRegExpWhiteList(path string) bool {
-	for _, v := range s.regExpWhiteList {
-		match, err := regexp.MatchString(v, path)
+	for _, v := range s.regExpCompile {
+		match, err := v.MatchString(path)
 		if err != nil {
 			log.Errorf("error regular expression(%s/%s) run: %s", v, path, err)
 			return false
