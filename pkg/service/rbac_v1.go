@@ -494,7 +494,7 @@ func (s *RBACService) convertModelRole2PB(role *s_model.Role) *pb.Role {
 		Desc:            role.Description,
 		UpsertTimestamp: uint64(role.UpdatedAt.Unix()),
 	}
-	users := s.rbacOp.GetUsersForRoleInDomain(role.Name, role.TenantID)
+	users := s.rbacOp.GetUsersForRoleInDomain(role.ID, role.TenantID)
 	ret.BindNum = int32(len(users))
 	pList := s.getRolePermissions(role.Name, role.TenantID)
 	ret.PermissionList = util.ModelList2PbList(pList)

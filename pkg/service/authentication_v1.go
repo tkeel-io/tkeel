@@ -91,8 +91,8 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 		tenantPluginOp: tpOp,
 		regExpWhiteList: []string{
 			"/static/*",
-			"/apis/rudder/v1/oauth2*",
-			"/apis/security/v1/oauth*",
+			"/apis/rudder/v1/oauth2(?!/pwd).*",
+			"/apis/security/v1/oauth(?!/pwd).*",
 			"/apis/security/v1/tenants/users/rpk/info",
 		},
 	}

@@ -488,6 +488,8 @@ func (ps *PermissionSet) Unmarshal(b []byte) error {
 	if err := json.Unmarshal(b, &(ps.rawSet)); err != nil {
 		return errors.Wrapf(err, "unmarshal permission set(%s)", string(b))
 	}
+	ps.sortList = ps.sortList[0:0]
+	ps.pathSet = make(map[string]*Permission)
 	for pluginID, v := range ps.rawSet {
 		if pluginID == v.Id {
 			for _, p := range convertPB2Model(pluginID, v) {
@@ -610,7 +612,7 @@ func (ps *PermissionSet) GetPermission(path string) (*Permission, error) {
 func convertPB2Model(parentalPath string, pb *openapi_v1.Permission) []*Permission {
 	ret := make([]*Permission, 0)
 	path := parentalPath + "/" + pb.Id
-	if parentalPath == "" {
+	if parentalPath == "" || parentalPath == pb.Id {
 		path = pb.Id
 	}
 	ret = append(ret, &Permission{
