@@ -413,6 +413,14 @@ message GetTenantResponse {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "tenant remark"
       } ];
+  int32 num_user = 5
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "user number in tenant"
+  } ];
+  repeated TenantAdmin admins = 6
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "admins in tenant"
+  } ];
 }
 message ListTenantRequest {
   int32 page_num = 1;
