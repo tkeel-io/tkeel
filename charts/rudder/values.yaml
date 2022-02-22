@@ -18,10 +18,10 @@ debug: false
 logLevel: debug
 
 # rudder http port and dapr app port
-httpPort: 32134
+httpPort: 31234
 
 # rudder grpc port
-grpcPort: 32133
+grpcPort: 31233
 
 # rudder admin initial password
 # ignored if password already exists in storage
