@@ -452,6 +452,16 @@ type Permission struct {
 	Pb   *openapi_v1.Permission
 }
 
+func (p *Permission) Clone() *Permission {
+	newPB := &openapi_v1.Permission{}
+	t := proto.Clone(p.Pb)
+	proto.Merge(newPB, t)
+	return &Permission{
+		Path: p.Path,
+		Pb:   newPB,
+	}
+}
+
 type PermissionSet struct {
 	rwLock   *sync.RWMutex
 	rawSet   map[string]*openapi_v1.Permission
@@ -492,7 +502,7 @@ func (ps *PermissionSet) Unmarshal(b []byte) error {
 	ps.pathSet = make(map[string]*Permission)
 	for pluginID, v := range ps.rawSet {
 		if pluginID == v.Id {
-			for _, p := range convertPB2Model(pluginID, v) {
+			for _, p := range convertPB2ModelList(pluginID, v) {
 				ps.sortList = append(ps.sortList, p)
 				ps.pathSet[p.Path] = p
 			}
@@ -510,7 +520,7 @@ func (ps *PermissionSet) GetSortList() []*Permission {
 	return ret
 }
 
-func (ps *PermissionSet) GetPermissionByPluginID(pluginID string) []*Permission {
+func (ps *PermissionSet) GetAllPermissionByPluginID(pluginID string) []*Permission {
 	ret := make([]*Permission, 0, len(ps.sortList))
 	ps.rwLock.RLock()
 	defer ps.rwLock.RUnlock()
@@ -520,6 +530,16 @@ func (ps *PermissionSet) GetPermissionByPluginID(pluginID string) []*Permission 
 		}
 	}
 	return ret
+}
+
+func (ps *PermissionSet) GetPermissionByPluginID(pluginID string) *Permission {
+	ps.rwLock.RLock()
+	defer ps.rwLock.RUnlock()
+	p, ok := ps.pathSet[pluginID]
+	if !ok {
+		return nil
+	}
+	return p.Clone()
 }
 
 func (ps *PermissionSet) NewPluginAllowedPermission(pluginID string) *Permission {
@@ -545,15 +565,9 @@ func (ps *PermissionSet) Add(pluginID string, pb *openapi_v1.Permission) (bool, 
 	if err := ps.checkPermission(pb); err != nil {
 		return false, errors.Wrap(err, "check permission")
 	}
-	pList := convertPB2Model("", pb)
 	ps.rwLock.Lock()
 	defer ps.rwLock.Unlock()
 	(ps.rawSet)[pluginID] = pb
-	for _, v := range pList {
-		ps.pathSet[v.Path] = v
-		ps.sortList = append(ps.sortList, v)
-	}
-	sort.Sort(PermissionSort(ps.sortList))
 	return true, nil
 }
 
@@ -609,7 +623,7 @@ func (ps *PermissionSet) GetPermission(path string) (*Permission, error) {
 	return p, nil
 }
 
-func convertPB2Model(parentalPath string, pb *openapi_v1.Permission) []*Permission {
+func convertPB2ModelList(parentalPath string, pb *openapi_v1.Permission) []*Permission {
 	ret := make([]*Permission, 0)
 	path := parentalPath + "/" + pb.Id
 	if parentalPath == "" || parentalPath == pb.Id {
@@ -620,7 +634,7 @@ func convertPB2Model(parentalPath string, pb *openapi_v1.Permission) []*Permissi
 		Pb:   pb,
 	})
 	for _, v := range pb.Children {
-		ret = append(ret, convertPB2Model(path, v)...)
+		ret = append(ret, convertPB2ModelList(path, v)...)
 	}
 	return ret
 }
@@ -630,6 +644,12 @@ type PermissionSort []*Permission
 func (a PermissionSort) Len() int      { return len(a) }
 func (a PermissionSort) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a PermissionSort) Less(i, j int) bool {
+	if a[i] == nil {
+		return true
+	}
+	if a[j] == nil {
+		return false
+	}
 	si := strings.Split(a[i].Path, "/")
 	sj := strings.Split(a[j].Path, "/")
 	lenth := len(si)

@@ -2,7 +2,6 @@ package util
 
 import (
 	"context"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
@@ -10,6 +9,7 @@ import (
 	pb "github.com/tkeel-io/tkeel/api/rbac/v1"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/kv"
+	"google.golang.org/protobuf/proto"
 )
 
 func AddPluginPermissionOnSet(ctx context.Context, kv kv.Operator, pluginID string, ps []*v1.Permission) (RollBackStack, error) {
@@ -101,53 +101,72 @@ func GetPermissionAllDependence(p *v1.Permission) ([]*model.Permission, error) {
 
 func GetPermissionPathSet(pbList []*pb.Permission) (map[string]*model.Permission, error) {
 	addPmPathSet := make(map[string]*model.Permission)
-	pathList := make([]string, 0, len(pbList))
+	// pathList := make([]string, 0, len(pbList))
+	// for _, v := range pbList {.
+	// 	pLevel := strings.Split(v.Path, "/").
+	// 	path := "".
+	// 	for _, l := range pLevel {.
+	// 		path += l.
+	// 		pathList = append(pathList, path).
+	// 		path += "/".
+	// 	}.
+	// }.
 	for _, v := range pbList {
-		pLevel := strings.Split(v.Path, "/")
-		path := ""
-		for _, l := range pLevel {
-			path += l
-			pathList = append(pathList, path)
-			path += "/"
+		if _, ok := addPmPathSet[v.Path]; ok {
+			continue
 		}
-	}
-	for _, v := range pathList {
-		pm, err := model.GetPermissionSet().GetPermission(v)
+		pm, err := model.GetPermissionSet().GetPermission(v.Path)
 		if err != nil {
 			if errors.Is(err, model.ErrPermissionNotExist) {
 				return nil, model.ErrPermissionNotExist
 			}
-			return nil, errors.Wrapf(err, "check permission %v", pathList)
+			return nil, errors.Wrapf(err, "check permission %v", v.Path)
 		}
-		addPmPathSet[v] = pm
+		addPmPathSet[v.Path] = pm
 		ps, err := GetPermissionAllDependence(pm.Pb)
 		if err != nil {
 			return nil, errors.Wrapf(err, "get permission(%s) all dependence path", pm.Path)
 		}
-		for _, v := range ps {
-			addPmPathSet[v.Path] = v
+		for _, v1 := range ps {
+			addPmPathSet[v1.Path] = v1
 		}
 	}
 	return addPmPathSet, nil
 }
 
-func ModelSet2PbList(set map[string]*model.Permission) []*pb.Permission {
+func ModelSet2PbList(set map[string]*model.Permission, hasChild bool) []*pb.Permission {
 	ret := make([]*pb.Permission, 0, len(set))
 	for _, v := range set {
 		ret = append(ret, &pb.Permission{
-			Path:       v.Path,
-			Permission: v.Pb,
+			Path: v.Path,
+			Permission: func() *v1.Permission {
+				ret := &v1.Permission{}
+				newPB := proto.Clone(v.Pb)
+				proto.Merge(ret, newPB)
+				if !hasChild {
+					ret.Children = nil
+				}
+				return ret
+			}(),
 		})
 	}
 	return ret
 }
 
-func ModelList2PbList(list []*model.Permission) []*pb.Permission {
+func ModelList2PbList(list []*model.Permission, hasChild bool) []*pb.Permission {
 	ret := make([]*pb.Permission, 0, len(list))
 	for _, v := range list {
 		ret = append(ret, &pb.Permission{
-			Path:       v.Path,
-			Permission: v.Pb,
+			Path: v.Path,
+			Permission: func() *v1.Permission {
+				ret := &v1.Permission{}
+				newPB := proto.Clone(v.Pb)
+				proto.Merge(ret, newPB)
+				if !hasChild {
+					ret.Children = nil
+				}
+				return ret
+			}(),
 		})
 	}
 	return ret

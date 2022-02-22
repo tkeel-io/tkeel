@@ -915,7 +915,7 @@ func (s *PluginServiceV1) deleteTenantPluginEnable(ctx context.Context, pID stri
 
 func (s *PluginServiceV1) deletePermission(ctx context.Context, p *model.Plugin) (util.RollBackStack, error) {
 	rbStack := util.NewRollbackStack()
-	pList := model.GetPermissionSet().GetPermissionByPluginID(p.ID)
+	pList := model.GetPermissionSet().GetAllPermissionByPluginID(p.ID)
 	removePolicies := make([][]string, 0)
 	for _, v := range pList {
 		removePolicies = append(removePolicies,
