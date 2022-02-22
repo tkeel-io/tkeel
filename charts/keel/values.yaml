@@ -10,7 +10,7 @@ replicaCount: 1
 nodePort: 30707
 image:
   repository: tkeelio/keel
-  tag: v0.4.0
+  tag: 0.4.0-alpha.1
   pullPolicy: Always
 
 # keel debug mod
