@@ -337,7 +337,7 @@ func (s *PluginServiceV1) TenantEnable(ctx context.Context,
 	}
 	_, terr, err := s.tenantEnablePlugin(ctx, false, u.Tenant, u.User, req.Id, req.Extra.Extra)
 	if err != nil {
-		log.Errorf("error tenant(%s) enable plugin(%s): %s", u.Tenant, u.User)
+		log.Errorf("error tenant(%s) enable plugin(%s): %s", u.Tenant, u.User, err)
 		return nil, terr
 	}
 	log.Debugf("tenant(%s) enable plugin(%s) succ.", u.Tenant, req.Id)
@@ -697,6 +697,9 @@ func (s *PluginServiceV1) tenantEnablePlugin(ctx context.Context, isDependence b
 		return rbStack, nil, nil
 	}
 	for _, v := range p.PluginDependences {
+		if pluginIsTkeelComponent(v.Id) {
+			continue
+		}
 		rbs, terr, err1 := s.tenantEnablePlugin(ctx, true, tenantID, userID, v.Id, extra)
 		if err1 != nil {
 			return nil, terr, errors.Wrapf(err1, "enant(%s) enable plugin(%s) enable dependence(%s)", tenantID, pluginID, v.Id)
@@ -912,7 +915,7 @@ func (s *PluginServiceV1) deleteTenantPluginEnable(ctx context.Context, pID stri
 
 func (s *PluginServiceV1) deletePermission(ctx context.Context, p *model.Plugin) (util.RollBackStack, error) {
 	rbStack := util.NewRollbackStack()
-	pList := model.GetPermissionSet().GetPermissionByPluginID(p.ID)
+	pList := model.GetPermissionSet().GetAllPermissionByPluginID(p.ID)
 	removePolicies := make([][]string, 0)
 	for _, v := range pList {
 		removePolicies = append(removePolicies,

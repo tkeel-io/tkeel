@@ -144,7 +144,6 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 	for _, v := range ibList {
 		if v.Installed {
 			installedNum++
-			break
 		}
 	}
 	if req.Installed {

@@ -80,7 +80,7 @@ func (s *RBACService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest
 		Role: &pb.Role{
 			Name:           newRole.Name,
 			Desc:           newRole.Description,
-			PermissionList: util.ModelSet2PbList(addPmPathSet),
+			PermissionList: util.ModelSet2PbList(addPmPathSet, false),
 		},
 	}, nil
 }
@@ -115,7 +115,7 @@ func (s *RBACService) ListRole(ctx context.Context, req *pb.ListRolesRequest) (*
 		Roles: func() []*pb.Role {
 			ret := make([]*pb.Role, 0, len(roles))
 			for _, v := range roles {
-				ret = append(ret, s.convertModelRole2PB(v))
+				ret = append(ret, s.convertModelRole2PB(v, false))
 			}
 			return ret
 		}(),
@@ -133,7 +133,7 @@ func (s *RBACService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest)
 		log.Errorf("error getDBRole(%s/%s): %s", req.Id, u.Tenant, err)
 		return nil, pb.ErrInternalStore()
 	}
-	retPB := s.convertModelRole2PB(deleteRole)
+	retPB := s.convertModelRole2PB(deleteRole, false)
 	rbStack, err := s.deleteRoleInTenant(req.Id, u.Tenant)
 	if err != nil {
 		log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Id, u.Tenant, err)
@@ -340,8 +340,10 @@ func (s *RBACService) ListPermissions(ctx context.Context, req *pb.ListPermissio
 	} else {
 		plugins := s.tenantPluginOp.ListTenantPlugins(u.Tenant)
 		for _, v := range plugins {
-			pluginPermissions := model.GetPermissionSet().GetPermissionByPluginID(v)
-			pList = append(pList, pluginPermissions...)
+			pluginPermission := model.GetPermissionSet().GetPermissionByPluginID(v)
+			if pluginPermission != nil {
+				pList = append(pList, pluginPermission)
+			}
 		}
 		if !sort.IsSorted(model.PermissionSort(pList)) {
 			sort.Sort(model.PermissionSort(pList))
@@ -487,17 +489,17 @@ func (s *RBACService) addRolePermissionSet(role, tenantID string, pathSet map[st
 	return rbStack, nil
 }
 
-func (s *RBACService) convertModelRole2PB(role *s_model.Role) *pb.Role {
+func (s *RBACService) convertModelRole2PB(role *s_model.Role, hasChild bool) *pb.Role {
 	ret := &pb.Role{
 		Id:              role.ID,
 		Name:            role.Name,
 		Desc:            role.Description,
 		UpsertTimestamp: uint64(role.UpdatedAt.Unix()),
 	}
-	users := s.rbacOp.GetUsersForRoleInDomain(role.Name, role.TenantID)
+	users := s.rbacOp.GetUsersForRoleInDomain(role.ID, role.TenantID)
 	ret.BindNum = int32(len(users))
 	pList := s.getRolePermissions(role.Name, role.TenantID)
-	ret.PermissionList = util.ModelList2PbList(pList)
+	ret.PermissionList = util.ModelList2PbList(pList, hasChild)
 	return ret
 }
 
