@@ -110,6 +110,30 @@ func (s *TenantService) GetTenant(ctx context.Context, req *pb.GetTenantRequest)
 		resp.Title = tenants[0].Title
 		resp.TenantId = tenants[0].ID
 		resp.Remark = tenants[0].Remark
+		resp.CreatedAt = tenants[0].CreatedAt.UnixMilli()
+		userDao := &model.User{}
+		numUser, _ := userDao.CountInTenant(s.DB, tenants[0].ID)
+		resp.NumUser = int32(numUser)
+
+		roleDao := &model.Role{}
+		roleTotal, roles, err := roleDao.List(s.DB, map[string]interface{}{"name": t_model.TkeelTenantAdminRole, "tenant_id": tenants[0].ID}, nil, "")
+		if err != nil || roleTotal != 1 {
+			log.Error(err)
+			return nil, pb.ErrInternalStore()
+		}
+		userIds, err := s.RBACOp.GetUsersForRole(roles[0].ID, tenants[0].ID)
+		if err != nil {
+			log.Error(err)
+		}
+		admins := []*pb.TenantAdmin{}
+		for _, v := range userIds {
+			userNum, user, _ := userDao.QueryByCondition(s.DB, map[string]interface{}{"id": v}, nil, "")
+			if userNum == 1 {
+				admin := &pb.TenantAdmin{Username: user[0].UserName}
+				admins = append(admins, admin)
+			}
+		}
+		resp.Admins = admins
 	}
 	return resp, nil
 }
@@ -140,7 +164,13 @@ func (s *TenantService) ListTenant(ctx context.Context, req *pb.ListTenantReques
 			log.Error(err)
 			return nil, pb.ErrListTenant()
 		}
-		userIds, err := s.RBACOp.GetUsersForRole("admin", v.ID)
+		roleDao := &model.Role{}
+		roleTotal, roles, err := roleDao.List(s.DB, map[string]interface{}{"name": t_model.TkeelTenantAdminRole, "tenant_id": v.ID}, nil, "")
+		if err != nil || roleTotal != 1 {
+			log.Error(err)
+			return nil, pb.ErrInternalStore()
+		}
+		userIds, err := s.RBACOp.GetUsersForRole(roles[0].ID, v.ID)
 		if err != nil {
 			log.Error(err)
 		}
