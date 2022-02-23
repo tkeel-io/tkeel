@@ -45,7 +45,7 @@ const (
 	// @msg=已存在的租户
 	// @code=INTERNAL
 	Error_ERR_TENANT_ALREADY_EXISTED Error = 1
-	// @msg=获取 租户列表数据出错
+	// @msg=获取租户列表数据出错
 	// @code=INTERNAL
 	Error_ERR_LIST_TENANT Error = 2
 	// @msg=请求参数无效

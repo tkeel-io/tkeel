@@ -43,6 +43,10 @@ spec:
               value: {{ printf "%s-redis-public-store" .Values.middleware.name }}
             - name: TKEEL_WATCH_INTERVAL
               value: {{ .Values.watchInterval }}
+            {{- if .Values.tkeelVersion }}
+            - name: TKEEL_VERSION
+              value: {{ .Values.tkeelVersion }}
+            {{- end }}
             - name: TKEEL_POD_NAMESPACE
               valueFrom:
                 fieldRef:

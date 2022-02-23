@@ -42,7 +42,7 @@ const (
 	// @msg=未知类型
 	// @code=UNKNOWN
 	Error_ENTRY_ERR_UNKNOWN Error = 0
-	// @msg=无效的租户 ID
+	// @msg=无效的租户ID
 	// @code=INVALID_ARGUMENT
 	Error_ENTRY_ERR_INVALID_TENANT Error = 1
 	// @msg=请求后端内部错误

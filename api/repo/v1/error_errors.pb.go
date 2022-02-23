@@ -23,9 +23,9 @@ var errInstallerNotFound *errors.TError
 func init() {
 	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.plugin.api.repo.v1.ERR_UNKNOWN", "未知类型")
 	errors.Register(errUnknown)
-	errRepoNotFound = errors.New(int(codes.NotFound), "io.tkeel.plugin.api.repo.v1.ERR_REPO_NOT_FOUND", "找不到")
+	errRepoNotFound = errors.New(int(codes.NotFound), "io.tkeel.plugin.api.repo.v1.ERR_REPO_NOT_FOUND", "找不到REPO")
 	errors.Register(errRepoNotFound)
-	errListPlugin = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_LIST_PLUGIN", "获取")
+	errListPlugin = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_LIST_PLUGIN", "获取REPO列表数据出错")
 	errors.Register(errListPlugin)
 	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.plugin.api.repo.v1.ERR_INVALID_ARGUMENT", "请求参数无效")
 	errors.Register(errInvalidArgument)
@@ -33,9 +33,9 @@ func init() {
 	errors.Register(errInternalStore)
 	errInternalError = errors.New(int(codes.Internal), "io.tkeel.plugin.api.repo.v1.ERR_INTERNAL_ERROR", "内部错误")
 	errors.Register(errInternalError)
-	errRepoExist = errors.New(int(codes.InvalidArgument), "io.tkeel.plugin.api.repo.v1.ERR_REPO_EXIST", "REPO")
+	errRepoExist = errors.New(int(codes.InvalidArgument), "io.tkeel.plugin.api.repo.v1.ERR_REPO_EXIST", "REPO已存在")
 	errors.Register(errRepoExist)
-	errInstallerNotFound = errors.New(int(codes.NotFound), "io.tkeel.plugin.api.repo.v1.ERR_INSTALLER_NOT_FOUND", "INSTALLER")
+	errInstallerNotFound = errors.New(int(codes.NotFound), "io.tkeel.plugin.api.repo.v1.ERR_INSTALLER_NOT_FOUND", "INSTALLER不存在")
 	errors.Register(errInstallerNotFound)
 }
 

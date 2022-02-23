@@ -51,3 +51,5 @@ dapr:
 middleware:
   database: mysql://root:a3fks=ixmeb82a@tkeel-middleware-mysql:3306/tkeelauth
   cache: redis://:Biz0P8Xoup@tkeel-middleware-redis-master:6379/0
+
+tkeelVersion: v0.4.0

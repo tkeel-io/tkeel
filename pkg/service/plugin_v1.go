@@ -267,7 +267,7 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 	if err != nil {
 		log.Errorf("error plugin(%s) get: %s", req.Id, err)
 		if errors.Is(err, plugin.ErrPluginNotExsist) {
-			return nil, pb.PluginErrPluginNotFound()
+			return nil, pb.PluginErrInvalidArgument()
 		}
 		return nil, pb.PluginErrInternalStore()
 	}
@@ -391,7 +391,7 @@ func (s *PluginServiceV1) ListEnabledTenants(ctx context.Context,
 	if err != nil {
 		log.Errorf("error get plugin: %s", err)
 		if errors.Is(err, plugin.ErrPluginNotExsist) {
-			return nil, pb.PluginErrPluginNotFound()
+			return nil, pb.PluginErrInvalidArgument()
 		}
 		return nil, pb.PluginErrInternalStore()
 	}

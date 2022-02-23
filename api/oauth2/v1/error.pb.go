@@ -42,7 +42,7 @@ const (
 	// @msg=未知类型
 	// @code=UNKNOWN
 	Error_OAUTH2_ERR_UNKNOWN Error = 0
-	// @msg=Secret 不匹配
+	// @msg=Secret不匹配
 	// @code=PERMISSION_DENIED
 	Error_OAUTH2_ERR_SECRET_NOT_MATCH Error = 1
 	// @msg=白名单中已存在
@@ -57,10 +57,10 @@ const (
 	// @msg=内部错误
 	// @code=INTERNAL
 	Error_OAUTH2_ERR_INTERNAL_ERROR Error = 5
-	// @msg=password 不匹配
+	// @msg=password不匹配
 	// @code=PERMISSION_DENIED
 	Error_OAUTH2_ERR_PASSWORD_NOT_MATCH Error = 6
-	// @msg=token 无效
+	// @msg=token无效
 	// @code=PERMISSION_DENIED
 	Error_OAUTH2_ERR_INVALID_TOKEN Error = 7
 	// @msg=无权限

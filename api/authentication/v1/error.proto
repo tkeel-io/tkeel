@@ -42,10 +42,10 @@ enum Error {
   // @msg=无权限
   // @code=PERMISSION_DENIED
   ERR_NO_PERMISSION = 5;
-  // @msg=无效的 x-plugin-jwt token
+  // @msg=无效的x-plugin-jwttoken
   // @code=UNAUTHENTICATED
   ERR_INVALID_X_PLUGIN_JWT_TOKEN = 6;
-  // @msg=无效的 x-tKeel-auth token
+  // @msg=无效的x-tKeel-authtoken
   // @code=UNAUTHENTICATED
   ERR_INVALID_X_TKEEL_AUTH_TOKEN = 7;
   // @msg=上游插件未找到
