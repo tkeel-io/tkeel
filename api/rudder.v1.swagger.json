@@ -1267,6 +1267,36 @@
       }
     },
     "/rbac/roles/{id}": {
+      "get": {
+        "summary": "Get role in tenant ",
+        "operationId": "GetRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "tenant role id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      },
       "delete": {
         "summary": "delete role in tenant ",
         "operationId": "DeleteRole",
@@ -3075,6 +3105,15 @@
         }
       }
     },
+    "v1GetRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role",
+          "description": "tenant role"
+        }
+      }
+    },
     "v1GetTenantResponse": {
       "type": "object",
       "properties": {
@@ -3094,6 +3133,18 @@
           "type": "string",
           "format": "int64",
           "description": "tenant remark"
+        },
+        "num_user": {
+          "type": "integer",
+          "format": "int32",
+          "description": "user number in tenant"
+        },
+        "admins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TenantAdmin"
+          },
+          "description": "admins in tenant"
         }
       }
     },

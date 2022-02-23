@@ -122,6 +122,22 @@ func (s *RBACService) ListRole(ctx context.Context, req *pb.ListRolesRequest) (*
 	}, nil
 }
 
+func (s *RBACService) GetRole(ctx context.Context, req *pb.GetRoleRequest) (*pb.GetRoleResponse, error) {
+	u, err := util.GetUser(ctx)
+	if err != nil {
+		log.Errorf("error get user: %s", err)
+		return nil, pb.ErrInvalidArgument()
+	}
+	r, err := s.getDBRole(req.Id, u.Tenant)
+	if err != nil {
+		log.Errorf("error getDBRole(%s/%s): %s", req.Id, u.Tenant, err)
+		return nil, pb.ErrInternalStore()
+	}
+	return &pb.GetRoleResponse{
+		Role: s.convertModelRole2PB(r, false),
+	}, nil
+}
+
 func (s *RBACService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest) (*pb.DeleteRoleResponse, error) {
 	u, err := util.GetUser(ctx)
 	if err != nil {
@@ -498,13 +514,14 @@ func (s *RBACService) convertModelRole2PB(role *s_model.Role, hasChild bool) *pb
 	}
 	users := s.rbacOp.GetUsersForRoleInDomain(role.ID, role.TenantID)
 	ret.BindNum = int32(len(users))
-	pList := s.getRolePermissions(role.Name, role.TenantID)
+	pList := s.getRolePermissions(role.ID, role.TenantID)
 	ret.PermissionList = util.ModelList2PbList(pList, hasChild)
 	return ret
 }
 
 func (s *RBACService) getRolePermissions(role, tenant string) []*model.Permission {
 	policyList := s.rbacOp.GetFilteredPolicy(0, role, tenant)
+	log.Debugf("get policy(%s/%s): %v", role, tenant, policyList)
 	ret := make([]*model.Permission, 0, len(policyList))
 	for _, v := range policyList {
 		if len(v) == 4 {
