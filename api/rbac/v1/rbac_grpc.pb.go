@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion7
 type RBACClient interface {
 	CreateRoles(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateRoleResponse, error)
 	ListRole(ctx context.Context, in *ListRolesRequest, opts ...grpc.CallOption) (*ListRolesResponse, error)
+	GetRole(ctx context.Context, in *GetRoleRequest, opts ...grpc.CallOption) (*GetRoleResponse, error)
 	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*DeleteRoleResponse, error)
 	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*UpdateRoleResponse, error)
 	UpdateUserRoleBinding(ctx context.Context, in *UpdateUserRoleBindingRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -54,6 +55,15 @@ func (c *rBACClient) CreateRoles(ctx context.Context, in *CreateRoleRequest, opt
 func (c *rBACClient) ListRole(ctx context.Context, in *ListRolesRequest, opts ...grpc.CallOption) (*ListRolesResponse, error) {
 	out := new(ListRolesResponse)
 	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.rbac.v1.RBAC/ListRole", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rBACClient) GetRole(ctx context.Context, in *GetRoleRequest, opts ...grpc.CallOption) (*GetRoleResponse, error) {
+	out := new(GetRoleResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.rbac.v1.RBAC/GetRole", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -165,6 +175,7 @@ func (c *rBACClient) TMDeleteRoleBinding(ctx context.Context, in *TMRoleBindingR
 type RBACServer interface {
 	CreateRoles(context.Context, *CreateRoleRequest) (*CreateRoleResponse, error)
 	ListRole(context.Context, *ListRolesRequest) (*ListRolesResponse, error)
+	GetRole(context.Context, *GetRoleRequest) (*GetRoleResponse, error)
 	DeleteRole(context.Context, *DeleteRoleRequest) (*DeleteRoleResponse, error)
 	UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleResponse, error)
 	UpdateUserRoleBinding(context.Context, *UpdateUserRoleBindingRequest) (*emptypb.Empty, error)
@@ -188,6 +199,9 @@ func (UnimplementedRBACServer) CreateRoles(context.Context, *CreateRoleRequest) 
 }
 func (UnimplementedRBACServer) ListRole(context.Context, *ListRolesRequest) (*ListRolesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListRole not implemented")
+}
+func (UnimplementedRBACServer) GetRole(context.Context, *GetRoleRequest) (*GetRoleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRole not implemented")
 }
 func (UnimplementedRBACServer) DeleteRole(context.Context, *DeleteRoleRequest) (*DeleteRoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRole not implemented")
@@ -267,6 +281,24 @@ func _RBAC_ListRole_Handler(srv interface{}, ctx context.Context, dec func(inter
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RBACServer).ListRole(ctx, req.(*ListRolesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RBAC_GetRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRoleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RBACServer).GetRole(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.rbac.v1.RBAC/GetRole",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RBACServer).GetRole(ctx, req.(*GetRoleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -483,6 +515,10 @@ var RBAC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListRole",
 			Handler:    _RBAC_ListRole_Handler,
+		},
+		{
+			MethodName: "GetRole",
+			Handler:    _RBAC_GetRole_Handler,
 		},
 		{
 			MethodName: "DeleteRole",
