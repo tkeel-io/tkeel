@@ -4246,8 +4246,19 @@
         "roles": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/v1UserRole"
           }
+        }
+      }
+    },
+    "v1UserRole": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
         }
       }
     }

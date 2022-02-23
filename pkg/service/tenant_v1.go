@@ -324,7 +324,18 @@ func (s *TenantService) ListUser(ctx context.Context, req *pb.ListUserRequest) (
 			TenantId: v.TenantID, UserId: v.ID, Username: v.UserName,
 			Email: v.Email, ExternalId: v.ExternalID, Avatar: v.Avatar, NickName: v.NickName, CreatedAt: v.CreatedAt.UnixMilli(),
 		}
-		detail.Roles = s.RBACOp.GetRolesForUserInDomain(v.ID, v.TenantID)
+		userRoleIds := s.RBACOp.GetRolesForUserInDomain(v.ID, v.TenantID)
+		roleDao := &model.Role{}
+		_, roles, err := roleDao.List(s.DB, map[string]interface{}{"id": userRoleIds}, nil, "")
+		if err != nil {
+			log.Error(err)
+		}
+		userRoles := make([]*pb.UserRole, len(roles))
+		for i, v := range roles {
+			role := &pb.UserRole{Id: v.ID, Name: v.Name}
+			userRoles[i] = role
+		}
+		detail.Roles = userRoles
 		userList[i] = detail
 	}
 	resp = &pb.ListUserResponse{Total: int32(total), PageSize: int32(page.PageSize), PageNum: int32(page.PageNum), Users: userList}

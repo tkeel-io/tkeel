@@ -27,7 +27,7 @@ enum Error {
   // @msg=未知类型
   // @code=UNKNOWN
   ERR_UNKNOWN = 0;
-  // @msg=找不到 REPO
+  // @msg=已存在的租户
   // @code=INTERNAL
   ERR_TENANT_ALREADY_EXISTED = 1;
   // @msg=获取 租户列表数据出错
