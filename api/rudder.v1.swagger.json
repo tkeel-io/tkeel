@@ -3094,6 +3094,18 @@
           "type": "string",
           "format": "int64",
           "description": "tenant remark"
+        },
+        "num_user": {
+          "type": "integer",
+          "format": "int32",
+          "description": "user number in tenant"
+        },
+        "admins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TenantAdmin"
+          },
+          "description": "admins in tenant"
         }
       }
     },
@@ -4195,8 +4207,19 @@
         "roles": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/v1UserRole"
           }
+        }
+      }
+    },
+    "v1UserRole": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
         }
       }
     }

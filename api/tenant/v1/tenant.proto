@@ -584,7 +584,11 @@ message UserListData {
   string nick_name = 6;
   string avatar = 7;
   int64 created_at =8;
-  repeated string roles=9;
+  repeated UserRole roles=9;
+}
+message UserRole {
+  string id = 1;
+  string name =2;
 }
 
 message DeleteUserRequest {

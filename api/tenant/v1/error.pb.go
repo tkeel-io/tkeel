@@ -42,7 +42,7 @@ const (
 	// @msg=未知类型
 	// @code=UNKNOWN
 	Error_ERR_UNKNOWN Error = 0
-	// @msg=找不到 REPO
+	// @msg=已存在的租户
 	// @code=INTERNAL
 	Error_ERR_TENANT_ALREADY_EXISTED Error = 1
 	// @msg=获取 租户列表数据出错

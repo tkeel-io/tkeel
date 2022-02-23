@@ -26,7 +26,7 @@ var errStoreCreatAdminRole *errors.TError
 func init() {
 	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.tenant.v1.ERR_UNKNOWN", "未知类型")
 	errors.Register(errUnknown)
-	errTenantAlreadyExisted = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_TENANT_ALREADY_EXISTED", "找不到")
+	errTenantAlreadyExisted = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_TENANT_ALREADY_EXISTED", "已存在的租户")
 	errors.Register(errTenantAlreadyExisted)
 	errListTenant = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_LIST_TENANT", "获取")
 	errors.Register(errListTenant)
