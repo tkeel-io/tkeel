@@ -1267,6 +1267,36 @@
       }
     },
     "/rbac/roles/{id}": {
+      "get": {
+        "summary": "Get role in tenant ",
+        "operationId": "GetRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "tenant role id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      },
       "delete": {
         "summary": "delete role in tenant ",
         "operationId": "DeleteRole",
@@ -3072,6 +3102,15 @@
         },
         "reset_key": {
           "type": "string"
+        }
+      }
+    },
+    "v1GetRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role",
+          "description": "tenant role"
         }
       }
     },

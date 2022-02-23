@@ -10,7 +10,7 @@ replicaCount: 1
 nodePort: 30707
 image:
   repository: tkeelio/keel
-  tag: v0.4.0
+  tag: 0.4.0-alpha.1
   pullPolicy: Always
 
 # keel debug mod
@@ -20,10 +20,10 @@ debug: false
 logLevel: debug
 
 # keel http port and dapr app port
-httpPort: 32134
+httpPort: 31234
 
 # keel grpc port
-grpcPort: 32133
+grpcPort: 31233
 
 # keel goroutine watch interval
 watchInterval: 1s

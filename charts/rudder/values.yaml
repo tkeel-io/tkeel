@@ -8,7 +8,7 @@ replicaCount: 1
 nodePort: 30777
 image:
   repository: tkeelio/rudder
-  tag: v0.4.0
+  tag: 0.4.0-alpha.1
   pullPolicy: Always
 
 # rudder debug mod
@@ -18,10 +18,10 @@ debug: false
 logLevel: debug
 
 # rudder http port and dapr app port
-httpPort: 32134
+httpPort: 31234
 
 # rudder grpc port
-grpcPort: 32133
+grpcPort: 31233
 
 # rudder admin initial password
 # ignored if password already exists in storage

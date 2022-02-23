@@ -58,6 +58,21 @@ service RBAC {
     };
   };
 
+  rpc GetRole(GetRoleRequest) returns (GetRoleResponse) {
+    option (google.api.http) = {
+      get : "/rbac/roles/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "Get role in tenant "
+      operation_id : "GetRole"
+      tags : "RBAC"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  };
+
   rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleResponse) {
     option (google.api.http) = {
       delete : "/rbac/roles/{id}"
@@ -291,6 +306,20 @@ message CreateRoleRequest {
 }
 
 message CreateRoleResponse {
+  Role role = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant role"
+      } ];
+}
+
+message GetRoleRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant role id"
+      } ];
+}
+
+message GetRoleResponse {
   Role role = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "tenant role"

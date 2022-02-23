@@ -25,7 +25,7 @@ golint
 # Compiled product
 docker/keel/keel
 docker/rudder/rudder
-build.sh
+build*
 
 # win
 *.exe
