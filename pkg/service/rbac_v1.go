@@ -71,7 +71,7 @@ func (s *RBACService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest
 		return nil
 	})
 	defer rblist.Run()
-	if _, err = s.addRolePermissionSet(req.Role.Id, u.Tenant, addPmPathSet); err != nil {
+	if _, err = s.addRolePermissionSet(newRole.ID, u.Tenant, addPmPathSet); err != nil {
 		log.Errorf("error add role(%s/%s/%s) permission list: %s", err)
 		return nil, pb.ErrInternalStore()
 	}

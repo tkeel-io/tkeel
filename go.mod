@@ -11,7 +11,7 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/dapr/go-sdk v1.3.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/dlclark/regexp2 v1.4.0 // indirect
+	github.com/dlclark/regexp2 v1.4.0
 	github.com/docker/docker v20.10.3+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.4-0.20210125172408-38bea2ce277a // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
