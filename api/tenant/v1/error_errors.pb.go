@@ -28,7 +28,7 @@ func init() {
 	errors.Register(errUnknown)
 	errTenantAlreadyExisted = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_TENANT_ALREADY_EXISTED", "已存在的租户")
 	errors.Register(errTenantAlreadyExisted)
-	errListTenant = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_LIST_TENANT", "获取")
+	errListTenant = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_LIST_TENANT", "获取租户列表数据出错")
 	errors.Register(errListTenant)
 	errInvalidArgument = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.tenant.v1.ERR_INVALID_ARGUMENT", "请求参数无效")
 	errors.Register(errInvalidArgument)

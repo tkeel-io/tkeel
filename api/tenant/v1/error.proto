@@ -30,7 +30,7 @@ enum Error {
   // @msg=已存在的租户
   // @code=INTERNAL
   ERR_TENANT_ALREADY_EXISTED = 1;
-  // @msg=获取 租户列表数据出错
+  // @msg=获取租户列表数据出错
   // @code=INTERNAL
   ERR_LIST_TENANT = 2;
   // @msg=请求参数无效
