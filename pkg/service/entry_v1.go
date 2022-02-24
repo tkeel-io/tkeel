@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"sort"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 
 	"github.com/tkeel-io/kit/log"
@@ -58,15 +60,28 @@ func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.
 		if allow {
 			p, err := s.pOp.Get(ctx, v)
 			if err != nil {
+				log.Errorf("error get plugin(%s): %s", v, err)
 				if !errors.Is(err, plugin.ErrPluginNotExsist) {
-					log.Errorf("error get plugin(%s): %s", v, err)
 					return nil, pb.EntryErrInternalError()
 				}
 				continue
 			}
 			for _, v := range p.ConsoleEntries {
-				if v.Portal == portal {
-					ret = append(ret, v)
+				aP, tP := separateEntry(v)
+				addEntry := aP
+				if portal == v1.ConsolePortal_tenant {
+					addEntry = tP
+				}
+				needMerge := false
+				for _, v := range ret {
+					if v.Id == addEntry.Id {
+						mergeEntry(v, addEntry)
+						needMerge = true
+						break
+					}
+				}
+				if !needMerge {
+					ret = append(ret, addEntry)
 				}
 			}
 		}
@@ -76,3 +91,56 @@ func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.
 		Entries: ret,
 	}, nil
 }
+
+func separateEntry(e *v1.ConsoleEntry) (*v1.ConsoleEntry, *v1.ConsoleEntry) {
+	cloneOne := proto.Clone(e)
+	aP, tP := &v1.ConsoleEntry{}, &v1.ConsoleEntry{}
+	proto.Merge(aP, cloneOne)
+	proto.Merge(tP, cloneOne)
+	if e.Children == nil {
+		if e.Portal == v1.ConsolePortal_admin {
+			return aP, nil
+		}
+		return nil, tP
+	}
+	aP.Children = aP.Children[0:0]
+	tP.Children = tP.Children[0:0]
+	for _, v := range e.Children {
+		a, t := separateEntry(v)
+		if a != nil {
+			aP.Children = append(aP.Children, a)
+		}
+		if t != nil {
+			tP.Children = append(tP.Children, t)
+		}
+	}
+	return aP, tP
+}
+
+func mergeEntry(dst, src *v1.ConsoleEntry) {
+	if src.Children == nil {
+		return
+	}
+	addEntries := make([]*v1.ConsoleEntry, 0, len(src.Children))
+	for _, vs := range src.Children {
+		needMerge := false
+		for _, vd := range dst.Children {
+			if vd.Id == vs.Id {
+				needMerge = true
+				mergeEntry(vd, vs)
+				break
+			}
+		}
+		if !needMerge {
+			addEntries = append(addEntries, vs)
+		}
+	}
+	dst.Children = append(dst.Children, addEntries...)
+	sort.Sort(entrySort(dst.Children))
+}
+
+type entrySort []*v1.ConsoleEntry
+
+func (a entrySort) Len() int           { return len(a) }
+func (a entrySort) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a entrySort) Less(i, j int) bool { return a[i].Id < a[j].Id }
