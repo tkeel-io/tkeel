@@ -36,6 +36,7 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 		resp *http.Response
 		err  error
 	)
+	canClose := true
 	request.Header.Del("Accept-Encoding")
 	if !util.IsNil(reqJSON) && reqJSON != nil {
 		request.Header.Set("Content-Type", contentTypeJSON)
@@ -53,12 +54,15 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 	} else {
 		resp, err = c.Call(ctx, request)
 		defer func() {
-			if err = resp.Body.Close(); err != nil {
-				return
+			if canClose {
+				if err = resp.Body.Close(); err != nil {
+					return
+				}
 			}
 		}()
 	}
 	if err != nil {
+		canClose = false
 		return nil, errors.Wrapf(err, "invoke requst(%s)", request)
 	}
 	if resp.StatusCode != http.StatusOK {
