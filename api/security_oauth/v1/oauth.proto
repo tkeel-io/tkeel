@@ -75,7 +75,7 @@ service Oauth {
   }
   rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse) {
     option (google.api.http) = {
-      post : "/oauth/pwd"
+      post : "/oauth/rspwd"
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {

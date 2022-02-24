@@ -468,7 +468,7 @@ func RegisterOauthHTTPServer(container *go_restful.Container, srv OauthHTTPServe
 		To(handler.Token))
 	ws.Route(ws.GET("/oauth/authenticate").
 		To(handler.Authenticate))
-	ws.Route(ws.POST("/oauth/pwd").
+	ws.Route(ws.POST("/oauth/rspwd").
 		To(handler.ResetPassword))
 	ws.Route(ws.PUT("/oauth/pwd").
 		To(handler.UpdatePassword))
