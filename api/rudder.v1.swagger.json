@@ -274,37 +274,6 @@
       }
     },
     "/oauth/pwd": {
-      "post": {
-        "summary": "oauth reset user password",
-        "operationId": "ResetPassword",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/v1ResetPasswordResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1ResetPasswordBody"
-            }
-          }
-        ],
-        "tags": [
-          "[Security] OAuth"
-        ]
-      },
       "put": {
         "summary": "oauth update user password",
         "operationId": "UpdatePassword",
@@ -329,6 +298,39 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/v1UpdatePasswordBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/rspwd": {
+      "post": {
+        "summary": "oauth reset user password",
+        "operationId": "ResetPassword",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordBody"
             }
           }
         ],
