@@ -18,7 +18,7 @@ var entryErrInternalError *errors.TError
 func init() {
 	entryErrUnknown = errors.New(int(codes.Unknown), "io.tkeel.rudder.api.entry.v1.ENTRY_ERR_UNKNOWN", "未知类型")
 	errors.Register(entryErrUnknown)
-	entryErrInvalidTenant = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.entry.v1.ENTRY_ERR_INVALID_TENANT", "无效的租户")
+	entryErrInvalidTenant = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.entry.v1.ENTRY_ERR_INVALID_TENANT", "无效的租户ID")
 	errors.Register(entryErrInvalidTenant)
 	entryErrInternalError = errors.New(int(codes.Internal), "io.tkeel.rudder.api.entry.v1.ENTRY_ERR_INTERNAL_ERROR", "请求后端内部错误")
 	errors.Register(entryErrInternalError)

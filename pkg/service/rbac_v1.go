@@ -71,7 +71,7 @@ func (s *RBACService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest
 		return nil
 	})
 	defer rblist.Run()
-	if _, err = s.addRolePermissionSet(req.Role.Id, u.Tenant, addPmPathSet); err != nil {
+	if _, err = s.addRolePermissionSet(newRole.ID, u.Tenant, addPmPathSet); err != nil {
 		log.Errorf("error add role(%s/%s/%s) permission list: %s", err)
 		return nil, pb.ErrInternalStore()
 	}
@@ -185,6 +185,18 @@ func (s *RBACService) UpdateRole(ctx context.Context, req *pb.UpdateRoleRequest)
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
 	if len(req.Role.PermissionList) != 0 {
+		policies := s.rbacOp.GetFilteredPolicy(0, req.Id, u.Tenant)
+		if _, err := s.rbacOp.RemoveFilteredPolicy(0, req.Id, u.Tenant); err != nil {
+			return nil, errors.Wrapf(err, "RemoveFilteredPolicy(%d/%s/%s)", 0, req.Id, u.Tenant)
+		}
+		rbStack = append(rbStack, func() error {
+			log.Debugf("RemoveFilteredPolicy(%d/%s/%s) roll back run",
+				0, req.Id, u.Tenant)
+			if _, err := s.rbacOp.AddPolicies(policies); err != nil {
+				return errors.Wrapf(err, "AddPolicies(%v)", policies)
+			}
+			return nil
+		})
 		rbList, err := s.deleteRoleInTenant(req.Id, u.Tenant)
 		if err != nil {
 			log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Id, u.Tenant, err)
@@ -554,6 +566,18 @@ func (s *RBACService) deleteRoleInTenant(role, tenant string) (util.RollBackStac
 			return nil
 		})
 	}
+	policies := s.rbacOp.GetFilteredPolicy(0, role, tenant)
+	if _, err := s.rbacOp.RemoveFilteredPolicy(0, role, tenant); err != nil {
+		return nil, errors.Wrapf(err, "RemoveFilteredPolicy(%d/%s/%s)", 0, role, tenant)
+	}
+	rbStack = append(rbStack, func() error {
+		log.Debugf("RemoveFilteredPolicy(%d/%s/%s) roll back run",
+			0, role, tenant)
+		if _, err := s.rbacOp.AddPolicies(policies); err != nil {
+			return errors.Wrapf(err, "AddPolicies(%v)", policies)
+		}
+		return nil
+	})
 	return rbStack, nil
 }
 

@@ -32,3 +32,5 @@ watchInterval: 1s
 dapr:
   state:
     publicName: tkeel-middleware-redis-public-store
+
+tkeelVersion: v0.4.0

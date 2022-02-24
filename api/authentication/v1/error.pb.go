@@ -57,10 +57,10 @@ const (
 	// @msg=无权限
 	// @code=PERMISSION_DENIED
 	Error_ERR_NO_PERMISSION Error = 5
-	// @msg=无效的 x-plugin-jwt token
+	// @msg=无效的x-plugin-jwttoken
 	// @code=UNAUTHENTICATED
 	Error_ERR_INVALID_X_PLUGIN_JWT_TOKEN Error = 6
-	// @msg=无效的 x-tKeel-auth token
+	// @msg=无效的x-tKeel-authtoken
 	// @code=UNAUTHENTICATED
 	Error_ERR_INVALID_X_TKEEL_AUTH_TOKEN Error = 7
 	// @msg=上游插件未找到

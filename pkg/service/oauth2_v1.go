@@ -149,7 +149,7 @@ func (s *Oauth2ServiceV1) UpdateAdminPassword(ctx context.Context, req *pb.Updat
 	if u.Tenant != model.TKeelTenant || u.User != model.TKeelUser {
 		return nil, pb.Oauth2ErrPermissionDenied()
 	}
-	if checkPassword(req.NewPassword) {
+	if !checkPassword(req.NewPassword) {
 		return nil, pb.Oauth2ErrPasswordNotCompliant()
 	}
 	if err = s.kvOp.Delete(ctx, model.KeyAdminPassword); err != nil {

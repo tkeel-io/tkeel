@@ -79,6 +79,10 @@ spec:
               value: {{ .Values.oauth2.access.tokenExp }}
             - name: TKEEL_SECURITY_ENTITY_SK
               value: {{ .Values.entity.sk }}
+            {{- if .Values.tkeelVersion }}
+            - name: TKEEL_VERSION
+              value: {{ .Values.tkeelVersion }}
+            {{- end }}
             - name: TKEEL_POD_NAMESPACE
               valueFrom:
                 fieldRef:
