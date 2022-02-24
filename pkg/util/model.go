@@ -37,6 +37,16 @@ func ConvertModel2PluginBriefObjectPb(p *model.Plugin, tenantID string) *pb.Plug
 			}
 		}(),
 		TenantEnable: func() bool {
+			for _, v := range model.TKeelComponents {
+				if p.ID == v {
+					return true
+				}
+			}
+			for _, v := range model.TKeelConsole {
+				if p.ID == v {
+					return true
+				}
+			}
 			for _, v := range p.EnableTenantes {
 				if v.TenantID == tenantID {
 					return true

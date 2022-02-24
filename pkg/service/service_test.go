@@ -22,14 +22,10 @@ func TestSeparateEntry(t *testing.T) {
 				Children: []*v1.ConsoleEntry{
 					{
 						Id:     "1-1-1",
-						Portal: v1.ConsolePortal_admin,
-					},
-					{
-						Id:     "1-1-2",
 						Portal: v1.ConsolePortal_tenant,
 					},
 					{
-						Id:     "1-1-3",
+						Id:     "1-1-2",
 						Portal: v1.ConsolePortal_tenant,
 					},
 				},

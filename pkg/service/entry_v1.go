@@ -58,6 +58,9 @@ func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.
 			return nil, pb.EntryErrInternalError()
 		}
 		if allow {
+			if pluginIsTkeelComponent(v) {
+				continue
+			}
 			p, err := s.pOp.Get(ctx, v)
 			if err != nil {
 				log.Errorf("error get plugin(%s): %s", v, err)
@@ -66,30 +69,38 @@ func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.
 				}
 				continue
 			}
-			for _, v := range p.ConsoleEntries {
-				aP, tP := separateEntry(v)
-				addEntry := aP
-				if portal == v1.ConsolePortal_tenant {
-					addEntry = tP
-				}
-				needMerge := false
-				for _, v := range ret {
-					if v.Id == addEntry.Id {
-						mergeEntry(v, addEntry)
-						needMerge = true
-						break
-					}
-				}
-				if !needMerge {
-					ret = append(ret, addEntry)
-				}
-			}
+			ret = appendEntries(ret, p.ConsoleEntries, portal)
 		}
 	}
 
 	return &pb.GetEntriesResponse{
 		Entries: ret,
 	}, nil
+}
+
+func appendEntries(dst, src []*v1.ConsoleEntry, portal v1.ConsolePortal) []*v1.ConsoleEntry {
+	for _, v := range src {
+		aP, tP := separateEntry(v)
+		addEntry := aP
+		if portal == v1.ConsolePortal_tenant {
+			addEntry = tP
+		}
+		if addEntry == nil {
+			continue
+		}
+		needMerge := false
+		for _, v := range dst {
+			if v.Id == addEntry.Id {
+				mergeEntry(v, addEntry)
+				needMerge = true
+				break
+			}
+		}
+		if !needMerge {
+			dst = append(dst, addEntry)
+		}
+	}
+	return dst
 }
 
 func separateEntry(e *v1.ConsoleEntry) (*v1.ConsoleEntry, *v1.ConsoleEntry) {
@@ -113,6 +124,12 @@ func separateEntry(e *v1.ConsoleEntry) (*v1.ConsoleEntry, *v1.ConsoleEntry) {
 		if t != nil {
 			tP.Children = append(tP.Children, t)
 		}
+	}
+	if aP.Entry == "" && len(aP.Children) == 0 {
+		aP = nil
+	}
+	if tP.Entry == "" && len(tP.Children) == 0 {
+		tP = nil
 	}
 	return aP, tP
 }

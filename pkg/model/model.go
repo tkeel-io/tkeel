@@ -80,7 +80,13 @@ var (
 
 	AuthorizationHeader = http.CanonicalHeaderKey("Authorization")
 
-	TKeelComponents = []string{"rudder", "core", "keel", "security"}
+	TKeelComponents = []string{
+		"rudder", "core", "keel", "security",
+	}
+
+	TKeelConsole = []string{
+		"console-plugin-tenant-plugins", "console-plugin-tenant-roles", "console-plugin-tenant-users",
+	}
 
 	_permissionSet = NewPermissionSet()
 )
