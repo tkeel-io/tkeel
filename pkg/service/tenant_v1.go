@@ -87,6 +87,9 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 	for _, v := range t_model.TKeelComponents {
 		s.TenantPluginOp.AddTenantPlugin(tenant.ID, v)
 	}
+	for _, v := range t_model.TKeelConsole {
+		s.TenantPluginOp.AddTenantPlugin(tenant.ID, v)
+	}
 	return resp, nil
 }
 
