@@ -91,3 +91,5 @@ spec:
               value: {{ .Values.middleware.database }}
             - name: TKEEL_CACHE
               value: {{ .Values.middleware.cache }}
+            - name: TKEEL_REPO
+              value: {{ .Values.tkeelRepo }}
