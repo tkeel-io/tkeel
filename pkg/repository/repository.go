@@ -48,12 +48,20 @@ type Maintainer struct {
 	Email string `json:"email"`
 }
 
+type InstallerState int32
+
+const (
+	StateUninstall         InstallerState = 0
+	StateInstalled         InstallerState = 1
+	StateSameNameInstalled InstallerState = 2
+)
+
 // InstallerBrief installer brief information.
 type InstallerBrief struct {
 	Name            string            `json:"name"`
 	Repo            string            `json:"repo"`
 	Version         string            `json:"version"`
-	Installed       bool              `json:"installed"`
+	State           InstallerState    `json:"state"`
 	Desc            string            `json:"desc"`
 	Maintainers     []*Maintainer     `json:"maintainers"`
 	Annotations     map[string]string `json:"annotations"`

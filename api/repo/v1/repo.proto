@@ -224,6 +224,12 @@ message RepoObject {
       } ];
 }
 
+enum InstallerState {
+  UNINSTALL = 0;
+  INSTALLED = 1;
+  SAME_NAME = 2;
+}
+
 message InstallerObject {
   string name = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -263,9 +269,9 @@ message InstallerObject {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "installer maintainers"
       } ];
-  bool installed = 7
+  InstallerState state = 7
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "whether the installer has been installed"
+        description : "installer state"
       } ];
   string desc = 8
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {

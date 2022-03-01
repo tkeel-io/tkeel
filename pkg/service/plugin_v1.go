@@ -241,10 +241,10 @@ func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 	rbStack = append(rbStack, rbList...)
 	// uninstall plugin.
 	if err = hub.GetInstance().Uninstall(req.GetId(), &repository.InstallerBrief{
-		Name:      p.Installer.Name,
-		Repo:      p.Installer.Repo,
-		Version:   p.Installer.Version,
-		Installed: true,
+		Name:    p.Installer.Name,
+		Repo:    p.Installer.Repo,
+		Version: p.Installer.Version,
+		State:   repository.StateInstalled,
 	}); err != nil {
 		log.Errorf("error uninstall plugin(%s): %s", p, err)
 		return nil, pb.PluginErrUninstallPlugin()
