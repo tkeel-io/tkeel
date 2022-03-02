@@ -54,7 +54,7 @@ func (r PluginRes) ToInstallerBrief() *repository.InstallerBrief {
 		Name:        r.Name,
 		Repo:        r.Repo,
 		Version:     r.Version,
-		Installed:   false,
+		State:       repository.StateUninstall,
 		Desc:        r.ChartInfo.Description,
 		Annotations: r.ChartInfo.Annotations,
 		Maintainers: func() []*repository.Maintainer {

@@ -3333,9 +3333,9 @@
           },
           "description": "installer maintainers"
         },
-        "installed": {
-          "type": "boolean",
-          "description": "whether the installer has been installed"
+        "state": {
+          "$ref": "#/definitions/v1InstallerState",
+          "description": "installer state"
         },
         "desc": {
           "type": "string",
@@ -3368,6 +3368,15 @@
           "description": "maintainer url"
         }
       }
+    },
+    "v1InstallerState": {
+      "type": "string",
+      "enum": [
+        "UNINSTALL",
+        "INSTALLED",
+        "SAME_NAME"
+      ],
+      "default": "UNINSTALL"
     },
     "v1Installermaintainer": {
       "type": "object",

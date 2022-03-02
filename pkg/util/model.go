@@ -99,9 +99,9 @@ func ConvertModel2PluginObjectPb(p *model.Plugin, pr *model.PluginRoute, tenantI
 
 func ConvertModel2RepositoryInstallerObject(i *model.Installer) *repository.InstallerBrief {
 	return &repository.InstallerBrief{
-		Repo:      i.Repo,
-		Name:      i.Name,
-		Version:   i.Version,
-		Installed: true,
+		Repo:    i.Repo,
+		Name:    i.Name,
+		Version: i.Version,
+		State:   repository.StateInstalled,
 	}
 }
