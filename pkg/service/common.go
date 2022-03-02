@@ -25,7 +25,7 @@ func getQueryItemsStartAndEnd(pageNum, pageSize, listLen int) (int, int) {
 		pageNum = 0
 	}
 	start := (pageNum - 1) * pageSize
-	end := pageNum*pageSize - 1
+	end := pageNum * pageSize
 	if listLen <= pageSize {
 		start, end = 0, listLen
 	}

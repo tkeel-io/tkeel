@@ -53,3 +53,4 @@ middleware:
   cache: redis://:Biz0P8Xoup@tkeel-middleware-redis-master:6379/0
 
 tkeelVersion: v0.4.0
+tkeelRepo: https://tkeel-io.github.io/helm-charts

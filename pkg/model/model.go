@@ -565,7 +565,7 @@ func (ps *PermissionSet) Add(pluginID string, pb *openapi_v1.Permission) (bool, 
 	}
 	ps.rwLock.RLock()
 	if _, ok := (ps.rawSet)[pluginID]; ok {
-		return false, ErrPermissionExist
+		return false, nil
 	}
 	ps.rwLock.RUnlock()
 	if err := ps.checkPermission(pb); err != nil {

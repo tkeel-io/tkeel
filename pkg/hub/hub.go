@@ -79,7 +79,8 @@ func (h *Hub) Init(interval string) error {
 	for _, v := range modelRepos {
 		repo, err := h.constructor(v, h.constructorArgs...)
 		if err != nil {
-			return fmt.Errorf("error constructor repo(%s): %w", v, err)
+			log.Errorf("error constructor repo(%s): %w", v, err)
+			continue
 		}
 		h.repoSet.Store(v.Name, repo)
 	}
@@ -87,7 +88,7 @@ func (h *Hub) Init(interval string) error {
 	go func() {
 		if err := h.infoOperator.Watch(context.Background(),
 			interval, h.updateRepoSet); err != nil {
-			log.Panicf("error watch repo: %s", err)
+			log.Errorf("error watch repo: %s", err)
 		}
 	}()
 	go func() {
@@ -103,6 +104,7 @@ func (h *Hub) Init(interval string) error {
 					if !ok {
 						log.Warnf("invalid repository %v type", key)
 						h.repoSet.Delete(key)
+						return true
 					}
 					_, err := repo.Update()
 					if err != nil {
