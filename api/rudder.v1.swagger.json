@@ -1945,6 +1945,37 @@
         ]
       }
     },
+    "/tenants/exact": {
+      "get": {
+        "summary": "tenant exact search",
+        "operationId": "TenantByExactSearch",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ExactTenantResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
     "/tenants/plugins/permissible": {
       "get": {
         "summary": "permissible tenant plugin",
@@ -3054,6 +3085,17 @@
           "type": "integer",
           "format": "int32",
           "description": "enable tenant user number"
+        }
+      }
+    },
+    "v1ExactTenantResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
         }
       }
     },
