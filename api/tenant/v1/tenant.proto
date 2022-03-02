@@ -91,6 +91,23 @@ service Tenant {
     };
   }
 
+  // exact search by title (open for auth).
+  rpc TenantByExactSearch(ExactTenantRequest)returns(ExactTenantResponse){
+    option (google.api.http) = {
+      get : "/tenants/exact"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "tenant exact search"
+      operation_id : "TenantByExactSearch"
+      tags : "[Security] Tenant"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+
+  }
+
   // update tenant.
   rpc UpdateTenant(UpdateTenantRequest) returns (UpdateTenantResponse) {
     option (google.api.http) = {
@@ -440,7 +457,13 @@ message ListTenantResponse {
       } ];
 }
 
-
+message ExactTenantRequest {
+  string title =1;
+}
+message ExactTenantResponse {
+  string tenant_id =1;
+  string title =2;
+}
 message TenantDetail {
   string tenant_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
