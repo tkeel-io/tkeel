@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -97,23 +99,30 @@ func (s *OauthService) Authorize(ctx context.Context, req *pb.AuthorizeRequest) 
 func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.TokenResponse, error) {
 	provider, err := idprovider.GetIdentityProvider(req.GetTenantId())
 	if err != nil {
-		gt, tgr, err := s.ValidationTokenRequest(req)
-		if err != nil {
-			return nil, err
+		item, _ := s.DaprClient.GetState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetTenantId()))
+		if item != nil {
+			ProviderRegister(ctx, item.Value)
 		}
-		ti, err := s.GetAccessToken(ctx, gt, tgr)
+		provider, err = idprovider.GetIdentityProvider(req.GetTenantId())
 		if err != nil {
-			return nil, pb.OauthErrServerError()
-		}
-		log.Info(ti.GetAccessExpiresIn())
-		log.Info(ti.GetAccessExpiresIn() / time.Second)
+			gt, tgr, err := s.ValidationTokenRequest(req)
+			if err != nil {
+				return nil, err
+			}
+			ti, err := s.GetAccessToken(ctx, gt, tgr)
+			if err != nil {
+				return nil, pb.OauthErrServerError()
+			}
+			log.Info(ti.GetAccessExpiresIn())
+			log.Info(ti.GetAccessExpiresIn() / time.Second)
 
-		return &pb.TokenResponse{
-			AccessToken:  ti.GetAccess(),
-			RefreshToken: ti.GetRefresh(),
-			ExpiresIn:    int64(ti.GetAccessExpiresIn() / time.Second),
-			TokenType:    s.Config.TokenType,
-		}, nil
+			return &pb.TokenResponse{
+				AccessToken:  ti.GetAccess(),
+				RefreshToken: ti.GetRefresh(),
+				ExpiresIn:    int64(ti.GetAccessExpiresIn() / time.Second),
+				TokenType:    s.Config.TokenType,
+			}, nil
+		}
 	}
 
 	switch provider.Type() {
@@ -316,27 +325,43 @@ func (s *OauthService) ResetPassword(ctx context.Context, req *pb.ResetPasswordR
 }
 
 func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterRequest) (*pb.OIDCRegisterResponse, error) {
-	if req.GetBody().GetTenantId() == "" || req.GetBody().GetIssuer() == "" || req.GetBody().GetClientId() == "" || req.GetBody().GetClientSecret() == "" || req.GetBody().GetRedirectUrl() == "" {
+	if req.GetBody().GetTenantId() == "" || req.GetBody().GetClientId() == "" || req.GetBody().GetClientSecret() == "" || req.GetBody().GetRedirectUrl() == "" {
 		log.Error("invalid oidc register params")
 		return nil, pb.OauthErrInvalidRequest()
 	}
-
-	provider, err := oidc.NewProvider(ctx, req.GetBody().GetIssuer())
+	var err error
+	oidcProvider := &oidcprovider.OIDCProvider{Issuer: req.GetBody().GetIssuer(), ClientID: req.GetBody().GetClientId(),
+		ClientSecret: req.GetBody().GetClientSecret()}
+	bytesBody, err := json.Marshal(req.GetBody())
 	if err != nil {
 		log.Error(err)
-		return nil, pb.OauthErrUnknown()
+		return nil, pb.OauthErrInvalidRequest()
+	}
+	json.Unmarshal(bytesBody, oidcProvider)
+	oauth2Endpoint := oauth2.Endpoint{}
+	if req.GetBody().GetIssuer() != "" {
+		oidcProvider.Provider, err = oidc.NewProvider(ctx, req.GetBody().GetIssuer())
+		if err != nil {
+			log.Error(err)
+			return nil, pb.OauthErrUnknown()
+		}
+		oauth2Endpoint = oidcProvider.Provider.Endpoint()
+	} else {
+		oauth2Endpoint.AuthURL = oidcProvider.Endpoint.AuthURL
+		oauth2Endpoint.TokenURL = oidcProvider.Endpoint.TokenURL
 	}
 	oauth2Config := &oauth2.Config{
-		ClientID:     req.GetBody().GetClientId(),
-		ClientSecret: req.GetBody().GetClientSecret(),
-		RedirectURL:  req.GetBody().GetRedirectUrl(),
-		Scopes:       req.GetBody().GetScopes(),
-		Endpoint:     provider.Endpoint(),
+		ClientID:     oidcProvider.ClientID,
+		ClientSecret: oidcProvider.ClientSecret,
+		RedirectURL:  oidcProvider.RedirectURL,
+		Scopes:       oidcProvider.Scopes,
+		Endpoint:     oauth2Endpoint,
 	}
-
-	oidcProvider := &oidcprovider.OIDCProvider{Provider: provider, OAuth2Config: oauth2Config}
+	oidcProvider.OAuth2Config = oauth2Config
 	idprovider.RegisterIdentityProvider(req.GetBody().GetTenantId(), oidcProvider)
-
+	identityInfo := map[string]interface{}{"type": "OIDCIdentityProvider", "tenant_id": req.GetBody().GetTenantId(), "info": req.GetBody()}
+	bytesInfo, _ := json.Marshal(identityInfo)
+	s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetBody().GetTenantId()), bytesInfo)
 	return &pb.OIDCRegisterResponse{Ok: true}, nil
 }
 func (s *OauthService) TokenRevoke(ctx context.Context, req *pb.TokenRevokeRequest) (*pb.TokenRevokeResponse, error) {
@@ -381,4 +406,58 @@ func (s *OauthService) UpdatePassword(ctx context.Context, req *pb.UpdatePasswor
 	s.Manager.RemoveAccessToken(ctx, ti.GetAccess())
 
 	return &pb.UpdatePasswordResponse{TenantId: user.Tenant}, nil
+}
+
+func KeyOfTenantIdentityProvider(tenantID string) string {
+	return fmt.Sprintf("tkeel:provider:%s", tenantID)
+}
+
+func ProviderRegister(ctx context.Context, data []byte) error {
+	dataMap := map[string]interface{}{}
+	err := json.Unmarshal(data, &dataMap)
+	if err != nil {
+		log.Error(err)
+		return fmt.Errorf("%w", err)
+	}
+	tenantID := dataMap["tenant_id"]
+	providerType, ok := dataMap["type"]
+	if !ok {
+		return errors.New("invalid type")
+	}
+	switch providerType.(string) {
+	case "OIDCIdentityProvider":
+		infoBytes, err := json.Marshal(dataMap["infoBytes"])
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+		oidcProvider := &oidcprovider.OIDCProvider{}
+		infoMap := map[string]interface{}{}
+		json.Unmarshal(infoBytes, oidcProvider)
+		json.Unmarshal(infoBytes, &infoMap)
+		oidcProvider.ClientSecret = infoMap["client_secret"].(string) // nolint
+		oauth2Endpoint := oauth2.Endpoint{}
+		if oidcProvider.Issuer != "" {
+			oidcProvider.Provider, err = oidc.NewProvider(ctx, oidcProvider.Issuer)
+			if err != nil {
+				log.Error(err)
+				return fmt.Errorf("%w", err)
+			}
+			oauth2Endpoint = oidcProvider.Provider.Endpoint()
+		} else {
+			oauth2Endpoint.AuthURL = oidcProvider.Endpoint.AuthURL
+			oauth2Endpoint.TokenURL = oidcProvider.Endpoint.TokenURL
+		}
+		oauth2Config := &oauth2.Config{
+			ClientID:     oidcProvider.ClientID,
+			ClientSecret: oidcProvider.ClientSecret,
+			RedirectURL:  oidcProvider.RedirectURL,
+			Scopes:       oidcProvider.Scopes,
+			Endpoint:     oauth2Endpoint,
+		}
+		oidcProvider.OAuth2Config = oauth2Config
+		idprovider.RegisterIdentityProvider(tenantID.(string), oidcProvider)
+	default:
+		return errors.New("invalid provider type")
+	}
+	return nil
 }

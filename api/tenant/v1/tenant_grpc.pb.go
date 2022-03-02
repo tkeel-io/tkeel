@@ -25,6 +25,8 @@ type TenantClient interface {
 	GetTenant(ctx context.Context, in *GetTenantRequest, opts ...grpc.CallOption) (*GetTenantResponse, error)
 	// list tenant.
 	ListTenant(ctx context.Context, in *ListTenantRequest, opts ...grpc.CallOption) (*ListTenantResponse, error)
+	// exact search by title (open for auth).
+	TenantByExactSearch(ctx context.Context, in *ExactTenantRequest, opts ...grpc.CallOption) (*ExactTenantResponse, error)
 	// update tenant.
 	UpdateTenant(ctx context.Context, in *UpdateTenantRequest, opts ...grpc.CallOption) (*UpdateTenantResponse, error)
 	// delete a tenant.
@@ -79,6 +81,15 @@ func (c *tenantClient) GetTenant(ctx context.Context, in *GetTenantRequest, opts
 func (c *tenantClient) ListTenant(ctx context.Context, in *ListTenantRequest, opts ...grpc.CallOption) (*ListTenantResponse, error) {
 	out := new(ListTenantResponse)
 	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/ListTenant", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tenantClient) TenantByExactSearch(ctx context.Context, in *ExactTenantRequest, opts ...grpc.CallOption) (*ExactTenantResponse, error) {
+	out := new(ExactTenantResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.tenant.v1.Tenant/TenantByExactSearch", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -212,6 +223,8 @@ type TenantServer interface {
 	GetTenant(context.Context, *GetTenantRequest) (*GetTenantResponse, error)
 	// list tenant.
 	ListTenant(context.Context, *ListTenantRequest) (*ListTenantResponse, error)
+	// exact search by title (open for auth).
+	TenantByExactSearch(context.Context, *ExactTenantRequest) (*ExactTenantResponse, error)
 	// update tenant.
 	UpdateTenant(context.Context, *UpdateTenantRequest) (*UpdateTenantResponse, error)
 	// delete a tenant.
@@ -250,6 +263,9 @@ func (UnimplementedTenantServer) GetTenant(context.Context, *GetTenantRequest) (
 }
 func (UnimplementedTenantServer) ListTenant(context.Context, *ListTenantRequest) (*ListTenantResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListTenant not implemented")
+}
+func (UnimplementedTenantServer) TenantByExactSearch(context.Context, *ExactTenantRequest) (*ExactTenantResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TenantByExactSearch not implemented")
 }
 func (UnimplementedTenantServer) UpdateTenant(context.Context, *UpdateTenantRequest) (*UpdateTenantResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateTenant not implemented")
@@ -353,6 +369,24 @@ func _Tenant_ListTenant_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TenantServer).ListTenant(ctx, req.(*ListTenantRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Tenant_TenantByExactSearch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExactTenantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServer).TenantByExactSearch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.security.api.tenant.v1.Tenant/TenantByExactSearch",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServer).TenantByExactSearch(ctx, req.(*ExactTenantRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -609,6 +643,10 @@ var Tenant_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListTenant",
 			Handler:    _Tenant_ListTenant_Handler,
+		},
+		{
+			MethodName: "TenantByExactSearch",
+			Handler:    _Tenant_TenantByExactSearch_Handler,
 		},
 		{
 			MethodName: "UpdateTenant",
