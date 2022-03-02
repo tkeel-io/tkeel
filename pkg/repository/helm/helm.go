@@ -177,15 +177,19 @@ func (r *Repo) Search(word string) ([]*repository.InstallerBrief, error) {
 		return nil, errors.Wrap(err, "get helm release")
 	}
 
-	installedMap := make(map[string]struct{}, len(rls))
+	installedMap := make(map[string]string, len(rls))
 	for _, v := range rls {
 		if _, ok := installedMap[v.Chart.Metadata.Name]; !ok {
-			installedMap[v.Chart.Metadata.Name] = struct{}{}
+			installedMap[v.Chart.Metadata.Name] = v.Chart.Metadata.Version
 		}
 	}
 	for _, v := range briefs {
-		if _, ok := installedMap[v.Name]; ok {
-			v.Installed = true
+		if ver, ok := installedMap[v.Name]; ok {
+			if v.Version == ver {
+				v.State = repository.StateInstalled
+			} else {
+				v.State = repository.StateSameNameInstalled
+			}
 		}
 	}
 
@@ -237,8 +241,12 @@ func (r *Repo) Get(name, version string) (repository.Installer, error) {
 	}
 
 	for _, v := range rls {
-		if v.Chart.Metadata.Name == brief.Name && v.Chart.Metadata.Version == brief.Version {
-			brief.Installed = true
+		if v.Chart.Metadata.Name == brief.Name {
+			if v.Chart.Metadata.Version == brief.Version {
+				brief.State = repository.StateInstalled
+			} else {
+				brief.State = repository.StateSameNameInstalled
+			}
 		}
 	}
 	i := NewHelmInstaller(brief.Name, ch, *brief, r.namespace, r.actionConfig)
@@ -349,7 +357,7 @@ func (r *Repo) getInstalled() ([]repository.Installer, error) {
 	for i := 0; i < len(rls); i++ {
 		if plugin, ok := cache[rls[i].Chart.Name()]; ok {
 			brief := *plugin.ToInstallerBrief()
-			brief.Installed = true
+			brief.State = repository.StateInstalled
 			installer := NewHelmInstaller(
 				rls[i].Name,    /* Installed Plugin ID. */
 				rls[i].Chart,   /* Plugin Chart. */

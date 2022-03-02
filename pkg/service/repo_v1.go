@@ -82,7 +82,7 @@ func (s *RepoService) ListAllRepoInstaller(ctx context.Context,
 	tmp := make([]*repository.InstallerBrief, 0, len(resList))
 	installedNum := 0
 	for _, v := range resList {
-		if v.Installed {
+		if v.State == repository.StateInstalled {
 			installedNum++
 			if req.Installed {
 				tmp = append(tmp, v)
@@ -141,13 +141,17 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 		sort.Sort(ibList)
 	}
 	installedNum := 0
+	tmp := make(iBriefList, 0, len(ibList))
 	for _, v := range ibList {
-		if v.Installed {
+		if v.State == repository.StateInstalled {
 			installedNum++
+			if req.Installed {
+				tmp = append(tmp, v)
+			}
 		}
 	}
 	if req.Installed {
-		ibList = ibList[:installedNum]
+		ibList = tmp
 	}
 	total := ibList.Len()
 	start, end := getQueryItemsStartAndEnd(int(req.PageNum), int(req.PageSize), total)
@@ -220,10 +224,20 @@ func convertRepo2PB(r repository.Repository) *pb.RepoObject {
 
 func convertInstallerBrief2PB(ib *repository.InstallerBrief) *pb.InstallerObject {
 	return &pb.InstallerObject{
-		Name:        ib.Name,
-		Version:     ib.Version,
-		Repo:        ib.Repo,
-		Installed:   ib.Installed,
+		Name:    ib.Name,
+		Version: ib.Version,
+		Repo:    ib.Repo,
+		State: func() pb.InstallerState {
+			switch ib.State {
+			case repository.StateUninstall:
+				return pb.InstallerState_UNINSTALL
+			case repository.StateInstalled:
+				return pb.InstallerState_INSTALLED
+			case repository.StateSameNameInstalled:
+				return pb.InstallerState_SAME_NAME
+			}
+			return pb.InstallerState_UNINSTALL
+		}(),
 		Annotations: ib.Annotations,
 		Maintainers: func() []*pb.InstallerObjectMaintainer {
 			ret := make([]*pb.InstallerObjectMaintainer, 0, len(ib.Maintainers))
@@ -248,11 +262,21 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 		return nil
 	}
 	return &pb.InstallerObject{
-		Name:      ib.Name,
-		Version:   ib.Version,
-		Repo:      ib.Repo,
-		Installed: ib.Installed,
-		Metadata:  pbMetadata(i),
+		Name:    ib.Name,
+		Version: ib.Version,
+		Repo:    ib.Repo,
+		State: func() pb.InstallerState {
+			switch ib.State {
+			case repository.StateUninstall:
+				return pb.InstallerState_UNINSTALL
+			case repository.StateInstalled:
+				return pb.InstallerState_INSTALLED
+			case repository.StateSameNameInstalled:
+				return pb.InstallerState_SAME_NAME
+			}
+			return pb.InstallerState_UNINSTALL
+		}(),
+		Metadata: pbMetadata(i),
 		Annotations: func() map[string]string {
 			ret := make(map[string]string)
 			for k, v := range i.Annotations() {
