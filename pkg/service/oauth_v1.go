@@ -321,7 +321,7 @@ func (s *OauthService) ResetPassword(ctx context.Context, req *pb.ResetPasswordR
 		log.Error(err)
 		return nil, pb.OauthErrServerError()
 	}
-	return &pb.ResetPasswordResponse{TenantId: users[0].TenantID, HasReset: true}, nil
+	return &pb.ResetPasswordResponse{TenantId: users[0].TenantID, HasReset: true, Username: users[0].UserName}, nil
 }
 
 func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterRequest) (*pb.OIDCRegisterResponse, error) {
@@ -426,7 +426,7 @@ func ProviderRegister(ctx context.Context, data []byte) error {
 	}
 	switch providerType.(string) {
 	case "OIDCIdentityProvider":
-		infoBytes, err := json.Marshal(dataMap["infoBytes"])
+		infoBytes, err := json.Marshal(dataMap["info"])
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
@@ -434,7 +434,11 @@ func ProviderRegister(ctx context.Context, data []byte) error {
 		infoMap := map[string]interface{}{}
 		json.Unmarshal(infoBytes, oidcProvider)
 		json.Unmarshal(infoBytes, &infoMap)
-		oidcProvider.ClientSecret = infoMap["client_secret"].(string) // nolint
+		clientSecret, ok := infoMap["client_secret"].(string)
+		if !ok {
+			return errors.New("not client secret")
+		}
+		oidcProvider.ClientSecret = clientSecret
 		oauth2Endpoint := oauth2.Endpoint{}
 		if oidcProvider.Issuer != "" {
 			oidcProvider.Provider, err = oidc.NewProvider(ctx, oidcProvider.Issuer)

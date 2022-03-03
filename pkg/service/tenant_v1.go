@@ -194,11 +194,18 @@ func (s *TenantService) ListTenant(ctx context.Context, req *pb.ListTenantReques
 }
 
 func (s *TenantService) TenantByExactSearch(ctx context.Context, req *pb.ExactTenantRequest) (*pb.ExactTenantResponse, error) {
-	if req.GetTitle() == "" {
+	if req.GetTitle() == "" && req.GetTenantId() == "" {
 		return nil, pb.ErrInvalidArgument()
 	}
 	tenantDao := &model.Tenant{}
-	where := map[string]interface{}{"title": req.GetTitle()}
+	where := map[string]interface{}{}
+	if req.GetTitle() != "" {
+		where["title"] = req.GetTitle()
+	}
+	if req.GetTenantId() != "" {
+		where["id"] = req.GetTenantId()
+	}
+
 	total, tenants, err := tenantDao.List(s.DB, where, nil, "")
 	if err != nil {
 		log.Error(err)

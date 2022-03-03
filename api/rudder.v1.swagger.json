@@ -1969,6 +1969,12 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -3928,6 +3934,9 @@
         },
         "has_reset": {
           "type": "boolean"
+        },
+        "username": {
+          "type": "string"
         }
       }
     },

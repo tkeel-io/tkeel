@@ -258,6 +258,7 @@ message ResetPasswordBody {
 message ResetPasswordResponse {
   string tenant_id =1;
   bool has_reset =2;
+  string username =3;
 }
 
 message OIDCRegisterRequest {
