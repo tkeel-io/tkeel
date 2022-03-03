@@ -459,6 +459,7 @@ message ListTenantResponse {
 
 message ExactTenantRequest {
   string title =1;
+  string tenant_id=2;
 }
 message ExactTenantResponse {
   string tenant_id =1;
