@@ -216,6 +216,31 @@ service Plugin {
       ]
     };
   };
+  rpc TMUpdatePluginIdentify(TMUpdatePluginIdentifyRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      get : "/tm/plugins/identify"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "获取插件绑定租户接口"
+      operation_id : "ListenableTenants"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
 }
 
 /**
@@ -454,6 +479,10 @@ message ListPluginRequest {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "query items key"
       } ];
+  bool display_all_plugin = 10
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "return all plugin"
+      } ];
 }
 
 message ListPluginResponse {
@@ -556,3 +585,5 @@ message ListEnabledTenantsResponse {
         description : "plugin enable tenants list"
       } ];
 }
+
+message TMUpdatePluginIdentifyRequest { string id = 1; }

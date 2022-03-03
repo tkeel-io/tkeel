@@ -297,7 +297,14 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 		return nil, pb.PluginErrListPlugin()
 	}
 	pList := make(pluginList, 0, len(ps))
+	checkEnable := false
+	if u.Tenant != model.TKeelTenant && !req.DisplayAllPlugin {
+		checkEnable = true
+	}
 	for _, p := range ps {
+		if checkEnable && p.DisableManualActivation {
+			continue
+		}
 		pList = append(pList, util.ConvertModel2PluginBriefObjectPb(p, u.Tenant))
 	}
 	regular := getReglarStringKeyWords(req.KeyWords)
@@ -446,6 +453,56 @@ func (s *PluginServiceV1) ListEnabledTenants(ctx context.Context,
 		PageSize: req.PageSize,
 		Tenants:  etList,
 	}, nil
+}
+
+func (s *PluginServiceV1) TMUpdatePluginIdentify(ctx context.Context,
+	req *pb.TMUpdatePluginIdentifyRequest) (*emptypb.Empty, error) {
+	if req.Id != "" {
+		if _, err := s.updatePluginIdentify(ctx, req.Id); err != nil {
+			log.Errorf("error update plugin(%s) identify: %s", req.Id, err)
+			return nil, pb.PluginErrInternalStore()
+		}
+	} else {
+		ps, err := s.pluginOp.List(ctx)
+		if err != nil {
+			log.Errorf("error plugin op list: %s", err)
+			return nil, pb.PluginErrInternalStore()
+		}
+		rbStack := util.NewRollbackStack()
+		defer rbStack.Run()
+		for _, v := range ps {
+			rb, err := s.updatePluginIdentify(ctx, v.ID)
+			if err != nil {
+				log.Errorf("error update identify(%s): %s", v.ID, err)
+				return nil, pb.PluginErrInternalStore()
+			}
+			rbStack = append(rbStack, rb)
+		}
+		rbStack = util.NewRollbackStack()
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *PluginServiceV1) updatePluginIdentify(ctx context.Context, pID string) (util.RollbackFunc, error) {
+	p, err := s.pluginOp.Get(ctx, pID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "plugin operator get %s", pID)
+	}
+	resp, err := s.queryIdentify(ctx, pID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "query identify: %s", pID)
+	}
+	if err = s.checkIdentify(ctx, resp); err != nil {
+		return nil, errors.Wrapf(err, "check identify: %s", resp)
+	}
+	oldP := p.Clone()
+	p.SetIdentify(resp)
+	rb, err := s.updatePlugin(ctx, oldP, p)
+	if err != nil {
+		return nil, errors.Wrapf(err, "update plugin: %s -- %s", oldP, p)
+	}
+	log.Debugf("update plugin(%s) identify %s --> %s", pID, oldP, p)
+	return rb, nil
 }
 
 func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) {

@@ -106,20 +106,21 @@ func (et *EnableTenant) String() string {
 }
 
 type Plugin struct {
-	ID                string                          `json:"id,omitempty"`                 // plugin id.
-	Installer         *Installer                      `json:"installer,omitempty"`          // plugin installer.
-	PluginVersion     string                          `json:"plugin_version,omitempty"`     // plugin version.
-	TkeelVersion      string                          `json:"tkeel_version,omitempty"`      // plugin depend tkeel version.
-	AddonsPoint       []*openapi_v1.AddonsPoint       `json:"addons_point,omitempty"`       // plugin declares addons.
-	ImplementedPlugin []*openapi_v1.ImplementedPlugin `json:"implemented_plugin,omitempty"` // plugin implemented plugin list.
-	ConsoleEntries    []*openapi_v1.ConsoleEntry      `json:"console_entries,omitempty"`    // plugin console entries.
-	PluginDependences []*openapi_v1.BriefPluginInfo   `json:"plugin_dependences,omitempty"` // plugin dependences.
-	Permissions       []*openapi_v1.Permission        `json:"permissions,omitempty"`        // plugin permissions.
-	Secret            string                          `json:"secret,omitempty"`             // plugin registered secret.
-	RegisterTimestamp int64                           `json:"register_timestamp,omitempty"` // register timestamp.
-	Version           string                          `json:"version,omitempty"`            // model version.
-	Status            openapi_v1.PluginStatus         `json:"status,omitempty"`             // plugin state.
-	EnableTenantes    []*EnableTenant                 `json:"enable_tenantes,omitempty"`    // plugin active tenantes.
+	ID                      string                          `json:"id,omitempty"`                        // plugin id.
+	Installer               *Installer                      `json:"installer,omitempty"`                 // plugin installer.
+	PluginVersion           string                          `json:"plugin_version,omitempty"`            // plugin version.
+	TkeelVersion            string                          `json:"tkeel_version,omitempty"`             // plugin depend tkeel version.
+	AddonsPoint             []*openapi_v1.AddonsPoint       `json:"addons_point,omitempty"`              // plugin declares addons.
+	ImplementedPlugin       []*openapi_v1.ImplementedPlugin `json:"implemented_plugin,omitempty"`        // plugin implemented plugin list.
+	ConsoleEntries          []*openapi_v1.ConsoleEntry      `json:"console_entries,omitempty"`           // plugin console entries.
+	PluginDependences       []*openapi_v1.BriefPluginInfo   `json:"plugin_dependences,omitempty"`        // plugin dependences.
+	Permissions             []*openapi_v1.Permission        `json:"permissions,omitempty"`               // plugin permissions.
+	Secret                  string                          `json:"secret,omitempty"`                    // plugin registered secret.
+	RegisterTimestamp       int64                           `json:"register_timestamp,omitempty"`        // register timestamp.
+	Version                 string                          `json:"version,omitempty"`                   // model version.
+	Status                  openapi_v1.PluginStatus         `json:"status,omitempty"`                    // plugin state.
+	EnableTenantes          []*EnableTenant                 `json:"enable_tenantes,omitempty"`           // plugin active tenantes.
+	DisableManualActivation bool                            `json:"disable_manual_activation,omitempty"` // plugin disable manual activation.
 }
 
 func (p *Plugin) String() string {
@@ -155,7 +156,19 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.ConsoleEntries = resp.Entries
 	p.Permissions = resp.Permissions
 	p.Secret = secret
+	p.DisableManualActivation = resp.DisableManualActivation
 	p.RegisterTimestamp = time.Now().Unix()
+}
+
+func (p *Plugin) SetIdentify(resp *openapi_v1.IdentifyResponse) {
+	p.PluginVersion = resp.Version
+	p.TkeelVersion = resp.TkeelVersion
+	p.AddonsPoint = resp.AddonsPoint
+	p.ImplementedPlugin = resp.ImplementedPlugin
+	p.PluginDependences = resp.Dependence
+	p.ConsoleEntries = resp.Entries
+	p.Permissions = resp.Permissions
+	p.DisableManualActivation = resp.DisableManualActivation
 }
 
 func (p *Plugin) Clone() *Plugin {
