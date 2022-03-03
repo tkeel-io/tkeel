@@ -36,7 +36,7 @@ require (
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
-	github.com/tkeel-io/kit v0.0.0-20220216043628-5f604f7d21db
+	github.com/tkeel-io/kit v0.0.0-20220303080455-8ab38f419f7c
 	github.com/tkeel-io/security v0.0.0-20220218100545-fea94640f836
 	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220218062650-cbf6e212c1bd
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
@@ -49,7 +49,9 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	gorm.io/gorm v1.22.3
 	helm.sh/helm/v3 v3.7.2
+	k8s.io/apimachinery v0.23.4
 	k8s.io/cli-runtime v0.23.1
+	k8s.io/client-go v0.23.4
 	sigs.k8s.io/kustomize/api v0.10.2-0.20220110233228-13e26004fd4e
 	sigs.k8s.io/kustomize/kyaml v0.13.0
 	sigs.k8s.io/yaml v1.2.0

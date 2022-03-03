@@ -9,6 +9,9 @@
       "name": "authentication"
     },
     {
+      "name": "Config"
+    },
+    {
       "name": "EntityToken"
     },
     {
@@ -84,6 +87,37 @@
         ],
         "tags": [
           "authentication"
+        ]
+      }
+    },
+    "/config/deployment": {
+      "get": {
+        "summary": "查询 deployment config 接口",
+        "operationId": "GetDeploymentConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetDeploymentConfigResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "config"
         ]
       }
     },
@@ -3096,6 +3130,19 @@
         },
         "title": {
           "type": "string"
+        }
+      }
+    },
+    "v1GetDeploymentConfigResponse": {
+      "type": "object",
+      "properties": {
+        "admin_host": {
+          "type": "string",
+          "description": "admin_host"
+        },
+        "tenant_host": {
+          "type": "string",
+          "description": "tenant_host"
         }
       }
     },
