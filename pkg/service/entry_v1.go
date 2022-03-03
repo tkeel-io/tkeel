@@ -100,6 +100,7 @@ func appendEntries(dst, src []*v1.ConsoleEntry, portal v1.ConsolePortal) []*v1.C
 			dst = append(dst, addEntry)
 		}
 	}
+	sort.Sort(entrySort(dst))
 	return dst
 }
 
