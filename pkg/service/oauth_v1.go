@@ -321,7 +321,7 @@ func (s *OauthService) ResetPassword(ctx context.Context, req *pb.ResetPasswordR
 		log.Error(err)
 		return nil, pb.OauthErrServerError()
 	}
-	return &pb.ResetPasswordResponse{TenantId: users[0].TenantID, HasReset: true}, nil
+	return &pb.ResetPasswordResponse{TenantId: users[0].TenantID, HasReset: true, Username: users[0].UserName}, nil
 }
 
 func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterRequest) (*pb.OIDCRegisterResponse, error) {
