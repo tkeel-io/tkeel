@@ -184,38 +184,38 @@ func (s *RBACService) UpdateRole(ctx context.Context, req *pb.UpdateRoleRequest)
 	dbUpdateMap := setPB2Model(req.Role, updateRole)
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
-	if len(req.Role.PermissionList) != 0 {
-		policies := s.rbacOp.GetFilteredPolicy(0, req.Id, u.Tenant)
-		if _, err := s.rbacOp.RemoveFilteredPolicy(0, req.Id, u.Tenant); err != nil {
-			return nil, errors.Wrapf(err, "RemoveFilteredPolicy(%d/%s/%s)", 0, req.Id, u.Tenant)
-		}
-		rbStack = append(rbStack, func() error {
-			log.Debugf("RemoveFilteredPolicy(%d/%s/%s) roll back run",
-				0, req.Id, u.Tenant)
-			if _, err := s.rbacOp.AddPolicies(policies); err != nil {
-				return errors.Wrapf(err, "AddPolicies(%v)", policies)
-			}
-			return nil
-		})
-		rbList, err := s.deleteRoleInTenant(req.Id, u.Tenant)
-		if err != nil {
-			log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Id, u.Tenant, err)
-			return nil, pb.ErrInternalError()
-		}
-		rbStack = append(rbStack, rbList...)
-		addPmPathSet, err := util.GetPermissionPathSet(req.Role.PermissionList)
-		if err != nil {
-			log.Errorf("error GetPermissionPathSet(%s/%s) %s",
-				req.Id, u.Tenant, req.Role.String())
-			return nil, pb.ErrInternalStore()
-		}
-		rblist, err := s.addRolePermissionSet(req.Id, u.Tenant, addPmPathSet)
-		if err != nil {
-			log.Errorf("error add role(%s/%s/%s) permission list: %s", err)
-			return nil, pb.ErrInternalStore()
-		}
-		rbStack = append(rbStack, rblist...)
+	// 2022.03.03 allow empty policy edit.
+	policies := s.rbacOp.GetFilteredPolicy(0, req.Id, u.Tenant)
+	if _, err = s.rbacOp.RemoveFilteredPolicy(0, req.Id, u.Tenant); err != nil {
+		return nil, errors.Wrapf(err, "RemoveFilteredPolicy(%d/%s/%s)", 0, req.Id, u.Tenant)
 	}
+	rbStack = append(rbStack, func() error {
+		log.Debugf("RemoveFilteredPolicy(%d/%s/%s) roll back run",
+			0, req.Id, u.Tenant)
+		if _, err = s.rbacOp.AddPolicies(policies); err != nil {
+			return errors.Wrapf(err, "AddPolicies(%v)", policies)
+		}
+		return nil
+	})
+	rbList, err := s.deleteRoleInTenant(req.Id, u.Tenant)
+	if err != nil {
+		log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Id, u.Tenant, err)
+		return nil, pb.ErrInternalError()
+	}
+	rbStack = append(rbStack, rbList...)
+	addPmPathSet, err := util.GetPermissionPathSet(req.Role.PermissionList)
+	if err != nil {
+		log.Errorf("error GetPermissionPathSet(%s/%s) %s",
+			req.Id, u.Tenant, req.Role.String())
+		return nil, pb.ErrInternalStore()
+	}
+	rblist, err := s.addRolePermissionSet(req.Id, u.Tenant, addPmPathSet)
+	if err != nil {
+		log.Errorf("error add role(%s/%s/%s) permission list: %s", err)
+		return nil, pb.ErrInternalStore()
+	}
+	rbStack = append(rbStack, rblist...)
+
 	if len(dbUpdateMap) != 0 {
 		count, err := updateRole.Update(s.db,
 			map[string]interface{}{"id": req.Id, "tenant_id": updateRole.TenantID},
@@ -597,13 +597,12 @@ func (s *RBACService) getDBRole(role, tenant string) (*s_model.Role, error) {
 
 func setPB2Model(pbR *pb.Role, modelR *s_model.Role) map[string]interface{} {
 	updateMap := make(map[string]interface{})
-	if pbR.Name != "" {
-		modelR.Name = pbR.Name
-		updateMap["name"] = pbR.Name
-	}
-	if pbR.Desc != "" {
-		modelR.Description = pbR.Name
-		updateMap["description"] = pbR.Desc
-	}
+	// 2022.03.03 allow empty name and desc update.
+	modelR.Name = pbR.Name
+	updateMap["name"] = pbR.Name
+
+	modelR.Description = pbR.Name
+	updateMap["description"] = pbR.Desc
+
 	return updateMap
 }
