@@ -82,6 +82,8 @@ type Configuration struct {
 	CacheURL string `json:"cache_url" yaml:"cacheUrl"`
 	// DatabaseURL security auth`s mysql config.
 	DatabaseURL string `json:"database_url" yaml:"databaseUrl"`
+	// DeploymentConfigMap deployment config.
+	DeploymentConfigmap string `json:"deployment_configmap" yaml:"deploymentConfigmap"`
 }
 
 // SecurityConf.
@@ -193,6 +195,7 @@ func (c *Configuration) AttachCmdFlags(strVar func(p *string, name string, value
 	strVar(&c.SecurityConf.Entity.SecurityKey, "security.entity.sk", getEnvStr("TKEEL_SECURITY_ENTITY_SK", "i5s2x3nov894"), "security  key auth`s entity token access")
 	strVar(&c.DatabaseURL, "security.database_url", getEnvStr("TKEEL_DATABASE", "mysql://root:a3fks=ixmeb82a@tkeel-middleware-mysql:3306/tkeelauth"), "url of auth`s mysql config")
 	strVar(&c.CacheURL, "security.cache_url", getEnvStr("TKEEL_CACHE", "redis://:Biz0P8Xoup@tkeel-middleware-redis-master:6379/0"), "url of auth`s redis config")
+	strVar(&c.DeploymentConfigmap, "tkeel.deployment_configmap", getEnvStr("TKEEL_DEPLOYMENT_CONFIGMAP", "tkeel-install-config"), "config map name")
 }
 
 func (c *Configuration) Init() {

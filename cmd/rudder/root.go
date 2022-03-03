@@ -24,6 +24,7 @@ import (
 	"github.com/pkg/errors"
 
 	authentication_v1 "github.com/tkeel-io/tkeel/api/authentication/v1"
+	config_v1 "github.com/tkeel-io/tkeel/api/config/v1"
 	entity_token_v1 "github.com/tkeel-io/tkeel/api/entity/v1"
 	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
@@ -34,6 +35,7 @@ import (
 	tenant_v1 "github.com/tkeel-io/tkeel/api/tenant/v1"
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
+	"github.com/tkeel-io/tkeel/pkg/client/kubernetes"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/hub"
@@ -101,6 +103,9 @@ var rootCmd = &cobra.Command{
 				os.Exit(-1)
 			}
 			openapiCli := openapi.NewDaprClient(conf.Dapr.HTTPPort)
+
+			// init k8s client.
+			k8sClient := kubernetes.NewClient(conf.DeploymentConfigmap, conf.Tkeel.Namespace)
 
 			// init operator.
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
@@ -231,6 +236,11 @@ var rootCmd = &cobra.Command{
 			authenticationSrv := service.NewAuthenticationService(m, gormdb, tokenConf, rbacOp, prOp, tenantPluginOp)
 			authentication_v1.RegisterAuthenticationHTTPServer(httpSrv.Container, authenticationSrv)
 			authentication_v1.RegisterAuthenticationServer(grpcSrv.GetServe(), authenticationSrv)
+
+			// config service.
+			configSrv := service.NewConfigService(k8sClient)
+			config_v1.RegisterConfigHTTPServer(httpSrv.Container, configSrv)
+			config_v1.RegisterConfigServer(grpcSrv.GetServe(), configSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
