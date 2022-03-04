@@ -4064,6 +4064,10 @@
             "$ref": "#/definitions/apirbacv1Permission"
           },
           "description": "permission path list"
+        },
+        "uneditable": {
+          "type": "boolean",
+          "description": "role uneditable"
         }
       }
     },
