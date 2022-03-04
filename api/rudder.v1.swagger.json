@@ -3195,6 +3195,10 @@
         "tenant_host": {
           "type": "string",
           "description": "tenant_host"
+        },
+        "port": {
+          "type": "string",
+          "description": "host port"
         }
       }
     },
