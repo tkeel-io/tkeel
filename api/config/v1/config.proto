@@ -63,4 +63,8 @@ message GetDeploymentConfigResponse {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "tenant_host"
       } ];
+  string port = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "host port"
+      } ];
 }
