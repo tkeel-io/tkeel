@@ -197,12 +197,6 @@ func (s *RBACService) UpdateRole(ctx context.Context, req *pb.UpdateRoleRequest)
 		}
 		return nil
 	})
-	rbList, err := s.deleteRoleInTenant(req.Id, u.Tenant)
-	if err != nil {
-		log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Id, u.Tenant, err)
-		return nil, pb.ErrInternalError()
-	}
-	rbStack = append(rbStack, rbList...)
 	addPmPathSet, err := util.GetPermissionPathSet(req.Role.PermissionList)
 	if err != nil {
 		log.Errorf("error GetPermissionPathSet(%s/%s) %s",
