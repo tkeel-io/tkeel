@@ -296,6 +296,10 @@ message Role {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "permission path list"
       } ];
+  bool uneditable = 7
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "role uneditable"
+      } ];
 }
 
 message CreateRoleRequest {

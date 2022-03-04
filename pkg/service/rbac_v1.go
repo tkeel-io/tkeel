@@ -149,6 +149,10 @@ func (s *RBACService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest)
 		log.Errorf("error getDBRole(%s/%s): %s", req.Id, u.Tenant, err)
 		return nil, pb.ErrInternalStore()
 	}
+	if deleteRole.Name == model.TkeelTenantAdminRole {
+		log.Error("error not allowed edit admin")
+		return nil, pb.ErrNotAllowedEdit()
+	}
 	retPB := s.convertModelRole2PB(deleteRole, false)
 	rbStack, err := s.deleteRoleInTenant(req.Id, u.Tenant)
 	if err != nil {
@@ -180,6 +184,10 @@ func (s *RBACService) UpdateRole(ctx context.Context, req *pb.UpdateRoleRequest)
 	if err != nil {
 		log.Errorf("error getDBRole(%s/%s): %s", req.Id, u.Tenant, err)
 		return nil, pb.ErrInternalStore()
+	}
+	if updateRole.Name == model.TkeelTenantAdminRole {
+		log.Error("error not allowed edit admin")
+		return nil, pb.ErrNotAllowedEdit()
 	}
 	dbUpdateMap := setPB2Model(req.Role, updateRole)
 	rbStack := util.NewRollbackStack()
@@ -331,6 +339,25 @@ func (s *RBACService) DeleteRoleBinding(ctx context.Context, req *pb.DeleteRoleB
 		log.Errorf("error DeleteRoleBinding req(%s): not exist", req)
 		return nil, pb.ErrRoleNotFound()
 	}
+
+	daoRole := &s_model.Role{}
+	count, Roles, err := daoRole.List(s.db, map[string]interface{}{"id": req.RoleId}, nil, "")
+	if err != nil {
+		log.Errorf("error role(%v/%s) list: %s", req.RoleId, u.Tenant, err)
+		return nil, pb.ErrInternalStore()
+	}
+	if count != 1 {
+		log.Errorf("error role(%v/%s) %d list: not all found", req.RoleId, u.Tenant, count, err)
+		return nil, pb.ErrRoleNotFound()
+	}
+	if Roles[0].Name == model.TkeelTenantAdminRole {
+		users := s.rbacOp.GetUsersForRoleInDomain(req.RoleId, u.Tenant)
+		if len(users) == 1 {
+			log.Errorf("error %s/%s must have one binding", model.TkeelTenantAdminRole, req.RoleId)
+			return nil, pb.ErrMustHaveOneBinding()
+		}
+	}
+
 	if _, err = s.rbacOp.RemoveGroupingPolicy(req.UserId, req.RoleId, u.Tenant); err != nil {
 		log.Errorf("error RemoveGroupingPolicy(%s/%s/%s): %s",
 			req.UserId, req.RoleId, u.Tenant, err)
@@ -362,6 +389,9 @@ func (s *RBACService) ListPermissions(ctx context.Context, req *pb.ListPermissio
 	} else {
 		plugins := s.tenantPluginOp.ListTenantPlugins(u.Tenant)
 		for _, v := range plugins {
+			if pluginIsTkeelDefaultConsole(v) {
+				continue
+			}
 			pluginPermission := model.GetPermissionSet().GetPermissionByPluginID(v)
 			if pluginPermission != nil {
 				pList = append(pList, pluginPermission)
@@ -517,6 +547,7 @@ func (s *RBACService) convertModelRole2PB(role *s_model.Role, hasChild bool) *pb
 		Name:            role.Name,
 		Desc:            role.Description,
 		UpsertTimestamp: uint64(role.UpdatedAt.Unix()),
+		Uneditable:      role.Name == model.TkeelTenantAdminRole,
 	}
 	users := s.rbacOp.GetUsersForRoleInDomain(role.ID, role.TenantID)
 	ret.BindNum = int32(len(users))

@@ -19,6 +19,8 @@ var errPermissionNotFound *errors.TError
 var errRoleNotFound *errors.TError
 var errRoleHasBeenExsist *errors.TError
 var errUserNotFound *errors.TError
+var errNotAllowedEdit *errors.TError
+var errMustHaveOneBinding *errors.TError
 
 func init() {
 	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.rudder.api.rbac.v1.ERR_UNKNOWN", "未知类型")
@@ -37,6 +39,10 @@ func init() {
 	errors.Register(errRoleHasBeenExsist)
 	errUserNotFound = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.rbac.v1.ERR_USER_NOT_FOUND", "用户不存在")
 	errors.Register(errUserNotFound)
+	errNotAllowedEdit = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.rbac.v1.ERR_NOT_ALLOWED_EDIT", "角色不可修改")
+	errors.Register(errNotAllowedEdit)
+	errMustHaveOneBinding = errors.New(int(codes.InvalidArgument), "io.tkeel.rudder.api.rbac.v1.ERR_MUST_HAVE_ONE_BINDING", "角色必须拥有至少一个绑定")
+	errors.Register(errMustHaveOneBinding)
 }
 
 func ErrUnknown() errors.Error {
@@ -69,4 +75,12 @@ func ErrRoleHasBeenExsist() errors.Error {
 
 func ErrUserNotFound() errors.Error {
 	return errUserNotFound
+}
+
+func ErrNotAllowedEdit() errors.Error {
+	return errNotAllowedEdit
+}
+
+func ErrMustHaveOneBinding() errors.Error {
+	return errMustHaveOneBinding
 }

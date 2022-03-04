@@ -52,3 +52,12 @@ func pluginIsTkeelComponent(pluginID string) bool {
 	}
 	return false
 }
+
+func pluginIsTkeelDefaultConsole(pluginID string) bool {
+	for _, v := range model.TKeelConsole {
+		if v == pluginID {
+			return true
+		}
+	}
+	return false
+}
