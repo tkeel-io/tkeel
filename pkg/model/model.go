@@ -176,6 +176,26 @@ func (p *Plugin) Clone() *Plugin {
 		ID:            p.ID,
 		PluginVersion: p.PluginVersion,
 		TkeelVersion:  p.TkeelVersion,
+		Installer: func() *Installer {
+			return &Installer{
+				Repo:    p.Installer.Repo,
+				Name:    p.Installer.Name,
+				Version: p.Installer.Version,
+				Icon:    p.Installer.Icon,
+				Desc:    p.Installer.Desc,
+				Maintainer: func() []*repository.Maintainer {
+					ret := make([]*repository.Maintainer, 0, len(p.Installer.Maintainer))
+					for _, v := range p.Installer.Maintainer {
+						ret = append(ret, &repository.Maintainer{
+							Name:  v.Name,
+							Email: v.Email,
+							URL:   v.URL,
+						})
+					}
+					return ret
+				}(),
+			}
+		}(),
 		AddonsPoint: func() []*openapi_v1.AddonsPoint {
 			ret := make([]*openapi_v1.AddonsPoint, 0, len(p.AddonsPoint))
 			for _, v := range p.AddonsPoint {
@@ -240,6 +260,16 @@ func (p *Plugin) Clone() *Plugin {
 					OperatorID:      v.OperatorID,
 					EnableTimestamp: v.EnableTimestamp,
 				})
+			}
+			return ret
+		}(),
+		Permissions: func() []*openapi_v1.Permission {
+			ret := make([]*openapi_v1.Permission, 0, len(p.Permissions))
+			for _, v := range p.Permissions {
+				t := &openapi_v1.Permission{}
+				tmp := proto.Clone(v)
+				proto.Merge(t, tmp)
+				ret = append(ret, t)
 			}
 			return ret
 		}(),
