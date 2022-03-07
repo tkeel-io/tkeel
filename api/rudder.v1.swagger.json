@@ -2687,7 +2687,46 @@
     "/tm/plugins/identify": {
       "get": {
         "summary": "获取插件绑定租户接口",
-        "operationId": "ListenableTenants",
+        "operationId": "TMUpdatePluginIdentify",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
+    "/tm/plugins/register": {
+      "get": {
+        "summary": "手动注册插件接口",
+        "operationId": "TMRegisterPlugin",
         "responses": {
           "200": {
             "description": "OK",

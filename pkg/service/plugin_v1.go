@@ -487,6 +487,29 @@ func (s *PluginServiceV1) TMUpdatePluginIdentify(ctx context.Context,
 	return &emptypb.Empty{}, nil
 }
 
+func (s *PluginServiceV1) TMRegisterPlugin(ctx context.Context,
+	req *pb.TMRegisterPluginRequest,
+) (*emptypb.Empty, error) {
+	if req.Id == "" {
+		log.Error("request plugin id is nil")
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	p, err := s.pluginOp.Get(ctx, req.Id)
+	if err != nil {
+		log.Errorf("error get plugin(%s): %s", req.Id, err)
+		return nil, pb.PluginErrInternalStore()
+	}
+	if p.Status != openapi_v1.PluginStatus_ERR_REGISTER {
+		log.Errorf("error plugin(%s) status not %s", req.Id, openapi_v1.PluginStatus_ERR_REGISTER)
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	if err = s.registerPluginProcess(ctx, req.Id); err != nil {
+		log.Errorf("error plugin(%s) register: %s", req.Id, err)
+		return nil, pb.PluginErrInternalStore()
+	}
+	return &emptypb.Empty{}, nil
+}
+
 func (s *PluginServiceV1) updatePluginIdentify(ctx context.Context, pID string) (util.RollbackFunc, error) {
 	p, err := s.pluginOp.Get(ctx, pID)
 	if err != nil {
@@ -539,18 +562,8 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 				retry--
 			} else if resp.Status == openapi_v1.PluginStatus_RUNNING {
 				// get register plugin identify.
-				resp, err := s.queryIdentify(ctx, pID)
-				if err != nil {
-					log.Errorf("register error query identify: %s", err)
-					return
-				}
-				// check register plugin identify.
-				if err = s.checkIdentify(ctx, resp); err != nil {
-					log.Errorf("register error check identify: %s", err)
-					return
-				}
-				if err = s.verifyPluginIdentity(ctx, resp); err != nil {
-					log.Errorf("register error register plugin: %s", err)
+				if err = s.registerPluginProcess(ctx, pID); err != nil {
+					log.Errorf("error register(%s): %s", pID, err)
 					return
 				}
 				registrationfailed = false
@@ -563,6 +576,21 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 			return
 		}
 	}
+}
+
+func (s *PluginServiceV1) registerPluginProcess(ctx context.Context, pID string) error {
+	resp, err := s.queryIdentify(ctx, pID)
+	if err != nil {
+		return errors.Wrap(err, "register error query identify")
+	}
+	// check register plugin identify.
+	if err = s.checkIdentify(ctx, resp); err != nil {
+		return errors.Wrap(err, "register error check identify")
+	}
+	if err = s.verifyPluginIdentity(ctx, resp); err != nil {
+		return errors.Wrap(err, "register error register plugin")
+	}
+	return nil
 }
 
 func (s *PluginServiceV1) updatePluginStatus(ctx context.Context, pID string, status openapi_v1.PluginStatus) error {
