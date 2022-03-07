@@ -223,7 +223,32 @@ service Plugin {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "获取插件绑定租户接口"
-      operation_id : "ListenableTenants"
+      operation_id : "TMUpdatePluginIdentify"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
+  rpc TMRegisterPlugin(TMRegisterPluginRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      get : "/tm/plugins/register"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "手动注册插件接口"
+      operation_id : "TMRegisterPlugin"
       tags : "Plugin"
       responses : [
         {
@@ -587,3 +612,5 @@ message ListEnabledTenantsResponse {
 }
 
 message TMUpdatePluginIdentifyRequest { string id = 1; }
+
+message TMRegisterPluginRequest { string id = 1; }
