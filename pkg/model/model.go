@@ -80,6 +80,8 @@ var (
 
 	AuthorizationHeader = http.CanonicalHeaderKey("Authorization")
 
+	ContentTypeHeader = http.CanonicalHeaderKey("Content-Type")
+
 	TKeelComponents = []string{
 		"rudder", "core", "keel", "security",
 	}
@@ -177,6 +179,9 @@ func (p *Plugin) Clone() *Plugin {
 		PluginVersion: p.PluginVersion,
 		TkeelVersion:  p.TkeelVersion,
 		Installer: func() *Installer {
+			if p.Installer == nil {
+				return nil
+			}
 			return &Installer{
 				Repo:    p.Installer.Repo,
 				Name:    p.Installer.Name,
@@ -185,6 +190,9 @@ func (p *Plugin) Clone() *Plugin {
 				Desc:    p.Installer.Desc,
 				Maintainer: func() []*repository.Maintainer {
 					ret := make([]*repository.Maintainer, 0, len(p.Installer.Maintainer))
+					if p.Installer.Maintainer == nil {
+						return ret
+					}
 					for _, v := range p.Installer.Maintainer {
 						ret = append(ret, &repository.Maintainer{
 							Name:  v.Name,
