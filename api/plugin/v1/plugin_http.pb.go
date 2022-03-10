@@ -66,6 +66,9 @@ func (h *PluginHTTPHandler) GetPlugin(req *go_restful.Request, resp *go_restful.
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -129,6 +132,9 @@ func (h *PluginHTTPHandler) InstallPlugin(req *go_restful.Request, resp *go_rest
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -187,6 +193,9 @@ func (h *PluginHTTPHandler) ListEnabledTenants(req *go_restful.Request, resp *go
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -240,6 +249,9 @@ func (h *PluginHTTPHandler) ListPlugin(req *go_restful.Request, resp *go_restful
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -293,6 +305,9 @@ func (h *PluginHTTPHandler) TMRegisterPlugin(req *go_restful.Request, resp *go_r
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -346,6 +361,9 @@ func (h *PluginHTTPHandler) TMUpdatePluginIdentify(req *go_restful.Request, resp
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -404,6 +422,9 @@ func (h *PluginHTTPHandler) TenantDisable(req *go_restful.Request, resp *go_rest
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -467,6 +488,9 @@ func (h *PluginHTTPHandler) TenantEnable(req *go_restful.Request, resp *go_restf
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -525,6 +549,9 @@ func (h *PluginHTTPHandler) UninstallPlugin(req *go_restful.Request, resp *go_re
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return

@@ -59,6 +59,9 @@ func (h *OauthHTTPHandler) Authenticate(req *go_restful.Request, resp *go_restfu
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -117,6 +120,9 @@ func (h *OauthHTTPHandler) Authorize(req *go_restful.Request, resp *go_restful.R
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -175,6 +181,9 @@ func (h *OauthHTTPHandler) OIDCRegister(req *go_restful.Request, resp *go_restfu
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -233,6 +242,9 @@ func (h *OauthHTTPHandler) ResetPassword(req *go_restful.Request, resp *go_restf
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -291,6 +303,9 @@ func (h *OauthHTTPHandler) Token(req *go_restful.Request, resp *go_restful.Respo
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -349,6 +364,9 @@ func (h *OauthHTTPHandler) TokenRevoke(req *go_restful.Request, resp *go_restful
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -407,6 +425,9 @@ func (h *OauthHTTPHandler) UpdatePassword(req *go_restful.Request, resp *go_rest
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return

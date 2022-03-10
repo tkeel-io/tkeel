@@ -66,6 +66,9 @@ func (h *RBACHTTPHandler) CheckRolePermission(req *go_restful.Request, resp *go_
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -129,6 +132,9 @@ func (h *RBACHTTPHandler) CreateRoleBinding(req *go_restful.Request, resp *go_re
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -187,6 +193,9 @@ func (h *RBACHTTPHandler) CreateRoles(req *go_restful.Request, resp *go_restful.
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -245,6 +254,9 @@ func (h *RBACHTTPHandler) DeleteRole(req *go_restful.Request, resp *go_restful.R
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -303,6 +315,9 @@ func (h *RBACHTTPHandler) DeleteRoleBinding(req *go_restful.Request, resp *go_re
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -361,6 +376,9 @@ func (h *RBACHTTPHandler) GetRole(req *go_restful.Request, resp *go_restful.Resp
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -414,6 +432,9 @@ func (h *RBACHTTPHandler) ListPermissions(req *go_restful.Request, resp *go_rest
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -467,6 +488,9 @@ func (h *RBACHTTPHandler) ListRole(req *go_restful.Request, resp *go_restful.Res
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -520,6 +544,9 @@ func (h *RBACHTTPHandler) TMAddPolicy(req *go_restful.Request, resp *go_restful.
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -573,6 +600,9 @@ func (h *RBACHTTPHandler) TMAddRoleBinding(req *go_restful.Request, resp *go_res
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -626,6 +656,9 @@ func (h *RBACHTTPHandler) TMDeletePolicy(req *go_restful.Request, resp *go_restf
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -679,6 +712,9 @@ func (h *RBACHTTPHandler) TMDeleteRoleBinding(req *go_restful.Request, resp *go_
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -742,6 +778,9 @@ func (h *RBACHTTPHandler) UpdateRole(req *go_restful.Request, resp *go_restful.R
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -805,6 +844,9 @@ func (h *RBACHTTPHandler) UpdateUserRoleBinding(req *go_restful.Request, resp *g
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return

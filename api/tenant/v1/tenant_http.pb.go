@@ -79,6 +79,9 @@ func (h *TenantHTTPHandler) AddTenantPlugin(req *go_restful.Request, resp *go_re
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -137,6 +140,9 @@ func (h *TenantHTTPHandler) CreateTenant(req *go_restful.Request, resp *go_restf
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -200,6 +206,9 @@ func (h *TenantHTTPHandler) CreateUser(req *go_restful.Request, resp *go_restful
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -258,6 +267,9 @@ func (h *TenantHTTPHandler) DeleteTenant(req *go_restful.Request, resp *go_restf
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -316,6 +328,9 @@ func (h *TenantHTTPHandler) DeleteTenantPlugin(req *go_restful.Request, resp *go
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -374,6 +389,9 @@ func (h *TenantHTTPHandler) DeleteUser(req *go_restful.Request, resp *go_restful
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -432,6 +450,9 @@ func (h *TenantHTTPHandler) GetResetPasswordKey(req *go_restful.Request, resp *g
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -490,6 +511,9 @@ func (h *TenantHTTPHandler) GetTenant(req *go_restful.Request, resp *go_restful.
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -548,6 +572,9 @@ func (h *TenantHTTPHandler) GetUser(req *go_restful.Request, resp *go_restful.Re
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -601,6 +628,9 @@ func (h *TenantHTTPHandler) ListTenant(req *go_restful.Request, resp *go_restful
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -659,6 +689,9 @@ func (h *TenantHTTPHandler) ListTenantPlugin(req *go_restful.Request, resp *go_r
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -717,6 +750,9 @@ func (h *TenantHTTPHandler) ListUser(req *go_restful.Request, resp *go_restful.R
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -775,6 +811,9 @@ func (h *TenantHTTPHandler) ResetPasswordKeyInfo(req *go_restful.Request, resp *
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -828,6 +867,9 @@ func (h *TenantHTTPHandler) TenantByExactSearch(req *go_restful.Request, resp *g
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -881,6 +923,9 @@ func (h *TenantHTTPHandler) TenantPluginPermissible(req *go_restful.Request, res
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -944,6 +989,9 @@ func (h *TenantHTTPHandler) UpdateTenant(req *go_restful.Request, resp *go_restf
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
@@ -1007,6 +1055,9 @@ func (h *TenantHTTPHandler) UpdateUser(req *go_restful.Request, resp *go_restful
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
 		resp.WriteHeaderAndJson(httpCode,
 			result.Set(tErr.Reason, tErr.Message, out), "application/json")
 		return
