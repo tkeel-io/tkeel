@@ -48,4 +48,10 @@ enum Error {
   // @msg=用户不存在
   // @code=INVALID_ARGUMENT
   ERR_USER_NOT_FOUND = 7;
+  // @msg=角色不可修改
+  // @code=INVALID_ARGUMENT
+  ERR_NOT_ALLOWED_EDIT = 8;
+  // @msg=角色必须拥有至少一个绑定
+  // @code=INVALID_ARGUMENT
+  ERR_MUST_HAVE_ONE_BINDING = 9;
 }

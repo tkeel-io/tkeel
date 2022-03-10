@@ -80,6 +80,8 @@ var (
 
 	AuthorizationHeader = http.CanonicalHeaderKey("Authorization")
 
+	ContentTypeHeader = http.CanonicalHeaderKey("Content-Type")
+
 	TKeelComponents = []string{
 		"rudder", "core", "keel", "security",
 	}
@@ -106,20 +108,21 @@ func (et *EnableTenant) String() string {
 }
 
 type Plugin struct {
-	ID                string                          `json:"id,omitempty"`                 // plugin id.
-	Installer         *Installer                      `json:"installer,omitempty"`          // plugin installer.
-	PluginVersion     string                          `json:"plugin_version,omitempty"`     // plugin version.
-	TkeelVersion      string                          `json:"tkeel_version,omitempty"`      // plugin depend tkeel version.
-	AddonsPoint       []*openapi_v1.AddonsPoint       `json:"addons_point,omitempty"`       // plugin declares addons.
-	ImplementedPlugin []*openapi_v1.ImplementedPlugin `json:"implemented_plugin,omitempty"` // plugin implemented plugin list.
-	ConsoleEntries    []*openapi_v1.ConsoleEntry      `json:"console_entries,omitempty"`    // plugin console entries.
-	PluginDependences []*openapi_v1.BriefPluginInfo   `json:"plugin_dependences,omitempty"` // plugin dependences.
-	Permissions       []*openapi_v1.Permission        `json:"permissions,omitempty"`        // plugin permissions.
-	Secret            string                          `json:"secret,omitempty"`             // plugin registered secret.
-	RegisterTimestamp int64                           `json:"register_timestamp,omitempty"` // register timestamp.
-	Version           string                          `json:"version,omitempty"`            // model version.
-	Status            openapi_v1.PluginStatus         `json:"status,omitempty"`             // plugin state.
-	EnableTenantes    []*EnableTenant                 `json:"enable_tenantes,omitempty"`    // plugin active tenantes.
+	ID                      string                          `json:"id,omitempty"`                        // plugin id.
+	Installer               *Installer                      `json:"installer,omitempty"`                 // plugin installer.
+	PluginVersion           string                          `json:"plugin_version,omitempty"`            // plugin version.
+	TkeelVersion            string                          `json:"tkeel_version,omitempty"`             // plugin depend tkeel version.
+	AddonsPoint             []*openapi_v1.AddonsPoint       `json:"addons_point,omitempty"`              // plugin declares addons.
+	ImplementedPlugin       []*openapi_v1.ImplementedPlugin `json:"implemented_plugin,omitempty"`        // plugin implemented plugin list.
+	ConsoleEntries          []*openapi_v1.ConsoleEntry      `json:"console_entries,omitempty"`           // plugin console entries.
+	PluginDependences       []*openapi_v1.BriefPluginInfo   `json:"plugin_dependences,omitempty"`        // plugin dependences.
+	Permissions             []*openapi_v1.Permission        `json:"permissions,omitempty"`               // plugin permissions.
+	Secret                  string                          `json:"secret,omitempty"`                    // plugin registered secret.
+	RegisterTimestamp       int64                           `json:"register_timestamp,omitempty"`        // register timestamp.
+	Version                 string                          `json:"version,omitempty"`                   // model version.
+	Status                  openapi_v1.PluginStatus         `json:"status,omitempty"`                    // plugin state.
+	EnableTenantes          []*EnableTenant                 `json:"enable_tenantes,omitempty"`           // plugin active tenantes.
+	DisableManualActivation bool                            `json:"disable_manual_activation,omitempty"` // plugin disable manual activation.
 }
 
 func (p *Plugin) String() string {
@@ -155,7 +158,19 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.ConsoleEntries = resp.Entries
 	p.Permissions = resp.Permissions
 	p.Secret = secret
+	p.DisableManualActivation = resp.DisableManualActivation
 	p.RegisterTimestamp = time.Now().Unix()
+}
+
+func (p *Plugin) SetIdentify(resp *openapi_v1.IdentifyResponse) {
+	p.PluginVersion = resp.Version
+	p.TkeelVersion = resp.TkeelVersion
+	p.AddonsPoint = resp.AddonsPoint
+	p.ImplementedPlugin = resp.ImplementedPlugin
+	p.PluginDependences = resp.Dependence
+	p.ConsoleEntries = resp.Entries
+	p.Permissions = resp.Permissions
+	p.DisableManualActivation = resp.DisableManualActivation
 }
 
 func (p *Plugin) Clone() *Plugin {
@@ -163,6 +178,32 @@ func (p *Plugin) Clone() *Plugin {
 		ID:            p.ID,
 		PluginVersion: p.PluginVersion,
 		TkeelVersion:  p.TkeelVersion,
+		Installer: func() *Installer {
+			if p.Installer == nil {
+				return nil
+			}
+			return &Installer{
+				Repo:    p.Installer.Repo,
+				Name:    p.Installer.Name,
+				Version: p.Installer.Version,
+				Icon:    p.Installer.Icon,
+				Desc:    p.Installer.Desc,
+				Maintainer: func() []*repository.Maintainer {
+					ret := make([]*repository.Maintainer, 0, len(p.Installer.Maintainer))
+					if p.Installer.Maintainer == nil {
+						return ret
+					}
+					for _, v := range p.Installer.Maintainer {
+						ret = append(ret, &repository.Maintainer{
+							Name:  v.Name,
+							Email: v.Email,
+							URL:   v.URL,
+						})
+					}
+					return ret
+				}(),
+			}
+		}(),
 		AddonsPoint: func() []*openapi_v1.AddonsPoint {
 			ret := make([]*openapi_v1.AddonsPoint, 0, len(p.AddonsPoint))
 			for _, v := range p.AddonsPoint {
@@ -227,6 +268,16 @@ func (p *Plugin) Clone() *Plugin {
 					OperatorID:      v.OperatorID,
 					EnableTimestamp: v.EnableTimestamp,
 				})
+			}
+			return ret
+		}(),
+		Permissions: func() []*openapi_v1.Permission {
+			ret := make([]*openapi_v1.Permission, 0, len(p.Permissions))
+			for _, v := range p.Permissions {
+				t := &openapi_v1.Permission{}
+				tmp := proto.Clone(v)
+				proto.Merge(t, tmp)
+				ret = append(ret, t)
 			}
 			return ret
 		}(),

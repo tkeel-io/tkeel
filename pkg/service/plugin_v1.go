@@ -66,7 +66,8 @@ type PluginServiceV1 struct {
 }
 
 func NewPluginServiceV1(rbacOp *casbin.SyncedEnforcer, db *gorm.DB, conf *config.TkeelConf, kvOp kv.Operator, pOp plugin.Operator,
-	prOp proute.Operator, tpOp rbac.TenantPluginMgr, openapi openapi.Client) *PluginServiceV1 {
+	prOp proute.Operator, tpOp rbac.TenantPluginMgr, openapi openapi.Client,
+) *PluginServiceV1 {
 	ok, err := tpOp.OnCreateTenant(model.TKeelTenant)
 	if err != nil {
 		log.Fatalf("error create tenant %s: %s", model.TKeelTenant, err)
@@ -92,7 +93,8 @@ func NewPluginServiceV1(rbacOp *casbin.SyncedEnforcer, db *gorm.DB, conf *config
 }
 
 func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
-	req *pb.InstallPluginRequest) (*pb.InstallPluginResponse, error) {
+	req *pb.InstallPluginRequest,
+) (*pb.InstallPluginResponse, error) {
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
 	if req.Installer == nil {
@@ -173,7 +175,8 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 }
 
 func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
-	req *pb.UninstallPluginRequest) (*pb.UninstallPluginResponse, error) {
+	req *pb.UninstallPluginRequest,
+) (*pb.UninstallPluginResponse, error) {
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
 	p, err := s.pluginOp.Get(ctx, req.GetId())
@@ -257,7 +260,8 @@ func (s *PluginServiceV1) UninstallPlugin(ctx context.Context,
 }
 
 func (s *PluginServiceV1) GetPlugin(ctx context.Context,
-	req *pb.GetPluginRequest) (*pb.GetPluginResponse, error) {
+	req *pb.GetPluginRequest,
+) (*pb.GetPluginResponse, error) {
 	u, err := util.GetUser(ctx)
 	if err != nil {
 		log.Errorf("error get user", err)
@@ -285,7 +289,8 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 }
 
 func (s *PluginServiceV1) ListPlugin(ctx context.Context,
-	req *pb.ListPluginRequest) (*pb.ListPluginResponse, error) {
+	req *pb.ListPluginRequest,
+) (*pb.ListPluginResponse, error) {
 	u, err := util.GetUser(ctx)
 	if err != nil {
 		log.Errorf("error get user", err)
@@ -297,7 +302,14 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 		return nil, pb.PluginErrListPlugin()
 	}
 	pList := make(pluginList, 0, len(ps))
+	checkEnable := false
+	if u.Tenant != model.TKeelTenant && !req.DisplayAllPlugin {
+		checkEnable = true
+	}
 	for _, p := range ps {
+		if checkEnable && p.DisableManualActivation {
+			continue
+		}
 		pList = append(pList, util.ConvertModel2PluginBriefObjectPb(p, u.Tenant))
 	}
 	regular := getReglarStringKeyWords(req.KeyWords)
@@ -329,7 +341,8 @@ func (s *PluginServiceV1) ListPlugin(ctx context.Context,
 }
 
 func (s *PluginServiceV1) TenantEnable(ctx context.Context,
-	req *pb.TenantEnableRequest) (*emptypb.Empty, error) {
+	req *pb.TenantEnableRequest,
+) (*emptypb.Empty, error) {
 	u, err := util.GetUser(ctx)
 	if err != nil {
 		log.Errorf("error get user: %s", err)
@@ -345,7 +358,8 @@ func (s *PluginServiceV1) TenantEnable(ctx context.Context,
 }
 
 func (s *PluginServiceV1) TenantDisable(ctx context.Context,
-	req *pb.TenantDisableRequest) (*emptypb.Empty, error) {
+	req *pb.TenantDisableRequest,
+) (*emptypb.Empty, error) {
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
 	u, err := util.GetUser(ctx)
@@ -386,7 +400,8 @@ func (s *PluginServiceV1) TenantDisable(ctx context.Context,
 }
 
 func (s *PluginServiceV1) ListEnabledTenants(ctx context.Context,
-	req *pb.ListEnabledTenantsRequest) (*pb.ListEnabledTenantsResponse, error) {
+	req *pb.ListEnabledTenantsRequest,
+) (*pb.ListEnabledTenantsResponse, error) {
 	p, err := s.pluginOp.Get(ctx, req.Id)
 	if err != nil {
 		log.Errorf("error get plugin: %s", err)
@@ -448,6 +463,75 @@ func (s *PluginServiceV1) ListEnabledTenants(ctx context.Context,
 	}, nil
 }
 
+func (s *PluginServiceV1) TMUpdatePluginIdentify(ctx context.Context,
+	req *pb.TMUpdatePluginIdentifyRequest,
+) (*emptypb.Empty, error) {
+	if req.Id != "" {
+		if _, err := s.updatePluginIdentify(ctx, req.Id); err != nil {
+			log.Errorf("error update plugin(%s) identify: %s", req.Id, err)
+			return nil, pb.PluginErrInternalStore()
+		}
+	} else {
+		ps, err := s.pluginOp.List(ctx)
+		if err != nil {
+			log.Errorf("error plugin op list: %s", err)
+			return nil, pb.PluginErrInternalStore()
+		}
+		for _, v := range ps {
+			_, err = s.updatePluginIdentify(ctx, v.ID)
+			if err != nil {
+				log.Errorf("error update identify(%s): %s", v.ID, err)
+			}
+		}
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *PluginServiceV1) TMRegisterPlugin(ctx context.Context,
+	req *pb.TMRegisterPluginRequest,
+) (*emptypb.Empty, error) {
+	if req.Id == "" {
+		log.Error("request plugin id is nil")
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	p, err := s.pluginOp.Get(ctx, req.Id)
+	if err != nil {
+		log.Errorf("error get plugin(%s): %s", req.Id, err)
+		return nil, pb.PluginErrInternalStore()
+	}
+	if p.Status != openapi_v1.PluginStatus_ERR_REGISTER {
+		log.Errorf("error plugin(%s) status not %s", req.Id, openapi_v1.PluginStatus_ERR_REGISTER)
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	if err = s.registerPluginProcess(ctx, req.Id); err != nil {
+		log.Errorf("error plugin(%s) register: %s", req.Id, err)
+		return nil, pb.PluginErrInternalStore()
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *PluginServiceV1) updatePluginIdentify(ctx context.Context, pID string) (util.RollbackFunc, error) {
+	p, err := s.pluginOp.Get(ctx, pID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "plugin operator get %s", pID)
+	}
+	resp, err := s.queryIdentify(ctx, pID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "query identify: %s", pID)
+	}
+	if err = s.checkIdentify(ctx, resp); err != nil {
+		return nil, errors.Wrapf(err, "check identify: %s", resp)
+	}
+	oldP := p.Clone()
+	p.SetIdentify(resp)
+	rb, err := s.updatePlugin(ctx, oldP, p)
+	if err != nil {
+		return nil, errors.Wrapf(err, "update plugin: %s", pID)
+	}
+	log.Debugf("update plugin(%s) identify", pID)
+	return rb, nil
+}
+
 func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) {
 	duration, err := time.ParseDuration(s.tkeelConf.WatchInterval)
 	if err != nil {
@@ -478,18 +562,8 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 				retry--
 			} else if resp.Status == openapi_v1.PluginStatus_RUNNING {
 				// get register plugin identify.
-				resp, err := s.queryIdentify(ctx, pID)
-				if err != nil {
-					log.Errorf("register error query identify: %s", err)
-					return
-				}
-				// check register plugin identify.
-				if err = s.checkIdentify(ctx, resp); err != nil {
-					log.Errorf("register error check identify: %s", err)
-					return
-				}
-				if err = s.verifyPluginIdentity(ctx, resp); err != nil {
-					log.Errorf("register error register plugin: %s", err)
+				if err = s.registerPluginProcess(ctx, pID); err != nil {
+					log.Errorf("error register(%s): %s", pID, err)
 					return
 				}
 				registrationfailed = false
@@ -502,6 +576,21 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 			return
 		}
 	}
+}
+
+func (s *PluginServiceV1) registerPluginProcess(ctx context.Context, pID string) error {
+	resp, err := s.queryIdentify(ctx, pID)
+	if err != nil {
+		return errors.Wrap(err, "register error query identify")
+	}
+	// check register plugin identify.
+	if err = s.checkIdentify(ctx, resp); err != nil {
+		return errors.Wrap(err, "register error check identify")
+	}
+	if err = s.verifyPluginIdentity(ctx, resp); err != nil {
+		return errors.Wrap(err, "register error register plugin")
+	}
+	return nil
 }
 
 func (s *PluginServiceV1) updatePluginStatus(ctx context.Context, pID string, status openapi_v1.PluginStatus) error {
@@ -519,7 +608,8 @@ func (s *PluginServiceV1) updatePluginStatus(ctx context.Context, pID string, st
 }
 
 func (s *PluginServiceV1) queryIdentify(ctx context.Context,
-	pID string) (*openapi_v1.IdentifyResponse, error) {
+	pID string,
+) (*openapi_v1.IdentifyResponse, error) {
 	if pID == "" {
 		return nil, errors.New("error empty plugin id")
 	}
@@ -557,7 +647,8 @@ func (s *PluginServiceV1) queryStatus(ctx context.Context, pID string) (*openapi
 }
 
 func (s *PluginServiceV1) checkIdentify(ctx context.Context,
-	resp *openapi_v1.IdentifyResponse) error {
+	resp *openapi_v1.IdentifyResponse,
+) error {
 	ok, err := util.CheckRegisterPluginTkeelVersion(resp.TkeelVersion, version.Version)
 	if err != nil {
 		return errors.Wrapf(err, "check register plugin(%s) depend tkeel version(%s)",
@@ -625,7 +716,8 @@ func (s *PluginServiceV1) verifyPluginIdentity(ctx context.Context, resp *openap
 }
 
 func (s *PluginServiceV1) checkImplementedPluginRoute(ctx context.Context,
-	resp *openapi_v1.IdentifyResponse) (util.RollBackStack, error) {
+	resp *openapi_v1.IdentifyResponse,
+) (util.RollBackStack, error) {
 	rbStack := util.NewRollbackStack()
 	for _, v := range resp.ImplementedPlugin {
 		oldPluginRoute, err := s.pluginRouteOp.Get(ctx, v.Plugin.Id)
@@ -684,7 +776,8 @@ func (s *PluginServiceV1) checkImplementedPluginRoute(ctx context.Context,
 }
 
 func (s *PluginServiceV1) tenantEnablePlugin(ctx context.Context, isDependence bool,
-	tenantID, userID, pluginID string, extra []byte) (util.RollBackStack, error, error) {
+	tenantID, userID, pluginID string, extra []byte,
+) (util.RollBackStack, error, error) {
 	rbStack := util.NewRollbackStack()
 	p, err := s.pluginOp.Get(ctx, pluginID)
 	if err != nil {
@@ -736,7 +829,8 @@ func (s *PluginServiceV1) tenantEnablePlugin(ctx context.Context, isDependence b
 }
 
 func (s *PluginServiceV1) requestTenantEnable(ctx context.Context, pluginID string,
-	tenantID string, extra []byte) (util.RollbackFunc, error) {
+	tenantID string, extra []byte,
+) (util.RollbackFunc, error) {
 	resp, err := s.openapiClient.TenantEnable(ctx, pluginID, &openapi_v1.TenantEnableRequest{
 		TenantId: tenantID,
 		Extra:    extra,
@@ -773,7 +867,8 @@ func (s *PluginServiceV1) requestTenantEnable(ctx context.Context, pluginID stri
 }
 
 func (s *PluginServiceV1) requestTenantDisable(ctx context.Context, pluginID string,
-	tenantID string, extra []byte) (util.RollbackFunc, error) {
+	tenantID string, extra []byte,
+) (util.RollbackFunc, error) {
 	resp, err := s.openapiClient.TenantDisable(ctx, pluginID, &openapi_v1.TenantDisableRequest{
 		TenantId: tenantID,
 		Extra:    extra,
@@ -810,7 +905,8 @@ func (s *PluginServiceV1) requestTenantDisable(ctx context.Context, pluginID str
 }
 
 func (s *PluginServiceV1) resetImplementedPluginRoute(ctx context.Context,
-	unregisterPlugin *model.Plugin) (util.RollBackStack, error) {
+	unregisterPlugin *model.Plugin,
+) (util.RollBackStack, error) {
 	rbStack := util.NewRollbackStack()
 	for _, v := range unregisterPlugin.ImplementedPlugin {
 		oldRoute, err := s.pluginRouteOp.Get(ctx, v.Plugin.Id)

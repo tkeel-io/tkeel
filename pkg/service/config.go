@@ -36,5 +36,6 @@ func (s *ConfigService) GetDeploymentConfig(ctx context.Context, req *emptypb.Em
 	return &pb.GetDeploymentConfigResponse{
 		AdminHost:  adminHost,
 		TenantHost: tenantHost,
+		Port:       conf.Port,
 	}, nil
 }

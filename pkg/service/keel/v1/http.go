@@ -33,7 +33,8 @@ const (
 )
 
 func RegisterPluginProxyHTTPServer(ctx context.Context,
-	container *restful.Container, srv keel.ProxyServer) error {
+	container *restful.Container, srv keel.ProxyServer,
+) error {
 	if container == nil {
 		return errors.New("error invalid container: nil")
 	}
@@ -44,6 +45,7 @@ func RegisterPluginProxyHTTPServer(ctx context.Context,
 			model.AuthorizationHeader,
 			model.XtKeelAuthHeader,
 			model.XPluginJwtHeader,
+			model.ContentTypeHeader,
 		},
 		AllowedMethods: []string{"GET", "POST", "HEAD", "PUT", "DELETE", "OPTIONS"},
 		CookiesAllowed: true,

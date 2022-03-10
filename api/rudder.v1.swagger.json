@@ -808,6 +808,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "display_all_plugin",
+            "description": "return all plugin",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
@@ -2676,6 +2683,84 @@
           "RBAC"
         ]
       }
+    },
+    "/tm/plugins/identify": {
+      "get": {
+        "summary": "获取插件绑定租户接口",
+        "operationId": "TMUpdatePluginIdentify",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
+    "/tm/plugins/register": {
+      "get": {
+        "summary": "手动注册插件接口",
+        "operationId": "TMRegisterPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
     }
   },
   "definitions": {
@@ -3149,6 +3234,10 @@
         "tenant_host": {
           "type": "string",
           "description": "tenant_host"
+        },
+        "port": {
+          "type": "string",
+          "description": "host port"
         }
       }
     },
@@ -4018,6 +4107,10 @@
             "$ref": "#/definitions/apirbacv1Permission"
           },
           "description": "permission path list"
+        },
+        "uneditable": {
+          "type": "boolean",
+          "description": "role uneditable"
         }
       }
     },
