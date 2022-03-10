@@ -252,3 +252,9 @@ build-dev-container:
 	docker push  tkeelio/rudder:$(DOCKER_TAG)
 	docker build -t tkeelio/keel:$(DOCKER_TAG) -f docker/keel/Dockerfile $(TKEEL_LINUX_AMD64_OUT_DIR)
 	docker push  tkeelio/keel:$(DOCKER_TAG)
+ifeq ($(DOCKER_TAG),latest)
+	docker tag tkeelio/rudder:$(DOCKER_TAG) tkeelio/rudder:dev
+	docker tag tkeelio/keel:$(DOCKER_TAG) tkeelio/keel:dev
+	docker push  tkeelio/rudder:dev
+	docker push  tkeelio/keel:dev
+endif
