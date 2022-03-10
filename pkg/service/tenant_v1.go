@@ -414,6 +414,10 @@ func (s *TenantService) DeleteUser(ctx context.Context, req *pb.DeleteUserReques
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
 	}
+	if _, err = s.RBACOp.DeleteUser(req.GetUserId()); err != nil {
+		log.Errorf("error delete user(%s/%s) in rbac: %s", req.GetUserId(), req.GetTenantId(), err)
+		return nil, pb.ErrInternalError()
+	}
 	return &emptypb.Empty{}, nil
 }
 
