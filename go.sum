@@ -1571,6 +1571,8 @@ github.com/tkeel-io/kit v0.0.0-20220303080455-8ab38f419f7c h1:9N3MBvT0WDaHSu9cIz
 github.com/tkeel-io/kit v0.0.0-20220303080455-8ab38f419f7c/go.mod h1:ki+q/zN0N2eSfjUnpkx8g3UlVps5waO2bkiIvO85ZCg=
 github.com/tkeel-io/kit v0.0.0-20220310034133-a7b8ce454e5b h1:AgRbRYYiVHtIajVeL34b+KhkoDmcPHjOhLuZSNKNRUU=
 github.com/tkeel-io/kit v0.0.0-20220310034133-a7b8ce454e5b/go.mod h1:ki+q/zN0N2eSfjUnpkx8g3UlVps5waO2bkiIvO85ZCg=
+github.com/tkeel-io/kit v0.0.0-20220311032953-c8bf1e0f86cb h1:X+ccMZgS9ZfQa4S2UEwoQbvJmR2snKCndkBxq3R/Z4s=
+github.com/tkeel-io/kit v0.0.0-20220311032953-c8bf1e0f86cb/go.mod h1:ki+q/zN0N2eSfjUnpkx8g3UlVps5waO2bkiIvO85ZCg=
 github.com/tkeel-io/security v0.0.0-20220303154013-f6ad9a8a8206 h1:AVdX8MAKmJiMntwpvfOBd28CVzcOuekyaSUTPpSaI1k=
 github.com/tkeel-io/security v0.0.0-20220303154013-f6ad9a8a8206/go.mod h1:YnasaSkW3Fmownt0TKzhuulgGkm/0IJBhfSE3niKhFM=
 github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220303151503-0f9a4a00fd77 h1:odBS2F8zlZTMgDdEsItP5/qWGzO2EMWUku72fTsUsTE=
