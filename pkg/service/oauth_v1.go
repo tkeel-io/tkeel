@@ -9,10 +9,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tkeel-io/tkeel/pkg/client/kubernetes"
+
 	"github.com/coreos/go-oidc"
 	dapr "github.com/dapr/go-sdk/client"
 	oauth2v4 "github.com/go-oauth2/oauth2/v4"
 	"github.com/go-oauth2/oauth2/v4/manage"
+	kitErr "github.com/tkeel-io/kit/errors"
 	"github.com/tkeel-io/kit/log"
 	transportHTTP "github.com/tkeel-io/kit/transport/http"
 	"github.com/tkeel-io/security/authn/idprovider"
@@ -40,6 +43,7 @@ type OauthService struct {
 	UserDB     *gorm.DB
 	DaprStore  string
 	DaprClient dapr.Client
+	k8s        *kubernetes.Client
 	pb.UnimplementedOauthServer
 }
 
@@ -65,12 +69,12 @@ type AuthorizeRequest struct {
 	Request             *http.Request
 }
 
-func NewOauthService(m *manage.Manager, userDB *gorm.DB, conf *TokenConf, daprClient dapr.Client, daprstore string) *OauthService {
+func NewOauthService(m *manage.Manager, userDB *gorm.DB, conf *TokenConf, daprClient dapr.Client, daprstore string, k8s *kubernetes.Client) *OauthService {
 	if userDB == nil {
 		log.Error("nil db")
 		panic("nil db")
 	}
-	oauthServer := &OauthService{UserDB: userDB, Config: conf, Manager: m, DaprClient: daprClient, DaprStore: daprstore}
+	oauthServer := &OauthService{UserDB: userDB, Config: conf, Manager: m, DaprClient: daprClient, DaprStore: daprstore, k8s: k8s}
 	return oauthServer
 }
 
@@ -147,14 +151,21 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 				log.Error(err)
 				return nil, pb.OauthErrServerError()
 			}
+
+			conf, err := s.k8s.GetDeploymentConfig(ctx)
+			if err != nil {
+				log.Errorf("error get deployment config: %s", err)
+				return nil, pb.OauthErrServerError()
+			}
+			redirect := fmt.Sprintf("%s:%s/auth/redirect?token_type=%s&access_token=%s&refresh_token=%s",
+				conf.Host.Tenant, conf.Port, s.Config.TokenType, ti.GetAccess(), ti.GetRefresh())
 			return &pb.TokenResponse{
 				AccessToken:  ti.GetAccess(),
 				RefreshToken: ti.GetRefresh(),
 				ExpiresIn:    int64(ti.GetAccessExpiresIn() / time.Second),
 				TokenType:    s.Config.TokenType,
-			}, nil
+			}, kitErr.NewRedirect(redirect)
 		}
-
 		return &pb.TokenResponse{RedirectUrl: provider.AuthCodeURL("", "")}, nil
 	}
 
