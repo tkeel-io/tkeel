@@ -41,7 +41,13 @@ func (c *HTTPClient) Call(ctx context.Context,
 	if len(req.Header) != 0 {
 		httpReq.Header = req.Header.Clone()
 	}
-	resp, err := http.DefaultClient.Do(httpReq)
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	resp, err := client.Do(httpReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "error http default client do")
 	}

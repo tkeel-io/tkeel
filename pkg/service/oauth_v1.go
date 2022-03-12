@@ -157,14 +157,9 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 				log.Errorf("error get deployment config: %s", err)
 				return nil, pb.OauthErrServerError()
 			}
-			redirect := fmt.Sprintf("%s:%s/auth/redirect?token_type=%s&access_token=%s&refresh_token=%s",
-				conf.Host.Tenant, conf.Port, s.Config.TokenType, ti.GetAccess(), ti.GetRefresh())
-			return &pb.TokenResponse{
-				AccessToken:  ti.GetAccess(),
-				RefreshToken: ti.GetRefresh(),
-				ExpiresIn:    int64(ti.GetAccessExpiresIn() / time.Second),
-				TokenType:    s.Config.TokenType,
-			}, kitErr.NewRedirect(redirect)
+			redirect := fmt.Sprintf("http://%s:%s/auth/redirect?token_type=%s&access_token=%s&refresh_token=%s&expires_in=%d",
+				conf.Host.Tenant, conf.Port, s.Config.TokenType, ti.GetAccess(), ti.GetRefresh(), int64(ti.GetAccessExpiresIn()/time.Second))
+			return nil, kitErr.NewRedirect(redirect)
 		}
 		return &pb.TokenResponse{RedirectUrl: provider.AuthCodeURL("", "")}, nil
 	}

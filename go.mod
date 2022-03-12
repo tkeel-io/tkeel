@@ -36,7 +36,7 @@ require (
 	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
-	github.com/tkeel-io/kit v0.0.0-20220310034133-a7b8ce454e5b
+	github.com/tkeel-io/kit v0.0.0-20220311032953-c8bf1e0f86cb
 	github.com/tkeel-io/security v0.0.0-20220303154013-f6ad9a8a8206
 	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220303151503-0f9a4a00fd77
 	github.com/tkeel-io/tkeel-interface/protoc-gen-go-http v0.0.0-20220310034105-3ee8d9ec78cb // indirect
