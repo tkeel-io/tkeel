@@ -39,7 +39,6 @@ require (
 	github.com/tkeel-io/kit v0.0.0-20220311032953-c8bf1e0f86cb
 	github.com/tkeel-io/security v0.0.0-20220303154013-f6ad9a8a8206
 	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220303151503-0f9a4a00fd77
-	github.com/tkeel-io/tkeel-interface/protoc-gen-go-http v0.0.0-20220310034105-3ee8d9ec78cb // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
