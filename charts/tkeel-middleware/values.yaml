@@ -13,3 +13,46 @@ mysql:
   auth:
     rootPassword: a3fks=ixmeb82a
     database: tkeelauth
+
+etcd:
+  fullnameOverride: tkeel-middleware-etcd
+  auth:
+    rbac:
+      enabled: false
+
+elasticsearch:
+  fullnameOverride: tkeel-middleware-elasticsearch
+  master:
+    replicas: 1
+  data:
+    replicas: 1
+  coordinating:
+    replicas: 1
+
+nginx-ingress-controller:
+  service:
+    type: NodePort
+    ports:
+      http: 80
+      https: 443
+    targetPorts:
+      http: http
+      https: https
+    nodePorts:
+      http: 30080
+      https: 30081
+
+components:
+  state:
+    redis:
+      host: tkeel-middleware-redis-master:6379
+      password: "Biz0P8Xoup"
+  pubsub:
+    kafka:
+      host: tkeel-middleware-kafka-headless:9092
+
+ingress:
+  host:
+    admin: admin.tkeel.io
+    tenant: tkeel.io
+  port: 30080
