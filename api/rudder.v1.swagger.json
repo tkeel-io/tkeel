@@ -540,6 +540,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "auto_redirect",
+            "description": "auto redirect if auto_redirect = trueparam",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [
