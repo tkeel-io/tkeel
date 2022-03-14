@@ -266,7 +266,7 @@ func (s *RBACService) UpdateUserRoleBinding(ctx context.Context, req *pb.UpdateU
 		return nil, pb.ErrRoleNotFound()
 	}
 	for _, v := range Roles {
-		if _, err = s.rbacOp.AddGroupingPolicy(req.UserId, v, u.Tenant); err != nil {
+		if _, err = s.rbacOp.AddGroupingPolicy(req.UserId, v.ID, u.Tenant); err != nil {
 			log.Errorf("error AddGroupingPolicy(%s/%s/%s): %s", req.UserId, v, u.Tenant, err)
 			return nil, pb.ErrInternalStore()
 		}
@@ -303,13 +303,13 @@ func (s *RBACService) CreateRoleBinding(ctx context.Context, req *pb.CreateRoleB
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
 	for _, v := range Users {
-		if _, err = s.rbacOp.AddGroupingPolicy(v, req.RoleId, u.Tenant); err != nil {
+		if _, err = s.rbacOp.AddGroupingPolicy(v.ID, req.RoleId, u.Tenant); err != nil {
 			log.Errorf("error AddGroupingPolicy(%s/%s/%s): %s", v, req.RoleId, u.Tenant, err)
 			return nil, pb.ErrInternalStore()
 		}
 		rbStack = append(rbStack, func() error {
 			log.Debugf("AddGroupingPolicy(%s/%s/%s) roll back run", v, req.RoleId, u.Tenant)
-			if _, err = s.rbacOp.RemoveGroupingPolicy(v, req.RoleId, u.Tenant); err != nil {
+			if _, err = s.rbacOp.RemoveGroupingPolicy(v.ID, req.RoleId, u.Tenant); err != nil {
 				log.Errorf("error RemoveGroupingPolicy(%s/%s/%s): %s", v, req.RoleId, u.Tenant, err)
 				return pb.ErrInternalStore()
 			}
