@@ -736,7 +736,6 @@ github.com/golang-jwt/jwt v3.2.1+incompatible h1:73Z+4BJcrTC+KczS6WvTPvRGOp1WmfE
 github.com/golang-jwt/jwt v3.2.1+incompatible/go.mod h1:8pz2t5EyA70fFQQSrl6XZXzqecmYZeUEB8OUGHkxJ+I=
 github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe/go.mod h1:8vg3r2VgvsThLBIFL93Qb5yWzgyZWhEmBwUJWevAkK0=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
-github.com/golang/glog v1.0.0 h1:nfP3RFugxnNRyKgeWd4oI1nYvXpxrx8ck8ZrcizshdQ=
 github.com/golang/glog v1.0.0/go.mod h1:EWib/APOK0SL3dFbYqvxE3UYd8E6s1ouQ7iEp/0LWV4=
 github.com/golang/groupcache v0.0.0-20160516000752-02826c3e7903/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
 github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef/go.mod h1:cIg4eruTrX1D+g88fzRXU5OdNfaM+9IcxsU14FzY7Hc=
@@ -1567,18 +1566,12 @@ github.com/tidwall/rtree v0.0.0-20180113144539-6cd427091e0e/go.mod h1:/h+UnNGt0I
 github.com/tidwall/tinyqueue v0.0.0-20180302190814-1e39f5511563 h1:Otn9S136ELckZ3KKDyCkxapfufrqDqwmGjcHfAyXRrE=
 github.com/tidwall/tinyqueue v0.0.0-20180302190814-1e39f5511563/go.mod h1:mLqSmt7Dv/CNneF2wfcChfN1rvapyQr01LGKnKex0DQ=
 github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb/go.mod h1:FYeTM+tqf/tdrf2HxUX2wdAAHQM8ggN4+IbZv4b6+wU=
-github.com/tkeel-io/kit v0.0.0-20220303080455-8ab38f419f7c h1:9N3MBvT0WDaHSu9cIz3O8UEboqYMfEmNUc+COvdoFJU=
-github.com/tkeel-io/kit v0.0.0-20220303080455-8ab38f419f7c/go.mod h1:ki+q/zN0N2eSfjUnpkx8g3UlVps5waO2bkiIvO85ZCg=
-github.com/tkeel-io/kit v0.0.0-20220310034133-a7b8ce454e5b h1:AgRbRYYiVHtIajVeL34b+KhkoDmcPHjOhLuZSNKNRUU=
-github.com/tkeel-io/kit v0.0.0-20220310034133-a7b8ce454e5b/go.mod h1:ki+q/zN0N2eSfjUnpkx8g3UlVps5waO2bkiIvO85ZCg=
 github.com/tkeel-io/kit v0.0.0-20220311032953-c8bf1e0f86cb h1:X+ccMZgS9ZfQa4S2UEwoQbvJmR2snKCndkBxq3R/Z4s=
 github.com/tkeel-io/kit v0.0.0-20220311032953-c8bf1e0f86cb/go.mod h1:ki+q/zN0N2eSfjUnpkx8g3UlVps5waO2bkiIvO85ZCg=
 github.com/tkeel-io/security v0.0.0-20220303154013-f6ad9a8a8206 h1:AVdX8MAKmJiMntwpvfOBd28CVzcOuekyaSUTPpSaI1k=
 github.com/tkeel-io/security v0.0.0-20220303154013-f6ad9a8a8206/go.mod h1:YnasaSkW3Fmownt0TKzhuulgGkm/0IJBhfSE3niKhFM=
 github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220303151503-0f9a4a00fd77 h1:odBS2F8zlZTMgDdEsItP5/qWGzO2EMWUku72fTsUsTE=
 github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220303151503-0f9a4a00fd77/go.mod h1:tjJgHPar2pFjydhnOCLspww8tSOvcKch241PeP9OL8E=
-github.com/tkeel-io/tkeel-interface/protoc-gen-go-http v0.0.0-20220310034105-3ee8d9ec78cb h1:FAe5h+tDfXibcFb82l7Gi3kIUIRuGU/Qi/9DoD//EiQ=
-github.com/tkeel-io/tkeel-interface/protoc-gen-go-http v0.0.0-20220310034105-3ee8d9ec78cb/go.mod h1:OUp2LbdYTnNNI4SmJkNUa0Cs5uAjF9dKUyatnHeseQo=
 github.com/tklauser/go-sysconf v0.3.6/go.mod h1:MkWzOF4RMCshBAMXuhXJs64Rte09mITnppBXY/rYEFI=
 github.com/tklauser/numcpus v0.2.2/go.mod h1:x3qojaO3uyYt0i56EW/VUYs7uBvdl2fkfZFu0T9wgjM=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
@@ -2229,7 +2222,6 @@ google.golang.org/genproto v0.0.0-20210402141018-6c239bbf2bb1/go.mod h1:9lPAdzaE
 google.golang.org/genproto v0.0.0-20210524171403-669157292da3/go.mod h1:P3QM42oQyzQSnHPnZ/vqoCdDmzH28fzWByN9asMeM8A=
 google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c/go.mod h1:UODoCrxHCcBojKKwX1terBiRUaqAsFqJiF615XL43r0=
 google.golang.org/genproto v0.0.0-20211104193956-4c6863e31247/go.mod h1:5CzLGKJ67TSI2B9POpiiyGha0AjJvZIUgRMt1dSmuhc=
-google.golang.org/genproto v0.0.0-20211112145013-271947fe86fd/go.mod h1:5CzLGKJ67TSI2B9POpiiyGha0AjJvZIUgRMt1dSmuhc=
 google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1/go.mod h1:5CzLGKJ67TSI2B9POpiiyGha0AjJvZIUgRMt1dSmuhc=
 google.golang.org/genproto v0.0.0-20220211171837-173942840c17 h1:2X+CNIheCutWRyKRte8szGxrE5ggtV4U+NKAbh/oLhg=
 google.golang.org/genproto v0.0.0-20220211171837-173942840c17/go.mod h1:kGP+zUP2Ddo0ayMi4YuN7C3WZyJvGLZRh8Z5wnAqvEI=
