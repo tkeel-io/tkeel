@@ -1,0 +1,39 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    meta.helm.sh/release-name: tkeel-platform
+    meta.helm.sh/release-namespace: keel-system
+  labels:
+    app.kubernetes.io/instance: tkeel-platform
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/version: 0.4.0
+  name: core-broker-pubsub
+  namespace: keel-system
+scopes:
+  - core-broker
+  - core
+  - jmeter-master
+  - jmeter-slave
+spec:
+  metadata:
+    - name: brokers
+      value: {{ .Values.components.pubsub.kafka.host }}
+    - name: consumerGroup
+      value: core-broker
+    - name: clientID
+      value: core-broker-kafka-id
+    - name: authRequired
+      value: false
+    - name: authType
+      value: none
+    - name: disableTls
+      value: true
+    - name: maxMessageBytes
+      value: 4096
+    - name: consumeRetryInterval
+      value: 200ms
+    - name: version
+      value: 0.10.2.0
+  type: pubsub.kafka
+  version: v1

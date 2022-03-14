@@ -5,5 +5,17 @@ dependencies:
 - name: mysql
   repository: https://charts.bitnami.com/bitnami
   version: 8.8.12
-digest: sha256:143c65475bf3e54c68944d30a05ea8f4569b35defa617f243523b84cf5b3cebb
-generated: "2021-11-25T16:05:13.6160517+08:00"
+- name: etcd
+  repository: https://charts.bitnami.com/bitnami
+  version: 6.10.4
+- name: elasticsearch
+  repository: https://charts.bitnami.com/bitnami
+  version: 17.8.0
+- name: nginx-ingress-controller
+  repository: https://charts.bitnami.com/bitnami
+  version: 9.1.5
+- name: kafka
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.3.2
+digest: sha256:e43e38ef553006d4a47f04b191aadbc75f0e494eb01f1ad9a739a995ad915412
+generated: "2022-03-01T19:31:42.0340394+08:00"
