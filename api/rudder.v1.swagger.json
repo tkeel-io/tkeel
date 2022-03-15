@@ -542,7 +542,7 @@
             "type": "string"
           },
           {
-            "name": "auto_redirect",
+            "name": "disable_redirect",
             "description": "auto redirect if auto_redirect = trueparam",
             "in": "query",
             "required": false,
