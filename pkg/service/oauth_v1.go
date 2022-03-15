@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/casbin/casbin/v2"
+	t_model "github.com/tkeel-io/tkeel/pkg/model"
 	"net/http"
 	"strings"
 	"time"
@@ -44,6 +46,7 @@ type OauthService struct {
 	DaprStore  string
 	DaprClient dapr.Client
 	k8s        *kubernetes.Client
+	RBACOp     *casbin.SyncedEnforcer
 	pb.UnimplementedOauthServer
 }
 
@@ -69,12 +72,12 @@ type AuthorizeRequest struct {
 	Request             *http.Request
 }
 
-func NewOauthService(m *manage.Manager, userDB *gorm.DB, conf *TokenConf, daprClient dapr.Client, daprstore string, k8s *kubernetes.Client) *OauthService {
+func NewOauthService(m *manage.Manager, userDB *gorm.DB, conf *TokenConf, daprClient dapr.Client, daprstore string, k8s *kubernetes.Client, rbac *casbin.SyncedEnforcer) *OauthService {
 	if userDB == nil {
 		log.Error("nil db")
 		panic("nil db")
 	}
-	oauthServer := &OauthService{UserDB: userDB, Config: conf, Manager: m, DaprClient: daprClient, DaprStore: daprstore, k8s: k8s}
+	oauthServer := &OauthService{UserDB: userDB, Config: conf, Manager: m, DaprClient: daprClient, DaprStore: daprstore, k8s: k8s, RBACOp: rbac}
 	return oauthServer
 }
 
@@ -144,6 +147,17 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 			if err != nil {
 				log.Error(err)
 				return nil, pb.OauthErrServerError()
+			}
+			roleDao := &model.Role{}
+			count, roles, _ := roleDao.List(s.UserDB, map[string]interface{}{"tenant_id": req.GetTenantId(), "name": t_model.TkeelTenantAdminRole}, nil, "")
+			if count < 1 {
+				log.Errorf("%s tenant hasn't admin", req.GetTenantId())
+				return nil, pb.OauthErrServerError()
+			}
+			adminRBACs := s.RBACOp.GetFilteredGroupingPolicy(1, roles[0].ID, req.GetTenantId())
+			if len(adminRBACs) == 0 {
+				adminRBAC := []string{userDao.ID, roles[0].ID, req.GetTenantId()}
+				s.RBACOp.AddGroupingPolicy(adminRBAC)
 			}
 			tgr := &oauth2v4.TokenGenerateRequest{ClientID: DefaultClient, ClientSecret: DefaultClientSecurity, UserID: userDao.ID}
 			ti, err := s.Manager.GenerateAccessToken(ctx, oauth2v4.PasswordCredentials, tgr)
