@@ -225,7 +225,7 @@ message TokenRequest {
     },
     (google.api.field_behavior) = OPTIONAL
   ];
-  bool auto_redirect = 8 [
+  bool disable_redirect = 8 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
       description : "auto redirect if auto_redirect = true"
           "param"
