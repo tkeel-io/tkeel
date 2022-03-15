@@ -1,0 +1,25 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: core-state
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    helm.sh/chart: core-0.4.0
+    app.kubernetes.io/name: core
+    app.kubernetes.io/instance: tkeel-middleware
+    app.kubernetes.io/version: "0.4.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: state.redis
+  version: v1
+  metadata:
+    - name: redisType
+      value: node
+    - name: redisDB
+      value: 7
+    - name: redisHost
+      value: {{ .Values.components.state.redis.host }}
+    - name: redisPassword
+      value: {{ .Values.components.state.redis.password }}
+scopes:
+  - core

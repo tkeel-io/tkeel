@@ -75,7 +75,8 @@ type AuthenticationService struct {
 }
 
 func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenConf,
-	rbacOp *casbin.SyncedEnforcer, prOp proute.Operator, tpOp rbac.TenantPluginMgr) *AuthenticationService {
+	rbacOp *casbin.SyncedEnforcer, prOp proute.Operator, tpOp rbac.TenantPluginMgr,
+) *AuthenticationService {
 	secret := util.RandStringBytesMaskImpr(0, 10)
 	tokenConf := manage.DefaultAuthorizeCodeTokenCfg
 	if conf.AccessTokenExp != 0 && conf.RefreshTokenExp != 0 {
@@ -400,7 +401,7 @@ func isAddons(path string) bool {
 
 func getPluginIDFromPath(pluginPath string) string {
 	ss := strings.SplitN(pluginPath, "/", 4)
-	if len(ss) != 4 {
+	if len(ss) < 3 {
 		return ""
 	}
 	return ss[2]
@@ -408,7 +409,7 @@ func getPluginIDFromPath(pluginPath string) string {
 
 func getMethodApisPath(apisPath string) string {
 	ss := strings.SplitN(apisPath, "/", 4)
-	if len(ss) != 4 {
+	if len(ss) < 4 {
 		return ""
 	}
 	return strings.Split(ss[3], "?")[0]

@@ -65,10 +65,10 @@ pipeline {
         stage('build & push chart'){
           steps {
               container ('go') {
-                sh 'helm3 package charts/keel --app-version=$APP_VERSION --version=$CHART_VERSION'
-                sh 'helm3 package charts/rudder --app-version=$APP_VERSION --version=$CHART_VERSION'
-                sh 'helm3 package charts/tkeel-middleware --app-version=$APP_VERSION --version=$CHART_VERSION'
-                sh 'helm3 package charts/tkeel-plugin-components --app-version=$APP_VERSION --version=$CHART_VERSION'
+                sh 'helm3 package charts/keel --app-version=$BRANCH_NAME-$APP_VERSION --version=$CHART_VERSION'
+                sh 'helm3 package charts/rudder --app-version=$BRANCH_NAME-$APP_VERSION --version=$CHART_VERSION'
+                sh 'helm3 package charts/tkeel-middleware --app-version=$BRANCH_NAME-$APP_VERSION --version=$CHART_VERSION'
+                sh 'helm3 package charts/tkeel-plugin-components --app-version=$BRANCH_NAME-$APP_VERSION --version=$CHART_VERSION'
                 // input(id: 'release-image-with-tag', message: 'release image with tag?')
                   withCredentials([usernamePassword(credentialsId: "$GITHUB_CREDENTIAL_ID", passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                     sh 'git config --global user.email "lunz1207@yunify.com"'
