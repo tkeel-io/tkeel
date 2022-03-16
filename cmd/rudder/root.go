@@ -217,7 +217,7 @@ var rootCmd = &cobra.Command{
 			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, tenantSrv)
 			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), tenantSrv)
 			// oauth server.
-			oauthSrv := service.NewOauthService(m, gormdb, tokenConf, daprGRPCClient, conf.Dapr.PrivateStateName, k8sClient)
+			oauthSrv := service.NewOauthService(m, gormdb, tokenConf, daprGRPCClient, conf.Dapr.PrivateStateName, k8sClient, rbacOp)
 			oauth_v1.RegisterOauthHTTPServer(httpSrv.Container, oauthSrv)
 			oauth_v1.RegisterOauthServer(grpcSrv.GetServe(), oauthSrv)
 
