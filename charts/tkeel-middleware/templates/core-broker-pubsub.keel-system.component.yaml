@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/version: 0.4.0
   name: core-broker-pubsub
-  namespace: keel-system
+  namespace: {{ $.Release.Namespace | quote }}
 scopes:
   - core-broker
   - core
