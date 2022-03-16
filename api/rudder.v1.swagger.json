@@ -969,6 +969,62 @@
         "tags": [
           "Plugin"
         ]
+      },
+      "put": {
+        "summary": "更新插件接口",
+        "operationId": "UpgradePlugin",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "$ref": "#/definitions/v1UpgradePluginResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "REPOSITORY_OR_INSTALLER_NOT_FOUND",
+            "schema": {}
+          },
+          "409": {
+            "description": "ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "upgrade plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "installer info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Installer",
+              "description": "installer info"
+            }
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
       }
     },
     "/plugins/{id}/tenants": {
@@ -4421,6 +4477,15 @@
       "properties": {
         "ok": {
           "type": "boolean"
+        }
+      }
+    },
+    "v1UpgradePluginResponse": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1PluginObject",
+          "description": "plugin object"
         }
       }
     },
