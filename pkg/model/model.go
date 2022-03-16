@@ -30,6 +30,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/tkeel-io/kit/log"
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 )
@@ -149,6 +150,11 @@ func NewPlugin(pluginID string, installer *Installer) *Plugin {
 	}
 }
 
+func (p *Plugin) Upgrade(installer *Installer) {
+	p.Installer = installer
+	p.Status = openapi_v1.PluginStatus_WAIT_RUNNING
+}
+
 func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.PluginVersion = resp.Version
 	p.TkeelVersion = resp.TkeelVersion
@@ -162,126 +168,18 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.RegisterTimestamp = time.Now().Unix()
 }
 
-func (p *Plugin) SetIdentify(resp *openapi_v1.IdentifyResponse) {
-	p.PluginVersion = resp.Version
-	p.TkeelVersion = resp.TkeelVersion
-	p.AddonsPoint = resp.AddonsPoint
-	p.ImplementedPlugin = resp.ImplementedPlugin
-	p.PluginDependences = resp.Dependence
-	p.ConsoleEntries = resp.Entries
-	p.Permissions = resp.Permissions
-	p.DisableManualActivation = resp.DisableManualActivation
-}
-
 func (p *Plugin) Clone() *Plugin {
-	return &Plugin{
-		ID:            p.ID,
-		PluginVersion: p.PluginVersion,
-		TkeelVersion:  p.TkeelVersion,
-		Installer: func() *Installer {
-			if p.Installer == nil {
-				return nil
-			}
-			return &Installer{
-				Repo:    p.Installer.Repo,
-				Name:    p.Installer.Name,
-				Version: p.Installer.Version,
-				Icon:    p.Installer.Icon,
-				Desc:    p.Installer.Desc,
-				Maintainer: func() []*repository.Maintainer {
-					ret := make([]*repository.Maintainer, 0, len(p.Installer.Maintainer))
-					if p.Installer.Maintainer == nil {
-						return ret
-					}
-					for _, v := range p.Installer.Maintainer {
-						ret = append(ret, &repository.Maintainer{
-							Name:  v.Name,
-							Email: v.Email,
-							URL:   v.URL,
-						})
-					}
-					return ret
-				}(),
-			}
-		}(),
-		AddonsPoint: func() []*openapi_v1.AddonsPoint {
-			ret := make([]*openapi_v1.AddonsPoint, 0, len(p.AddonsPoint))
-			for _, v := range p.AddonsPoint {
-				ret = append(ret, &openapi_v1.AddonsPoint{
-					Name: v.Name,
-					Desc: v.Desc,
-				})
-			}
-			return ret
-		}(),
-		ImplementedPlugin: func() []*openapi_v1.ImplementedPlugin {
-			ret := make([]*openapi_v1.ImplementedPlugin, 0, len(p.ImplementedPlugin))
-			for _, v := range p.ImplementedPlugin {
-				tmp := &openapi_v1.ImplementedPlugin{
-					Plugin: &openapi_v1.BriefPluginInfo{
-						Id:      v.Plugin.Id,
-						Version: v.Plugin.Version,
-					},
-					Addons: func() []*openapi_v1.ImplementedAddons {
-						ret := make([]*openapi_v1.ImplementedAddons, 0, len(v.Addons))
-						for _, v1 := range v.Addons {
-							ret = append(ret, &openapi_v1.ImplementedAddons{
-								AddonsPoint:         v1.AddonsPoint,
-								ImplementedEndpoint: v1.ImplementedEndpoint,
-							})
-						}
-						return ret
-					}(),
-				}
-				ret = append(ret, tmp)
-			}
-			return ret
-		}(),
-		ConsoleEntries: func() []*openapi_v1.ConsoleEntry {
-			ret := make([]*openapi_v1.ConsoleEntry, 0, len(p.ConsoleEntries))
-			for _, v := range p.ConsoleEntries {
-				n := &openapi_v1.ConsoleEntry{}
-				consoleEntryClone(n, v)
-				ret = append(ret, n)
-			}
-			return ret
-		}(),
-		PluginDependences: func() []*openapi_v1.BriefPluginInfo {
-			ret := make([]*openapi_v1.BriefPluginInfo, 0, len(p.PluginDependences))
-			for _, v := range p.PluginDependences {
-				ret = append(ret, &openapi_v1.BriefPluginInfo{
-					Id:      v.Id,
-					Version: v.Version,
-				})
-			}
-			return ret
-		}(),
-		Secret:            p.Secret,
-		RegisterTimestamp: p.RegisterTimestamp,
-		Version:           p.Version,
-		Status:            p.Status,
-		EnableTenantes: func() []*EnableTenant {
-			ret := make([]*EnableTenant, 0, len(p.EnableTenantes))
-			for _, v := range p.EnableTenantes {
-				ret = append(ret, &EnableTenant{
-					TenantID:        v.TenantID,
-					OperatorID:      v.OperatorID,
-					EnableTimestamp: v.EnableTimestamp,
-				})
-			}
-			return ret
-		}(),
-		Permissions: func() []*openapi_v1.Permission {
-			ret := make([]*openapi_v1.Permission, 0, len(p.Permissions))
-			for _, v := range p.Permissions {
-				t := &openapi_v1.Permission{}
-				tmp := proto.Clone(v)
-				proto.Merge(t, tmp)
-				ret = append(ret, t)
-			}
-			return ret
-		}(),
+	b, err := json.Marshal(p)
+	if err != nil {
+		log.Errorf("error clone plugin(%s) marshal: %s", p.ID, err)
+		return nil
 	}
+	newP := new(Plugin)
+	if err = json.Unmarshal(b, newP); err != nil {
+		log.Errorf("error clone plugin(%s) unmarshal: %s", p.ID, err)
+		return nil
+	}
+	return newP
 }
 
 func (p *Plugin) CheckTenantEnable(tenantID string) bool {
@@ -307,22 +205,6 @@ func (p *Plugin) TenantDisable(tenantID string) bool {
 		}
 	}
 	return ok
-}
-
-func consoleEntryClone(dst, src *openapi_v1.ConsoleEntry) {
-	dst.Id = src.Id
-	dst.Name = src.Name
-	dst.Path = src.Path
-	dst.Icon = src.Icon
-	dst.Children = func() []*openapi_v1.ConsoleEntry {
-		ret := make([]*openapi_v1.ConsoleEntry, 0, len(src.Children))
-		for _, v := range src.Children {
-			n := &openapi_v1.ConsoleEntry{}
-			consoleEntryClone(n, v)
-			ret = append(ret, n)
-		}
-		return ret
-	}()
 }
 
 type PluginProxyRouteMap map[string]*PluginRoute
@@ -353,24 +235,17 @@ func (pr *PluginRoute) String() string {
 }
 
 func (pr *PluginRoute) Clone() *PluginRoute {
-	return &PluginRoute{
-		ID:           pr.ID,
-		Status:       pr.Status,
-		TkeelVersion: pr.TkeelVersion,
-		RegisterAddons: func() map[string]string {
-			ret := make(map[string]string)
-			for k, v := range pr.RegisterAddons {
-				ret[k] = v
-			}
-			return ret
-		}(),
-		ImplementedPlugin: func() []string {
-			ret := make([]string, 0, len(pr.ImplementedPlugin))
-			copy(ret, pr.ImplementedPlugin)
-			return ret
-		}(),
-		Version: pr.Version,
+	b, err := json.Marshal(pr)
+	if err != nil {
+		log.Errorf("error clone plugin route(%s) marshal: %s", pr.ID, err)
+		return nil
 	}
+	newPr := new(PluginRoute)
+	if err = json.Unmarshal(b, newPr); err != nil {
+		log.Errorf("error clone plugin route(%s) unmarshal: %s", pr.ID, err)
+		return nil
+	}
+	return newPr
 }
 
 func NewPluginRoute(resp *openapi_v1.IdentifyResponse) *PluginRoute {

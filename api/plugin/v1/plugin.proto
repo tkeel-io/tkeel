@@ -59,6 +59,40 @@ service Plugin {
     };
   };
 
+  rpc UpgradePlugin(UpgradePluginRequest) returns (UpgradePluginResponse) {
+    option (google.api.http) = {
+      put : "/plugins/{id}"
+      body : "installer"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "更新插件接口"
+      operation_id : "UpgradePlugin"
+      tags : "Plugin"
+      responses : [
+        {
+          key : "200"
+          value : {description : "SUCC"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_ARGUMENT"}
+        },
+        {
+          key : "404"
+          value : {description : "REPOSITORY_OR_INSTALLER_NOT_FOUND"}
+        },
+        {
+          key : "409"
+          value : {description : "ALREADY_EXISTS"}
+        },
+        {
+          key : "500"
+          value : {description : "INTERNAL_STORE"}
+        }
+      ]
+    };
+  };
+
   rpc UninstallPlugin(UninstallPluginRequest)
       returns (UninstallPluginResponse) {
     option (google.api.http) = {
@@ -451,6 +485,24 @@ message InstallPluginRequest {
 }
 
 message InstallPluginResponse {
+  PluginObject plugin = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "plugin object"
+      } ];
+}
+
+message UpgradePluginRequest {
+  string id = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "upgrade plugin id"
+      } ];
+  Installer installer = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "installer info"
+      } ];
+}
+
+message UpgradePluginResponse {
   PluginObject plugin = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "plugin object"
