@@ -48,6 +48,7 @@ func AddPluginPermissionOnSet(ctx context.Context, kv kv.Operator, pluginID stri
 		}
 		return nil
 	})
+	log.Debugf("kv add permission %s succ", pluginID)
 	return rbStack, nil
 }
 
@@ -80,6 +81,7 @@ func DeletePluginPermissionOnSet(ctx context.Context, kv kv.Operator, pluginID s
 		}
 		return nil
 	})
+	log.Debugf("kv del permission %s succ", pluginID)
 	return rbStack, nil
 }
 
