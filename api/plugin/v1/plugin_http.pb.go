@@ -37,6 +37,7 @@ type PluginHTTPServer interface {
 	TenantDisable(context.Context, *TenantDisableRequest) (*emptypb.Empty, error)
 	TenantEnable(context.Context, *TenantEnableRequest) (*emptypb.Empty, error)
 	UninstallPlugin(context.Context, *UninstallPluginRequest) (*UninstallPluginResponse, error)
+	UpgradePlugin(context.Context, *UpgradePluginRequest) (*UpgradePluginResponse, error)
 }
 
 type PluginHTTPHandler struct {
@@ -591,6 +592,72 @@ func (h *PluginHTTPHandler) UninstallPlugin(req *go_restful.Request, resp *go_re
 	}
 }
 
+func (h *PluginHTTPHandler) UpgradePlugin(req *go_restful.Request, resp *go_restful.Response) {
+	in := UpgradePluginRequest{}
+	if err := transportHTTP.GetBody(req, &in.Installer); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.UpgradePlugin(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
 func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPServer) {
 	var ws *go_restful.WebService
 	for _, v := range container.RegisteredWebServices() {
@@ -609,6 +676,8 @@ func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPSer
 	handler := newPluginHTTPHandler(srv)
 	ws.Route(ws.POST("/plugins/{id}").
 		To(handler.InstallPlugin))
+	ws.Route(ws.PUT("/plugins/{id}").
+		To(handler.UpgradePlugin))
 	ws.Route(ws.DELETE("/plugins/{id}").
 		To(handler.UninstallPlugin))
 	ws.Route(ws.GET("/plugins/{id}").

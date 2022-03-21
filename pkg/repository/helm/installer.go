@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/postrender"
 
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
@@ -57,7 +58,8 @@ type Installer struct {
 }
 
 func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrief,
-	namespace string, helmConfig *action.Configuration) Installer {
+	namespace string, helmConfig *action.Configuration,
+) Installer {
 	return Installer{
 		chart:      ch,
 		helmConfig: helmConfig,
@@ -178,11 +180,59 @@ func (h Installer) Install(ops ...*repository.Option) error {
 	failInjector(dependencyChart, h.id, _componentSecret)
 	h.chart.AddDependency(dependencyChart)
 	// inject dapr annotation.
-	if err = h.inject(installer, dependencyChart); err != nil {
+	render, err := h.inject()
+	if err != nil {
 		return errors.Wrap(err, "inject err")
 	}
+	installer.PostRenderer = render
 
 	if _, err := installer.Run(h.chart, nil); err != nil {
+		return errors.Wrap(err, "INSTALLATION FAILED")
+	}
+	return nil
+}
+
+func (h Installer) Upgrade(ops ...*repository.Option) error {
+	for _, v := range ops {
+		_, ok := h.options[v.Key]
+		if ok {
+			h.options[v.Key] = v.Value
+		}
+	}
+	_, err := json.Marshal(h.options)
+	if err != nil {
+		return fmt.Errorf("error check opthion: %w", err)
+	}
+
+	upgrader := action.NewUpgrade(h.helmConfig)
+
+	upgrader.Version = h.brief.Version
+
+	upgrader.Namespace = h.namespace
+
+	if err = checkIfInstallable(h.chart); err != nil {
+		return fmt.Errorf("error installer installable: %w", err)
+	}
+
+	if h.chart.Metadata.Deprecated {
+		log.Warn("This chart is deprecated")
+	}
+	// Add inject dependencies.
+	dependencyChart, err := loadComponentChart()
+	if err != nil {
+		log.Error(err)
+		return errors.Wrap(err, "load component chart err")
+	}
+	failInjector(dependencyChart, h.id, _componentSecret)
+	h.chart.AddDependency(dependencyChart)
+	// inject dapr annotation.
+	render, err := h.inject()
+	if err != nil {
+		return errors.Wrap(err, "inject err")
+	}
+	upgrader.PostRenderer = render
+
+	if _, err := upgrader.Run(h.id, h.chart, nil); err != nil {
 		return errors.Wrap(err, "INSTALLATION FAILED")
 	}
 	return nil
@@ -203,21 +253,20 @@ func (h Installer) Brief() *repository.InstallerBrief {
 	return &h.brief
 }
 
-func (h *Installer) inject(installer *action.Install, dependency *chart.Chart) error {
+func (h *Installer) inject() (postrender.PostRenderer, error) {
 	enableAutoInject := getBoolAnnotationOrDefault(h.chart.Metadata.Annotations,
 		tKeelPluginEnableKey, false)
 	if !enableAutoInject {
 		// Compatible with versions prior to 0.4.0.
 		h.chart.Values["daprConfig"] = h.id
-		return nil
+		return nil, nil
 	}
 	deployment := getStringAnnotation(h.chart.Metadata.Annotations, tKeelPluginDeploymentKey)
 	appPort := getStringAnnotation(h.chart.Metadata.Annotations, tKeelPluginPortKey)
 	if deployment == "" || appPort == "" {
-		return errors.New("get plugin annotations err")
+		return nil, errors.New("get plugin annotations err")
 	}
-	installer.PostRenderer = newKustomizeRender(deployment, h.id, appPort)
-	return nil
+	return newKustomizeRender(deployment, h.id, appPort), nil
 }
 
 func loadComponentChart() (*chart.Chart, error) {

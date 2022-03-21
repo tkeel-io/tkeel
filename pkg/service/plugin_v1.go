@@ -101,7 +101,7 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 		log.Error("error install plugin request installer info is nil")
 		return nil, pb.PluginErrInvalidArgument()
 	}
-	installerConfiguration, err := getInstallerConfiguration(req)
+	installerConfiguration, err := getInstallerConfiguration(req.Installer)
 	if err != nil {
 		log.Errorf("error get installer configuration: %s", err)
 		return nil, pb.PluginErrInvalidArgument()
@@ -166,11 +166,85 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 	go func() {
 		actionCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
 		defer cancel()
-		s.registerPluginAction(actionCtx, newP.ID)
+		s.registerPluginAction(actionCtx, newP.ID, false)
 	}()
 	log.Debugf("install plugin(%s) succ.", newP)
 	return &pb.InstallPluginResponse{
 		Plugin: util.ConvertModel2PluginObjectPb(newP, nil, model.TKeelTenant),
+	}, nil
+}
+
+func (s *PluginServiceV1) UpgradePlugin(ctx context.Context,
+	req *pb.UpgradePluginRequest,
+) (*pb.UpgradePluginResponse, error) {
+	rbStack := util.NewRollbackStack()
+	defer rbStack.Run()
+	p, err := s.pluginOp.Get(ctx, req.GetId())
+	if err != nil {
+		log.Error("error plugin not installed")
+		return nil, pb.PluginErrPluginNotFound()
+	}
+	if req.Installer == nil {
+		log.Error("error upgrade plugin request installer info is nil")
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	installerConfiguration, err := getInstallerConfiguration(req.Installer)
+	if err != nil {
+		log.Errorf("error get installer configuration: %s", err)
+		return nil, pb.PluginErrInvalidArgument()
+	}
+	log.Debugf("configuration: %v", installerConfiguration)
+	repo, err := hub.GetInstance().Get(req.Installer.Repo)
+	if err != nil {
+		log.Errorf("error get repo(%s): %s", req.Installer.Repo, err)
+		if errors.Is(err, hub.ErrRepoNotFound) {
+			return nil, pb.PluginErrInstallerNotFound()
+		}
+	}
+	upgrader, err := repo.Get(req.Installer.Name, req.Installer.Version)
+	if err != nil {
+		log.Errorf("error get installer(%s): %s", req.Installer, err)
+		return nil, pb.PluginErrInstallerNotFound()
+	}
+	upgrader.SetPluginID(req.Id)
+	if err = upgrader.Upgrade(convertConfiguration2Option(installerConfiguration)...); err != nil {
+		log.Errorf("error upgrade installer(%s) err: %s", upgrader.Brief(), err)
+		if errors.Is(err, repository.ErrInvalidOptions) {
+			return nil, pb.PluginErrInvalidArgument()
+		}
+		return nil, pb.PluginErrInstallInstaller()
+	}
+	rbStack = append(rbStack, func() error {
+		log.Debugf("installer roll back.")
+		if err = hub.GetInstance().Uninstall(req.Id, upgrader.Brief()); err != nil {
+			return errors.Wrapf(err, "uninstall installer(%s)", upgrader.Brief())
+		}
+		return nil
+	})
+	tmp := p.Clone()
+	p.Upgrade(&model.Installer{
+		Repo:       upgrader.Brief().Repo,
+		Name:       upgrader.Brief().Name,
+		Version:    upgrader.Brief().Version,
+		Icon:       upgrader.Brief().Icon,
+		Desc:       upgrader.Brief().Desc,
+		Maintainer: upgrader.Brief().Maintainers,
+	})
+	rb, err := s.updatePlugin(ctx, tmp, p)
+	if err != nil {
+		log.Errorf("error update plugin(%s) err: %s", p, err)
+		return nil, pb.PluginErrInternalStore()
+	}
+	rbStack = append(rbStack, rb)
+	go func() {
+		actionCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
+		defer cancel()
+		s.registerPluginAction(actionCtx, p.ID, true)
+	}()
+	log.Debugf("upgrade plugin(%s) succ.", p)
+	rbStack = util.NewRollbackStack()
+	return &pb.UpgradePluginResponse{
+		Plugin: util.ConvertModel2PluginObjectPb(p, nil, model.TKeelTenant),
 	}, nil
 }
 
@@ -271,7 +345,7 @@ func (s *PluginServiceV1) GetPlugin(ctx context.Context,
 	if err != nil {
 		log.Errorf("error plugin(%s) get: %s", req.Id, err)
 		if errors.Is(err, plugin.ErrPluginNotExsist) {
-			return nil, pb.PluginErrInvalidArgument()
+			return nil, pb.PluginErrPluginNotFound()
 		}
 		return nil, pb.PluginErrInternalStore()
 	}
@@ -503,7 +577,7 @@ func (s *PluginServiceV1) TMRegisterPlugin(ctx context.Context,
 		log.Errorf("error plugin(%s) status not %s", req.Id, openapi_v1.PluginStatus_ERR_REGISTER)
 		return nil, pb.PluginErrInvalidArgument()
 	}
-	if err = s.registerPluginProcess(ctx, req.Id); err != nil {
+	if err = s.registerPluginProcess(ctx, req.Id, false); err != nil {
 		log.Errorf("error plugin(%s) register: %s", req.Id, err)
 		return nil, pb.PluginErrInternalStore()
 	}
@@ -523,7 +597,7 @@ func (s *PluginServiceV1) updatePluginIdentify(ctx context.Context, pID string) 
 		return nil, errors.Wrapf(err, "check identify: %s", resp)
 	}
 	oldP := p.Clone()
-	p.SetIdentify(resp)
+	p.Register(resp, helm.SecretContext)
 	rb, err := s.updatePlugin(ctx, oldP, p)
 	if err != nil {
 		return nil, errors.Wrapf(err, "update plugin: %s", pID)
@@ -532,14 +606,14 @@ func (s *PluginServiceV1) updatePluginIdentify(ctx context.Context, pID string) 
 	return rb, nil
 }
 
-func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) {
+func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string, isUpgrade bool) {
 	duration, err := time.ParseDuration(s.tkeelConf.WatchInterval)
 	if err != nil {
 		log.Errorf("register error parse watch interval: %s", err)
 		return
 	}
 
-	ticker := time.NewTicker(duration * 10)
+	ticker := time.NewTicker(time.Millisecond * 1)
 	registrationfailed := true
 	defer func() {
 		if registrationfailed {
@@ -561,8 +635,9 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 				}
 				retry--
 			} else if resp.Status == openapi_v1.PluginStatus_RUNNING {
+				log.Debugf("register plugin(%s)", pID)
 				// get register plugin identify.
-				if err = s.registerPluginProcess(ctx, pID); err != nil {
+				if err = s.registerPluginProcess(ctx, pID, isUpgrade); err != nil {
 					log.Errorf("error register(%s): %s", pID, err)
 					return
 				}
@@ -578,7 +653,7 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string) 
 	}
 }
 
-func (s *PluginServiceV1) registerPluginProcess(ctx context.Context, pID string) error {
+func (s *PluginServiceV1) registerPluginProcess(ctx context.Context, pID string, isUpgrade bool) error {
 	resp, err := s.queryIdentify(ctx, pID)
 	if err != nil {
 		return errors.Wrap(err, "register error query identify")
@@ -587,7 +662,7 @@ func (s *PluginServiceV1) registerPluginProcess(ctx context.Context, pID string)
 	if err = s.checkIdentify(ctx, resp); err != nil {
 		return errors.Wrap(err, "register error check identify")
 	}
-	if err = s.verifyPluginIdentity(ctx, resp); err != nil {
+	if err = s.verifyPluginIdentity(ctx, resp, isUpgrade); err != nil {
 		return errors.Wrap(err, "register error register plugin")
 	}
 	return nil
@@ -669,9 +744,23 @@ func (s *PluginServiceV1) checkIdentify(ctx context.Context,
 	return nil
 }
 
-func (s *PluginServiceV1) verifyPluginIdentity(ctx context.Context, resp *openapi_v1.IdentifyResponse) error {
+func (s *PluginServiceV1) verifyPluginIdentity(ctx context.Context, resp *openapi_v1.IdentifyResponse, isUpgrade bool) error {
 	rbStack := util.NewRollbackStack()
 	defer rbStack.Run()
+	if isUpgrade {
+		// delete plugin route.
+		rb, err := s.deletePluginRoute(ctx, resp.PluginId)
+		if err != nil {
+			return errors.Wrapf(err, "delete plugin route %s", resp.PluginId)
+		}
+		rbStack = append(rbStack, rb)
+		// remove plugin permissions.
+		rbs, err := util.DeletePluginPermissionOnSet(ctx, s.kvOp, resp.PluginId)
+		if err != nil {
+			return errors.Wrapf(err, "AddPluginPermissionOnSet %s", resp.PluginId)
+		}
+		rbStack = append(rbStack, rbs...)
+	}
 	// create plugin route.
 	newPluginRoute := model.NewPluginRoute(resp)
 	err := s.pluginRouteOp.Create(ctx, newPluginRoute)
@@ -1038,17 +1127,17 @@ func (s *PluginServiceV1) deletePermission(ctx context.Context, p *model.Plugin)
 	return rbStack, nil
 }
 
-func getInstallerConfiguration(req *pb.InstallPluginRequest) (map[string]interface{}, error) {
+func getInstallerConfiguration(reqInstaller *pb.Installer) (map[string]interface{}, error) {
 	installerConfiguration := make(map[string]interface{})
-	if req.Installer.Configuration != nil {
-		switch req.Installer.Type {
+	if reqInstaller.Configuration != nil {
+		switch reqInstaller.Type {
 		case pb.ConfigurationType_JSON:
-			if err := json.Unmarshal(req.Installer.Configuration,
+			if err := json.Unmarshal(reqInstaller.Configuration,
 				&installerConfiguration); err != nil {
 				return nil, errors.Wrap(err, "unmarshal request installer info configuration")
 			}
 		case pb.ConfigurationType_YAML:
-			if err := yaml.Unmarshal(req.Installer.Configuration,
+			if err := yaml.Unmarshal(reqInstaller.Configuration,
 				&installerConfiguration); err != nil {
 				return nil, errors.Wrap(err, "unmarshal request installer info configuration")
 			}

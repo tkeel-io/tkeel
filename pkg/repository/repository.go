@@ -88,7 +88,9 @@ type Installer interface {
 	// SetOption set option to Installer.
 	SetOption(...*Option) error
 	// Install plugin.
-	Install(...*Option) error
+	Install(opts ...*Option) error
+	// Upgrade plugin.
+	Upgrade(opts ...*Option) error
 	// Uninstall plugin.
 	Uninstall() error
 	// Brief get installer brief information.

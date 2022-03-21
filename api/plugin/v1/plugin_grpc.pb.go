@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PluginClient interface {
 	InstallPlugin(ctx context.Context, in *InstallPluginRequest, opts ...grpc.CallOption) (*InstallPluginResponse, error)
+	UpgradePlugin(ctx context.Context, in *UpgradePluginRequest, opts ...grpc.CallOption) (*UpgradePluginResponse, error)
 	UninstallPlugin(ctx context.Context, in *UninstallPluginRequest, opts ...grpc.CallOption) (*UninstallPluginResponse, error)
 	GetPlugin(ctx context.Context, in *GetPluginRequest, opts ...grpc.CallOption) (*GetPluginResponse, error)
 	ListPlugin(ctx context.Context, in *ListPluginRequest, opts ...grpc.CallOption) (*ListPluginResponse, error)
@@ -41,6 +42,15 @@ func NewPluginClient(cc grpc.ClientConnInterface) PluginClient {
 func (c *pluginClient) InstallPlugin(ctx context.Context, in *InstallPluginRequest, opts ...grpc.CallOption) (*InstallPluginResponse, error) {
 	out := new(InstallPluginResponse)
 	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.plugin.v1.Plugin/InstallPlugin", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginClient) UpgradePlugin(ctx context.Context, in *UpgradePluginRequest, opts ...grpc.CallOption) (*UpgradePluginResponse, error) {
+	out := new(UpgradePluginResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.plugin.v1.Plugin/UpgradePlugin", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -124,6 +134,7 @@ func (c *pluginClient) TMRegisterPlugin(ctx context.Context, in *TMRegisterPlugi
 // for forward compatibility
 type PluginServer interface {
 	InstallPlugin(context.Context, *InstallPluginRequest) (*InstallPluginResponse, error)
+	UpgradePlugin(context.Context, *UpgradePluginRequest) (*UpgradePluginResponse, error)
 	UninstallPlugin(context.Context, *UninstallPluginRequest) (*UninstallPluginResponse, error)
 	GetPlugin(context.Context, *GetPluginRequest) (*GetPluginResponse, error)
 	ListPlugin(context.Context, *ListPluginRequest) (*ListPluginResponse, error)
@@ -141,6 +152,9 @@ type UnimplementedPluginServer struct {
 
 func (UnimplementedPluginServer) InstallPlugin(context.Context, *InstallPluginRequest) (*InstallPluginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InstallPlugin not implemented")
+}
+func (UnimplementedPluginServer) UpgradePlugin(context.Context, *UpgradePluginRequest) (*UpgradePluginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpgradePlugin not implemented")
 }
 func (UnimplementedPluginServer) UninstallPlugin(context.Context, *UninstallPluginRequest) (*UninstallPluginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UninstallPlugin not implemented")
@@ -193,6 +207,24 @@ func _Plugin_InstallPlugin_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PluginServer).InstallPlugin(ctx, req.(*InstallPluginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Plugin_UpgradePlugin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpgradePluginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).UpgradePlugin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.plugin.v1.Plugin/UpgradePlugin",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).UpgradePlugin(ctx, req.(*UpgradePluginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -351,6 +383,10 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InstallPlugin",
 			Handler:    _Plugin_InstallPlugin_Handler,
+		},
+		{
+			MethodName: "UpgradePlugin",
+			Handler:    _Plugin_UpgradePlugin_Handler,
 		},
 		{
 			MethodName: "UninstallPlugin",
