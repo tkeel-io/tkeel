@@ -149,6 +149,8 @@ func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.Authen
 			}
 			// set src tkeel depened.
 			if pluginIsTkeelComponent(pluginID) {
+				sess.Src.TKeelDepened = version.Version
+			} else {
 				pr, err1 := s.prOp.Get(ctx, pluginID)
 				if err1 != nil {
 					if errors.Is(err1, proute.ErrPluginRouteNotExsist) {
@@ -158,8 +160,6 @@ func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.Authen
 					return nil, pb.ErrInternalError()
 				}
 				sess.Src.TKeelDepened = pr.TkeelVersion
-			} else {
-				sess.Src.TKeelDepened = version.Version
 			}
 		}
 		if err = s.checkSession(ctx, sess); err != nil {

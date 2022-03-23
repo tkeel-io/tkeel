@@ -70,6 +70,7 @@ func (o *DaprStateOprator) Create(ctx context.Context, key string, value []byte)
 		v.Value = value
 		v.Version = "1"
 	}
+	log.Debugf("create %s kv succ", key)
 	return nil
 }
 
@@ -112,7 +113,7 @@ func (o *DaprStateOprator) Update(ctx context.Context, key string, value []byte,
 		}
 		cacheState.Version = strconv.Itoa(vInt + 1)
 	}
-
+	log.Debugf("update %s kv succ", key)
 	return nil
 }
 
@@ -137,6 +138,7 @@ func (o *DaprStateOprator) Delete(ctx context.Context, key string) error {
 		return fmt.Errorf("error delete admin password: %w", err)
 	}
 	o.cache.Delete(key)
+	log.Debugf("delete %s kv succ", key)
 	return nil
 }
 
@@ -156,6 +158,8 @@ func (o *DaprStateOprator) Watch(ctx context.Context, key string, cb func(value 
 	if err = cb(item.Value, item.Etag); err != nil {
 		return errors.Wrapf(err, "kv cache(%s/%s/%s) call back", key, item.Value, item.Etag)
 	}
+
+	log.Debugf("%s kv changed", key)
 	return nil
 }
 

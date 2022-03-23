@@ -181,8 +181,11 @@ func (s *PluginServiceV1) UpgradePlugin(ctx context.Context,
 	defer rbStack.Run()
 	p, err := s.pluginOp.Get(ctx, req.GetId())
 	if err != nil {
-		log.Error("error plugin not installed")
-		return nil, pb.PluginErrPluginNotFound()
+		log.Errorf("error get plugin(%s): %s", req.GetId(), err)
+		if errors.Is(err, plugin.ErrPluginNotExsist) {
+			return nil, pb.PluginErrPluginNotFound()
+		}
+		return nil, pb.PluginErrInternalStore()
 	}
 	if req.Installer == nil {
 		log.Error("error upgrade plugin request installer info is nil")
@@ -1179,5 +1182,8 @@ func (a pluginList) Less(i, j int) bool {
 	if err != nil {
 		return false
 	}
-	return iVer < jVer
+	if iVer != jVer {
+		return iVer < jVer
+	}
+	return a[i].RegisterTimestamp < a[j].RegisterTimestamp
 }
