@@ -8,6 +8,7 @@ package openapi.v1;
 
 option go_package = "github.com/tkeel-io/tkeel-interface/openapi/v1;v1";
 
+
 /**
  * error code enum.
  **/
@@ -91,7 +92,7 @@ message Permission {
   message Dependence {
     string path =
         1; // dependence path,The path format is plugin ID</parent permission
-           // ID>/authority ID.The content in <> is variable.
+    // ID>/authority ID.The content in <> is variable.
     string desc = 2; // dependencs desc.
   }
   repeated Dependence dependences = 3; // dependences permission.
@@ -115,6 +116,9 @@ message IdentifyResponse {
   repeated BriefPluginInfo dependence =
       8; // dependent plugins.Dependencies must be all installed to install.
   repeated Permission permissions = 9; // plugins define permissions.
+  bool disable_manual_activation =
+      10; // plugins disable tenant manual activation.
+  repeated ProfileItem profile =11; // plugins controllable item.
 }
 
 /**
@@ -177,4 +181,25 @@ message TenantDisableResponse {
 message StatusResponse {
   Result res = 1;          // detail result
   PluginStatus status = 2; // plugin status.
+}
+
+/**
+ * Profile is a controllable item provided by the plugin.
+ * Platform administrators can set up plugin profiles through rudder.
+ **/
+message ProfileItem {
+  string key = 1;
+  string description =2;
+  string val =3;
+  TypeProfileVal val_type =4;
+}
+
+/**
+ * TypeProfileVal,type for Profile's val filed.
+ *   STRING = 0; NUMBER =1; BOOLEAN = 2;
+ **/
+enum TypeProfileVal {
+  STRING = 0;
+  NUMBER =1;
+  BOOLEAN = 2;
 }

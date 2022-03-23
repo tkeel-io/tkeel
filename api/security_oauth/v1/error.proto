@@ -58,4 +58,7 @@ enum Error {
   // @msg=不支持的授予类型
   // @code=INVALID_ARGUMENT
   OAUTH_ERR_INVALID_ACCESS_TOKEN = 10; // 401
+  // @msg=重置密码链接无效
+  // @code=INVALID_ARGUMENT
+  OAUTH_ERR_INVALID_RESET_PWD = 11; // 401
 }

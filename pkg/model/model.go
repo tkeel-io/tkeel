@@ -124,6 +124,7 @@ type Plugin struct {
 	Status                  openapi_v1.PluginStatus         `json:"status,omitempty"`                    // plugin state.
 	EnableTenantes          []*EnableTenant                 `json:"enable_tenantes,omitempty"`           // plugin active tenantes.
 	DisableManualActivation bool                            `json:"disable_manual_activation,omitempty"` // plugin disable manual activation.
+	Profile                 []*openapi_v1.ProfileItem       `json:"profile,omitempty"`                   // plugin profile.
 }
 
 func (p *Plugin) String() string {
@@ -166,6 +167,7 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.Secret = secret
 	p.DisableManualActivation = resp.DisableManualActivation
 	p.RegisterTimestamp = time.Now().Unix()
+	p.Profile = resp.Profile
 }
 
 func (p *Plugin) Clone() *Plugin {
@@ -601,4 +603,9 @@ type Role struct {
 	Name           string   `json:"name"`
 	Desc           string   `json:"desc"`
 	PermissionPath []string `json:"permission_path"`
+}
+
+type PluginProfile struct {
+	PluginID string                    `json:"plugin_id"`
+	Profile  []*openapi_v1.ProfileItem `json:"profile"`
 }

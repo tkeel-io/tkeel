@@ -38,7 +38,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tkeel-io/kit v0.0.0-20220311032953-c8bf1e0f86cb
 	github.com/tkeel-io/security v0.0.0-20220315144408-089880e1e55c
-	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220303151503-0f9a4a00fd77
+	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220321104536-6e2b73d2ec04
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
