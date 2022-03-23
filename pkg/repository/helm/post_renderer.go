@@ -43,9 +43,15 @@ func (kr *kustomizeRender) Run(renderedManifests *bytes.Buffer) (*bytes.Buffer, 
 			}
 			break
 		}
-
+		newData, err := kustomizationRenderer(data, pluginLabelKustomizeFormat,
+			kr.InjectAppID, srcYamlName)
+		if err != nil {
+			return nil, errors.Wrap(err, "kustomization renderer")
+		}
+		data = newData
 		if kr.isTargetDeployment(data) {
-			newData, err := kustomizationRenderer(data, kr.InjectAppID, kr.InjectAppPort)
+			newData, err := kustomizationRenderer(data, daprKustomizeFormat,
+				kr.InjectAppID, kr.InjectAppPort, kr.InjectAppID, srcYamlName)
 			if err != nil {
 				return nil, errors.Wrap(err, "kustomization renderer")
 			}

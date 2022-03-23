@@ -72,7 +72,7 @@ func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.
 			ret = appendEntries(ret, p.ConsoleEntries, portal)
 		}
 	}
-
+	sort.Sort(entrySort(ret))
 	return &pb.GetEntriesResponse{
 		Entries: ret,
 	}, nil
