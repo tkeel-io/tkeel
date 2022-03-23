@@ -21,14 +21,13 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/pkg/errors"
-
 	authentication_v1 "github.com/tkeel-io/tkeel/api/authentication/v1"
 	config_v1 "github.com/tkeel-io/tkeel/api/config/v1"
 	entity_token_v1 "github.com/tkeel-io/tkeel/api/entity/v1"
 	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
+	profile_v1 "github.com/tkeel-io/tkeel/api/profile/v1"
 	rbac_v1 "github.com/tkeel-io/tkeel/api/rbac/v1"
 	repo "github.com/tkeel-io/tkeel/api/repo/v1"
 	oauth_v1 "github.com/tkeel-io/tkeel/api/security_oauth/v1"
@@ -41,6 +40,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/hub"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/kv"
+	"github.com/tkeel-io/tkeel/pkg/model/plgprofile"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/prepo"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
@@ -56,6 +56,7 @@ import (
 	oredis "github.com/go-oauth2/redis/v4"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang-jwt/jwt"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
@@ -159,6 +160,8 @@ var rootCmd = &cobra.Command{
 			m.MapClientStorage(clientStore)
 			m.MapTokenStorage(tokenStore)
 			m.MapAccessGenerate(tokenGenerator)
+			// init profile operator.
+			profileOp := plgprofile.NewProfileStateStore(conf.Dapr.PrivateStateName, daprGRPCClient)
 
 			// init repo hub.
 			hub.Init(conf.Tkeel.WatchInterval, riOp,
@@ -241,6 +244,11 @@ var rootCmd = &cobra.Command{
 			configSrv := service.NewConfigService(k8sClient)
 			config_v1.RegisterConfigHTTPServer(httpSrv.Container, configSrv)
 			config_v1.RegisterConfigServer(grpcSrv.GetServe(), configSrv)
+
+			// profile service.
+			ProfileSrv := service.NewProfileService(pOp, profileOp)
+			profile_v1.RegisterProfileHTTPServer(httpSrv.Container, ProfileSrv)
+			profile_v1.RegisterProfileServer(grpcSrv.GetServe(), ProfileSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

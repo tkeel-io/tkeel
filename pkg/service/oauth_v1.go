@@ -197,14 +197,15 @@ func (s *OauthService) Authenticate(ctx context.Context, empty *emptypb.Empty) (
 	token, err := s.Manager.LoadAccessToken(ctx, accessToken)
 	if err != nil {
 		log.Error(err)
-		return nil, pb.OauthErrServerError()
+		return nil, pb.OauthErrInvalidAccessToken()
 	}
 	userID := token.GetUserID()
 	user := &model.User{}
 	_, users, err := user.QueryByCondition(s.UserDB, map[string]interface{}{"id": userID}, nil, "")
 	if err != nil || len(users) != 1 {
 		log.Error(err)
-		return nil, pb.OauthErrServerError()
+		s.Manager.RemoveAccessToken(ctx, accessToken)
+		return nil, pb.OauthErrInvalidAccessToken()
 	}
 
 	return &pb.AuthenticateResponse{
@@ -338,7 +339,7 @@ func (s *OauthService) ResetPassword(ctx context.Context, req *pb.ResetPasswordR
 	total, users, err := uDao.QueryByCondition(s.UserDB, map[string]interface{}{"password": req.GetBody().GetResetKey()}, nil, "")
 	if err != nil || total != 1 {
 		log.Error(err)
-		return nil, pb.OauthErrInvalidRequest()
+		return nil, pb.OauthErrInvalidResetPwd()
 	}
 	user := &model.User{Password: req.GetBody().GetNewPassword()}
 	user.Encrypt()
