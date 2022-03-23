@@ -15,7 +15,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -88,10 +87,10 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 	return func(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
 		ctx, cancel := context.WithTimeout(req.Request.Context(), s.timeout)
 		defer cancel()
-		sess, err := s.authenticate(ctx, req.Request)
+		sess, code, err := s.authenticate(ctx, req.Request)
 		if err != nil {
 			log.Debugf("error authenticate: %s", err)
-			writeResult(resp, http.StatusUnauthorized, "authentication error")
+			writeResult(resp, code, "error authenticate: "+err.Error())
 			return
 		}
 		req.Request = req.Request.WithContext(withSession(ctx, sess))
@@ -100,7 +99,8 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 }
 
 func (s *KeelServiceV1) ProxyPlugin(
-	resp http.ResponseWriter, req *http.Request) error {
+	resp http.ResponseWriter, req *http.Request,
+) error {
 	sess, ok := getSession(req.Context())
 	if !ok {
 		writeResult(resp, http.StatusInternalServerError, "internal error")
@@ -116,7 +116,7 @@ func (s *KeelServiceV1) ProxyPlugin(
 		b, err1 := io.ReadAll(req.Body)
 		if err1 != nil {
 			writeResult(resp, http.StatusBadRequest, err1.Error())
-			return fmt.Errorf("error read body: %w", err1)
+			return errors.Wrap(err1, "read body")
 		}
 		bodyByte = b
 		defer req.Body.Close()
@@ -132,26 +132,26 @@ func (s *KeelServiceV1) ProxyPlugin(
 	})
 	if err != nil {
 		writeResult(resp, http.StatusBadRequest, err.Error())
-		return fmt.Errorf("error plugin client call: %w", err)
+		return errors.Wrap(err, "plugin client call")
 	}
 	if err = proxyHTTPResponse2RestfulResponse(dstResp, resp); err != nil {
-		return fmt.Errorf("error proxy http response 2 restful response: %w", err)
+		return errors.Wrap(err, "proxy http response 2 restful response")
 	}
 	return nil
 }
 
-func (s *KeelServiceV1) authenticate(ctx context.Context, req *http.Request) (*session, error) {
+func (s *KeelServiceV1) authenticate(ctx context.Context, req *http.Request) (*session, int, error) {
 	sess := new(session)
-	out, err := s.callAuthorization(ctx, req)
+	out, code, err := s.callAuthorization(ctx, req)
 	if err != nil {
-		return nil, fmt.Errorf("error call authentication: %w", err)
+		return nil, code, errors.Wrap(err, "call authentication")
 	}
 	if out.Code != t_errors.Success.Reason {
-		return nil, fmt.Errorf("error call authentication: %s", out.Msg)
+		return nil, code, errors.Errorf("error call authentication: %s", out.Msg)
 	}
 	resp := &pb.AuthenticateResponse{}
 	if err = anypb.UnmarshalTo(out.Data, resp, proto.UnmarshalOptions{}); err != nil {
-		return nil, fmt.Errorf("error unmarshal resp(%s): %w", out, err)
+		return nil, http.StatusInternalServerError, errors.Wrapf(err, "unmarshal resp(%s)", out)
 	}
 	sess.Dst = &endpoint{
 		ID: resp.Destination,
@@ -164,10 +164,10 @@ func (s *KeelServiceV1) authenticate(ctx context.Context, req *http.Request) (*s
 	sess.User = u
 	sess.RequestMethod = resp.Method
 	req.Header.Set(model.XtKeelAuthHeader, u.Base64Encode())
-	return sess, nil
+	return sess, code, nil
 }
 
-func (s *KeelServiceV1) callAuthorization(ctx context.Context, req *http.Request) (*result.Http, error) {
+func (s *KeelServiceV1) callAuthorization(ctx context.Context, req *http.Request) (*result.Http, int, error) {
 	v := make(url.Values)
 	v.Set("path", req.RequestURI)
 	v.Set("verb", req.Method)
@@ -180,16 +180,19 @@ func (s *KeelServiceV1) callAuthorization(ctx context.Context, req *http.Request
 		Body:       nil,
 	}, nil, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error invoke json: %w", err)
+		if errors.Is(err, client.ErrPermissionDenied) {
+			return nil, http.StatusForbidden, client.ErrPermissionDenied
+		}
+		return nil, http.StatusUnauthorized, errors.Wrap(err, "invoke json")
 	}
 	res := &result.Http{}
 	if err = protojson.Unmarshal(out, res); err != nil {
-		return nil, fmt.Errorf("error protojson unmarshal(%s): %w", out, err)
+		return nil, http.StatusInternalServerError, errors.Wrapf(err, "protojson unmarshal(%s)", out)
 	}
 	if res.Code != t_errors.Success.Reason {
-		return nil, fmt.Errorf("error result: %s", res)
+		return nil, http.StatusInternalServerError, errors.Errorf("error result: %s", res)
 	}
-	return res, nil
+	return res, http.StatusOK, nil
 }
 
 func withSession(ctx context.Context, sess *session) context.Context {
@@ -217,7 +220,7 @@ func proxyHTTPResponse2RestfulResponse(dstResp *http.Response, resp http.Respons
 	defer dstResp.Body.Close()
 	if err != nil {
 		writeResult(resp, http.StatusBadRequest, err.Error())
-		return fmt.Errorf("error read dst response body: %w", err)
+		return errors.Wrap(err, "read dst response body")
 	}
 
 	resp.WriteHeader(dstResp.StatusCode)

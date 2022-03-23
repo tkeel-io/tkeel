@@ -578,7 +578,7 @@ func (s *RBACService) deleteRoleInTenant(role, tenant string) (util.RollBackStac
 	rbStack := util.NewRollbackStack()
 	users := s.rbacOp.GetUsersForRoleInDomain(role, tenant)
 	for _, v := range users {
-		if _, err := s.rbacOp.DeleteRoleForUserInDomain(v, role, tenant); err != nil {
+		if _, err := s.rbacOp.RemoveGroupingPolicy(v, role, tenant); err != nil {
 			rbStack.Run()
 			return nil, errors.Wrapf(err, "DeleteRoleForUserInDomain(%s/%s/%s)", v, role, tenant)
 		}

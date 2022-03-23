@@ -68,7 +68,8 @@ func (s *RepoService) ListRepo(ctx context.Context, req *emptypb.Empty) (*pb.Lis
 }
 
 func (s *RepoService) ListAllRepoInstaller(ctx context.Context,
-	req *pb.ListAllRepoInstallerRequest) (*pb.ListAllRepoInstallerResponse, error) {
+	req *pb.ListAllRepoInstallerRequest,
+) (*pb.ListAllRepoInstallerResponse, error) {
 	repos := hub.GetInstance().List()
 	var resList []*repository.InstallerBrief
 	for _, v := range repos {
@@ -118,7 +119,8 @@ func (s *RepoService) ListAllRepoInstaller(ctx context.Context,
 }
 
 func (s *RepoService) ListRepoInstaller(ctx context.Context,
-	req *pb.ListRepoInstallerRequest) (*pb.ListRepoInstallerResponse, error) {
+	req *pb.ListRepoInstallerRequest,
+) (*pb.ListRepoInstallerResponse, error) {
 	repo, err := hub.GetInstance().Get(req.Repo)
 	if err != nil {
 		log.Errorf("error hub get repo(%s): %s", req.Repo, err)
@@ -173,7 +175,8 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 }
 
 func (s *RepoService) GetRepoInstaller(ctx context.Context,
-	req *pb.GetRepoInstallerRequest) (*pb.GetRepoInstallerResponse, error) {
+	req *pb.GetRepoInstallerRequest,
+) (*pb.GetRepoInstallerResponse, error) {
 	repo, err := hub.GetInstance().Get(req.Repo)
 	if err != nil {
 		log.Errorf("error hub get repo(%s): %s", req.Repo, err)
@@ -353,7 +356,13 @@ func (ib iBriefList) Less(i, j int) bool {
 	if err != nil {
 		return false
 	}
-	return iVer < jVer
+	if iVer != jVer {
+		return iVer < jVer
+	}
+	if ib[i].CreateTimestamp != ib[j].CreateTimestamp {
+		return ib[i].CreateTimestamp < ib[j].CreateTimestamp
+	}
+	return ib[i].Repo < ib[j].Repo
 }
 
 func (ib iBriefList) Swap(i, j int) {

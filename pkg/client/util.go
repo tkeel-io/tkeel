@@ -29,7 +29,10 @@ import (
 
 const contentTypeJSON = "application/json"
 
-var ErrMethodNotAllow = errors.New("method not allow")
+var (
+	ErrMethodNotAllow   = errors.New("method not allow")
+	ErrPermissionDenied = errors.New("permission denied")
+)
 
 func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, reqJSON, respJSON interface{}) ([]byte, error) {
 	var (
@@ -37,6 +40,13 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 		err  error
 	)
 	canClose := true
+	defer func() {
+		if canClose {
+			if err = resp.Body.Close(); err != nil {
+				return
+			}
+		}
+	}()
 	request.Header.Del("Accept-Encoding")
 	if !util.IsNil(reqJSON) && reqJSON != nil {
 		request.Header.Set("Content-Type", contentTypeJSON)
@@ -46,43 +56,33 @@ func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, re
 		}
 		request.Body = reqBody
 		resp, err = c.Call(ctx, request)
-		defer func() {
-			if err = resp.Body.Close(); err != nil {
-				return
-			}
-		}()
 	} else {
 		resp, err = c.Call(ctx, request)
-		defer func() {
-			if canClose {
-				if err = resp.Body.Close(); err != nil {
-					return
-				}
-			}
-		}()
 	}
 	if err != nil {
 		canClose = false
 		return nil, errors.Wrapf(err, "invoke requst(%s)", request)
 	}
-	if resp.StatusCode != http.StatusOK {
-		if resp.StatusCode == http.StatusMethodNotAllowed {
-			return nil, ErrMethodNotAllow
+	switch resp.StatusCode {
+	case http.StatusMethodNotAllowed:
+		return nil, ErrMethodNotAllow
+	case http.StatusForbidden:
+		return nil, ErrPermissionDenied
+	case http.StatusOK:
+		if resp.ContentLength == 0 {
+			return nil, nil
 		}
-		return nil, errors.Errorf("error invoke request(%s): %s", request, resp.Status)
-	}
-	if resp.ContentLength == 0 {
-		return nil, nil
-	}
-	out, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "read resp body")
-	}
-	if !util.IsNil(respJSON) && respJSON != nil {
-		err = json.Unmarshal(out, respJSON)
+		out, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return nil, errors.Wrapf(err, "unmarshal out(%s)", string(out))
+			return nil, errors.Wrap(err, "read resp body")
 		}
+		if !util.IsNil(respJSON) && respJSON != nil {
+			err = json.Unmarshal(out, respJSON)
+			if err != nil {
+				return nil, errors.Wrapf(err, "unmarshal out(%s)", string(out))
+			}
+		}
+		return out, nil
 	}
-	return out, nil
+	return nil, errors.Errorf("error invoke request(%s): %s", request, resp.Status)
 }

@@ -1182,5 +1182,8 @@ func (a pluginList) Less(i, j int) bool {
 	if err != nil {
 		return false
 	}
-	return iVer < jVer
+	if iVer != jVer {
+		return iVer < jVer
+	}
+	return a[i].RegisterTimestamp < a[j].RegisterTimestamp
 }
