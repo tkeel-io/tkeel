@@ -13,6 +13,10 @@ const (
 	deploymentKind    = "Deployment"
 	metadataField     = "metadata"
 	metadataNameField = "name"
+	specField         = "spec"
+	templateField     = "template"
+	annotationsField  = "annotations"
+	daprEnableKey     = "dapr.io/enabled"
 )
 
 type kustomizeRender struct {
@@ -43,15 +47,17 @@ func (kr *kustomizeRender) Run(renderedManifests *bytes.Buffer) (*bytes.Buffer, 
 			}
 			break
 		}
-		newData, err := kustomizationRenderer(data, pluginLabelKustomizeFormat,
-			kr.InjectAppID, srcYamlName)
-		if err != nil {
-			return nil, errors.Wrap(err, "kustomization renderer")
-		}
-		data = newData
 		if kr.isTargetDeployment(data) {
 			newData, err := kustomizationRenderer(data, daprKustomizeFormat,
 				kr.InjectAppID, kr.InjectAppPort, kr.InjectAppID, srcYamlName)
+			if err != nil {
+				return nil, errors.Wrap(err, "kustomization renderer")
+			}
+			data = newData
+		}
+		if kr.isDaprPod(data) {
+			newData, err := kustomizationRenderer(data, pluginLabelKustomizeFormat,
+				kr.InjectAppID, srcYamlName)
 			if err != nil {
 				return nil, errors.Wrap(err, "kustomization renderer")
 			}
@@ -91,4 +97,33 @@ func (kr *kustomizeRender) isTargetDeployment(in map[string]interface{}) bool {
 	}
 
 	return k == deploymentKind && n == kr.InjectDeploymentName
+}
+
+func (kr *kustomizeRender) isDaprPod(in map[string]interface{}) bool {
+	si, ok := in[specField]
+	if !ok {
+		return false
+	}
+	s, ok := si.(map[string]interface{})
+	if !ok {
+		return false
+	}
+	ti, ok := s[templateField]
+	if !ok {
+		return false
+	}
+	t, ok := ti.(map[string]interface{})
+	if !ok {
+		return false
+	}
+	ai, ok := t[annotationsField]
+	if !ok {
+		return false
+	}
+	a, ok := ai.(map[string]interface{})
+	if !ok {
+		return false
+	}
+	_, ok = a[daprEnableKey]
+	return ok
 }

@@ -29,7 +29,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 commonLabels:
-  tkeel-plugin: %s
+  tkeel.io/plugin: %s
 
 resources:
   - %s
