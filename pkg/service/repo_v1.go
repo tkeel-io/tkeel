@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"sort"
-	"strconv"
 
 	"github.com/pkg/errors"
 
+	version "github.com/hashicorp/go-version"
 	"github.com/tkeel-io/kit/log"
 	pb "github.com/tkeel-io/tkeel/api/repo/v1"
 	"github.com/tkeel-io/tkeel/pkg/hub"
@@ -348,16 +348,16 @@ func (ib iBriefList) Less(i, j int) bool {
 	if ib[i].Name != ib[j].Name {
 		return ib[i].Name < ib[j].Name
 	}
-	iVer, err := strconv.ParseFloat(ib[i].Version, 64)
+	iVer, err := version.NewVersion(ib[i].Version)
 	if err != nil {
 		return true
 	}
-	jVer, err := strconv.ParseFloat(ib[j].Version, 64)
+	jVer, err := version.NewVersion(ib[j].Version)
 	if err != nil {
 		return false
 	}
-	if iVer != jVer {
-		return iVer < jVer
+	if !iVer.Equal(jVer) {
+		return iVer.LessThan(jVer)
 	}
 	if ib[i].CreateTimestamp != ib[j].CreateTimestamp {
 		return ib[i].CreateTimestamp < ib[j].CreateTimestamp
