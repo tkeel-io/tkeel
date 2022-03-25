@@ -21,10 +21,10 @@ import (
 	"encoding/json"
 	"regexp"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/casbin/casbin/v2"
+	g_version "github.com/hashicorp/go-version"
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/security/authz/rbac"
@@ -1174,16 +1174,16 @@ func (a pluginList) Less(i, j int) bool {
 	if a[i].Id != a[j].Id {
 		return a[i].Id < a[j].Id
 	}
-	iVer, err := strconv.ParseFloat(a[i].Version, 64)
+	iVer, err := g_version.NewVersion(a[i].Version)
 	if err != nil {
 		return true
 	}
-	jVer, err := strconv.ParseFloat(a[j].Version, 64)
+	jVer, err := g_version.NewVersion(a[j].Version)
 	if err != nil {
 		return false
 	}
-	if iVer != jVer {
-		return iVer < jVer
+	if !iVer.Equal(jVer) {
+		return iVer.LessThan(jVer)
 	}
 	return a[i].RegisterTimestamp < a[j].RegisterTimestamp
 }
