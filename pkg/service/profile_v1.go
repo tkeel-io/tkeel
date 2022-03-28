@@ -18,10 +18,8 @@ package service
 
 import (
 	"context"
-	"math"
 	"strconv"
 
-	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	pb "github.com/tkeel-io/tkeel/api/profile/v1"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/plgprofile"
@@ -65,7 +63,27 @@ func (s *ProfileService) SetTenantPluginProfile(ctx context.Context, req *pb.Set
 		log.Error(err)
 		return nil, pb.ErrUnknown()
 	}
+
+	if req.GetBody().GetPluginId() == plgprofile.PLUGIN_ID_KEEL {
+		for _, profile := range req.GetBody().GetProfiles() {
+			if profile.Key == plgprofile.MAX_API_REQUEST_LIMIT_KEY {
+				limit, err := strconv.Atoi(profile.Val)
+				if err != nil {
+					log.Error(err)
+					return nil, pb.ErrInvalidArgument()
+				}
+				plgprofile.SetTenantAPILimit(req.GetTenantId(), limit)
+				break
+			}
+		}
+	}
+
 	return &pb.SetTenantPluginProfileResponse{}, nil
+}
+
+func (s *ProfileService) IsAPIRequestExceededLimit(ctx context.Context, tenantID string) bool {
+	plgprofile.OnTenantAPIRequest(tenantID)
+	return plgprofile.ISExceededAPILimit(tenantID)
 }
 
 func plugin2pbProfile(plugins []*model.Plugin) []*pb.TenantProfiles {
@@ -77,9 +95,10 @@ func plugin2pbProfile(plugins []*model.Plugin) []*pb.TenantProfiles {
 		profile := &pb.TenantProfiles{PluginId: plugins[i].ID, Profiles: plugins[i].Profile}
 		pbProfiles = append(pbProfiles, profile)
 	}
-	pbProfiles = append(pbProfiles, keelProfiles)
+	pbProfiles = append(pbProfiles, plgprofile.KeelProfiles)
 	return pbProfiles
 }
+
 func modelProfile2pbProfile(profiles []*model.PluginProfile) []*pb.TenantProfiles {
 	pbProfiles := make([]*pb.TenantProfiles, 0)
 	for i := range profiles {
@@ -95,7 +114,3 @@ func pbPlgProfile2model(profiles *pb.TenantProfiles) *model.PluginProfile {
 	profile := &model.PluginProfile{PluginID: profiles.PluginId, Profile: profiles.Profiles}
 	return profile
 }
-
-var keelProfiles = &pb.TenantProfiles{PluginId: "keel", Profiles: []*openapi_v1.ProfileItem{{Key: "max_api_request_limit",
-	Val: strconv.Itoa(math.MaxInt), Description: "接口请求最大限制", ValType: openapi_v1.TypeProfileVal_NUMBER},
-}}

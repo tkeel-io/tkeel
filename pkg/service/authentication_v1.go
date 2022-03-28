@@ -18,6 +18,7 @@ import (
 	"github.com/tkeel-io/security/authz/rbac"
 	s_model "github.com/tkeel-io/security/model"
 	pb "github.com/tkeel-io/tkeel/api/authentication/v1"
+	"github.com/tkeel-io/tkeel/pkg/client"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
 	keel_v1 "github.com/tkeel-io/tkeel/pkg/service/keel/v1"
@@ -70,12 +71,13 @@ type AuthenticationService struct {
 	prOp           proute.Operator
 	secretProvider token.Provider
 	tenantPluginOp rbac.TenantPluginMgr
+	profileOp      ProfileService
 
 	regExpCompile []*regexp.Regexp
 }
 
 func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenConf,
-	rbacOp *casbin.SyncedEnforcer, prOp proute.Operator, tpOp rbac.TenantPluginMgr,
+	rbacOp *casbin.SyncedEnforcer, prOp proute.Operator, profileOp *ProfileService, tpOp rbac.TenantPluginMgr,
 ) *AuthenticationService {
 	secret := util.RandStringBytesMaskImpr(0, 10)
 	tokenConf := manage.DefaultAuthorizeCodeTokenCfg
@@ -110,6 +112,7 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 	}
 }
 
+//nolint
 func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.AuthenticateRequest) (*pb.AuthenticateResponse, error) {
 	header := transport_http.HeaderFromContext(ctx)
 	sess := new(session)
@@ -169,6 +172,9 @@ func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.Authen
 			}
 			return nil, pb.ErrInternalError()
 		}
+	}
+	if sess.User != nil && s.profileOp.IsAPIRequestExceededLimit(ctx, sess.User.Tenant) {
+		return nil, client.ErrAPIRequestLimited
 	}
 	log.Debugf("session: %s", sess)
 	return convertSession2PB(sess), nil
