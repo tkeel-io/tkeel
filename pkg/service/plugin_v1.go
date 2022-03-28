@@ -580,6 +580,10 @@ func (s *PluginServiceV1) TMRegisterPlugin(ctx context.Context,
 		log.Errorf("error plugin(%s) status not %s", req.Id, openapi_v1.PluginStatus_ERR_REGISTER)
 		return nil, pb.PluginErrInvalidArgument()
 	}
+	if _, err = s.pluginRouteOp.Delete(ctx, req.Id); err != nil {
+		log.Errorf("error delete plugin(%s) route: %s", req.Id, err)
+		return nil, pb.PluginErrInternalStore()
+	}
 	if err = s.registerPluginProcess(ctx, req.Id, false); err != nil {
 		log.Errorf("error plugin(%s) register: %s", req.Id, err)
 		return nil, pb.PluginErrInternalStore()
