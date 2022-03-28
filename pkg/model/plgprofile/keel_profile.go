@@ -26,11 +26,15 @@ import (
 )
 
 const (
+	//nolint
 	PLUGIN_ID_KEEL = "keel"
 	// api limit.
-	MAX_API_REQUEST_LIMIT_KEY  = "max_api_request_limit"
+	//nolint
+	MAX_API_REQUEST_LIMIT_KEY = "max_api_request_limit"
+	//nolint
 	MAX_API_REQUEST_LIMIT_DESC = "接口请求次数最大限制"
-	DEFAULT_MAX_API_LIMIT      = math.MaxInt
+	//nolint
+	DEFAULT_MAX_API_LIMIT = math.MaxInt
 )
 
 var (
