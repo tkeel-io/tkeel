@@ -30,7 +30,7 @@ spec:
     - name: disableTls
       value: true
     - name: maxMessageBytes
-      value: 4096
+      value: 1048576
     - name: consumeRetryInterval
       value: 200ms
     - name: version
