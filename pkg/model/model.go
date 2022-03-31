@@ -58,6 +58,8 @@ const (
 
 	KeyPermissionSet = "permission_set"
 
+	KeyPlatExtraConfig = "platform_extra"
+
 	AllowedPermissionAction = "_tkeel_allow"
 
 	_allowedPluginAccessName = " 允许访问"

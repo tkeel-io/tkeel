@@ -166,7 +166,8 @@ var rootCmd = &cobra.Command{
 			// init repo hub.
 			hub.Init(conf.Tkeel.WatchInterval, riOp,
 				func(connectInfo *repository.Info,
-					args ...interface{}) (repository.Repository, error) {
+					args ...interface{},
+				) (repository.Repository, error) {
 					if len(args) != 2 {
 						return nil, errors.New("invalid arguments")
 					}
@@ -241,7 +242,7 @@ var rootCmd = &cobra.Command{
 			authentication_v1.RegisterAuthenticationServer(grpcSrv.GetServe(), authenticationSrv)
 
 			// config service.
-			configSrv := service.NewConfigService(k8sClient)
+			configSrv := service.NewConfigService(k8sClient, kvOp)
 			config_v1.RegisterConfigHTTPServer(httpSrv.Container, configSrv)
 			config_v1.RegisterConfigServer(grpcSrv.GetServe(), configSrv)
 

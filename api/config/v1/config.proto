@@ -52,6 +52,61 @@ service Config {
       ]
     };
   };
+
+  rpc GetPlatformConfig(google.protobuf.Empty)
+      returns (GetPlatformConfigResponse) {
+    option (google.api.http) = {
+      get : "/config/platform"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "查询 platform config 接口"
+      operation_id : "GetPlatformConfig"
+      tags : "config"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_TENANT"}
+        },
+
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
+
+  rpc SetPlatformExtraConfig(SetPlatformExtraConfigRequest)
+      returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post : "/config/platform"
+      body : "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "设置 platform config extra 数据接口"
+      operation_id : "SetPlatformExtraConfig"
+      tags : "config"
+      responses : [
+        {
+          key : "200"
+          value : {description : "OK"}
+        },
+        {
+          key : "400"
+          value : {description : "INVALID_TENANT"}
+        },
+
+        {
+          key : "500"
+          value : {description : "INTERNAL_ERROR"}
+        }
+      ]
+    };
+  };
 }
 
 message GetDeploymentConfigResponse {
@@ -66,5 +121,31 @@ message GetDeploymentConfigResponse {
   string port = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "host port"
+      } ];
+}
+
+message GetPlatformConfigResponse {
+  string admin_host = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "admin_host"
+      } ];
+  string tenant_host = 2
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "tenant_host"
+      } ];
+  string port = 3
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "host port"
+      } ];
+  bytes extra = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "extra"
+      } ];
+}
+
+message SetPlatformExtraConfigRequest {
+  bytes extra = 1
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "extra"
       } ];
 }
