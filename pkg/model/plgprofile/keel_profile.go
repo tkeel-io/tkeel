@@ -53,7 +53,7 @@ func OnTenantAPIRequest(tenantID string, store ProfileOperator) int {
 		if profiles[i].PluginID == PLUGIN_ID_KEEL {
 			for keyI := range profiles[i].Profile {
 				if profiles[i].Profile[keyI].Key == MAX_API_REQUEST_LIMIT_KEY {
-					profiles[i].Profile[keyI].CurVal += 1
+					profiles[i].Profile[keyI].CurVal++
 					cur = int(profiles[i].Profile[keyI].CurVal)
 				}
 			}
