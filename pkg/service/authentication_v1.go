@@ -71,7 +71,7 @@ type AuthenticationService struct {
 	prOp           proute.Operator
 	secretProvider token.Provider
 	tenantPluginOp rbac.TenantPluginMgr
-	profileOp      ProfileService
+	profileOp      *ProfileService
 
 	regExpCompile []*regexp.Regexp
 }
@@ -109,6 +109,7 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 		prOp:           prOp,
 		tenantPluginOp: tpOp,
 		regExpCompile:  regExpCompile,
+		profileOp:      profileOp,
 	}
 }
 

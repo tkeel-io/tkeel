@@ -18,8 +18,6 @@ package service
 
 import (
 	"context"
-	"strconv"
-
 	pb "github.com/tkeel-io/tkeel/api/profile/v1"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/plgprofile"
@@ -67,12 +65,7 @@ func (s *ProfileService) SetTenantPluginProfile(ctx context.Context, req *pb.Set
 	if req.GetBody().GetPluginId() == plgprofile.PLUGIN_ID_KEEL {
 		for _, profile := range req.GetBody().GetProfiles() {
 			if profile.Key == plgprofile.MAX_API_REQUEST_LIMIT_KEY {
-				limit, err := strconv.Atoi(profile.Val)
-				if err != nil {
-					log.Error(err)
-					return nil, pb.ErrInvalidArgument()
-				}
-				plgprofile.SetTenantAPILimit(req.GetTenantId(), limit)
+				plgprofile.SetTenantAPILimit(req.GetTenantId(), int(profile.LimitVal))
 				break
 			}
 		}
@@ -82,7 +75,7 @@ func (s *ProfileService) SetTenantPluginProfile(ctx context.Context, req *pb.Set
 }
 
 func (s *ProfileService) IsAPIRequestExceededLimit(ctx context.Context, tenantID string) bool {
-	plgprofile.OnTenantAPIRequest(tenantID)
+	plgprofile.OnTenantAPIRequest(tenantID, s.ProfileOp)
 	return plgprofile.ISExceededAPILimit(tenantID)
 }
 

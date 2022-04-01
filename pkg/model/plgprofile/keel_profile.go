@@ -17,8 +17,8 @@ limitations under the License.
 package plgprofile
 
 import (
+	"context"
 	"math"
-	"strconv"
 	"sync"
 
 	openapi_v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
@@ -34,7 +34,7 @@ const (
 	//nolint
 	MAX_API_REQUEST_LIMIT_DESC = "接口请求次数最大限制"
 	//nolint
-	DEFAULT_MAX_API_LIMIT = math.MaxInt
+	DEFAULT_MAX_API_LIMIT = math.MaxInt32
 )
 
 var (
@@ -43,18 +43,25 @@ var (
 )
 
 var KeelProfiles = &pb.TenantProfiles{PluginId: PLUGIN_ID_KEEL, Profiles: []*openapi_v1.ProfileItem{{Key: MAX_API_REQUEST_LIMIT_KEY,
-	Val: strconv.Itoa(DEFAULT_MAX_API_LIMIT), Description: MAX_API_REQUEST_LIMIT_DESC, ValType: openapi_v1.TypeProfileVal_NUMBER},
+	LimitVal: DEFAULT_MAX_API_LIMIT, Description: MAX_API_REQUEST_LIMIT_DESC},
 }}
 
-func OnTenantAPIRequest(tenantID string) int {
-	count, ok := tenantAPICount.Load(tenantID)
-	if ok {
-		countInt := count.(int) + 1
-		tenantAPICount.Store(tenantID, countInt)
-		return countInt
+func OnTenantAPIRequest(tenantID string, store ProfileOperator) int {
+	cur := 1
+	profiles, _ := store.GetTenantProfile(context.TODO(), tenantID)
+	for i := range profiles {
+		if profiles[i].PluginID == PLUGIN_ID_KEEL {
+			for keyI := range profiles[i].Profile {
+				if profiles[i].Profile[keyI].Key == MAX_API_REQUEST_LIMIT_KEY {
+					profiles[i].Profile[keyI].CurVal += 1
+					cur = int(profiles[i].Profile[keyI].CurVal)
+				}
+			}
+		}
 	}
-	tenantAPICount.Store(tenantID, 1)
-	return 1
+	store.SetTenantProfile(context.TODO(), tenantID, profiles)
+	tenantAPICount.Store(tenantID, cur)
+	return cur
 }
 
 func GetTenantAPIRequest(tenantID string) int {
