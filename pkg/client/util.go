@@ -30,8 +30,9 @@ import (
 const contentTypeJSON = "application/json"
 
 var (
-	ErrMethodNotAllow   = errors.New("method not allow")
-	ErrPermissionDenied = errors.New("permission denied")
+	ErrMethodNotAllow    = errors.New("method not allow")
+	ErrPermissionDenied  = errors.New("permission denied")
+	ErrAPIRequestLimited = errors.New("api request exceeded the limit")
 )
 
 func InvokeJSON(ctx context.Context, c dapr.Client, request *dapr.AppRequest, reqJSON, respJSON interface{}) ([]byte, error) {

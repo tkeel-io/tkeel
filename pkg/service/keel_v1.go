@@ -183,6 +183,9 @@ func (s *KeelServiceV1) callAuthorization(ctx context.Context, req *http.Request
 		if errors.Is(err, client.ErrPermissionDenied) {
 			return nil, http.StatusForbidden, client.ErrPermissionDenied
 		}
+		if errors.Is(err, client.ErrAPIRequestLimited) {
+			return nil, http.StatusForbidden, client.ErrAPIRequestLimited
+		}
 		return nil, http.StatusUnauthorized, errors.Wrap(err, "invoke json")
 	}
 	res := &result.Http{}
