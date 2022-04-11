@@ -78,9 +78,10 @@ func (store *ProfileStateStore) SetTenantPluginProfile(ctx context.Context, tena
 	if err != nil {
 		return fmt.Errorf("get state %w", err)
 	}
-	if err = json.Unmarshal(item.Value, &profiles); err != nil {
-		return fmt.Errorf("%w", err)
+	if item.Value != nil {
+		json.Unmarshal(item.Value, &profiles)
 	}
+
 	var update bool
 	for i := range profiles {
 		if profiles[i].PluginID == profile.PluginID {

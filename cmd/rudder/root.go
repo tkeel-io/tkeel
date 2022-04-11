@@ -236,8 +236,13 @@ var rootCmd = &cobra.Command{
 			rbac_v1.RegisterRBACHTTPServer(httpSrv.Container, rbacSrv)
 			rbac_v1.RegisterRBACServer(grpcSrv.GetServe(), rbacSrv)
 
+			// profile service.
+			ProfileSrv := service.NewProfileService(pOp, profileOp)
+			profile_v1.RegisterProfileHTTPServer(httpSrv.Container, ProfileSrv)
+			profile_v1.RegisterProfileServer(grpcSrv.GetServe(), ProfileSrv)
+
 			// authentication service.
-			authenticationSrv := service.NewAuthenticationService(m, gormdb, tokenConf, rbacOp, prOp, tenantPluginOp)
+			authenticationSrv := service.NewAuthenticationService(m, gormdb, tokenConf, rbacOp, prOp, ProfileSrv, tenantPluginOp)
 			authentication_v1.RegisterAuthenticationHTTPServer(httpSrv.Container, authenticationSrv)
 			authentication_v1.RegisterAuthenticationServer(grpcSrv.GetServe(), authenticationSrv)
 
@@ -246,10 +251,6 @@ var rootCmd = &cobra.Command{
 			config_v1.RegisterConfigHTTPServer(httpSrv.Container, configSrv)
 			config_v1.RegisterConfigServer(grpcSrv.GetServe(), configSrv)
 
-			// profile service.
-			ProfileSrv := service.NewProfileService(pOp, profileOp)
-			profile_v1.RegisterProfileHTTPServer(httpSrv.Container, ProfileSrv)
-			profile_v1.RegisterProfileServer(grpcSrv.GetServe(), ProfileSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
