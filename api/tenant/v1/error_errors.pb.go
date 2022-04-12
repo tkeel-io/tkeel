@@ -22,6 +22,7 @@ var errAlreadyExistedUser *errors.TError
 var errResourceNotFound *errors.TError
 var errStoreCreatAdmin *errors.TError
 var errStoreCreatAdminRole *errors.TError
+var errTenantNotFound *errors.TError
 
 func init() {
 	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.tenant.v1.ERR_UNKNOWN", "未知类型")
@@ -46,6 +47,8 @@ func init() {
 	errors.Register(errStoreCreatAdmin)
 	errStoreCreatAdminRole = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_STORE_CREAT_ADMIN_ROLE", "创建租户管理员角色错误")
 	errors.Register(errStoreCreatAdminRole)
+	errTenantNotFound = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_TENANT_NOT_FOUND", "租户不存在")
+	errors.Register(errTenantNotFound)
 }
 
 func ErrUnknown() errors.Error {
@@ -90,4 +93,8 @@ func ErrStoreCreatAdmin() errors.Error {
 
 func ErrStoreCreatAdminRole() errors.Error {
 	return errStoreCreatAdminRole
+}
+
+func ErrTenantNotFound() errors.Error {
+	return errTenantNotFound
 }
