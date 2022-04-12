@@ -212,7 +212,7 @@ func (s *TenantService) TenantByExactSearch(ctx context.Context, req *pb.ExactTe
 		return nil, pb.ErrInternalError()
 	}
 	if total != 1 {
-		return nil, pb.ErrInvalidArgument()
+		return nil, pb.ErrTenantNotFound()
 	}
 	return &pb.ExactTenantResponse{TenantId: tenants[0].ID, Title: tenants[0].Title}, nil
 }
