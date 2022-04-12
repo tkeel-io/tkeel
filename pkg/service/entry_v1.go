@@ -89,9 +89,9 @@ func appendEntries(dst, src []*v1.ConsoleEntry, portal v1.ConsolePortal) []*v1.C
 			continue
 		}
 		needMerge := false
-		for _, v := range dst {
+		for i, v := range dst {
 			if v.Id == addEntry.Id {
-				mergeEntry(v, addEntry)
+				mergeEntry(dst[i], addEntry)
 				needMerge = true
 				break
 			}

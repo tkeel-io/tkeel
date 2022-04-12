@@ -6,16 +6,17 @@ package v1
 
 import (
 	context "context"
+	http "net/http"
+
 	go_restful "github.com/emicklei/go-restful"
 	errors "github.com/tkeel-io/kit/errors"
 	result "github.com/tkeel-io/kit/result"
 	protojson "google.golang.org/protobuf/encoding/protojson"
 	anypb "google.golang.org/protobuf/types/known/anypb"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	http "net/http"
-)
 
-import transportHTTP "github.com/tkeel-io/kit/transport/http"
+	transportHTTP "github.com/tkeel-io/kit/transport/http"
+)
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the tkeel package it is being compiled against.

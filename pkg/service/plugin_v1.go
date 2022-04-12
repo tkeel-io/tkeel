@@ -21,10 +21,10 @@ import (
 	"encoding/json"
 	"regexp"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/casbin/casbin/v2"
+	g_version "github.com/hashicorp/go-version"
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/security/authz/rbac"
@@ -579,6 +579,10 @@ func (s *PluginServiceV1) TMRegisterPlugin(ctx context.Context,
 	if p.Status != openapi_v1.PluginStatus_ERR_REGISTER {
 		log.Errorf("error plugin(%s) status not %s", req.Id, openapi_v1.PluginStatus_ERR_REGISTER)
 		return nil, pb.PluginErrInvalidArgument()
+	}
+	if _, err = s.pluginRouteOp.Delete(ctx, req.Id); err != nil {
+		log.Errorf("error delete plugin(%s) route: %s", req.Id, err)
+		return nil, pb.PluginErrInternalStore()
 	}
 	if err = s.registerPluginProcess(ctx, req.Id, false); err != nil {
 		log.Errorf("error plugin(%s) register: %s", req.Id, err)
@@ -1174,16 +1178,16 @@ func (a pluginList) Less(i, j int) bool {
 	if a[i].Id != a[j].Id {
 		return a[i].Id < a[j].Id
 	}
-	iVer, err := strconv.ParseFloat(a[i].Version, 64)
+	iVer, err := g_version.NewVersion(a[i].Version)
 	if err != nil {
 		return true
 	}
-	jVer, err := strconv.ParseFloat(a[j].Version, 64)
+	jVer, err := g_version.NewVersion(a[j].Version)
 	if err != nil {
 		return false
 	}
-	if iVer != jVer {
-		return iVer < jVer
+	if !iVer.Equal(jVer) {
+		return iVer.LessThan(jVer)
 	}
 	return a[i].RegisterTimestamp < a[j].RegisterTimestamp
 }
