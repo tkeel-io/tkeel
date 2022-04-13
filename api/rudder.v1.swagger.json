@@ -124,6 +124,78 @@
         ]
       }
     },
+    "/config/platform": {
+      "get": {
+        "summary": "查询 platform config 接口",
+        "operationId": "GetPlatformConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetPlatformConfigResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/config/platform/update": {
+      "post": {
+        "summary": "设置 platform config extra 数据接口",
+        "operationId": "SetPlatformExtraConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SetPlatformExtraConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "config"
+        ]
+      }
+    },
     "/entity/info/{token}": {
       "get": {
         "summary": "get a entity token info",
@@ -3372,6 +3444,10 @@
         "port": {
           "type": "string",
           "description": "host port"
+        },
+        "docs_addr": {
+          "type": "string",
+          "description": "docs host"
         }
       }
     },
@@ -3384,6 +3460,16 @@
             "$ref": "#/definitions/v1ConsoleEntry"
           },
           "description": "tenant entries"
+        }
+      }
+    },
+    "v1GetPlatformConfigResponse": {
+      "type": "object",
+      "properties": {
+        "extra": {
+          "type": "string",
+          "format": "byte",
+          "description": "extra"
         }
       }
     },
@@ -4274,6 +4360,16 @@
         "uneditable": {
           "type": "boolean",
           "description": "role uneditable"
+        }
+      }
+    },
+    "v1SetPlatformExtraConfigRequest": {
+      "type": "object",
+      "properties": {
+        "extra": {
+          "type": "string",
+          "format": "byte",
+          "description": "extra"
         }
       }
     },
