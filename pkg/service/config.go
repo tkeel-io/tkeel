@@ -42,41 +42,27 @@ func (s *ConfigService) GetDeploymentConfig(ctx context.Context, req *emptypb.Em
 		AdminHost:  adminHost,
 		TenantHost: tenantHost,
 		Port:       conf.Port,
+		DocsAddr: func() string {
+			if conf.Port != "80" {
+				return tenantHost + ":" + conf.Port + "/docs"
+			}
+			return tenantHost + "/docs"
+		}(),
 	}, nil
 }
 
 func (s *ConfigService) GetPlatformConfig(ctx context.Context, req *emptypb.Empty) (*pb.GetPlatformConfigResponse, error) {
-	u, err := util.GetUser(ctx)
-	if err != nil {
-		log.Errorf("error get user: %s", err)
-		return nil, pb.ConfigErrInternalError()
-	}
-	conf, err := s.k8s.GetDeploymentConfig(ctx)
-	if err != nil {
-		log.Errorf("error get deployment config: %s", err)
-		return nil, pb.ConfigErrInternalError()
-	}
-	adminHost, tenantHost := "", ""
-	if conf.Host != nil {
-		adminHost = conf.Host.Admin
-		tenantHost = conf.Host.Tenant
-	}
 	var extra []byte
-	if u.Tenant == model.TKeelTenant &&
-		u.User == model.TKeelUser {
-		e, _, err := s.getExtraData(ctx)
-		if err != nil {
-			log.Errorf("error get extra data: %s", err)
-			return nil, pb.ConfigErrInternalError()
-		}
-		extra = e
+	e, _, err := s.getExtraData(ctx)
+	if err != nil {
+		log.Errorf("error get extra data: %s", err)
+		return nil, pb.ConfigErrInternalError()
 	}
+	extra = e
+	log.Debugf("get extra: %s", extra)
 
 	return &pb.GetPlatformConfigResponse{
-		AdminHost:  adminHost,
-		TenantHost: tenantHost,
-		Port:       conf.Port,
-		Extra:      extra,
+		Extra: extra,
 	}, nil
 }
 

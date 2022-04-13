@@ -83,7 +83,7 @@ service Config {
   rpc SetPlatformExtraConfig(SetPlatformExtraConfigRequest)
       returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post : "/config/platform"
+      post : "/config/platform/update"
       body : "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -122,22 +122,14 @@ message GetDeploymentConfigResponse {
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "host port"
       } ];
+  string docs_addr = 4
+      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description : "docs host"
+      } ];
 }
 
 message GetPlatformConfigResponse {
-  string admin_host = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "admin_host"
-      } ];
-  string tenant_host = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant_host"
-      } ];
-  string port = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "host port"
-      } ];
-  bytes extra = 4
+  bytes extra = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "extra"
       } ];

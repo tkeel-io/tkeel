@@ -153,7 +153,9 @@
         "tags": [
           "config"
         ]
-      },
+      }
+    },
+    "/config/platform/update": {
       "post": {
         "summary": "设置 platform config extra 数据接口",
         "operationId": "SetPlatformExtraConfig",
@@ -3442,6 +3444,10 @@
         "port": {
           "type": "string",
           "description": "host port"
+        },
+        "docs_addr": {
+          "type": "string",
+          "description": "docs host"
         }
       }
     },
@@ -3460,18 +3466,6 @@
     "v1GetPlatformConfigResponse": {
       "type": "object",
       "properties": {
-        "admin_host": {
-          "type": "string",
-          "description": "admin_host"
-        },
-        "tenant_host": {
-          "type": "string",
-          "description": "tenant_host"
-        },
-        "port": {
-          "type": "string",
-          "description": "host port"
-        },
         "extra": {
           "type": "string",
           "format": "byte",
