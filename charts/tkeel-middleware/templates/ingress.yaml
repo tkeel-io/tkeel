@@ -68,3 +68,11 @@ spec:
                   number: 31234
             path: /v1/ws
             pathType: Prefix
+          - backend:
+              service:
+                name: tkeel-docs
+                port:
+                  number: 3000
+            path: /docs
+            pathType: Prefix
+          
