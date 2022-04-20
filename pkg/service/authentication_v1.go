@@ -118,6 +118,15 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.AuthenticateRequest) (*pb.AuthenticateResponse, error) {
 	header := transport_http.HeaderFromContext(ctx)
 	sess := new(session)
+	// set src plugin id.
+	pluginID, err := s.checkXPluginJwt(ctx, header)
+	if err != nil {
+		log.Errorf("error get plugin ID from request: %s", err)
+		return nil, pb.ErrInvalidXPluginJwtToken()
+	}
+	sess.Src = &endpoint{
+		ID: pluginID,
+	}
 	if err := s.setDstAndMethod(ctx, sess, req.Path); err != nil {
 		if errors.Is(err, pb.ErrUpstreamNotFound()) {
 			return nil, err
@@ -127,15 +136,6 @@ func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.Authen
 	}
 	// white path.
 	if !s.matchRegExpWhiteList(req.Path) {
-		// set src plugin id.
-		pluginID, err := s.checkXPluginJwt(ctx, header)
-		if err != nil {
-			log.Errorf("error get plugin ID from request: %s", err)
-			return nil, pb.ErrInvalidXPluginJwtToken()
-		}
-		sess.Src = &endpoint{
-			ID: pluginID,
-		}
 		// set user.
 		if pluginID == "" {
 			log.Debugf("external flow(%s)", req)
@@ -262,6 +262,9 @@ func (s *AuthenticationService) getAddonsDstAndMethod(ctx context.Context, sess 
 	addonsMethod := getMethodApisPath(path)
 	if addonsMethod == "" {
 		return errors.New("invalid addons method")
+	}
+	if sess.Src == nil {
+		return errors.New("invalid source plugin")
 	}
 	srcRoute, err := s.prOp.Get(ctx, sess.Src.ID)
 	if err != nil {
