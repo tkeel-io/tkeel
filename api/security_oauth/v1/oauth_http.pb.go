@@ -238,6 +238,11 @@ func (h *OauthHTTPHandler) IdentityProviderRegister(req *go_restful.Request, res
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
 	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
@@ -680,7 +685,7 @@ func RegisterOauthHTTPServer(container *go_restful.Container, srv OauthHTTPServe
 		To(handler.TokenRevoke))
 	ws.Route(ws.GET("/oauth/id-provider/template").
 		To(handler.IdentityProviderTemplate))
-	ws.Route(ws.POST("/oauth/id-provider/register").
+	ws.Route(ws.POST("/oauth/id-provider/register/{tenant_id}").
 		To(handler.IdentityProviderRegister))
 	ws.Route(ws.GET("/oauth/id-provider/{tenant_id}").
 		To(handler.GetIdentityProvider))

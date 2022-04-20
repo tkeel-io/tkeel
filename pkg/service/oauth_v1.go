@@ -456,7 +456,7 @@ func (s *OauthService) IdentityProviderTemplate(ctx context.Context, req *pb.IdP
 func (s *OauthService) IdentityProviderRegister(ctx context.Context, req *pb.IdProviderRegisterRequest) (*pb.IdProviderRegisterResponse, error) {
 	switch req.GetBody().GetType() {
 	case "OIDC":
-		oidcConfig := pb.OIDCRegisterBody{}
+		oidcConfig := pb.OIDCRegisterBody{TenantId: req.GetTenantId()}
 		err := yaml.Unmarshal(req.GetBody().GetConfig(), &oidcConfig)
 		if err != nil {
 			log.Error(err)
@@ -493,6 +493,8 @@ func (s *OauthService) IdentityProviderRegister(ctx context.Context, req *pb.IdP
 		identityInfo := map[string]interface{}{"type": "OIDCIdentityProvider", "tenant_id": oidcConfig.TenantId, "info": bytesBody}
 		bytesInfo, _ := json.Marshal(identityInfo)
 		s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(oidcConfig.TenantId), bytesInfo)
+	case "internal":
+		s.DaprClient.DeleteState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetTenantId()))
 	default:
 		return nil, pb.OauthUnsupportedProviderType()
 	}
@@ -521,9 +523,10 @@ func (s *OauthService) GetIdentityProvider(ctx context.Context, req *pb.GetIdent
 			return nil, pb.OauthErrServerError()
 		}
 		oidcProvider := pb.OIDCRegisterBody{}
+		log.Info(infoBytes)
 		err = json.Unmarshal(infoBytes, &oidcProvider)
 		if err != nil {
-			log.Error(err)
+			log.Error(err, string(infoBytes))
 			return nil, pb.OauthErrServerError()
 		}
 		configBytes, err = yaml.Marshal(&oidcProvider)

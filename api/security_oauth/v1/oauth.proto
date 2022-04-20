@@ -156,7 +156,7 @@ service Oauth {
   // Identity provider register
   rpc IdentityProviderRegister (IdProviderRegisterRequest) returns(IdProviderRegisterResponse){
     option (google.api.http) = {
-      post : "/oauth/id-provider/register"
+      post : "/oauth/id-provider/register/{tenant_id}"
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -381,7 +381,8 @@ message IdProviderTemplateResponse {
 
 // IdentityProviderConfig request.
 message IdProviderRegisterRequest {
-  IdProviderRegisterRequestBody body =1;
+  string tenant_id =1;
+  IdProviderRegisterRequestBody body = 2;
 }
 // IdentityProviderConfig request.
 message IdProviderRegisterRequestBody {
