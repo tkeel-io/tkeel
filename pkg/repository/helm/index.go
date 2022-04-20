@@ -17,9 +17,10 @@ limitations under the License.
 package helm
 
 import (
-	"regexp"
 	"strings"
 	"sync"
+
+	regexp "github.com/dlclark/regexp2"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
@@ -147,7 +148,13 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 		return nil, errors.Wrapf(err, "%s is not a valid regular expression", word)
 	}
 	for chartName, vMap := range r.charts {
-		if exp.MatchString(chartName) {
+		match, err := exp.FindStringMatch(chartName)
+		if err != nil {
+			return nil, errors.Wrapf(err, "%s is not a valid regular expression", word)
+		}
+		if match != nil &&
+			match.Capture.Index == 0 &&
+			match.Capture.Length == len(path) {
 			for _, ch := range vMap {
 				if version == "" || version == ch.Version {
 					if _, ok := ch.Metadata.Annotations[tKeelPluginEnableKey]; ok {
