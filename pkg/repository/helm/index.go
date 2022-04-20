@@ -143,7 +143,7 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 		}
 		return list, nil
 	}
-	exp, err := regexp.Compile(word)
+	exp, err := regexp.Compile(word, regexp.None)
 	if err != nil {
 		return nil, errors.Wrapf(err, "%s is not a valid regular expression", word)
 	}
