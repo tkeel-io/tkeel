@@ -1,0 +1,4763 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "api/authentication/v1/authentication.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "authentication"
+    },
+    {
+      "name": "Config"
+    },
+    {
+      "name": "EntityToken"
+    },
+    {
+      "name": "entry"
+    },
+    {
+      "name": "Oauth2"
+    },
+    {
+      "name": "Plugin"
+    },
+    {
+      "name": "Profile"
+    },
+    {
+      "name": "RBAC"
+    },
+    {
+      "name": "Repo"
+    },
+    {
+      "name": "Oauth"
+    },
+    {
+      "name": "Tenant"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/authenticate": {
+      "get": {
+        "summary": "tkeel authenticate with header Authorization",
+        "operationId": "Authenticate",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/apiauthenticationv1AuthenticateResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARG",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "path",
+            "description": "url path",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "verb",
+            "description": "http verb",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "authentication"
+        ]
+      }
+    },
+    "/config/deployment": {
+      "get": {
+        "summary": "查询 deployment config 接口",
+        "operationId": "GetDeploymentConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetDeploymentConfigResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/config/platform": {
+      "get": {
+        "summary": "查询 platform config 接口",
+        "operationId": "GetPlatformConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetPlatformConfigResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/config/platform/update": {
+      "post": {
+        "summary": "设置 platform config extra 数据接口",
+        "operationId": "SetPlatformExtraConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SetPlatformExtraConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/entity/info/{token}": {
+      "get": {
+        "summary": "get a entity token info",
+        "operationId": "EntityTokenInfo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1TokenInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "token",
+            "description": "entity token  path params",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] EntityToken"
+        ]
+      }
+    },
+    "/entity/token": {
+      "post": {
+        "summary": "create a entity token",
+        "operationId": "CreateEntityToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1CreateEntityTokenResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "create entity token  body params",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TokenRequestBody",
+              "description": "create entity token  body params"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] EntityToken"
+        ]
+      }
+    },
+    "/entity/token/{token}": {
+      "delete": {
+        "summary": "delete a entity token",
+        "operationId": "DeleteEntityToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "token",
+            "description": "entity token  path params",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] EntityToken"
+        ]
+      }
+    },
+    "/entries": {
+      "get": {
+        "summary": "查询 console entries 接口",
+        "operationId": "GetEntries",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetEntriesResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "entry"
+        ]
+      }
+    },
+    "/oauth/authenticate": {
+      "get": {
+        "summary": "oauth authenticate with header Authorization",
+        "operationId": "OauthAuthenticate",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/apioauthv1AuthenticateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/oidc/register": {
+      "post": {
+        "summary": "oauth OIDC provider register",
+        "operationId": "OIDCRegister",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1OIDCRegisterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1OIDCRegisterBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/pwd": {
+      "put": {
+        "summary": "oauth update user password",
+        "operationId": "UpdatePassword",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1UpdatePasswordResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdatePasswordBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/rspwd": {
+      "post": {
+        "summary": "oauth reset user password",
+        "operationId": "ResetPassword",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResetPasswordBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/token/revoke": {
+      "post": {
+        "summary": "oauth token revoke with refresh token",
+        "operationId": "TokenRevoke",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1TokenRevokeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TokenRevokeBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/{tenant_id}/authorize": {
+      "get": {
+        "summary": "oauth authorize code with username and password",
+        "operationId": "OauthAuthorize",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1AuthorizeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "tenantID path param",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "response_type",
+            "description": "authorize response type, this must 'code',query param",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "username",
+            "description": "username query param",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "description": "password query param",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "redirect_uri",
+            "description": "redirect uri with code",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "state",
+            "description": "state",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/{tenant_id}/token": {
+      "get": {
+        "summary": "oauth token with code or password",
+        "operationId": "OauthToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1TokenResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "tenant_id path param",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "grant_type",
+            "description": "grant_type 'authorize_code','password', query param",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "code",
+            "description": "code with authorize response,query param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "redirect_uri",
+            "description": "redirect_uri while grant_type is code,query param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "username",
+            "description": "username while grant_type is password ,query param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "password",
+            "description": "password while grant_type is password,query param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "refresh_token",
+            "description": "refresh token while grant_type is refresh_token,query param",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "disable_redirect",
+            "description": "auto redirect if auto_redirect = trueparam",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth2/admin": {
+      "get": {
+        "summary": "平台管理员 Token 颁发接口",
+        "operationId": "IssueAdminToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1IssueTokenResponse"
+            }
+          },
+          "401": {
+            "description": "PASSWORD_NOT_MATCH",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "password",
+            "description": "admin password",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Oauth2"
+        ]
+      }
+    },
+    "/oauth2/authorize": {
+      "get": {
+        "summary": "Token 验证接口",
+        "operationId": "VerifyToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "401": {
+            "description": "TOKEN_INVALID",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Oauth2"
+        ]
+      }
+    },
+    "/oauth2/plugin": {
+      "post": {
+        "summary": "插件 Token 颁发接口",
+        "operationId": "IssuePluginToken",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1IssueTokenResponse"
+            }
+          },
+          "401": {
+            "description": "INVALID_PLUGIN_ID",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1IssuePluginTokenRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Oauth2"
+        ]
+      }
+    },
+    "/oauth2/plugin/white-list": {
+      "post": {
+        "summary": "添加 Plugin 白名单 dapr App ID 接口",
+        "operationId": "AddPluginWhiteList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "204": {
+            "description": "SUCC_AND_NO_CONTENT",
+            "schema": {}
+          },
+          "409": {
+            "description": "CLIENT_ID_ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AddPluginWhiteListRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Oauth2"
+        ]
+      }
+    },
+    "/oauth2/pwd": {
+      "put": {
+        "summary": "admin 重设密码接口",
+        "operationId": "UpdateAdminPassword",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "401": {
+            "description": "TOKEN_INVALID",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateAdminPasswordRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Oauth2"
+        ]
+      }
+    },
+    "/plugins": {
+      "get": {
+        "summary": "获取插件列表接口",
+        "operationId": "ListPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListPluginResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page_num",
+            "description": "query page number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "description": "query page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "description": "query items order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "description": "query items inverted sort",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "description": "query items key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "display_all_plugin",
+            "description": "return all plugin",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
+    "/plugins/{id}": {
+      "get": {
+        "summary": "查询插件接口",
+        "operationId": "GetPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetPluginResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "PLUGIN_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      },
+      "delete": {
+        "summary": "卸载插件接口",
+        "operationId": "UninstallPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1UninstallPluginResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "PLUGIN_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      },
+      "post": {
+        "summary": "安装插件接口",
+        "operationId": "InstallPlugin",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "$ref": "#/definitions/v1InstallPluginResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "REPOSITORY_OR_INSTALLER_NOT_FOUND",
+            "schema": {}
+          },
+          "409": {
+            "description": "ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "install plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "installer info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Installer",
+              "description": "installer info"
+            }
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      },
+      "put": {
+        "summary": "更新插件接口",
+        "operationId": "UpgradePlugin",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "$ref": "#/definitions/v1UpgradePluginResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "REPOSITORY_OR_INSTALLER_NOT_FOUND",
+            "schema": {}
+          },
+          "409": {
+            "description": "ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "upgrade plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "installer info",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Installer",
+              "description": "installer info"
+            }
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
+    "/plugins/{id}/tenants": {
+      "get": {
+        "summary": "获取插件绑定租户接口",
+        "operationId": "ListenableTenants",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListEnabledTenantsResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "page_num",
+            "description": "query page number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "description": "query page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "description": "query items order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "description": "query items inverted sort",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "description": "query items key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      },
+      "delete": {
+        "summary": "插件租户停用接口",
+        "operationId": "TenantDisable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "extra",
+            "description": "extra data",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      },
+      "post": {
+        "summary": "插件租户启用接口",
+        "operationId": "TenantEnable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "plugin id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "extra data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TenantEnableRequestEnableExtraData",
+              "description": "extra data"
+            }
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
+    "/profile": {
+      "get": {
+        "summary": "get tenant profile",
+        "operationId": "GetTenantProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetTenantProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      },
+      "post": {
+        "summary": "set tenant profile",
+        "operationId": "SetTenantProfile",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1SetTenantPluginProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TenantProfiles"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/rbac/permissions": {
+      "get": {
+        "summary": "list permissions ",
+        "operationId": "ListPermissions",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListPermissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "key_words",
+            "description": "permission name search words",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "role",
+            "description": "tenant role name,default is current role",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/rbac/permissions/check": {
+      "post": {
+        "summary": "check role has the permission",
+        "operationId": "CheckRolePermission",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1CheckRolePermissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CheckRolePermissionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/rbac/roles": {
+      "get": {
+        "summary": "list role in tenant ",
+        "operationId": "ListRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListRolesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page_num",
+            "description": "query page number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "description": "query page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "description": "query items order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "description": "query items inverted sort",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "description": "query items key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "tenant_id",
+            "description": "tenant id, default is current tenant",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      },
+      "post": {
+        "summary": "create role in tenant ",
+        "operationId": "CreateRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1CreateRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "tenant role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Role",
+              "description": "tenant role"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/rbac/roles/{id}": {
+      "get": {
+        "summary": "Get role in tenant ",
+        "operationId": "GetRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "tenant role id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      },
+      "delete": {
+        "summary": "delete role in tenant ",
+        "operationId": "DeleteRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "tenant role id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      },
+      "put": {
+        "summary": "update role in tenant ",
+        "operationId": "UpdateRole",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "tenant role id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "tenant role",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Role",
+              "description": "tenant role"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/rbac/roles/{role_id}/users": {
+      "post": {
+        "summary": "create binding to bind role_id with user_id",
+        "operationId": "CreateRoleBinding",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role_id",
+            "description": "bind role name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "bind user id",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateRoleBindingRequestUserList",
+              "description": "bind user id"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/rbac/roles/{role_id}/users/{user_id}": {
+      "delete": {
+        "summary": "delete binding of the bind role_name with user_id",
+        "operationId": "DeleteRoleBinding",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "role_id",
+            "description": "bind role id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "description": "bind user id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/rbac/users/{user_id}/roles": {
+      "put": {
+        "summary": "create binding to bind user_id with roles",
+        "operationId": "UpdateUserRoleBinding",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "description": "binding user id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "binding role id list",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateUserRoleBindingRequestRoleIDList",
+              "description": "binding role id list"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/repos": {
+      "get": {
+        "summary": "获取仓库列表接口",
+        "operationId": "ListRepo",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "$ref": "#/definitions/v1ListRepoResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Repo"
+        ]
+      }
+    },
+    "/repos/installers": {
+      "get": {
+        "summary": "获取所有仓库的安装包列表接口",
+        "operationId": "ListAllRepoInstaller",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "$ref": "#/definitions/v1ListAllRepoInstallerResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page_num",
+            "description": "query page number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "description": "query page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "description": "query items order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "description": "query items inverted sort",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "description": "query items key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "installed",
+            "description": "installed option",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Repo"
+        ]
+      }
+    },
+    "/repos/{name}": {
+      "delete": {
+        "summary": "删除仓库接口",
+        "operationId": "DeleteRepo",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteRepoResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "REPO_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "description": "repo name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Repo"
+        ]
+      },
+      "post": {
+        "summary": "创建仓库接口",
+        "operationId": "CreateRepo",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "409": {
+            "description": "ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "description": "repo name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "repo url",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateRepoRequestRepoUrl",
+              "description": "repo url"
+            }
+          }
+        ],
+        "tags": [
+          "Repo"
+        ]
+      }
+    },
+    "/repos/{repo}/installers": {
+      "get": {
+        "summary": "获取仓库中安装包列表接口",
+        "operationId": "ListRepoInstaller",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "$ref": "#/definitions/v1ListRepoInstallerResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "REPO_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repo",
+            "description": "repo name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "page_num",
+            "description": "query page number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "description": "query page size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "description": "query items order by field",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "description": "query items inverted sort",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "description": "query items key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "installed",
+            "description": "installed option",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "Repo"
+        ]
+      }
+    },
+    "/repos/{repo}/installers/{installer_name}/{installer_version}": {
+      "get": {
+        "summary": "获取仓库中指定安装包",
+        "operationId": "GetRepoInstaller",
+        "responses": {
+          "200": {
+            "description": "SUCC",
+            "schema": {
+              "$ref": "#/definitions/v1GetRepoInstallerResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "404": {
+            "description": "INSTALLER_NOT_FOUND",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_STORE",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "repo",
+            "description": "repo name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "installer_name",
+            "description": "installer name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "installer_version",
+            "description": "installer version",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Repo"
+        ]
+      }
+    },
+    "/tenants": {
+      "get": {
+        "summary": "tenant list",
+        "operationId": "ListTenant",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListTenantResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page_num",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      },
+      "post": {
+        "summary": "create a tenant",
+        "operationId": "CreateTenant",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1CreateTenantResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "409": {
+            "description": "ALREADY_EXISTS",
+            "schema": {}
+          },
+          "500": {
+            "description": "UNEXPECT_INTERNAL",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "create tenant body params",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TenantCreateBody",
+              "description": "create tenant body params"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tenants/exact": {
+      "get": {
+        "summary": "tenant exact search",
+        "operationId": "TenantByExactSearch",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ExactTenantResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tenants/plugins/permissible": {
+      "get": {
+        "summary": "permissible tenant plugin",
+        "operationId": "PermissibleTenantPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1PluginPermissibleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "plugin_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tenants/users/rpk/info": {
+      "post": {
+        "summary": "get reset user password key info",
+        "operationId": "ResetPasswordKeyInfo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1RPKInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RPKInfoBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}": {
+      "get": {
+        "summary": "get a tenant",
+        "operationId": "GetTenant",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetTenantResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "tenant id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      },
+      "delete": {
+        "summary": "delete a tenant",
+        "operationId": "DeleteTenant",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "tenant id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      },
+      "put": {
+        "summary": "tenant update",
+        "operationId": "UpdateTenant",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateTenantResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateTenantBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}/plugins": {
+      "get": {
+        "summary": "list tenant plugin",
+        "operationId": "ListTenantPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListTenantPluginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      },
+      "post": {
+        "summary": "add a plugin",
+        "operationId": "AddPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1AddTenantPluginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1AddTenantPluginBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}/plugins/{plugin_id}": {
+      "delete": {
+        "summary": "delete tenant plugin",
+        "operationId": "DeleteTenantPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1DeleteTenantPluginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "plugin_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}/users": {
+      "get": {
+        "summary": "list users",
+        "operationId": "ListUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1ListUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "page_num",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "order_by",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "is_descending",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "key_words",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      },
+      "post": {
+        "summary": "create a  user at tenant",
+        "operationId": "CreateUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1CreateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "tenant id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "create user body params",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1CreateUserBody",
+              "description": "create user body params"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}/users/{user_id}": {
+      "get": {
+        "summary": "get a  user",
+        "operationId": "GetUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      },
+      "delete": {
+        "summary": "delete a user",
+        "operationId": "DeleteUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      },
+      "put": {
+        "summary": "update user",
+        "operationId": "UpdateUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateUserBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tenants/{tenant_id}/users/{user_id}/rpk": {
+      "get": {
+        "summary": "get reset user password key ",
+        "operationId": "GetResetPasswordKey",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetResetPasswordKeyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] Tenant"
+        ]
+      }
+    },
+    "/tkeel-manager/rbac/binding": {
+      "post": {
+        "summary": "TM add policy",
+        "operationId": "TMAddRoleBinding",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TMRoleBindingRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/tkeel-manager/rbac/binding/delete": {
+      "post": {
+        "summary": "TM delete policy",
+        "operationId": "TMDeleteRoleBinding",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TMRoleBindingRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/tkeel-manager/rbac/policy": {
+      "post": {
+        "summary": "TM add policy",
+        "operationId": "TMAddPolicy",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TMPolicyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/tkeel-manager/rbac/policy/delete": {
+      "post": {
+        "summary": "TM delete policy",
+        "operationId": "TMDeletePolicy",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TMPolicyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RBAC"
+        ]
+      }
+    },
+    "/tm/plugins/identify": {
+      "get": {
+        "summary": "获取插件绑定租户接口",
+        "operationId": "TMUpdatePluginIdentify",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    },
+    "/tm/plugins/register": {
+      "get": {
+        "summary": "手动注册插件接口",
+        "operationId": "TMRegisterPlugin",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "CreateRepoRequestRepoUrl": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "repo url"
+        }
+      }
+    },
+    "CreateRoleBindingRequestUserList": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "bind user id"
+        }
+      }
+    },
+    "PermissionDependence": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string",
+          "description": "ID\u003e/authority ID.The content in \u003c\u003e is variable."
+        }
+      }
+    },
+    "TenantEnableRequestEnableExtraData": {
+      "type": "object",
+      "properties": {
+        "desc": {
+          "type": "string",
+          "description": "extra data"
+        },
+        "extra": {
+          "type": "string",
+          "format": "byte",
+          "description": "extra data"
+        }
+      }
+    },
+    "UpdateUserRoleBindingRequestRoleIDList": {
+      "type": "object",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "binding roles"
+        }
+      }
+    },
+    "apiauthenticationv1AuthenticateResponse": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "user id"
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "tenant id"
+        },
+        "role": {
+          "type": "string",
+          "description": "role"
+        },
+        "destination": {
+          "type": "string",
+          "description": "dst plugin id"
+        },
+        "method": {
+          "type": "string",
+          "description": "dst plugin method"
+        }
+      },
+      "title": "认证返回值"
+    },
+    "apioauthv1AuthenticateResponse": {
+      "type": "object",
+      "properties": {
+        "expires_in": {
+          "type": "string",
+          "format": "int64"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "nick_name": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "tenant_id": {
+          "type": "string"
+        }
+      }
+    },
+    "apirbacv1Permission": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "permission path"
+        },
+        "permission": {
+          "$ref": "#/definitions/openapiv1Permission",
+          "description": "permission"
+        }
+      }
+    },
+    "openapiv1Permission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "dependences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PermissionDependence"
+          }
+        },
+        "desc": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/openapiv1Permission"
+          }
+        }
+      },
+      "description": "plugin define permission."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1AddPluginWhiteListRequest": {
+      "type": "object",
+      "properties": {
+        "plugin_id": {
+          "type": "string",
+          "description": "plugin id(dapr app id)"
+        }
+      }
+    },
+    "v1AddTenantPluginBody": {
+      "type": "object",
+      "properties": {
+        "plugin_id": {
+          "type": "string"
+        }
+      }
+    },
+    "v1AddTenantPluginResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1AddonsPoint": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "desc": {
+          "type": "string"
+        }
+      },
+      "description": "*\nmessage plugin declares extension point."
+    },
+    "v1AuthorizeResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        }
+      }
+    },
+    "v1BriefPluginInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "description": "*\nmessage brief plugin information."
+    },
+    "v1CheckRolePermissionRequest": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "permission path"
+        }
+      }
+    },
+    "v1CheckRolePermissionResponse": {
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "boolean",
+          "description": "permission allowed"
+        }
+      }
+    },
+    "v1ConfigurationType": {
+      "type": "string",
+      "enum": [
+        "JSON",
+        "YAML"
+      ],
+      "default": "JSON"
+    },
+    "v1ConsoleEntry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "entry": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ConsoleEntry"
+          }
+        },
+        "portal": {
+          "$ref": "#/definitions/v1ConsolePortal"
+        }
+      },
+      "description": "plugin console entry."
+    },
+    "v1ConsolePortal": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "tenant"
+      ],
+      "default": "admin",
+      "description": "console portal enum."
+    },
+    "v1CreateEntityTokenResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "v1CreateRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role",
+          "description": "tenant role"
+        }
+      }
+    },
+    "v1CreateTenantResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "created tenant id"
+        },
+        "tenant_title": {
+          "type": "string",
+          "description": "created tenant title"
+        },
+        "admin_username": {
+          "type": "string",
+          "description": "created tenant admin username"
+        },
+        "reset_key": {
+          "type": "string",
+          "description": " tenant admin password reset key"
+        }
+      },
+      "title": "The response message containing the greetings"
+    },
+    "v1CreateUserBody": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "user name",
+          "required": [
+            "username"
+          ]
+        },
+        "password": {
+          "type": "string",
+          "description": "user password",
+          "required": [
+            "password"
+          ]
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "user roles"
+        },
+        "nick_name": {
+          "type": "string",
+          "description": "user nick name"
+        }
+      },
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "v1CreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "reset_key": {
+          "type": "string",
+          "title": "reset password key"
+        }
+      }
+    },
+    "v1DeleteRepoResponse": {
+      "type": "object",
+      "properties": {
+        "repo": {
+          "$ref": "#/definitions/v1RepoObject",
+          "description": "repo"
+        }
+      }
+    },
+    "v1DeleteRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role",
+          "description": "tenant role"
+        }
+      }
+    },
+    "v1DeleteTenantPluginResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1EnabledTenant": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "enable tenant title"
+        },
+        "remark": {
+          "type": "string",
+          "description": "enable tenant remark"
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "enable tenant id"
+        },
+        "operator_id": {
+          "type": "string",
+          "description": "operator user id"
+        },
+        "enable_timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "enable timestamp"
+        },
+        "user_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "enable tenant user number"
+        }
+      }
+    },
+    "v1ExactTenantResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "v1GetDeploymentConfigResponse": {
+      "type": "object",
+      "properties": {
+        "admin_host": {
+          "type": "string",
+          "description": "admin_host"
+        },
+        "tenant_host": {
+          "type": "string",
+          "description": "tenant_host"
+        },
+        "port": {
+          "type": "string",
+          "description": "host port"
+        },
+        "docs_addr": {
+          "type": "string",
+          "description": "docs host"
+        }
+      }
+    },
+    "v1GetEntriesResponse": {
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ConsoleEntry"
+          },
+          "description": "tenant entries"
+        }
+      }
+    },
+    "v1GetPlatformConfigResponse": {
+      "type": "object",
+      "properties": {
+        "extra": {
+          "type": "string",
+          "format": "byte",
+          "description": "extra"
+        }
+      }
+    },
+    "v1GetPluginResponse": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1PluginObject",
+          "description": "plugin object"
+        }
+      }
+    },
+    "v1GetRepoInstallerResponse": {
+      "type": "object",
+      "properties": {
+        "installer": {
+          "$ref": "#/definitions/v1InstallerObject",
+          "description": "installer"
+        }
+      }
+    },
+    "v1GetResetPasswordKeyResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "nick_name": {
+          "type": "string"
+        },
+        "reset_key": {
+          "type": "string"
+        }
+      }
+    },
+    "v1GetRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role",
+          "description": "tenant role"
+        }
+      }
+    },
+    "v1GetTenantProfileResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_profiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TenantProfiles"
+          }
+        }
+      }
+    },
+    "v1GetTenantResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "tenant id"
+        },
+        "title": {
+          "type": "string",
+          "description": "tenant title"
+        },
+        "remark": {
+          "type": "string",
+          "description": "tenant remark"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "int64",
+          "description": "tenant remark"
+        },
+        "num_user": {
+          "type": "integer",
+          "format": "int32",
+          "description": "user number in tenant"
+        },
+        "admins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TenantAdmin"
+          },
+          "description": "admins in tenant"
+        }
+      }
+    },
+    "v1GetUserResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "nick_name": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ImplementedAddons": {
+      "type": "object",
+      "properties": {
+        "addons_point": {
+          "type": "string"
+        },
+        "implemented_endpoint": {
+          "type": "string"
+        }
+      },
+      "description": "*\nmessage plugin declares implemented other plugin extension point."
+    },
+    "v1ImplementedPlugin": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1BriefPluginInfo"
+        },
+        "addons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ImplementedAddons"
+          }
+        }
+      },
+      "description": "*\nmessage plugin implemented other plugin."
+    },
+    "v1InstallPluginResponse": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1PluginObject",
+          "description": "plugin object"
+        }
+      }
+    },
+    "v1Installer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "installer name"
+        },
+        "version": {
+          "type": "string",
+          "description": "installer version"
+        },
+        "repo": {
+          "type": "string",
+          "description": "repository name"
+        },
+        "icon": {
+          "type": "string",
+          "description": "installer icon"
+        },
+        "desc": {
+          "type": "string",
+          "description": "installer desc"
+        },
+        "configuration": {
+          "type": "string",
+          "format": "byte",
+          "description": "installer configuration data"
+        },
+        "type": {
+          "$ref": "#/definitions/v1ConfigurationType",
+          "description": "configuration type"
+        },
+        "maintainers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Installermaintainer"
+          },
+          "description": "installer maintainers"
+        }
+      },
+      "description": "*\nInstaller."
+    },
+    "v1InstallerObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "installer name"
+        },
+        "version": {
+          "type": "string",
+          "description": "installer version"
+        },
+        "repo": {
+          "type": "string",
+          "description": "installer repo"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          },
+          "description": "installer metadata"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "installer metadata"
+        },
+        "maintainers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1InstallerObjectmaintainer"
+          },
+          "description": "installer maintainers"
+        },
+        "state": {
+          "$ref": "#/definitions/v1InstallerState",
+          "description": "installer state"
+        },
+        "desc": {
+          "type": "string",
+          "description": "installer desc"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "uint64",
+          "description": "last change chart timestamp"
+        },
+        "icon": {
+          "type": "string",
+          "description": "installer icon url"
+        }
+      }
+    },
+    "v1InstallerObjectmaintainer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "maintainer name"
+        },
+        "email": {
+          "type": "string",
+          "description": "maintainer email"
+        },
+        "url": {
+          "type": "string",
+          "description": "maintainer url"
+        }
+      }
+    },
+    "v1InstallerState": {
+      "type": "string",
+      "enum": [
+        "UNINSTALL",
+        "INSTALLED",
+        "SAME_NAME"
+      ],
+      "default": "UNINSTALL"
+    },
+    "v1Installermaintainer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "maintainer name"
+        },
+        "email": {
+          "type": "string",
+          "description": "maintainer email"
+        },
+        "url": {
+          "type": "string",
+          "description": "maintainer url"
+        }
+      }
+    },
+    "v1IssuePluginTokenRequest": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "description": "plugin id(dapr app id)"
+        },
+        "client_secret": {
+          "type": "string",
+          "description": "plugin secret"
+        }
+      }
+    },
+    "v1IssueTokenResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "description": "oauth2 access token"
+        },
+        "token_type": {
+          "type": "string",
+          "description": "oauth2 token type"
+        },
+        "refresh_token": {
+          "type": "string",
+          "description": "oauth2 refresh token"
+        },
+        "expires_in": {
+          "type": "integer",
+          "format": "int32",
+          "description": "oauth2 token expires"
+        }
+      }
+    },
+    "v1ListAllRepoInstallerResponse": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "total items"
+        },
+        "page_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page number"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page size"
+        },
+        "brief_installers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1InstallerObject"
+          },
+          "description": "brief installer info list,only has name and version"
+        },
+        "installed_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "installed installer number"
+        }
+      }
+    },
+    "v1ListEnabledTenantsResponse": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "total items"
+        },
+        "page_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page number"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page size"
+        },
+        "tenants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1EnabledTenant"
+          },
+          "description": "plugin enable tenants list"
+        }
+      }
+    },
+    "v1ListPermissionResponse": {
+      "type": "object",
+      "properties": {
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apirbacv1Permission"
+          },
+          "description": "role permissions"
+        }
+      }
+    },
+    "v1ListPluginResponse": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "total items"
+        },
+        "page_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page number"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page size"
+        },
+        "plugin_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1PluginBrief"
+          },
+          "description": "plugin object list"
+        },
+        "enable_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "enable plugin number"
+        }
+      }
+    },
+    "v1ListRepoInstallerResponse": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "total items"
+        },
+        "page_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page number"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page size"
+        },
+        "brief_installers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1InstallerObject"
+          },
+          "description": "brief installer info list,only has name and version"
+        },
+        "installed_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "installed installer number"
+        }
+      }
+    },
+    "v1ListRepoResponse": {
+      "type": "object",
+      "properties": {
+        "repos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1RepoObject"
+          },
+          "description": "repo list"
+        }
+      }
+    },
+    "v1ListRolesResponse": {
+      "type": "object",
+      "properties": {
+        "page_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page number"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query page size"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "query item total"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Role"
+          },
+          "description": "roles"
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "tenant id, default is current tenant"
+        }
+      }
+    },
+    "v1ListTenantPluginResponse": {
+      "type": "object",
+      "properties": {
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1ListTenantResponse": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_num": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "tenants": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TenantDetail"
+          },
+          "description": "tenants"
+        }
+      }
+    },
+    "v1ListUserResponse": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_num": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_size": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1UserListData"
+          }
+        }
+      }
+    },
+    "v1OIDCEndpoint": {
+      "type": "object",
+      "properties": {
+        "auth_url": {
+          "type": "string"
+        },
+        "token_url": {
+          "type": "string"
+        },
+        "user_info_url": {
+          "type": "string"
+        },
+        "jwksurl": {
+          "type": "string"
+        },
+        "end_session_url": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OIDCRegisterBody": {
+      "type": "object",
+      "properties": {
+        "issuer": {
+          "type": "string"
+        },
+        "client_id": {
+          "type": "string"
+        },
+        "client_secret": {
+          "type": "string"
+        },
+        "redirect_url": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "get_user_info": {
+          "type": "boolean"
+        },
+        "insecure_skip_verify": {
+          "type": "boolean"
+        },
+        "email_key": {
+          "type": "string"
+        },
+        "preferred_username_key": {
+          "type": "string"
+        },
+        "endpoint": {
+          "$ref": "#/definitions/v1OIDCEndpoint"
+        },
+        "tenant_id": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OIDCRegisterResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1PluginBrief": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "plugin id"
+        },
+        "version": {
+          "type": "string",
+          "description": "plugin version"
+        },
+        "register_timestamp": {
+          "type": "string",
+          "format": "int64",
+          "description": "register timestamp"
+        },
+        "tkeel_version": {
+          "type": "string",
+          "description": "plugin depend tkeel version"
+        },
+        "installer_brief": {
+          "$ref": "#/definitions/v1Installer",
+          "description": "brief installer info only has name,verison,repo_name and installed field."
+        },
+        "tenant_enable": {
+          "type": "boolean",
+          "description": "tenant enable"
+        },
+        "status": {
+          "$ref": "#/definitions/v1PluginStatus",
+          "description": "register plugin status"
+        }
+      }
+    },
+    "v1PluginObject": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1PluginBrief",
+          "description": "plugin brief info"
+        },
+        "addons_point": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1AddonsPoint"
+          },
+          "description": "plugin declares addons"
+        },
+        "implemented_plugin": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ImplementedPlugin"
+          },
+          "description": "plugin implemented plugin list"
+        },
+        "secret": {
+          "type": "string",
+          "description": "plugin registered secret"
+        },
+        "enable_tenantes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1EnabledTenant"
+          },
+          "description": "enable tenant's id list"
+        },
+        "register_addons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1RegisterAddons"
+          },
+          "description": "register addons router"
+        },
+        "console_entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ConsoleEntry"
+          },
+          "description": "plugin console entries"
+        }
+      },
+      "description": "*\nplugin object."
+    },
+    "v1PluginPermissibleResponse": {
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1PluginStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "WAIT_RUNNING",
+        "ERR_REGISTER",
+        "RUNNING"
+      ],
+      "default": "UNKNOWN",
+      "description": "*\nplugin state enum."
+    },
+    "v1ProfileItem": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "val": {
+          "type": "string"
+        },
+        "val_type": {
+          "$ref": "#/definitions/v1TypeProfileVal"
+        }
+      },
+      "description": "*\nProfile is a controllable item provided by the plugin.\nPlatform administrators can set up plugin profiles through rudder."
+    },
+    "v1RPKInfoBody": {
+      "type": "object",
+      "properties": {
+        "reset_key": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RPKInfoResponse": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "nick_name": {
+          "type": "string"
+        },
+        "tenant_id": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RegisterAddons": {
+      "type": "object",
+      "properties": {
+        "addons": {
+          "type": "string",
+          "description": "addons name"
+        },
+        "upstream": {
+          "type": "string",
+          "description": "upstream path"
+        }
+      },
+      "description": "*\nRegister Addons."
+    },
+    "v1RepoObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "repo name"
+        },
+        "url": {
+          "type": "string",
+          "description": "repo url"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "format": "byte"
+          },
+          "description": "installer metadata"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "repo annotations"
+        },
+        "installer_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "installer num"
+        }
+      }
+    },
+    "v1ResetPasswordBody": {
+      "type": "object",
+      "properties": {
+        "new_password": {
+          "type": "string"
+        },
+        "reset_key": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ResetPasswordResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "has_reset": {
+          "type": "boolean"
+        },
+        "username": {
+          "type": "string"
+        }
+      }
+    },
+    "v1Role": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "tenant role id"
+        },
+        "name": {
+          "type": "string",
+          "description": "tenant role name"
+        },
+        "desc": {
+          "type": "string",
+          "description": "role desc"
+        },
+        "bind_num": {
+          "type": "integer",
+          "format": "int32",
+          "description": "role bind user number"
+        },
+        "upsert_timestamp": {
+          "type": "string",
+          "format": "uint64",
+          "description": "role upsert timestamp"
+        },
+        "permission_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apirbacv1Permission"
+          },
+          "description": "permission path list"
+        },
+        "uneditable": {
+          "type": "boolean",
+          "description": "role uneditable"
+        }
+      }
+    },
+    "v1SetPlatformExtraConfigRequest": {
+      "type": "object",
+      "properties": {
+        "extra": {
+          "type": "string",
+          "format": "byte",
+          "description": "extra"
+        }
+      }
+    },
+    "v1SetTenantPluginProfileResponse": {
+      "type": "object"
+    },
+    "v1TMPolicyRequest": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "tenant": {
+          "type": "string"
+        },
+        "permission": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TMRoleBindingRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        },
+        "tenant": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TenantAdmin": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": " Tenant Admin username ",
+          "required": [
+            "username"
+          ]
+        },
+        "password": {
+          "type": "string",
+          "description": " Tenant Admin password ",
+          "required": [
+            "password"
+          ]
+        }
+      },
+      "required": [
+        "username",
+        "password"
+      ]
+    },
+    "v1TenantCreateBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "tenant title",
+          "required": [
+            "title"
+          ]
+        },
+        "remark": {
+          "type": "string",
+          "description": "tenant remark"
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "tenant id"
+        },
+        "admin": {
+          "$ref": "#/definitions/v1TenantAdmin",
+          "description": "set tenant admin"
+        }
+      },
+      "required": [
+        "title"
+      ]
+    },
+    "v1TenantDetail": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "description": "tenant id"
+        },
+        "title": {
+          "type": "string",
+          "description": "tenant id"
+        },
+        "remark": {
+          "type": "string",
+          "description": "tenant remark"
+        },
+        "num_user": {
+          "type": "integer",
+          "format": "int32",
+          "description": "user number in tenant"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "int64",
+          "description": "user number in tenant"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "user roles in tenant"
+        },
+        "admins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1TenantAdmin"
+          },
+          "description": "admins in tenant"
+        }
+      }
+    },
+    "v1TenantProfiles": {
+      "type": "object",
+      "properties": {
+        "plugin_id": {
+          "type": "string"
+        },
+        "profiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ProfileItem"
+          }
+        }
+      }
+    },
+    "v1TokenInfoResponse": {
+      "type": "object",
+      "properties": {
+        "entity_id": {
+          "type": "string"
+        },
+        "entity_type": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "int64"
+        },
+        "expired_at": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1TokenRequestBody": {
+      "type": "object",
+      "properties": {
+        "entity_type": {
+          "type": "string",
+          "description": "entity type  body params",
+          "required": [
+            "entity_type"
+          ]
+        },
+        "entity_id": {
+          "type": "string",
+          "description": "entity id  body params",
+          "required": [
+            "entity_id"
+          ]
+        },
+        "owner": {
+          "type": "string",
+          "description": "entity owner  body params",
+          "required": [
+            "owner"
+          ]
+        },
+        "expires_in": {
+          "type": "string",
+          "format": "int64",
+          "description": "entity token expires in  body params",
+          "required": [
+            "expires_in"
+          ]
+        }
+      },
+      "required": [
+        "entity_type",
+        "entity_id",
+        "owner",
+        "expires_in"
+      ]
+    },
+    "v1TokenResponse": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string"
+        },
+        "refresh_token": {
+          "type": "string"
+        },
+        "expires_in": {
+          "type": "string",
+          "format": "int64"
+        },
+        "token_type": {
+          "type": "string"
+        },
+        "redirect_url": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TokenRevokeBody": {
+      "type": "object",
+      "properties": {
+        "refresh_token": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TokenRevokeResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "revoked": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1TypeProfileVal": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "BOOLEAN"
+      ],
+      "default": "STRING",
+      "title": "*\nTypeProfileVal,type for Profile's val filed.\n  STRING = 0; NUMBER =1; BOOLEAN = 2;"
+    },
+    "v1UninstallPluginResponse": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1PluginObject",
+          "description": "plugin object"
+        }
+      }
+    },
+    "v1UpdateAdminPasswordRequest": {
+      "type": "object",
+      "properties": {
+        "new_password": {
+          "type": "string",
+          "description": "new admin password"
+        }
+      }
+    },
+    "v1UpdatePasswordBody": {
+      "type": "object",
+      "properties": {
+        "new_password": {
+          "type": "string"
+        },
+        "refresh_token": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UpdatePasswordResponse": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UpdateRoleResponse": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/v1Role",
+          "description": "tenant role"
+        }
+      }
+    },
+    "v1UpdateTenantBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "remark": {
+          "type": "string"
+        }
+      }
+    },
+    "v1UpdateTenantResponse": {
+      "type": "object"
+    },
+    "v1UpdateUserBody": {
+      "type": "object",
+      "properties": {
+        "nick_name": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "v1UpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1UpgradePluginResponse": {
+      "type": "object",
+      "properties": {
+        "plugin": {
+          "$ref": "#/definitions/v1PluginObject",
+          "description": "plugin object"
+        }
+      }
+    },
+    "v1UserListData": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "nick_name": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "int64"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1UserRole"
+          }
+        }
+      }
+    },
+    "v1UserRole": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

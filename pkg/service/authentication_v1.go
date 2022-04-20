@@ -86,11 +86,12 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 		tokenConf.RefreshTokenExp = conf.RefreshTokenExp
 	}
 	pathList := []string{
-		"/static/*",
+		"/static/.*",
 		"/apis/rudder/v1/oauth2(?!/pwd).*",
 		"/apis/security/v1/oauth(?!/pwd).*",
 		"/apis/security/v1/tenants/users/rpk/info",
 		"/apis/security/v1/tenants/exact",
+		"/apis/rudder/v1/config/(deployment|platform)",
 	}
 	regExpCompile := make([]*regexp.Regexp, 0, len(pathList))
 	for _, v := range pathList {
@@ -389,13 +390,17 @@ func (s *AuthenticationService) isManagerToken(token string) (bool, error) {
 }
 
 func (s *AuthenticationService) matchRegExpWhiteList(path string) bool {
+	ss := strings.Split(path, "?")
+	path = ss[0]
 	for _, v := range s.regExpCompile {
-		match, err := v.MatchString(path)
+		match, err := v.FindStringMatch(path)
 		if err != nil {
 			log.Errorf("error regular expression(%s/%s) run: %s", v, path, err)
 			return false
 		}
-		if match {
+		if match != nil &&
+			match.Capture.Index == 0 &&
+			match.Capture.Length == len(path) {
 			return true
 		}
 	}
