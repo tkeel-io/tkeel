@@ -154,7 +154,7 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 		}
 		if match != nil &&
 			match.Capture.Index == 0 &&
-			match.Capture.Length == len(path) {
+			match.Capture.Length == len(chartName) {
 			for _, ch := range vMap {
 				if version == "" || version == ch.Version {
 					if _, ok := ch.Metadata.Annotations[tKeelPluginEnableKey]; ok {
