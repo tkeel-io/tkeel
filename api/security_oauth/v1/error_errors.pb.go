@@ -23,6 +23,8 @@ var oauthErrInvalidGrant *errors.TError
 var oauthErrUnsupportedGrantType *errors.TError
 var oauthErrInvalidAccessToken *errors.TError
 var oauthErrInvalidResetPwd *errors.TError
+var oauthErrInvalidUserOrPwd *errors.TError
+var oauthUnsupportedProviderType *errors.TError
 
 func init() {
 	oauthErrUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.oauth.v1.OAUTH_ERR_UNKNOWN", "未知类型")
@@ -49,6 +51,10 @@ func init() {
 	errors.Register(oauthErrInvalidAccessToken)
 	oauthErrInvalidResetPwd = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.oauth.v1.OAUTH_ERR_INVALID_RESET_PWD", "重置密码链接无效")
 	errors.Register(oauthErrInvalidResetPwd)
+	oauthErrInvalidUserOrPwd = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.oauth.v1.OAUTH_ERR_INVALID_USER_OR_PWD", "用户名密码错误")
+	errors.Register(oauthErrInvalidUserOrPwd)
+	oauthUnsupportedProviderType = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.oauth.v1.OAUTH_UNSUPPORTED_PROVIDER_TYPE", "不支持的第三方认证协议类型")
+	errors.Register(oauthUnsupportedProviderType)
 }
 
 func OauthErrUnknown() errors.Error {
@@ -97,4 +103,12 @@ func OauthErrInvalidAccessToken() errors.Error {
 
 func OauthErrInvalidResetPwd() errors.Error {
 	return oauthErrInvalidResetPwd
+}
+
+func OauthErrInvalidUserOrPwd() errors.Error {
+	return oauthErrInvalidUserOrPwd
+}
+
+func OauthUnsupportedProviderType() errors.Error {
+	return oauthUnsupportedProviderType
 }

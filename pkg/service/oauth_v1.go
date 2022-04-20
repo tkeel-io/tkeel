@@ -27,6 +27,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/util"
 	"golang.org/x/oauth2"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
 )
 
@@ -35,6 +36,7 @@ const (
 	DefaultClientSecurity = "tkeel"
 	DefaultClientDomain   = "tkeel.io"
 	TokenTypeBearer       = "Bearer"
+	TypeAuthInternal      = "internal"
 )
 
 var DefaultGrantType = []oauth2v4.GrantType{oauth2v4.AuthorizationCode, oauth2v4.Implicit, oauth2v4.PasswordCredentials, oauth2v4.Refreshing}
@@ -103,12 +105,15 @@ func (s *OauthService) Authorize(ctx context.Context, req *pb.AuthorizeRequest) 
 	return &pb.AuthorizeResponse{Code: ti.GetCode()}, nil
 }
 
+// nolint
 func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.TokenResponse, error) {
 	provider, err := idprovider.GetIdentityProvider(req.GetTenantId())
 	if err != nil {
 		item, _ := s.DaprClient.GetState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetTenantId()))
 		if item != nil {
-			ProviderRegister(ctx, item.Value)
+			if item.Value != nil {
+				ProviderRegister(ctx, item.Value)
+			}
 		}
 		provider, err = idprovider.GetIdentityProvider(req.GetTenantId())
 		if err != nil {
@@ -183,7 +188,6 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 		}
 		return &pb.TokenResponse{RedirectUrl: provider.AuthCodeURL("", "")}, nil
 	}
-
 	return nil, pb.OauthErrInvalidRequest()
 }
 
@@ -269,7 +273,7 @@ func (s *OauthService) ValidationTokenRequest(r *pb.TokenRequest) (oauth2v4.Gran
 		user, err := model.AuthenticateUser(s.UserDB, r.GetTenantId(),
 			r.GetUsername(), r.GetPassword())
 		if err != nil {
-			return "", nil, pb.OauthErrInvalidRequest()
+			return "", nil, pb.OauthErrInvalidResetPwd()
 		}
 		tgr.UserID = user.ID
 	case oauth2v4.Refreshing:
@@ -433,6 +437,107 @@ func (s *OauthService) UpdatePassword(ctx context.Context, req *pb.UpdatePasswor
 	s.Manager.RemoveAccessToken(ctx, ti.GetAccess())
 
 	return &pb.UpdatePasswordResponse{TenantId: user.Tenant}, nil
+}
+
+func (s *OauthService) IdentityProviderTemplate(ctx context.Context, req *pb.IdProviderTemplateRequest) (*pb.IdProviderTemplateResponse, error) {
+	switch req.GetType() {
+	case "OIDC":
+		config := pb.OIDCRegisterBody{Endpoint: &pb.OIDCEndpoint{}}
+		configBytes, err := yaml.Marshal(&config)
+		if err != nil {
+			log.Error(err)
+			return nil, pb.OauthErrServerError()
+		}
+		return &pb.IdProviderTemplateResponse{Config: configBytes}, nil
+	default:
+		return nil, pb.OauthErrInvalidRequest()
+	}
+}
+
+func (s *OauthService) IdentityProviderRegister(ctx context.Context, req *pb.IdProviderRegisterRequest) (*pb.IdProviderRegisterResponse, error) {
+	switch req.GetBody().GetType() {
+	case "OIDC":
+		oidcConfig := &pb.OIDCRegisterBody{TenantId: req.GetTenantId()}
+		err := yaml.Unmarshal(req.GetBody().GetConfig(), oidcConfig)
+		if err != nil {
+			log.Error(err)
+			return nil, pb.OauthErrInvalidRequest()
+		}
+		oidcProvider := &oidcprovider.OIDCProvider{Issuer: oidcConfig.Issuer, ClientID: oidcConfig.ClientId, ClientSecret: oidcConfig.ClientSecret}
+		bytesBody, err := json.Marshal(&oidcConfig)
+		if err != nil {
+			log.Error(err)
+			return nil, pb.OauthErrInvalidRequest()
+		}
+		json.Unmarshal(bytesBody, oidcProvider)
+		oauth2Endpoint := oauth2.Endpoint{}
+		if oidcConfig.Issuer != "" {
+			oidcProvider.Provider, err = oidc.NewProvider(ctx, oidcConfig.Issuer)
+			if err != nil {
+				log.Error(err)
+				return nil, pb.OauthErrUnknown()
+			}
+			oauth2Endpoint = oidcProvider.Provider.Endpoint()
+		} else {
+			oauth2Endpoint.AuthURL = oidcProvider.Endpoint.AuthURL
+			oauth2Endpoint.TokenURL = oidcProvider.Endpoint.TokenURL
+		}
+		oauth2Config := &oauth2.Config{
+			ClientID:     oidcProvider.ClientID,
+			ClientSecret: oidcProvider.ClientSecret,
+			RedirectURL:  oidcProvider.RedirectURL,
+			Scopes:       oidcProvider.Scopes,
+			Endpoint:     oauth2Endpoint,
+		}
+		oidcProvider.OAuth2Config = oauth2Config
+		idprovider.RegisterIdentityProvider(oidcConfig.TenantId, oidcProvider)
+		identityInfo := map[string]interface{}{"type": "OIDCIdentityProvider", "tenant_id": oidcConfig.TenantId, "info": oidcConfig}
+		bytesInfo, _ := json.Marshal(identityInfo)
+		s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(oidcConfig.TenantId), bytesInfo)
+	case TypeAuthInternal:
+		s.DaprClient.DeleteState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetTenantId()))
+	default:
+		return nil, pb.OauthUnsupportedProviderType()
+	}
+
+	return &pb.IdProviderRegisterResponse{Registered: true}, nil
+}
+
+func (s *OauthService) GetIdentityProvider(ctx context.Context, req *pb.GetIdentityProviderRequest) (*pb.GetIdentityProviderResponse, error) {
+	items, _ := s.DaprClient.GetState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetTenantId()))
+	valueMap := make(map[string]interface{})
+	resp := &pb.GetIdentityProviderResponse{}
+	if items == nil || items.Value == nil {
+		valueMap["type"] = "internal"
+	} else {
+		err := json.Unmarshal(items.Value, &valueMap)
+		if err != nil {
+			log.Error(err)
+			return nil, pb.OauthErrServerError()
+		}
+	}
+	switch valueMap["type"].(string) {
+	case "OIDCIdentityProvider":
+		infoBytes, err := json.Marshal(valueMap["info"])
+		if err != nil {
+			log.Error(err)
+			return nil, pb.OauthErrServerError()
+		}
+		oidcProvider := pb.OIDCRegisterBody{}
+		err = json.Unmarshal(infoBytes, &oidcProvider)
+		if err != nil {
+			log.Error(err, string(infoBytes))
+			return nil, pb.OauthErrServerError()
+		}
+		configBytes, err := yaml.Marshal(&oidcProvider)
+		if err != nil {
+			log.Error(err)
+			return nil, pb.OauthErrServerError()
+		}
+		resp.Config = configBytes
+		resp.Type = "OIDC"
+	}
+	return resp, nil
 }
 
 func KeyOfTenantIdentityProvider(tenantID string) string {
