@@ -136,6 +136,54 @@ service Oauth {
       } ]
     };
   }
+
+  // Identity provider config
+  rpc IdentityProviderTemplate (IdProviderTemplateRequest) returns(IdProviderTemplateResponse){
+    option (google.api.http) = {
+      get : "/oauth/id-provider/template"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "identity provider config template"
+      operation_id : "IdentityProviderTemplate"
+      tags : "[Security] OAuth"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
+
+  // Identity provider register
+  rpc IdentityProviderRegister (IdProviderRegisterRequest) returns(IdProviderRegisterResponse){
+    option (google.api.http) = {
+      post : "/oauth/id-provider/register"
+      body : "body"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "identity provider register"
+      operation_id : "IdentityProviderRegister"
+      tags : "[Security] OAuth"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
+  // Get Identity provider
+  rpc GetIdentityProvider (GetIdentityProviderRequest) returns(GetIdentityProviderResponse){
+    option (google.api.http) = {
+      get : "/oauth/id-provider/{tenant_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "get identity provider"
+      operation_id : "GetIdentityProvider"
+      tags : "[Security] OAuth"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
 }
 
 //
@@ -319,4 +367,36 @@ message UpdatePasswordBody {
 
 message UpdatePasswordResponse {
   string tenant_id =1;
+}
+
+// IdentityProviderConfig request.
+message IdProviderTemplateRequest {
+  string type = 1;
+}
+// IdentityProviderConfig response.
+message IdProviderTemplateResponse {
+  bytes config = 1;
+}
+
+
+// IdentityProviderConfig request.
+message IdProviderRegisterRequest {
+  IdProviderRegisterRequestBody body =1;
+}
+// IdentityProviderConfig request.
+message IdProviderRegisterRequestBody {
+  string type = 1;
+  bytes config =2;
+}
+// IdentityProviderConfig request.
+message IdProviderRegisterResponse {
+  bool registered = 1;
+}
+
+// IdentityProviderConfig request.
+message GetIdentityProviderRequest {
+  string tenant_id =1;
+}
+message GetIdentityProviderResponse {
+  bytes config =1;
 }

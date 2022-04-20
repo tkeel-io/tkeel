@@ -61,4 +61,10 @@ enum Error {
   // @msg=重置密码链接无效
   // @code=INVALID_ARGUMENT
   OAUTH_ERR_INVALID_RESET_PWD = 11; // 401
+  // @msg=用户名密码错误
+  // @code=INVALID_ARGUMENT
+  OAUTH_ERR_INVALID_USER_OR_PWD = 12; // 401
+  // @msg=不支持的第三方认证协议类型
+  // @code=INVALID_ARGUMENT
+  OAUTH_UNSUPPORTED_PROVIDER_TYPE = 13; // 401
 }
