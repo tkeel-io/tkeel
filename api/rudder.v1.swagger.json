@@ -349,6 +349,107 @@
         ]
       }
     },
+    "/oauth/id-provider/register/{tenant_id}": {
+      "post": {
+        "summary": "identity provider register",
+        "operationId": "IdentityProviderRegister",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1IdProviderRegisterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1IdProviderRegisterRequestBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/id-provider/template": {
+      "get": {
+        "summary": "identity provider config template",
+        "operationId": "IdentityProviderTemplate",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1IdProviderTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/id-provider/{tenant_id}": {
+      "get": {
+        "summary": "get identity provider",
+        "operationId": "GetIdentityProvider",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetIdentityProviderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
     "/oauth/oidc/register": {
       "post": {
         "summary": "oauth OIDC provider register",
@@ -3427,6 +3528,9 @@
         },
         "title": {
           "type": "string"
+        },
+        "auth_type": {
+          "type": "string"
         }
       }
     },
@@ -3460,6 +3564,18 @@
             "$ref": "#/definitions/v1ConsoleEntry"
           },
           "description": "tenant entries"
+        }
+      }
+    },
+    "v1GetIdentityProviderResponse": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "config": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },
@@ -3562,6 +3678,10 @@
             "$ref": "#/definitions/v1TenantAdmin"
           },
           "description": "admins in tenant"
+        },
+        "auth_type": {
+          "type": "string",
+          "description": "auth type : internal / external"
         }
       }
     },
@@ -3590,6 +3710,38 @@
           "type": "string"
         }
       }
+    },
+    "v1IdProviderRegisterRequestBody": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "config": {
+          "type": "string",
+          "format": "byte"
+        }
+      },
+      "description": "IdentityProviderConfig request."
+    },
+    "v1IdProviderRegisterResponse": {
+      "type": "object",
+      "properties": {
+        "registered": {
+          "type": "boolean"
+        }
+      },
+      "description": "IdentityProviderConfig request."
+    },
+    "v1IdProviderTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "string",
+          "format": "byte"
+        }
+      },
+      "description": "IdentityProviderConfig response."
     },
     "v1ImplementedAddons": {
       "type": "object",
@@ -4448,6 +4600,10 @@
         "admin": {
           "$ref": "#/definitions/v1TenantAdmin",
           "description": "set tenant admin"
+        },
+        "auth_type": {
+          "type": "string",
+          "description": "set tenant auth type: internal | external"
         }
       },
       "required": [
@@ -4492,6 +4648,10 @@
             "$ref": "#/definitions/v1TenantAdmin"
           },
           "description": "admins in tenant"
+        },
+        "auth_type": {
+          "type": "string",
+          "description": "auth type : internal / external"
         }
       }
     },

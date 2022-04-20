@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 	"encoding/json"
-	dapr "github.com/dapr/go-sdk/client"
 	"sync"
 
 	"github.com/casbin/casbin/v2"
+	dapr "github.com/dapr/go-sdk/client"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/security/authz/rbac"
 	"github.com/tkeel-io/security/model"

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"net/http"
 	"strings"
 	"time"
@@ -28,6 +27,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/util"
 	"golang.org/x/oauth2"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
 )
 
@@ -36,6 +36,7 @@ const (
 	DefaultClientSecurity = "tkeel"
 	DefaultClientDomain   = "tkeel.io"
 	TokenTypeBearer       = "Bearer"
+	TypeAuthInternal      = "internal"
 )
 
 var DefaultGrantType = []oauth2v4.GrantType{oauth2v4.AuthorizationCode, oauth2v4.Implicit, oauth2v4.PasswordCredentials, oauth2v4.Refreshing}
@@ -104,6 +105,7 @@ func (s *OauthService) Authorize(ctx context.Context, req *pb.AuthorizeRequest) 
 	return &pb.AuthorizeResponse{Code: ti.GetCode()}, nil
 }
 
+// nolint
 func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.TokenResponse, error) {
 	provider, err := idprovider.GetIdentityProvider(req.GetTenantId())
 	if err != nil {
@@ -186,7 +188,6 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 		}
 		return &pb.TokenResponse{RedirectUrl: provider.AuthCodeURL("", "")}, nil
 	}
-
 	return nil, pb.OauthErrInvalidRequest()
 }
 
@@ -456,8 +457,8 @@ func (s *OauthService) IdentityProviderTemplate(ctx context.Context, req *pb.IdP
 func (s *OauthService) IdentityProviderRegister(ctx context.Context, req *pb.IdProviderRegisterRequest) (*pb.IdProviderRegisterResponse, error) {
 	switch req.GetBody().GetType() {
 	case "OIDC":
-		oidcConfig := pb.OIDCRegisterBody{TenantId: req.GetTenantId()}
-		err := yaml.Unmarshal(req.GetBody().GetConfig(), &oidcConfig)
+		oidcConfig := &pb.OIDCRegisterBody{TenantId: req.GetTenantId()}
+		err := yaml.Unmarshal(req.GetBody().GetConfig(), oidcConfig)
 		if err != nil {
 			log.Error(err)
 			return nil, pb.OauthErrInvalidRequest()
@@ -490,10 +491,10 @@ func (s *OauthService) IdentityProviderRegister(ctx context.Context, req *pb.IdP
 		}
 		oidcProvider.OAuth2Config = oauth2Config
 		idprovider.RegisterIdentityProvider(oidcConfig.TenantId, oidcProvider)
-		identityInfo := map[string]interface{}{"type": "OIDCIdentityProvider", "tenant_id": oidcConfig.TenantId, "info": bytesBody}
+		identityInfo := map[string]interface{}{"type": "OIDCIdentityProvider", "tenant_id": oidcConfig.TenantId, "info": oidcConfig}
 		bytesInfo, _ := json.Marshal(identityInfo)
 		s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(oidcConfig.TenantId), bytesInfo)
-	case "internal":
+	case TypeAuthInternal:
 		s.DaprClient.DeleteState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetTenantId()))
 	default:
 		return nil, pb.OauthUnsupportedProviderType()
@@ -505,7 +506,7 @@ func (s *OauthService) IdentityProviderRegister(ctx context.Context, req *pb.IdP
 func (s *OauthService) GetIdentityProvider(ctx context.Context, req *pb.GetIdentityProviderRequest) (*pb.GetIdentityProviderResponse, error) {
 	items, _ := s.DaprClient.GetState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetTenantId()))
 	valueMap := make(map[string]interface{})
-	configBytes := []byte{}
+	resp := &pb.GetIdentityProviderResponse{}
 	if items == nil || items.Value == nil {
 		valueMap["type"] = "internal"
 	} else {
@@ -523,19 +524,20 @@ func (s *OauthService) GetIdentityProvider(ctx context.Context, req *pb.GetIdent
 			return nil, pb.OauthErrServerError()
 		}
 		oidcProvider := pb.OIDCRegisterBody{}
-		log.Info(infoBytes)
 		err = json.Unmarshal(infoBytes, &oidcProvider)
 		if err != nil {
 			log.Error(err, string(infoBytes))
 			return nil, pb.OauthErrServerError()
 		}
-		configBytes, err = yaml.Marshal(&oidcProvider)
+		configBytes, err := yaml.Marshal(&oidcProvider)
 		if err != nil {
 			log.Error(err)
 			return nil, pb.OauthErrServerError()
 		}
+		resp.Config = configBytes
+		resp.Type = "OIDC"
 	}
-	return &pb.GetIdentityProviderResponse{Config: configBytes}, nil
+	return resp, nil
 }
 
 func KeyOfTenantIdentityProvider(tenantID string) string {

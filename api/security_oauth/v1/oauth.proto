@@ -399,5 +399,6 @@ message GetIdentityProviderRequest {
   string tenant_id =1;
 }
 message GetIdentityProviderResponse {
-  bytes config =1;
+  string type = 1;
+  bytes config = 2;
 }
