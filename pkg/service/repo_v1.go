@@ -73,7 +73,7 @@ func (s *RepoService) ListAllRepoInstaller(ctx context.Context,
 	repos := hub.GetInstance().List()
 	var resList []*repository.InstallerBrief
 	for _, v := range repos {
-		res, err := v.Search(req.KeyWords)
+		res, err := v.Search(getReglarStringKeyWords(req.KeyWords))
 		if err != nil {
 			log.Warnf("get repo(%s) all installer err: %s", v.Info().Name, err)
 			continue

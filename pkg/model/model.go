@@ -260,6 +260,9 @@ func NewPluginRoute(resp *openapi_v1.IdentifyResponse) *PluginRoute {
 		ImplementedPlugin: func() []string {
 			ret := make([]string, 0, len(resp.ImplementedPlugin))
 			for _, v := range resp.ImplementedPlugin {
+				if v.Plugin == nil {
+					continue
+				}
 				ret = append(ret, v.Plugin.Id)
 			}
 			return ret
