@@ -376,6 +376,12 @@ message TenantCreateBody {
     },
     (google.api.field_behavior) = OPTIONAL
   ];
+  string id_provider_type = 6 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "external auth type : OIDC | LDAP | SMAL"
+    },
+    (google.api.field_behavior) = OPTIONAL
+  ];
 }
 
 message TenantAdmin {

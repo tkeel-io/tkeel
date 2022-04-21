@@ -523,7 +523,7 @@ func (s *OauthService) GetIdentityProvider(ctx context.Context, req *pb.GetIdent
 			log.Error(err)
 			return nil, pb.OauthErrServerError()
 		}
-		oidcProvider := pb.OIDCRegisterBody{}
+		oidcProvider := pb.OIDCRegisterBody{TenantId: req.GetTenantId(), Endpoint: &pb.OIDCEndpoint{}}
 		err = json.Unmarshal(infoBytes, &oidcProvider)
 		if err != nil {
 			log.Error(err, string(infoBytes))
