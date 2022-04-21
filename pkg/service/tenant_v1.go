@@ -89,6 +89,10 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 	}
 	if req.GetBody().GetAuthType() == "external" {
 		data := map[string]interface{}{"tenant_id": tenant.ID}
+		switch req.GetBody().GetIdProviderType() {
+		case "OIDC":
+			data["type"] = "OIDCIdentityProvider"
+		}
 		dataBytes, _ := json.Marshal(data)
 		s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(tenant.ID), dataBytes)
 	}

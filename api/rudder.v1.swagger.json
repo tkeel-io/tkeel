@@ -4604,6 +4604,10 @@
         "auth_type": {
           "type": "string",
           "description": "set tenant auth type: internal | external"
+        },
+        "id_provider_type": {
+          "type": "string",
+          "description": "external auth type : OIDC | LDAP | SMAL"
         }
       },
       "required": [
