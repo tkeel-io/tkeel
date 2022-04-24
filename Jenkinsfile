@@ -66,7 +66,7 @@ pipeline {
                             }
                             sh 'echo 当前分支:${GIT_BRANCH}'
                             sh 'echo 当前环境:${GITHUB_ORG}'
-                            sh 'echo 当前标签::$DOCKER_IMAGE_TAG'
+                            sh 'echo 当前标签:$DOCKER_IMAGE_TAG'
                             sh 'echo 当前版本:$HELM_CHART_VERSION'
                         }
                     }
@@ -123,7 +123,7 @@ pipeline {
                         script {         
                             sh 'wget -q https://raw.githubusercontent.com/tkeel-io/cli/master/install/install.sh -O - | /bin/bash'
                             sh 'tkeel admin login -p changeme'
-                            sh 'tkeel upgrade --repo-url=https://lunz1207.github.io/helm-charts/ --repo-name=lunz1207 --timeout=3000'
+                            sh 'tkeel upgrade --repo-url=https://$GITHUB_ORG.github.io/helm-charts/ --repo-name=$GITHUB_ORG --runtime-version=$HELM_CHART_VERSION --rudder-version=$HELM_CHART_VERSION --timeout=3000'
                         }
                     }
                 }
