@@ -15,7 +15,6 @@ syntax = "proto3";
 
 package io.tkeel.rudder.api.profile.v1;
 
-import "openapi/v1/openapi.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
@@ -63,7 +62,7 @@ message GetTenantProfileResponse {
 }
 message TenantProfiles {
   string plugin_id = 1;
-  repeated openapi.v1.ProfileItem profiles = 2;
+  bytes profiles = 2;
 }
 
 message SetTenantPluginProfileRequest {

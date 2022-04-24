@@ -22,7 +22,6 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tkeel-io/kit v0.0.0-20220311032953-c8bf1e0f86cb
 	github.com/tkeel-io/security v0.0.0-20220412090936-aea9ec1f08c1
-	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220331090824-6d29bf7a4732
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	google.golang.org/genproto v0.0.0-20220211171837-173942840c17
 	google.golang.org/grpc v1.44.0
@@ -154,6 +153,7 @@ require (
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/rtree v0.0.0-20180113144539-6cd427091e0e // indirect
 	github.com/tidwall/tinyqueue v0.0.0-20180302190814-1e39f5511563 // indirect
+	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220424073125-8edc0200490f // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect

@@ -126,7 +126,7 @@ type Plugin struct {
 	Status                  openapi_v1.PluginStatus         `json:"status,omitempty"`                    // plugin state.
 	EnableTenantes          []*EnableTenant                 `json:"enable_tenantes,omitempty"`           // plugin active tenantes.
 	DisableManualActivation bool                            `json:"disable_manual_activation,omitempty"` // plugin disable manual activation.
-	Profile                 []*openapi_v1.ProfileItem       `json:"profile,omitempty"`                   // plugin profile.
+	Profiles                []*ProfileItem                  `json:"profiles,omitempty"`                  // plugin profile.
 }
 
 func (p *Plugin) String() string {
@@ -169,7 +169,9 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.Secret = secret
 	p.DisableManualActivation = resp.DisableManualActivation
 	p.RegisterTimestamp = time.Now().Unix()
-	p.Profile = resp.Profile
+	profiles := []*ProfileItem{}
+	json.Unmarshal(resp.Profiles, &profiles)
+	p.Profiles = profiles
 }
 
 func (p *Plugin) Clone() *Plugin {
@@ -228,6 +230,12 @@ type PluginRoute struct {
 	RegisterAddons    map[string]string       `json:"register_addons,omitempty"`    // plugin register addons route map.
 	ImplementedPlugin []string                `json:"implemented_plugin,omitempty"` // plugin implemented plugins.
 	Version           string                  `json:"version,omitempty"`            // model version.
+}
+
+type ProfileItem struct {
+	Key         string      `json:"key"`
+	Description string      `json:"description"`
+	Default     interface{} `json:"default"`
 }
 
 func (pr *PluginRoute) String() string {
@@ -611,6 +619,6 @@ type Role struct {
 }
 
 type PluginProfile struct {
-	PluginID string                    `json:"plugin_id"`
-	Profile  []*openapi_v1.ProfileItem `json:"profile"`
+	PluginID string         `json:"plugin_id"`
+	Profiles []*ProfileItem `json:"profiles"`
 }
