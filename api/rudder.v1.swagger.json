@@ -4362,24 +4362,6 @@
       "default": "UNKNOWN",
       "description": "*\nplugin state enum."
     },
-    "v1ProfileItem": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "val": {
-          "type": "string"
-        },
-        "val_type": {
-          "$ref": "#/definitions/v1TypeProfileVal"
-        }
-      },
-      "description": "*\nProfile is a controllable item provided by the plugin.\nPlatform administrators can set up plugin profiles through rudder."
-    },
     "v1RPKInfoBody": {
       "type": "object",
       "properties": {
@@ -4666,10 +4648,8 @@
           "type": "string"
         },
         "profiles": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1ProfileItem"
-          }
+          "type": "string",
+          "format": "byte"
         }
       }
     },
@@ -4774,16 +4754,6 @@
           "type": "boolean"
         }
       }
-    },
-    "v1TypeProfileVal": {
-      "type": "string",
-      "enum": [
-        "STRING",
-        "NUMBER",
-        "BOOLEAN"
-      ],
-      "default": "STRING",
-      "title": "*\nTypeProfileVal,type for Profile's val filed.\n  STRING = 0; NUMBER =1; BOOLEAN = 2;"
     },
     "v1UninstallPluginResponse": {
       "type": "object",

@@ -493,7 +493,11 @@ func (s *OauthService) IdentityProviderRegister(ctx context.Context, req *pb.IdP
 		idprovider.RegisterIdentityProvider(oidcConfig.TenantId, oidcProvider)
 		identityInfo := map[string]interface{}{"type": "OIDCIdentityProvider", "tenant_id": oidcConfig.TenantId, "info": oidcConfig}
 		bytesInfo, _ := json.Marshal(identityInfo)
-		s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(oidcConfig.TenantId), bytesInfo)
+		err = s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(oidcConfig.TenantId), bytesInfo)
+		if err != nil {
+			log.Error(err)
+			return nil, pb.OauthErrServerError()
+		}
 	case TypeAuthInternal:
 		s.DaprClient.DeleteState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetTenantId()))
 	default:

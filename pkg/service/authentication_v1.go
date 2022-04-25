@@ -92,6 +92,7 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 		"/apis/security/v1/tenants/users/rpk/info",
 		"/apis/security/v1/tenants/exact",
 		"/apis/rudder/v1/config/(deployment|platform)",
+		"/apis/*/v1/metrics",
 	}
 	regExpCompile := make([]*regexp.Regexp, 0, len(pathList))
 	for _, v := range pathList {
