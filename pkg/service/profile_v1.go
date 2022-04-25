@@ -70,11 +70,10 @@ func (s *ProfileService) SetTenantPluginProfile(ctx context.Context, req *pb.Set
 	if modelPluginProfile.PluginID == plgprofile.PLUGIN_ID_KEEL {
 		for i, _ := range modelPluginProfile.Profiles {
 			if modelPluginProfile.Profiles[i].Key == plgprofile.MAX_API_REQUEST_LIMIT_KEY {
-				plgprofile.SetTenantAPILimit(req.GetTenantId(), modelPluginProfile.Profiles[i].Default.(int))
+				plgprofile.SetTenantAPILimit(req.GetTenantId(), int(modelPluginProfile.Profiles[i].Default.(float64)))
 				break
 			}
 		}
-
 	}
 
 	return &pb.SetTenantPluginProfileResponse{}, nil
