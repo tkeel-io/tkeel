@@ -25,6 +25,7 @@ import (
 	config_v1 "github.com/tkeel-io/tkeel/api/config/v1"
 	entity_token_v1 "github.com/tkeel-io/tkeel/api/entity/v1"
 	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
+	metrics_v1 "github.com/tkeel-io/tkeel/api/metrics/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	profile_v1 "github.com/tkeel-io/tkeel/api/profile/v1"
@@ -251,6 +252,9 @@ var rootCmd = &cobra.Command{
 			config_v1.RegisterConfigHTTPServer(httpSrv.Container, configSrv)
 			config_v1.RegisterConfigServer(grpcSrv.GetServe(), configSrv)
 
+			// metrics service.
+			mertricsSrv := service.NewMetricsService()
+			metrics_v1.RegisterMetricsHTTPServer(httpSrv.Container, mertricsSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

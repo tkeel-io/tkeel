@@ -210,6 +210,11 @@ func (s *OauthService) Authenticate(ctx context.Context, empty *emptypb.Empty) (
 		s.Manager.RemoveAccessToken(ctx, accessToken)
 		return nil, pb.OauthErrInvalidAccessToken()
 	}
+	authType := "internal"
+	provider, _ := idprovider.GetIdentityProvider(users[0].TenantID)
+	if provider != nil {
+		authType = "external"
+	}
 
 	return &pb.AuthenticateResponse{
 		ExpiresIn:  int64(token.GetAccessExpiresIn() / time.Second),
@@ -219,6 +224,7 @@ func (s *OauthService) Authenticate(ctx context.Context, empty *emptypb.Empty) (
 		NickName:   users[0].NickName,
 		Avatar:     users[0].Avatar,
 		TenantId:   users[0].TenantID,
+		AuthType:   authType,
 	}, nil
 }
 

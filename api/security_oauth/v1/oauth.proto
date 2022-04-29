@@ -298,6 +298,7 @@ message AuthenticateResponse {
   string nick_name = 5;
   string avatar = 6;
   string tenant_id = 7;
+  string auth_type =8;
 }
 
 message ResetPasswordRequest {
