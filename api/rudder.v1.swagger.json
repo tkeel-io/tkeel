@@ -3180,6 +3180,9 @@
         },
         "tenant_id": {
           "type": "string"
+        },
+        "auth_type": {
+          "type": "string"
         }
       }
     },
