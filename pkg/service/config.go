@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
@@ -77,12 +78,12 @@ func (s *ConfigService) SetPlatformExtraConfig(ctx context.Context, req *pb.SetP
 		log.Error("error not admin portal")
 		return nil, pb.ConfigErrNotAdminPortal()
 	}
-	_, ver, err := s.getExtraData(ctx)
+	_, ver, err := s.getExtraData(ctx, req.Key)
 	if err != nil {
 		log.Errorf("error get extra data: %s", err)
 		return nil, pb.ConfigErrInternalError()
 	}
-	if err = s.setExtraData(ctx, req.Extra, ver); err != nil {
+	if err = s.setExtraData(ctx, req.Key, req.Extra, ver); err != nil {
 		log.Errorf("error set extra data: %s", err)
 		return nil, pb.ConfigErrInternalError()
 	}
@@ -90,8 +91,17 @@ func (s *ConfigService) SetPlatformExtraConfig(ctx context.Context, req *pb.SetP
 	return &emptypb.Empty{}, nil
 }
 
-func (s *ConfigService) getExtraData(ctx context.Context) ([]byte, string, error) {
-	values, ver, err := s.kvOp.Get(ctx, model.KeyPlatExtraConfig)
+func makeExtraKey(key string) string {
+	if key == "" {
+		key = model.KeyPlatExtraConfig
+	} else {
+		key = fmt.Sprintf("%s_%s", model.KeyPlatExtraConfig, key)
+	}
+	return key
+}
+
+func (s *ConfigService) getExtraData(ctx context.Context, key string) ([]byte, string, error) {
+	values, ver, err := s.kvOp.Get(ctx, makeExtraKey(key))
 	if err != nil {
 		return nil, "", errors.Wrap(err, "init rudder admin password")
 	}
@@ -101,14 +111,14 @@ func (s *ConfigService) getExtraData(ctx context.Context) ([]byte, string, error
 	return values, ver, nil
 }
 
-func (s *ConfigService) setExtraData(ctx context.Context, raw []byte, ver string) error {
+func (s *ConfigService) setExtraData(ctx context.Context, key string, raw []byte, ver string) error {
 	if ver == "" {
-		if err := s.kvOp.Create(ctx, model.KeyPlatExtraConfig, raw); err != nil {
+		if err := s.kvOp.Create(ctx, makeExtraKey(key), raw); err != nil {
 			return errors.Wrap(err, "create extra config")
 		}
 		return nil
 	}
-	if err := s.kvOp.Update(ctx, model.KeyPlatExtraConfig, raw, ver); err != nil {
+	if err := s.kvOp.Update(ctx, makeExtraKey(key), raw, ver); err != nil {
 		return errors.Wrap(err, "update extra config")
 	}
 	return nil
