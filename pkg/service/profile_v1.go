@@ -39,19 +39,24 @@ func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperat
 }
 
 func (s *ProfileService) GetTenantProfile(ctx context.Context, req *pb.GetTenantProfileRequest) (*pb.GetTenantProfileResponse, error) {
+	var plugins []*model.Plugin
 	profiles, err := s.ProfileOp.GetTenantProfile(ctx, req.GetTenantId())
 	if profiles == nil {
 		if err != nil {
 			log.Error(err)
 		}
-		plugins, err := s.pluginOp.List(ctx)
+		plugins, err = s.pluginOp.List(ctx)
 		if err != nil {
 			log.Error("plugin operator list: ", err)
 			return nil, pb.ErrPluginList()
 		}
 		return &pb.GetTenantProfileResponse{TenantProfiles: plugin2pbProfile(plugins)}, nil
 	}
-	plugins, err := s.pluginOp.List(ctx)
+	plugins, err = s.pluginOp.List(ctx)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrPluginList()
+	}
 	profiles = comboProfiles(profiles, plugins)
 	return &pb.GetTenantProfileResponse{TenantProfiles: modelProfile2pbProfile(profiles)}, nil
 }
@@ -68,9 +73,11 @@ func (s *ProfileService) SetTenantPluginProfile(ctx context.Context, req *pb.Set
 	}
 
 	if modelPluginProfile.PluginID == plgprofile.PLUGIN_ID_KEEL {
-		for i, _ := range modelPluginProfile.Profiles {
+		for i := range modelPluginProfile.Profiles {
 			if modelPluginProfile.Profiles[i].Key == plgprofile.MAX_API_REQUEST_LIMIT_KEY {
-				plgprofile.SetTenantAPILimit(req.GetTenantId(), int(modelPluginProfile.Profiles[i].Default.(float64)))
+				if limitVal, ok := modelPluginProfile.Profiles[i].Default.(float64); ok {
+					plgprofile.SetTenantAPILimit(req.GetTenantId(), int(limitVal))
+				}
 				break
 			}
 		}
@@ -90,7 +97,11 @@ func plugin2pbProfile(plugins []*model.Plugin) []*pb.TenantProfiles {
 		if plugins[i].Profiles == nil {
 			continue
 		}
-		profileBytes, _ := json.Marshal(plugins[i].Profiles)
+		profileBytes, err := json.Marshal(plugins[i].Profiles)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
 		profile := &pb.TenantProfiles{PluginId: plugins[i].ID, Profiles: profileBytes}
 		pbProfiles = append(pbProfiles, profile)
 	}
@@ -104,22 +115,31 @@ func modelProfile2pbProfile(profiles []*model.PluginProfile) []*pb.TenantProfile
 		if profiles[i].Profiles == nil {
 			continue
 		}
-		profileBytes, _ := json.Marshal(profiles[i].Profiles)
+		profileBytes, err := json.Marshal(profiles[i].Profiles)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
 		profile := &pb.TenantProfiles{PluginId: profiles[i].PluginID, Profiles: profileBytes}
 		pbProfiles = append(pbProfiles, profile)
 	}
 	return pbProfiles
 }
+
 func pbPlgProfile2model(profiles *pb.TenantProfiles) *model.PluginProfile {
 	profilesItems := []*model.ProfileItem{}
-	json.Unmarshal(profiles.Profiles, &profilesItems)
+	err := json.Unmarshal(profiles.Profiles, &profilesItems)
+	if err != nil {
+		log.Error(err)
+	}
 	profile := &model.PluginProfile{PluginID: profiles.PluginId, Profiles: profilesItems}
 	return profile
 }
+
 func comboProfiles(profiles []*model.PluginProfile, plugins []*model.Plugin) []*model.PluginProfile {
 	newProfiles := []*model.PluginProfile{}
-	for plugini, _ := range plugins {
-		for profilesi, _ := range profiles {
+	for plugini := range plugins {
+		for profilesi := range profiles {
 			if plugins[plugini].ID == profiles[profilesi].PluginID {
 				break
 			}

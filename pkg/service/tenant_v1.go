@@ -93,7 +93,11 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 		case "OIDC":
 			data["type"] = "OIDCIdentityProvider"
 		}
-		dataBytes, _ := json.Marshal(data)
+		dataBytes, err := json.Marshal(data)
+		if err != nil {
+			log.Error(err)
+			return nil, pb.ErrUnknown()
+		}
 		s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(tenant.ID), dataBytes)
 	}
 
