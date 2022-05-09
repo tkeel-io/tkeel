@@ -18,10 +18,12 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0
 	github.com/hashicorp/go-version v1.2.0
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.11.0
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
 	github.com/tkeel-io/kit v0.0.0-20220311032953-c8bf1e0f86cb
 	github.com/tkeel-io/security v0.0.0-20220412090936-aea9ec1f08c1
+	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220424073125-8edc0200490f
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	google.golang.org/genproto v0.0.0-20220211171837-173942840c17
 	google.golang.org/grpc v1.44.0
@@ -132,7 +134,6 @@ require (
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
-	github.com/prometheus/client_golang v1.11.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.26.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
@@ -153,7 +154,6 @@ require (
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/rtree v0.0.0-20180113144539-6cd427091e0e // indirect
 	github.com/tidwall/tinyqueue v0.0.0-20180302190814-1e39f5511563 // indirect
-	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220424073125-8edc0200490f // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect

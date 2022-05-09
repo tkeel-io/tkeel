@@ -52,9 +52,9 @@ func (s *ConfigService) GetDeploymentConfig(ctx context.Context, req *emptypb.Em
 	}, nil
 }
 
-func (s *ConfigService) GetPlatformConfig(ctx context.Context, req *emptypb.Empty) (*pb.GetPlatformConfigResponse, error) {
+func (s *ConfigService) GetPlatformConfig(ctx context.Context, req *pb.GetPlatformConfigRequest) (*pb.GetPlatformConfigResponse, error) {
 	var extra []byte
-	e, _, err := s.getExtraData(ctx)
+	e, _, err := s.getExtraData(ctx, req.Key)
 	if err != nil {
 		log.Errorf("error get extra data: %s", err)
 		return nil, pb.ConfigErrInternalError()
