@@ -137,14 +137,15 @@ func pbPlgProfile2model(profiles *pb.TenantProfiles) *model.PluginProfile {
 }
 
 func comboProfiles(profiles []*model.PluginProfile, plugins []*model.Plugin) []*model.PluginProfile {
-	newProfiles := []*model.PluginProfile{}
-	for plugini := range plugins {
-		for profilesi := range profiles {
-			if plugins[plugini].ID == profiles[profilesi].PluginID {
+	newProfiles := make([]*model.PluginProfile, 0, 1)
+	for pluginIndex := range plugins {
+		for profilesIndex := range profiles {
+			if plugins[pluginIndex].ID == profiles[profilesIndex].PluginID {
 				break
 			}
 		}
-		newProfiles = append(newProfiles, &model.PluginProfile{PluginID: plugins[plugini].ID, Profiles: plugins[plugini].Profiles})
+		newProfiles = append(newProfiles, &model.PluginProfile{PluginID: plugins[pluginIndex].ID,
+			Profiles: plugins[pluginIndex].Profiles})
 	}
 	profiles = append(profiles, newProfiles...)
 	return profiles

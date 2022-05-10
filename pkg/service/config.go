@@ -54,7 +54,7 @@ func (s *ConfigService) GetDeploymentConfig(ctx context.Context, req *emptypb.Em
 
 func (s *ConfigService) GetPlatformConfig(ctx context.Context, req *pb.GetPlatformConfigRequest) (*pb.GetPlatformConfigResponse, error) {
 	var extra []byte
-	e, _, err := s.getExtraData(ctx, req.Key)
+	e, _, err := s.getExtraData(ctx, req.GetKey())
 	if err != nil {
 		log.Errorf("error get extra data: %s", err)
 		return nil, pb.ConfigErrInternalError()
@@ -78,12 +78,12 @@ func (s *ConfigService) SetPlatformExtraConfig(ctx context.Context, req *pb.SetP
 		log.Error("error not admin portal")
 		return nil, pb.ConfigErrNotAdminPortal()
 	}
-	_, ver, err := s.getExtraData(ctx, req.Key)
+	_, ver, err := s.getExtraData(ctx, req.GetKey())
 	if err != nil {
 		log.Errorf("error get extra data: %s", err)
 		return nil, pb.ConfigErrInternalError()
 	}
-	if err = s.setExtraData(ctx, req.Key, req.Extra, ver); err != nil {
+	if err = s.setExtraData(ctx, req.GetKey(), req.GetExtra(), ver); err != nil {
 		log.Errorf("error set extra data: %s", err)
 		return nil, pb.ConfigErrInternalError()
 	}

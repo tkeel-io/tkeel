@@ -58,8 +58,7 @@ func OnTenantAPIRequest(tenantID string, store ProfileOperator) int {
 		cur = 0
 	}
 	var curInt int
-	switch v := cur.(type) {
-	case int:
+	if v, ok := cur.(int); ok {
 		curInt = v + 1
 	}
 	tenantAPICount.Store(tenantID, curInt)
@@ -81,8 +80,7 @@ func SetTenantAPILimit(tenantID string, limit int) {
 }
 
 func ISExceededAPILimit(tenantID string) bool {
-	limited, ok := tenantAPILimit.Load(tenantID)
-	if ok {
+	if limited, ok := tenantAPILimit.Load(tenantID); ok {
 		count, _ := tenantAPICount.Load(tenantID)
 		if countVal, ok := count.(int); ok {
 			if limitedVal, ok := limited.(int); ok {

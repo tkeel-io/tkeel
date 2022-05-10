@@ -38,6 +38,8 @@ const (
 	TokenTypeBearer       = "Bearer"
 	TypeAuthInternal      = "internal"
 	TypeAuthExternal      = "external"
+
+	TypeProviderOIDC = "OIDCIdentityProvider"
 )
 
 var DefaultGrantType = []oauth2v4.GrantType{oauth2v4.AuthorizationCode, oauth2v4.Implicit, oauth2v4.PasswordCredentials, oauth2v4.Refreshing}
@@ -139,7 +141,7 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 	}
 
 	switch provider.Type() {
-	case "OIDCIdentityProvider":
+	case TypeProviderOIDC:
 		if req.GetCode() != "" {
 			identity, err := provider.AuthenticateCode(req.GetCode())
 			if err != nil {
@@ -377,8 +379,7 @@ func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterReq
 		log.Error(err)
 		return nil, pb.OauthErrInvalidRequest()
 	}
-	err = json.Unmarshal(bytesBody, oidcProvider)
-	if err != nil {
+	if err = json.Unmarshal(bytesBody, oidcProvider); err != nil {
 		log.Error(err)
 		return nil, pb.OauthErrInvalidRequest()
 	}
@@ -403,7 +404,7 @@ func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterReq
 	}
 	oidcProvider.OAuth2Config = oauth2Config
 	idprovider.RegisterIdentityProvider(req.GetBody().GetTenantId(), oidcProvider)
-	identityInfo := map[string]interface{}{"type": "OIDCIdentityProvider", "tenant_id": req.GetBody().GetTenantId(), "info": req.GetBody()}
+	identityInfo := map[string]interface{}{"type": TypeProviderOIDC, "tenant_id": req.GetBody().GetTenantId(), "info": req.GetBody()}
 	bytesInfo, err := json.Marshal(identityInfo)
 	if err != nil {
 		log.Error(err)
@@ -512,7 +513,7 @@ func (s *OauthService) IdentityProviderRegister(ctx context.Context, req *pb.IdP
 		}
 		oidcProvider.OAuth2Config = oauth2Config
 		idprovider.RegisterIdentityProvider(oidcConfig.TenantId, oidcProvider)
-		identityInfo := map[string]interface{}{"type": "OIDCIdentityProvider", "tenant_id": oidcConfig.TenantId, "info": oidcConfig}
+		identityInfo := map[string]interface{}{"type": TypeProviderOIDC, "tenant_id": oidcConfig.TenantId, "info": oidcConfig}
 		bytesInfo, err := json.Marshal(identityInfo)
 		if err != nil {
 			log.Error(err)
@@ -547,7 +548,7 @@ func (s *OauthService) GetIdentityProvider(ctx context.Context, req *pb.GetIdent
 	}
 	if typeVal, ok := valueMap["type"].(string); ok {
 		switch typeVal {
-		case "OIDCIdentityProvider":
+		case TypeProviderOIDC:
 			infoBytes, err := json.Marshal(valueMap["info"])
 			if err != nil {
 				log.Error(err)
@@ -582,7 +583,7 @@ func ProviderRegister(ctx context.Context, data []byte) error {
 	}
 	if providerTypeVal, ok := providerType.(string); ok {
 		switch providerTypeVal {
-		case "OIDCIdentityProvider":
+		case TypeProviderOIDC:
 			infoBytes, err := json.Marshal(dataMap["info"])
 			if err != nil {
 				return fmt.Errorf("%w", err)
