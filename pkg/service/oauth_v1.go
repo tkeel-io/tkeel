@@ -38,6 +38,8 @@ const (
 	TokenTypeBearer       = "Bearer"
 	TypeAuthInternal      = "internal"
 	TypeAuthExternal      = "external"
+
+	TypeProviderOIDC = "OIDCIdentityProvider"
 )
 
 var DefaultGrantType = []oauth2v4.GrantType{oauth2v4.AuthorizationCode, oauth2v4.Implicit, oauth2v4.PasswordCredentials, oauth2v4.Refreshing}
@@ -139,7 +141,7 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 	}
 
 	switch provider.Type() {
-	case "OIDCIdentityProvider":
+	case TypeProviderOIDC:
 		if req.GetCode() != "" {
 			identity, err := provider.AuthenticateCode(req.GetCode())
 			if err != nil {
@@ -336,10 +338,12 @@ func (s *OauthService) GetAccessToken(ctx context.Context, gt oauth2v4.GrantType
 // bearerAuth parse bearer token.
 func bearerAuth(header http.Header) (string, bool) {
 	auth := header.Get("Authorization")
-	prefix := "Bearer "
 	token := ""
-	if auth != "" && strings.HasPrefix(auth, prefix) {
-		token = auth[len(prefix):]
+	if auth != "" {
+		prefix := "Bearer "
+		if strings.HasPrefix(auth, prefix) {
+			token = auth[len(prefix):]
+		}
 	}
 	return token, token != ""
 }
@@ -375,7 +379,10 @@ func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterReq
 		log.Error(err)
 		return nil, pb.OauthErrInvalidRequest()
 	}
-	json.Unmarshal(bytesBody, oidcProvider)
+	if err = json.Unmarshal(bytesBody, oidcProvider); err != nil {
+		log.Error(err)
+		return nil, pb.OauthErrInvalidRequest()
+	}
 	oauth2Endpoint := oauth2.Endpoint{}
 	if req.GetBody().GetIssuer() != "" {
 		oidcProvider.Provider, err = oidc.NewProvider(ctx, req.GetBody().GetIssuer())
@@ -397,9 +404,17 @@ func (s *OauthService) OIDCRegister(ctx context.Context, req *pb.OIDCRegisterReq
 	}
 	oidcProvider.OAuth2Config = oauth2Config
 	idprovider.RegisterIdentityProvider(req.GetBody().GetTenantId(), oidcProvider)
-	identityInfo := map[string]interface{}{"type": "OIDCIdentityProvider", "tenant_id": req.GetBody().GetTenantId(), "info": req.GetBody()}
-	bytesInfo, _ := json.Marshal(identityInfo)
-	s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetBody().GetTenantId()), bytesInfo)
+	identityInfo := map[string]interface{}{"type": TypeProviderOIDC, "tenant_id": req.GetBody().GetTenantId(), "info": req.GetBody()}
+	bytesInfo, err := json.Marshal(identityInfo)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.OauthErrServerError()
+	}
+	err = s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetBody().GetTenantId()), bytesInfo)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.OauthErrServerError()
+	}
 	return &pb.OIDCRegisterResponse{Ok: true}, nil
 }
 func (s *OauthService) TokenRevoke(ctx context.Context, req *pb.TokenRevokeRequest) (*pb.TokenRevokeResponse, error) {
@@ -498,8 +513,12 @@ func (s *OauthService) IdentityProviderRegister(ctx context.Context, req *pb.IdP
 		}
 		oidcProvider.OAuth2Config = oauth2Config
 		idprovider.RegisterIdentityProvider(oidcConfig.TenantId, oidcProvider)
-		identityInfo := map[string]interface{}{"type": "OIDCIdentityProvider", "tenant_id": oidcConfig.TenantId, "info": oidcConfig}
-		bytesInfo, _ := json.Marshal(identityInfo)
+		identityInfo := map[string]interface{}{"type": TypeProviderOIDC, "tenant_id": oidcConfig.TenantId, "info": oidcConfig}
+		bytesInfo, err := json.Marshal(identityInfo)
+		if err != nil {
+			log.Error(err)
+			return nil, pb.OauthErrServerError()
+		}
 		err = s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(oidcConfig.TenantId), bytesInfo)
 		if err != nil {
 			log.Error(err)
@@ -527,26 +546,28 @@ func (s *OauthService) GetIdentityProvider(ctx context.Context, req *pb.GetIdent
 			return nil, pb.OauthErrServerError()
 		}
 	}
-	switch valueMap["type"].(string) {
-	case "OIDCIdentityProvider":
-		infoBytes, err := json.Marshal(valueMap["info"])
-		if err != nil {
-			log.Error(err)
-			return nil, pb.OauthErrServerError()
+	if typeVal, ok := valueMap["type"].(string); ok {
+		switch typeVal {
+		case TypeProviderOIDC:
+			infoBytes, err := json.Marshal(valueMap["info"])
+			if err != nil {
+				log.Error(err)
+				return nil, pb.OauthErrServerError()
+			}
+			oidcProvider := pb.OIDCRegisterBody{TenantId: req.GetTenantId(), Endpoint: &pb.OIDCEndpoint{}}
+			err = json.Unmarshal(infoBytes, &oidcProvider)
+			if err != nil {
+				log.Error(err, string(infoBytes))
+				return nil, pb.OauthErrServerError()
+			}
+			configBytes, err := yaml.Marshal(&oidcProvider)
+			if err != nil {
+				log.Error(err)
+				return nil, pb.OauthErrServerError()
+			}
+			resp.Config = configBytes
+			resp.Type = "OIDC"
 		}
-		oidcProvider := pb.OIDCRegisterBody{TenantId: req.GetTenantId(), Endpoint: &pb.OIDCEndpoint{}}
-		err = json.Unmarshal(infoBytes, &oidcProvider)
-		if err != nil {
-			log.Error(err, string(infoBytes))
-			return nil, pb.OauthErrServerError()
-		}
-		configBytes, err := yaml.Marshal(&oidcProvider)
-		if err != nil {
-			log.Error(err)
-			return nil, pb.OauthErrServerError()
-		}
-		resp.Config = configBytes
-		resp.Type = "OIDC"
 	}
 	return resp, nil
 }
@@ -567,44 +588,48 @@ func ProviderRegister(ctx context.Context, data []byte) error {
 	if !ok {
 		return errors.New("invalid type")
 	}
-	switch providerType.(string) {
-	case "OIDCIdentityProvider":
-		infoBytes, err := json.Marshal(dataMap["info"])
-		if err != nil {
-			return fmt.Errorf("%w", err)
-		}
-		oidcProvider := &oidcprovider.OIDCProvider{}
-		infoMap := map[string]interface{}{}
-		json.Unmarshal(infoBytes, oidcProvider)
-		json.Unmarshal(infoBytes, &infoMap)
-		clientSecret, ok := infoMap["client_secret"].(string)
-		if !ok {
-			return errors.New("not client secret")
-		}
-		oidcProvider.ClientSecret = clientSecret
-		oauth2Endpoint := oauth2.Endpoint{}
-		if oidcProvider.Issuer != "" {
-			oidcProvider.Provider, err = oidc.NewProvider(ctx, oidcProvider.Issuer)
+	if providerTypeVal, ok := providerType.(string); ok {
+		switch providerTypeVal {
+		case TypeProviderOIDC:
+			infoBytes, err := json.Marshal(dataMap["info"])
 			if err != nil {
-				log.Error(err)
 				return fmt.Errorf("%w", err)
 			}
-			oauth2Endpoint = oidcProvider.Provider.Endpoint()
-		} else {
-			oauth2Endpoint.AuthURL = oidcProvider.Endpoint.AuthURL
-			oauth2Endpoint.TokenURL = oidcProvider.Endpoint.TokenURL
+			oidcProvider := &oidcprovider.OIDCProvider{}
+			infoMap := map[string]interface{}{}
+			json.Unmarshal(infoBytes, oidcProvider)
+			json.Unmarshal(infoBytes, &infoMap)
+			clientSecret, ok := infoMap["client_secret"].(string)
+			if !ok {
+				return errors.New("not client secret")
+			}
+			oidcProvider.ClientSecret = clientSecret
+			oauth2Endpoint := oauth2.Endpoint{}
+			if oidcProvider.Issuer != "" {
+				oidcProvider.Provider, err = oidc.NewProvider(ctx, oidcProvider.Issuer)
+				if err != nil {
+					log.Error(err)
+					return fmt.Errorf("%w", err)
+				}
+				oauth2Endpoint = oidcProvider.Provider.Endpoint()
+			} else {
+				oauth2Endpoint.AuthURL = oidcProvider.Endpoint.AuthURL
+				oauth2Endpoint.TokenURL = oidcProvider.Endpoint.TokenURL
+			}
+			oauth2Config := &oauth2.Config{
+				ClientID:     oidcProvider.ClientID,
+				ClientSecret: oidcProvider.ClientSecret,
+				RedirectURL:  oidcProvider.RedirectURL,
+				Scopes:       oidcProvider.Scopes,
+				Endpoint:     oauth2Endpoint,
+			}
+			oidcProvider.OAuth2Config = oauth2Config
+			if tenantIDVal, ok := tenantID.(string); ok {
+				idprovider.RegisterIdentityProvider(tenantIDVal, oidcProvider)
+			}
+		default:
+			return errors.New("invalid provider type")
 		}
-		oauth2Config := &oauth2.Config{
-			ClientID:     oidcProvider.ClientID,
-			ClientSecret: oidcProvider.ClientSecret,
-			RedirectURL:  oidcProvider.RedirectURL,
-			Scopes:       oidcProvider.Scopes,
-			Endpoint:     oauth2Endpoint,
-		}
-		oidcProvider.OAuth2Config = oauth2Config
-		idprovider.RegisterIdentityProvider(tenantID.(string), oidcProvider)
-	default:
-		return errors.New("invalid provider type")
 	}
 	return nil
 }
