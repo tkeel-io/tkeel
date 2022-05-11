@@ -21,9 +21,8 @@ import (
 	"math"
 	"sync"
 
-	"github.com/tkeel-io/tkeel/pkg/model"
-
 	pb "github.com/tkeel-io/tkeel/api/profile/v1"
+	"github.com/tkeel-io/tkeel/pkg/model"
 )
 
 const (

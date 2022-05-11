@@ -150,7 +150,7 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 			}
 			userDao := &model.User{}
 			whereDao := model.User{ExternalID: identity.GetExternalID(), TenantID: req.GetTenantId()}
-			assignDao := model.User{UserName: identity.GetUsername(), Email: identity.GetEmail()}
+			assignDao := model.User{UserName: identity.GetUsername(), Email: identity.GetEmail(), ID: identity.GetExternalID()}
 			err = userDao.FirstOrAssignCreate(s.UserDB, whereDao, assignDao)
 			if err != nil {
 				log.Error(err)
@@ -560,6 +560,13 @@ func (s *OauthService) GetIdentityProvider(ctx context.Context, req *pb.GetIdent
 				log.Error(err, string(infoBytes))
 				return nil, pb.OauthErrServerError()
 			}
+			configBytes, err := yaml.Marshal(&oidcProvider)
+			if err != nil {
+				log.Error(err)
+				return nil, pb.OauthErrServerError()
+			}
+			resp.Config = configBytes
+			resp.Type = "OIDC"
 		}
 	}
 	return resp, nil

@@ -1,118 +1,118 @@
-on:
-  workflow_call:
-    inputs:
-      archive_outdir:
-        description: archive dir
-        default: dist/archivers
-        required: false
-        type: string
-      go_version:
-        description: go version in action
-        default: ^1.17.5
-        required: false
-        type: string
-      upload_require:
-        description: this will allow upload artifacts
-        default: true
-        type: boolean
-        required: false
-jobs:
-  lint:
-    name: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.45.2
-  test:
-    name: Test in ${{ matrix.target_os }}_${{ matrix.target_arch }} with Go_${{inputs.go_version}}
-    runs-on: ${{ matrix.os }}
-    needs: [lint]
-    env:
-      GOOS: ${{ matrix.target_os }}
-      GOARCH: ${{ matrix.target_arch }}
-      GOPROXY: https://proxy.golang.org
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-        target_arch: [amd64]
-        include:
-          - os: ubuntu-latest
-            target_os: linux
-          - os: windows-latest
-            target_os: windows
-          - os: macOS-latest
-            target_os: darwin
-      fail-fast: false
-    steps:
-      - name: Set up Go ${{inputs.go_version}}
-        uses: actions/setup-go@v2.1.4
-        with:
-          go-version: ${{inputs.go_version}}
-      - name: Check out code
-        uses: actions/checkout@v2
-      - name: Run make go.mod check-diff
-        if: matrix.target_os == 'linux'
-        run: git diff --exit-code ./go.mod
-      - name: run test in widnows
-        if: matrix.target_os == 'windows'
-        run: go test -v -cover -gcflags=all=-l .\...
-      - name: run tests
-        if: matrix.target_os != 'windows'
-        run: go test -v -cover -gcflags=all=-l -coverprofile=coverage.out ./...
-  build:
-    name: Build ${{ matrix.target_os }}_${{ matrix.target_arch }} binaries
-    runs-on: ${{ matrix.os }}
-    needs: [lint, test]
-    env:
-      GOVER: ${{inputs.go_version}}
-      GOOS: ${{ matrix.target_os }}
-      GOARCH: ${{ matrix.target_arch }}
-      GOPROXY: https://proxy.golang.org
-      ARCHIVE_OUTDIR: ${{ inputs.archive_outdir }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-        target_arch: [arm, arm64, amd64]
-        include:
-          - os: ubuntu-latest
-            target_os: linux
-          - os: windows-latest
-            target_os: windows
-          - os: macOS-latest
-            target_os: darwin
-        exclude:
-          - os: windows-latest
-            target_arch: arm
-          - os: windows-latest
-            target_arch: arm64
-          - os: macOS-latest
-            target_arch: arm
-          - os: macOS-latest
-            target_arch: arm64
-      fail-fast: false
-    steps:
-      - name: Set up Go ${{env.GOVER}}
-        uses: actions/setup-go@v2.1.4
-        with:
-          go-version: ${{ env.GOVER }}
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
-      - name: Run make go.mod check-diff
-        if: matrix.target_arch == 'amd64' && matrix.target_os == 'linux'
-        run: git diff --exit-code ./go.mod
-      - name: Codecov
-        if: matrix.target_arch == 'amd64' && matrix.target_os == 'linux'
-        uses: codecov/codecov-action@v1
-      - name: Run make release
-        run: |
-          mkdir -p ${{ env.ARCHIVE_OUTDIR }}
-          make release GOOS=${{ matrix.target_os }} GOARCH=${{ matrix.target_arch }} ARCHIVE_OUT_DIR=${{ env.ARCHIVE_OUTDIR }}
-      - name: upload artifacts
-        if: ${{inputs.upload_require == true}}
-        uses: actions/upload-artifact@master
-        with:
-          name: my-artifact
-          path: ${{ env.ARCHIVE_OUTDIR }}
+  on:
+    workflow_call:
+      inputs:
+        archive_outdir:
+          description: archive dir
+          default: dist/archivers
+          required: false
+          type: string
+        go_version:
+          description: go version in action
+          default: ^1.17.5
+          required: false
+          type: string
+        upload_require:
+          description: this will allow upload artifacts
+          default: true
+          type: boolean
+          required: false
+  jobs:
+    lint:
+      name: lint
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+        - name: golangci-lint
+          uses: golangci/golangci-lint-action@v2
+          with:
+            version: v1.45.2
+    test:
+      name: Test in ${{ matrix.target_os }}_${{ matrix.target_arch }} with Go_${{inputs.go_version}}
+      runs-on: ${{ matrix.os }}
+      needs: [lint]
+      env:
+        GOOS: ${{ matrix.target_os }}
+        GOARCH: ${{ matrix.target_arch }}
+        GOPROXY: https://proxy.golang.org
+      strategy:
+        matrix:
+          os: [ubuntu-latest, windows-latest, macOS-latest]
+          target_arch: [amd64]
+          include:
+            - os: ubuntu-latest
+              target_os: linux
+            - os: windows-latest
+              target_os: windows
+            - os: macOS-latest
+              target_os: darwin
+        fail-fast: false
+      steps:
+        - name: Set up Go ${{inputs.go_version}}
+          uses: actions/setup-go@v2.1.4
+          with:
+            go-version: ${{inputs.go_version}}
+        - name: Check out code
+          uses: actions/checkout@v2
+        - name: Run make go.mod check-diff
+          if: matrix.target_os == 'linux'
+          run: git diff --exit-code ./go.mod
+        - name: run test in widnows
+          if: matrix.target_os == 'windows'
+          run: go test -v -cover -gcflags=all=-l .\...
+        - name: run tests
+          if: matrix.target_os != 'windows'
+          run: go test -v -cover -gcflags=all=-l -coverprofile=coverage.out ./...
+    build:
+      name: Build ${{ matrix.target_os }}_${{ matrix.target_arch }} binaries
+      runs-on: ${{ matrix.os }}
+      needs: [lint, test]
+      env:
+        GOVER: ${{inputs.go_version}}
+        GOOS: ${{ matrix.target_os }}
+        GOARCH: ${{ matrix.target_arch }}
+        GOPROXY: https://proxy.golang.org
+        ARCHIVE_OUTDIR: ${{ inputs.archive_outdir }}
+      strategy:
+        matrix:
+          os: [ubuntu-latest, windows-latest, macOS-latest]
+          target_arch: [arm, arm64, amd64]
+          include:
+            - os: ubuntu-latest
+              target_os: linux
+            - os: windows-latest
+              target_os: windows
+            - os: macOS-latest
+              target_os: darwin
+          exclude:
+            - os: windows-latest
+              target_arch: arm
+            - os: windows-latest
+              target_arch: arm64
+            - os: macOS-latest
+              target_arch: arm
+            - os: macOS-latest
+              target_arch: arm64
+        fail-fast: false
+      steps:
+        - name: Set up Go ${{env.GOVER}}
+          uses: actions/setup-go@v2.1.4
+          with:
+            go-version: ${{ env.GOVER }}
+        - name: Check out code into the Go module directory
+          uses: actions/checkout@v2
+        - name: Run make go.mod check-diff
+          if: matrix.target_arch == 'amd64' && matrix.target_os == 'linux'
+          run: git diff --exit-code ./go.mod
+        - name: Codecov
+          if: matrix.target_arch == 'amd64' && matrix.target_os == 'linux'
+          uses: codecov/codecov-action@v1
+        - name: Run make release
+          run: |
+            mkdir -p ${{ env.ARCHIVE_OUTDIR }}
+            make release GOOS=${{ matrix.target_os }} GOARCH=${{ matrix.target_arch }} ARCHIVE_OUT_DIR=${{ env.ARCHIVE_OUTDIR }}
+        - name: upload artifacts
+          if: ${{inputs.upload_require == true}}
+          uses: actions/upload-artifact@master
+          with:
+            name: my-artifact
+            path: ${{ env.ARCHIVE_OUTDIR }}
