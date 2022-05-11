@@ -37,6 +37,7 @@ const (
 	DefaultClientDomain   = "tkeel.io"
 	TokenTypeBearer       = "Bearer"
 	TypeAuthInternal      = "internal"
+	TypeAuthExternal      = "external"
 )
 
 var DefaultGrantType = []oauth2v4.GrantType{oauth2v4.AuthorizationCode, oauth2v4.Implicit, oauth2v4.PasswordCredentials, oauth2v4.Refreshing}
@@ -147,7 +148,7 @@ func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.Tok
 			}
 			userDao := &model.User{}
 			whereDao := model.User{ExternalID: identity.GetExternalID(), TenantID: req.GetTenantId()}
-			assignDao := model.User{UserName: identity.GetUsername(), Email: identity.GetEmail()}
+			assignDao := model.User{UserName: identity.GetUsername(), Email: identity.GetEmail(), ID: identity.GetExternalID()}
 			err = userDao.FirstOrAssignCreate(s.UserDB, whereDao, assignDao)
 			if err != nil {
 				log.Error(err)
@@ -210,10 +211,10 @@ func (s *OauthService) Authenticate(ctx context.Context, empty *emptypb.Empty) (
 		s.Manager.RemoveAccessToken(ctx, accessToken)
 		return nil, pb.OauthErrInvalidAccessToken()
 	}
-	authType := "internal"
+	authType := TypeAuthInternal
 	provider, _ := idprovider.GetIdentityProvider(users[0].TenantID)
 	if provider != nil {
-		authType = "external"
+		authType = TypeAuthExternal
 	}
 
 	return &pb.AuthenticateResponse{

@@ -19,18 +19,18 @@ type MetricsHTTPHandler interface {
 func RegisterMetricsHTTPServer(container *go_restful.Container, metricHandler MetricsHTTPHandler) {
 	var ws *go_restful.WebService
 	for _, v := range container.RegisteredWebServices() {
-		if v.RootPath() == "/v1" {
+		if v.RootPath() == "" {
 			ws = v
 			break
 		}
 	}
 	if ws == nil {
 		ws = new(go_restful.WebService)
-		ws.ApiVersion("/v1")
-		ws.Path("/v1")
+		ws.Path("")
 		container.Add(ws)
 	}
 
 	ws.Route(ws.GET("/metrics").
-		To(metricHandler.Metrics))
+		To(metricHandler.Metrics).
+		Produces(go_restful.MIME_JSON))
 }

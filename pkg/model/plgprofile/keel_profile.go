@@ -18,11 +18,11 @@ package plgprofile
 
 import (
 	"encoding/json"
-	"github.com/tkeel-io/tkeel/pkg/model"
 	"math"
 	"sync"
 
 	pb "github.com/tkeel-io/tkeel/api/profile/v1"
+	"github.com/tkeel-io/tkeel/pkg/model"
 )
 
 const (

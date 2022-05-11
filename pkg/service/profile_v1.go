@@ -44,14 +44,14 @@ func (s *ProfileService) GetTenantProfile(ctx context.Context, req *pb.GetTenant
 		if err != nil {
 			log.Error(err)
 		}
-		plugins, err := s.pluginOp.List(ctx)
-		if err != nil {
+		plugins, err2 := s.pluginOp.List(ctx)
+		if err2 != nil {
 			log.Error("plugin operator list: ", err)
 			return nil, pb.ErrPluginList()
 		}
 		return &pb.GetTenantProfileResponse{TenantProfiles: plugin2pbProfile(plugins)}, nil
 	}
-	plugins, err := s.pluginOp.List(ctx)
+	plugins, _ := s.pluginOp.List(ctx)
 	profiles = comboProfiles(profiles, plugins)
 	return &pb.GetTenantProfileResponse{TenantProfiles: modelProfile2pbProfile(profiles)}, nil
 }
@@ -118,8 +118,8 @@ func pbPlgProfile2model(profiles *pb.TenantProfiles) *model.PluginProfile {
 }
 func comboProfiles(profiles []*model.PluginProfile, plugins []*model.Plugin) []*model.PluginProfile {
 	newProfiles := []*model.PluginProfile{}
-	for plugini, _ := range plugins {
-		for profilesi, _ := range profiles {
+	for plugini := range plugins {
+		for profilesi := range profiles {
 			if plugins[plugini].ID == profiles[profilesi].PluginID {
 				break
 			}
