@@ -53,7 +53,7 @@ service Config {
     };
   };
 
-  rpc GetPlatformConfig(google.protobuf.Empty)
+  rpc GetPlatformConfig(GetPlatformConfigRequest)
       returns (GetPlatformConfigResponse) {
     option (google.api.http) = {
       get : "/config/platform"
@@ -128,6 +128,13 @@ message GetDeploymentConfigResponse {
       } ];
 }
 
+message GetPlatformConfigRequest {
+  string key = 1
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "key"
+  } ];
+}
+
 message GetPlatformConfigResponse {
   bytes extra = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -136,8 +143,12 @@ message GetPlatformConfigResponse {
 }
 
 message SetPlatformExtraConfigRequest {
-  bytes extra = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "extra"
-      } ];
+  string key = 1
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "key"
+  } ];
+  bytes extra = 2
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "extra"
+  } ];
 }
