@@ -111,7 +111,7 @@ service Config {
   rpc SetPlatformExtraConfig(SetPlatformExtraConfigRequest)
       returns (google.protobuf.Value) {
     option (google.api.http) = {
-      post : "/config/platform/update"
+      post : "/config/platform"
       body : "extra"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -161,6 +161,10 @@ message PlatformConfigRequest {
   [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     description : "key"
   }];
+  string path = 2
+  [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "path"
+  }];
 }
 
 message SetPlatformExtraConfigRequest {
@@ -168,7 +172,11 @@ message SetPlatformExtraConfigRequest {
   [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     description : "key"
   }];
-  google.protobuf.Value extra = 2
+  string path = 2
+  [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "path"
+  }];
+  google.protobuf.Value extra = 3
   [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     description : "extra"
   }];

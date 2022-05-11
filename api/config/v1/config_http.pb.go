@@ -10,6 +10,7 @@ import (
 	go_restful "github.com/emicklei/go-restful"
 	errors "github.com/tkeel-io/kit/errors"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	http "net/http"
 	reflect "reflect"
 )
@@ -21,9 +22,10 @@ import transportHTTP "github.com/tkeel-io/kit/transport/http"
 // import package.context.http.reflect.go_restful.json.errors.emptypb.
 
 type ConfigHTTPServer interface {
+	DelPlatformConfig(context.Context, *PlatformConfigRequest) (*structpb.Value, error)
 	GetDeploymentConfig(context.Context, *emptypb.Empty) (*GetDeploymentConfigResponse, error)
-	GetPlatformConfig(context.Context, *GetPlatformConfigRequest) (*GetPlatformConfigResponse, error)
-	SetPlatformExtraConfig(context.Context, *SetPlatformExtraConfigRequest) (*emptypb.Empty, error)
+	GetPlatformConfig(context.Context, *PlatformConfigRequest) (*structpb.Value, error)
+	SetPlatformExtraConfig(context.Context, *SetPlatformExtraConfigRequest) (*structpb.Value, error)
 }
 
 type ConfigHTTPHandler struct {
@@ -32,6 +34,38 @@ type ConfigHTTPHandler struct {
 
 func newConfigHTTPHandler(s ConfigHTTPServer) *ConfigHTTPHandler {
 	return &ConfigHTTPHandler{srv: s}
+}
+
+func (h *ConfigHTTPHandler) DelPlatformConfig(req *go_restful.Request, resp *go_restful.Response) {
+	in := PlatformConfigRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.DelPlatformConfig(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		resp.WriteErrorString(httpCode, tErr.Message)
+		return
+	}
+	if reflect.ValueOf(out).Elem().Type().AssignableTo(reflect.TypeOf(emptypb.Empty{})) {
+		resp.WriteHeader(http.StatusNoContent)
+		return
+	}
+	result, err := json.Marshal(out)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
+	_, err = resp.Write(result)
+	if err != nil {
+		resp.WriteErrorString(http.StatusInternalServerError, err.Error())
+		return
+	}
 }
 
 func (h *ConfigHTTPHandler) GetDeploymentConfig(req *go_restful.Request, resp *go_restful.Response) {
@@ -67,7 +101,7 @@ func (h *ConfigHTTPHandler) GetDeploymentConfig(req *go_restful.Request, resp *g
 }
 
 func (h *ConfigHTTPHandler) GetPlatformConfig(req *go_restful.Request, resp *go_restful.Response) {
-	in := GetPlatformConfigRequest{}
+	in := PlatformConfigRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
@@ -100,7 +134,11 @@ func (h *ConfigHTTPHandler) GetPlatformConfig(req *go_restful.Request, resp *go_
 
 func (h *ConfigHTTPHandler) SetPlatformExtraConfig(req *go_restful.Request, resp *go_restful.Response) {
 	in := SetPlatformExtraConfigRequest{}
-	if err := transportHTTP.GetBody(req, &in); err != nil {
+	if err := transportHTTP.GetBody(req, &in.Extra); err != nil {
+		resp.WriteErrorString(http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteErrorString(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -150,6 +188,8 @@ func RegisterConfigHTTPServer(container *go_restful.Container, srv ConfigHTTPSer
 		To(handler.GetDeploymentConfig))
 	ws.Route(ws.GET("/config/platform").
 		To(handler.GetPlatformConfig))
-	ws.Route(ws.POST("/config/platform/update").
+	ws.Route(ws.DELETE("/config/platform").
+		To(handler.DelPlatformConfig))
+	ws.Route(ws.POST("/config/platform").
 		To(handler.SetPlatformExtraConfig))
 }

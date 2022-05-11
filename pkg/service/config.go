@@ -2,7 +2,10 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/tkeel-io/tdtl"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
@@ -18,6 +21,15 @@ type ConfigService struct {
 	pb.UnimplementedConfigServer
 	kvOp kv.Operator
 	k8s  *kubernetes.Client
+}
+
+func ExtraConfigKey(key string) string {
+	if key == "" {
+		key = model.KeyPlatExtraConfig
+	} else {
+		key = fmt.Sprintf("%s_%s", model.KeyPlatExtraConfig, key)
+	}
+	return key
 }
 
 func NewConfigService(k8s *kubernetes.Client, kvOp kv.Operator) *ConfigService {
@@ -52,22 +64,19 @@ func (s *ConfigService) GetDeploymentConfig(ctx context.Context, req *emptypb.Em
 	}, nil
 }
 
-func (s *ConfigService) GetPlatformConfig(ctx context.Context, req *emptypb.Empty) (*pb.GetPlatformConfigResponse, error) {
-	var extra []byte
-	e, _, err := s.getExtraData(ctx)
+func (s *ConfigService) GetPlatformConfig(ctx context.Context, req *pb.PlatformConfigRequest) (*structpb.Value, error) {
+	key := req.Key
+	path := req.Path
+	extData, _, err := s.getExtraData(ctx, key)
 	if err != nil {
 		log.Errorf("error get extra data: %s", err)
 		return nil, pb.ConfigErrInternalError()
 	}
-	extra = e
-	log.Debugf("get extra: %s", extra)
-
-	return &pb.GetPlatformConfigResponse{
-		Extra: extra,
-	}, nil
+	ret :=extData.Get(path)
+	return NewStructValue(ret), nil
 }
 
-func (s *ConfigService) SetPlatformExtraConfig(ctx context.Context, req *pb.SetPlatformExtraConfigRequest) (*emptypb.Empty, error) {
+func (s *ConfigService) DelPlatformConfig(ctx context.Context, req *pb.PlatformConfigRequest) (*structpb.Value, error) {
 	u, err := util.GetUser(ctx)
 	if err != nil {
 		log.Errorf("error get user: %s", err)
@@ -78,48 +87,103 @@ func (s *ConfigService) SetPlatformExtraConfig(ctx context.Context, req *pb.SetP
 		log.Error("error not admin portal")
 		return nil, pb.ConfigErrNotAdminPortal()
 	}
-	_, ver, err := s.getExtraData(ctx, req.Key)
+	key := req.Key
+	path := req.Path
+	extData, ver, err := s.getExtraData(ctx, key)
 	if err != nil {
-		log.Errorf("error get extra data: %s", err)
-		return nil, pb.ConfigErrInternalError()
+		return nil, fmt.Errorf("get old extra data error:%w", err)
 	}
-	if err = s.setExtraData(ctx, req.Key, req.Extra, ver); err != nil {
+
+	value := extData.Get(path)
+	extData.Del(path)
+	if err = s.setExtraData(ctx, key, extData, ver); err != nil {
 		log.Errorf("error set extra data: %s", err)
 		return nil, pb.ConfigErrInternalError()
 	}
-	log.Debugf("set extra data(%s) succ.", req.Extra)
-	return &emptypb.Empty{}, nil
+	return NewStructValue(value), nil
 }
 
-func makeExtraKey(key string) string {
-	if key == "" {
-		key = model.KeyPlatExtraConfig
-	} else {
-		key = fmt.Sprintf("%s_%s", model.KeyPlatExtraConfig, key)
-	}
-	return key
-}
-
-func (s *ConfigService) getExtraData(ctx context.Context, key string) ([]byte, string, error) {
-	values, ver, err := s.kvOp.Get(ctx, makeExtraKey(key))
+func (s *ConfigService) SetPlatformExtraConfig(ctx context.Context, req *pb.SetPlatformExtraConfigRequest) (*structpb.Value, error) {
+	u, err := util.GetUser(ctx)
 	if err != nil {
-		return nil, "", errors.Wrap(err, "init rudder admin password")
+		log.Errorf("error get user: %s", err)
+		return nil, pb.ConfigErrInternalError()
+	}
+	if u.Tenant != model.TKeelTenant ||
+		u.User != model.TKeelUser {
+		log.Error("error not admin portal")
+		return nil, pb.ConfigErrNotAdminPortal()
+	}
+	path := req.Key
+	value, err := NewCollectValue(req.Extra)
+	if err != nil {
+		log.Errorf("error new collect value: %s", err)
+		return nil, pb.ConfigErrInternalError()
+	}
+	extData, ver, err := s.getExtraData(ctx, path)
+	if err != nil {
+		return nil, fmt.Errorf("get old extra data error:%w", err)
+	}
+
+	extData.Set(path, value)
+	if err = s.setExtraData(ctx, req.Key, extData, ver); err != nil {
+		log.Errorf("error set extra data: %s", err)
+		return nil, pb.ConfigErrInternalError()
+	}
+	return NewStructValue(value), nil
+}
+
+func (s *ConfigService) getExtraData(ctx context.Context, key string) (*tdtl.Collect, string, error) {
+	values, ver, err := s.kvOp.Get(ctx, ExtraConfigKey(key))
+	if err != nil {
+		return nil, ver, errors.Wrap(err, "init rudder admin password")
 	}
 	if ver == "" {
 		return nil, ver, nil
 	}
-	return values, ver, nil
+	return tdtl.New(values), ver, nil
 }
 
-func (s *ConfigService) setExtraData(ctx context.Context, key string, raw []byte, ver string) error {
-	if ver == "" {
-		if err := s.kvOp.Create(ctx, makeExtraKey(key), raw); err != nil {
-			return errors.Wrap(err, "create extra config")
-		}
-		return nil
-	}
-	if err := s.kvOp.Update(ctx, makeExtraKey(key), raw, ver); err != nil {
+func (s *ConfigService) setExtraData(ctx context.Context, key string, value tdtl.Node, version string) error {
+	if err := s.kvOp.Update(ctx, ExtraConfigKey(key), value.Raw(), version); err != nil {
 		return errors.Wrap(err, "update extra config")
 	}
 	return nil
+}
+
+func NewCollectValue(val *structpb.Value) (*tdtl.Collect, error) {
+	byt, err := json.Marshal(val)
+	if err != nil {
+		return nil, err
+	}
+	return tdtl.New(byt), nil
+}
+
+func NewStructValue(cc *tdtl.Collect) *structpb.Value {
+	switch cc.Type() {
+	case tdtl.Bool:
+		ret := cc.To(tdtl.Bool)
+		switch ret := ret.(type) {
+		case tdtl.BoolNode:
+			return structpb.NewBoolValue(bool(ret))
+		}
+	case tdtl.Int, tdtl.Float, tdtl.Number:
+		ret := cc.To(tdtl.Number)
+		switch ret := ret.(type) {
+		case tdtl.IntNode:
+			return structpb.NewNumberValue(float64(ret))
+		case tdtl.FloatNode:
+			return structpb.NewNumberValue(float64(ret))
+		}
+	case tdtl.String:
+		return structpb.NewStringValue(cc.String())
+	case tdtl.JSON, tdtl.Object, tdtl.Array:
+		ret := &structpb.Struct{}
+		err := json.Unmarshal(cc.Raw(), ret)
+		if err != nil {
+			fmt.Println("err", err)
+		}
+		return structpb.NewStructValue(ret)
+	}
+	return structpb.NewBoolValue(false)
 }
