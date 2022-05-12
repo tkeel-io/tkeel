@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 
 	"github.com/casbin/casbin/v2"
+	dapr "github.com/dapr/go-sdk/client"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/security/authz/rbac"
 	"github.com/tkeel-io/security/model"
@@ -22,15 +24,17 @@ type TenantService struct {
 	DB             *gorm.DB
 	TenantPluginOp rbac.TenantPluginMgr
 	RBACOp         *casbin.SyncedEnforcer
+	DaprClient     dapr.Client
+	DaprStore      string
 }
 
-func NewTenantService(db *gorm.DB, tenantPluginOp rbac.TenantPluginMgr, rbacOp *casbin.SyncedEnforcer) *TenantService {
+func NewTenantService(db *gorm.DB, tenantPluginOp rbac.TenantPluginMgr, rbacOp *casbin.SyncedEnforcer, daprClient dapr.Client, daprStore string) *TenantService {
 	_oncemigrate.Do(func() {
 		db.AutoMigrate(new(model.User))
 		db.AutoMigrate(new(model.Tenant))
 		db.AutoMigrate(new(model.Role))
 	})
-	return &TenantService{DB: db, TenantPluginOp: tenantPluginOp, RBACOp: rbacOp}
+	return &TenantService{DB: db, TenantPluginOp: tenantPluginOp, RBACOp: rbacOp, DaprClient: daprClient, DaprStore: daprStore}
 }
 
 func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRequest) (*pb.CreateTenantResponse, error) {
@@ -83,6 +87,20 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 			return resp, pb.ErrStoreCreatAdminRole()
 		}
 	}
+	if req.GetBody().GetAuthType() == "external" {
+		data := map[string]interface{}{"tenant_id": tenant.ID}
+		switch req.GetBody().GetIdProviderType() {
+		case "OIDC":
+			data["type"] = "OIDCIdentityProvider"
+		}
+		dataBytes, err := json.Marshal(data)
+		if err != nil {
+			log.Error(err)
+			return nil, pb.ErrUnknown()
+		}
+		s.DaprClient.SaveState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(tenant.ID), dataBytes)
+	}
+
 	s.TenantPluginOp.OnCreateTenant(tenant.ID)
 	for _, v := range t_model.TKeelComponents {
 		s.TenantPluginOp.AddTenantPlugin(tenant.ID, v)
@@ -137,6 +155,13 @@ func (s *TenantService) GetTenant(ctx context.Context, req *pb.GetTenantRequest)
 			}
 		}
 		resp.Admins = admins
+		resp.AuthType = "internal"
+		items, _ := s.DaprClient.GetState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(resp.TenantId))
+		if items != nil {
+			if items.Value != nil {
+				resp.AuthType = "external"
+			}
+		}
 	}
 	return resp, nil
 }
@@ -162,6 +187,13 @@ func (s *TenantService) ListTenant(ctx context.Context, req *pb.ListTenantReques
 	for i, v := range tenants {
 		userDao := &model.User{}
 		detail := &pb.TenantDetail{TenantId: v.ID, Title: v.Title, Remark: v.Remark, CreatedAt: v.CreatedAt.UnixMilli()}
+		detail.AuthType = "internal"
+		items, _ := s.DaprClient.GetState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(v.ID))
+		if items != nil {
+			if items.Value != nil {
+				detail.AuthType = "external"
+			}
+		}
 		numUser, err := userDao.CountInTenant(s.DB, v.ID)
 		if err != nil {
 			log.Error(err)
@@ -212,9 +244,16 @@ func (s *TenantService) TenantByExactSearch(ctx context.Context, req *pb.ExactTe
 		return nil, pb.ErrInternalError()
 	}
 	if total != 1 {
-		return nil, pb.ErrInvalidArgument()
+		return nil, pb.ErrTenantNotFound()
 	}
-	return &pb.ExactTenantResponse{TenantId: tenants[0].ID, Title: tenants[0].Title}, nil
+	authType := "internal"
+	items, _ := s.DaprClient.GetState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(tenants[0].ID))
+	if items != nil {
+		if items.Value != nil {
+			authType = "external"
+		}
+	}
+	return &pb.ExactTenantResponse{TenantId: tenants[0].ID, Title: tenants[0].Title, AuthType: authType}, nil
 }
 
 func (s *TenantService) UpdateTenant(ctx context.Context, req *pb.UpdateTenantRequest) (*pb.UpdateTenantResponse, error) {

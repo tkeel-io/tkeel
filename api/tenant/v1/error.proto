@@ -57,4 +57,7 @@ enum Error {
   // @msg=创建租户管理员角色错误
   // @code=INTERNAL
   ERR_STORE_CREAT_ADMIN_ROLE = 10;
+  // @msg=租户不存在
+  // @code=INTERNAL
+  ERR_TENANT_NOT_FOUND = 11;
 }

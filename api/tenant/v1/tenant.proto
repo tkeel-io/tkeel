@@ -370,6 +370,18 @@ message TenantCreateBody {
     },
     (google.api.field_behavior) = OPTIONAL
   ];
+  string auth_type = 5 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "set tenant auth type: internal | external"
+    },
+    (google.api.field_behavior) = OPTIONAL
+  ];
+  string id_provider_type = 6 [
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "external auth type : OIDC | LDAP | SMAL"
+    },
+    (google.api.field_behavior) = OPTIONAL
+  ];
 }
 
 message TenantAdmin {
@@ -438,6 +450,10 @@ message GetTenantResponse {
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     description : "admins in tenant"
   } ];
+  string auth_type = 7
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "auth type : internal / external"
+  } ];
 }
 message ListTenantRequest {
   int32 page_num = 1;
@@ -464,6 +480,7 @@ message ExactTenantRequest {
 message ExactTenantResponse {
   string tenant_id =1;
   string title =2;
+  string auth_type =3;
 }
 message TenantDetail {
   string tenant_id = 1
@@ -493,6 +510,10 @@ message TenantDetail {
   repeated TenantAdmin admins = 7
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
     description : "admins in tenant"
+  } ];
+  string auth_type = 8
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "auth type : internal / external"
   } ];
 }
 

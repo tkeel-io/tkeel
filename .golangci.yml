@@ -261,7 +261,7 @@ linters-settings:
         mapstructure: kebab
   cyclop:
     # the maximal code complexity to report
-    max-complexity: 15
+    max-complexity: 20
 
 linters:
   fast: false

@@ -124,6 +124,78 @@
         ]
       }
     },
+    "/config/platform": {
+      "get": {
+        "summary": "查询 platform config 接口",
+        "operationId": "GetPlatformConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetPlatformConfigResponse"
+            }
+          },
+          "400": {
+            "description": "INVALID_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/config/platform/update": {
+      "post": {
+        "summary": "设置 platform config extra 数据接口",
+        "operationId": "SetPlatformExtraConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SetPlatformExtraConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "config"
+        ]
+      }
+    },
     "/entity/info/{token}": {
       "get": {
         "summary": "get a entity token info",
@@ -272,6 +344,107 @@
             }
           }
         },
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/id-provider/register/{tenant_id}": {
+      "post": {
+        "summary": "identity provider register",
+        "operationId": "IdentityProviderRegister",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1IdProviderRegisterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1IdProviderRegisterRequestBody"
+            }
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/id-provider/template": {
+      "get": {
+        "summary": "identity provider config template",
+        "operationId": "IdentityProviderTemplate",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1IdProviderTemplateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "[Security] OAuth"
+        ]
+      }
+    },
+    "/oauth/id-provider/{tenant_id}": {
+      "get": {
+        "summary": "get identity provider",
+        "operationId": "GetIdentityProvider",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetIdentityProviderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "tags": [
           "[Security] OAuth"
         ]
@@ -3007,6 +3180,9 @@
         },
         "tenant_id": {
           "type": "string"
+        },
+        "auth_type": {
+          "type": "string"
         }
       }
     },
@@ -3355,6 +3531,9 @@
         },
         "title": {
           "type": "string"
+        },
+        "auth_type": {
+          "type": "string"
         }
       }
     },
@@ -3372,6 +3551,10 @@
         "port": {
           "type": "string",
           "description": "host port"
+        },
+        "docs_addr": {
+          "type": "string",
+          "description": "docs host"
         }
       }
     },
@@ -3384,6 +3567,28 @@
             "$ref": "#/definitions/v1ConsoleEntry"
           },
           "description": "tenant entries"
+        }
+      }
+    },
+    "v1GetIdentityProviderResponse": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "config": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "v1GetPlatformConfigResponse": {
+      "type": "object",
+      "properties": {
+        "extra": {
+          "type": "string",
+          "format": "byte",
+          "description": "extra"
         }
       }
     },
@@ -3476,6 +3681,10 @@
             "$ref": "#/definitions/v1TenantAdmin"
           },
           "description": "admins in tenant"
+        },
+        "auth_type": {
+          "type": "string",
+          "description": "auth type : internal / external"
         }
       }
     },
@@ -3504,6 +3713,38 @@
           "type": "string"
         }
       }
+    },
+    "v1IdProviderRegisterRequestBody": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "config": {
+          "type": "string",
+          "format": "byte"
+        }
+      },
+      "description": "IdentityProviderConfig request."
+    },
+    "v1IdProviderRegisterResponse": {
+      "type": "object",
+      "properties": {
+        "registered": {
+          "type": "boolean"
+        }
+      },
+      "description": "IdentityProviderConfig request."
+    },
+    "v1IdProviderTemplateResponse": {
+      "type": "object",
+      "properties": {
+        "config": {
+          "type": "string",
+          "format": "byte"
+        }
+      },
+      "description": "IdentityProviderConfig response."
     },
     "v1ImplementedAddons": {
       "type": "object",
@@ -4124,24 +4365,6 @@
       "default": "UNKNOWN",
       "description": "*\nplugin state enum."
     },
-    "v1ProfileItem": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "val": {
-          "type": "string"
-        },
-        "val_type": {
-          "$ref": "#/definitions/v1TypeProfileVal"
-        }
-      },
-      "description": "*\nProfile is a controllable item provided by the plugin.\nPlatform administrators can set up plugin profiles through rudder."
-    },
     "v1RPKInfoBody": {
       "type": "object",
       "properties": {
@@ -4277,6 +4500,16 @@
         }
       }
     },
+    "v1SetPlatformExtraConfigRequest": {
+      "type": "object",
+      "properties": {
+        "extra": {
+          "type": "string",
+          "format": "byte",
+          "description": "extra"
+        }
+      }
+    },
     "v1SetTenantPluginProfileResponse": {
       "type": "object"
     },
@@ -4352,6 +4585,14 @@
         "admin": {
           "$ref": "#/definitions/v1TenantAdmin",
           "description": "set tenant admin"
+        },
+        "auth_type": {
+          "type": "string",
+          "description": "set tenant auth type: internal | external"
+        },
+        "id_provider_type": {
+          "type": "string",
+          "description": "external auth type : OIDC | LDAP | SMAL"
         }
       },
       "required": [
@@ -4396,6 +4637,10 @@
             "$ref": "#/definitions/v1TenantAdmin"
           },
           "description": "admins in tenant"
+        },
+        "auth_type": {
+          "type": "string",
+          "description": "auth type : internal / external"
         }
       }
     },
@@ -4406,10 +4651,8 @@
           "type": "string"
         },
         "profiles": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1ProfileItem"
-          }
+          "type": "string",
+          "format": "byte"
         }
       }
     },
@@ -4514,16 +4757,6 @@
           "type": "boolean"
         }
       }
-    },
-    "v1TypeProfileVal": {
-      "type": "string",
-      "enum": [
-        "STRING",
-        "NUMBER",
-        "BOOLEAN"
-      ],
-      "default": "STRING",
-      "title": "*\nTypeProfileVal,type for Profile's val filed.\n  STRING = 0; NUMBER =1; BOOLEAN = 2;"
     },
     "v1UninstallPluginResponse": {
       "type": "object",

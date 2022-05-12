@@ -17,9 +17,12 @@ limitations under the License.
 package helm
 
 import (
-	"regexp"
+	"net/url"
+	"path/filepath"
 	"strings"
 	"sync"
+
+	regexp "github.com/dlclark/regexp2"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
@@ -142,12 +145,18 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 		}
 		return list, nil
 	}
-	exp, err := regexp.Compile(word)
+	exp, err := regexp.Compile(word, regexp.None)
 	if err != nil {
 		return nil, errors.Wrapf(err, "%s is not a valid regular expression", word)
 	}
 	for chartName, vMap := range r.charts {
-		if exp.MatchString(chartName) {
+		match, err := exp.FindStringMatch(chartName)
+		if err != nil {
+			return nil, errors.Wrapf(err, "%s is not a valid regular expression", word)
+		}
+		if match != nil &&
+			match.Capture.Index == 0 &&
+			match.Capture.Length == len(chartName) {
 			for _, ch := range vMap {
 				if version == "" || version == ch.Version {
 					if _, ok := ch.Metadata.Annotations[tKeelPluginEnableKey]; ok {
@@ -229,6 +238,7 @@ func getIndex(url string, g getter.Getter) (*repo.IndexFile, error) {
 	}
 	for name, cvs := range i.Entries {
 		for idx := len(cvs) - 1; idx >= 0; idx-- {
+			cvs[idx].URLs = AbsoluteURL(url, cvs[idx].URLs)
 			if cvs[idx].APIVersion == "" {
 				cvs[idx].APIVersion = chart.APIVersionV1
 			}
@@ -243,4 +253,29 @@ func getIndex(url string, g getter.Getter) (*repo.IndexFile, error) {
 		return nil, repo.ErrNoAPIVersion
 	}
 	return i, nil
+}
+
+func AbsoluteURL(address string, urls []string) []string {
+	res := make([]string, 0)
+	if strings.HasSuffix(address, "index.yaml") {
+		address = strings.Replace(address, "index.yaml", "", 1)
+	}
+	uri, err := url.Parse(address)
+	if err != nil {
+		return urls
+	}
+	for _, u := range urls {
+		if !strings.HasPrefix(u, "http") {
+			if strings.HasPrefix(u, "/") {
+				uri.Path = u
+				res = append(res, uri.String())
+			} else {
+				uri.Path = filepath.Join(filepath.Clean(uri.Path), u)
+				res = append(res, uri.String())
+			}
+		} else {
+			res = append(res, u)
+		}
+	}
+	return res
 }

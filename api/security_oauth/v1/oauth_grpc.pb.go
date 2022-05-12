@@ -4,7 +4,6 @@ package v1
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -27,6 +26,12 @@ type OauthClient interface {
 	UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
 	OIDCRegister(ctx context.Context, in *OIDCRegisterRequest, opts ...grpc.CallOption) (*OIDCRegisterResponse, error)
 	TokenRevoke(ctx context.Context, in *TokenRevokeRequest, opts ...grpc.CallOption) (*TokenRevokeResponse, error)
+	// Identity provider config
+	IdentityProviderTemplate(ctx context.Context, in *IdProviderTemplateRequest, opts ...grpc.CallOption) (*IdProviderTemplateResponse, error)
+	// Identity provider register
+	IdentityProviderRegister(ctx context.Context, in *IdProviderRegisterRequest, opts ...grpc.CallOption) (*IdProviderRegisterResponse, error)
+	// Get Identity provider
+	GetIdentityProvider(ctx context.Context, in *GetIdentityProviderRequest, opts ...grpc.CallOption) (*GetIdentityProviderResponse, error)
 }
 
 type oauthClient struct {
@@ -100,6 +105,33 @@ func (c *oauthClient) TokenRevoke(ctx context.Context, in *TokenRevokeRequest, o
 	return out, nil
 }
 
+func (c *oauthClient) IdentityProviderTemplate(ctx context.Context, in *IdProviderTemplateRequest, opts ...grpc.CallOption) (*IdProviderTemplateResponse, error) {
+	out := new(IdProviderTemplateResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.oauth.v1.Oauth/IdentityProviderTemplate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *oauthClient) IdentityProviderRegister(ctx context.Context, in *IdProviderRegisterRequest, opts ...grpc.CallOption) (*IdProviderRegisterResponse, error) {
+	out := new(IdProviderRegisterResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.oauth.v1.Oauth/IdentityProviderRegister", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *oauthClient) GetIdentityProvider(ctx context.Context, in *GetIdentityProviderRequest, opts ...grpc.CallOption) (*GetIdentityProviderResponse, error) {
+	out := new(GetIdentityProviderResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.security.api.oauth.v1.Oauth/GetIdentityProvider", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OauthServer is the server API for Oauth service.
 // All implementations must embed UnimplementedOauthServer
 // for forward compatibility
@@ -111,6 +143,12 @@ type OauthServer interface {
 	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error)
 	OIDCRegister(context.Context, *OIDCRegisterRequest) (*OIDCRegisterResponse, error)
 	TokenRevoke(context.Context, *TokenRevokeRequest) (*TokenRevokeResponse, error)
+	// Identity provider config
+	IdentityProviderTemplate(context.Context, *IdProviderTemplateRequest) (*IdProviderTemplateResponse, error)
+	// Identity provider register
+	IdentityProviderRegister(context.Context, *IdProviderRegisterRequest) (*IdProviderRegisterResponse, error)
+	// Get Identity provider
+	GetIdentityProvider(context.Context, *GetIdentityProviderRequest) (*GetIdentityProviderResponse, error)
 	mustEmbedUnimplementedOauthServer()
 }
 
@@ -138,6 +176,15 @@ func (UnimplementedOauthServer) OIDCRegister(context.Context, *OIDCRegisterReque
 }
 func (UnimplementedOauthServer) TokenRevoke(context.Context, *TokenRevokeRequest) (*TokenRevokeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TokenRevoke not implemented")
+}
+func (UnimplementedOauthServer) IdentityProviderTemplate(context.Context, *IdProviderTemplateRequest) (*IdProviderTemplateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IdentityProviderTemplate not implemented")
+}
+func (UnimplementedOauthServer) IdentityProviderRegister(context.Context, *IdProviderRegisterRequest) (*IdProviderRegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IdentityProviderRegister not implemented")
+}
+func (UnimplementedOauthServer) GetIdentityProvider(context.Context, *GetIdentityProviderRequest) (*GetIdentityProviderResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIdentityProvider not implemented")
 }
 func (UnimplementedOauthServer) mustEmbedUnimplementedOauthServer() {}
 
@@ -278,6 +325,60 @@ func _Oauth_TokenRevoke_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Oauth_IdentityProviderTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdProviderTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OauthServer).IdentityProviderTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.security.api.oauth.v1.Oauth/IdentityProviderTemplate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OauthServer).IdentityProviderTemplate(ctx, req.(*IdProviderTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Oauth_IdentityProviderRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdProviderRegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OauthServer).IdentityProviderRegister(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.security.api.oauth.v1.Oauth/IdentityProviderRegister",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OauthServer).IdentityProviderRegister(ctx, req.(*IdProviderRegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Oauth_GetIdentityProvider_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIdentityProviderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OauthServer).GetIdentityProvider(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.security.api.oauth.v1.Oauth/GetIdentityProvider",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OauthServer).GetIdentityProvider(ctx, req.(*GetIdentityProviderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Oauth_ServiceDesc is the grpc.ServiceDesc for Oauth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -312,6 +413,18 @@ var Oauth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TokenRevoke",
 			Handler:    _Oauth_TokenRevoke_Handler,
+		},
+		{
+			MethodName: "IdentityProviderTemplate",
+			Handler:    _Oauth_IdentityProviderTemplate_Handler,
+		},
+		{
+			MethodName: "IdentityProviderRegister",
+			Handler:    _Oauth_IdentityProviderRegister_Handler,
+		},
+		{
+			MethodName: "GetIdentityProvider",
+			Handler:    _Oauth_GetIdentityProvider_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

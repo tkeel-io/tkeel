@@ -6,17 +6,16 @@ package v1
 
 import (
 	context "context"
-	http "net/http"
-
 	go_restful "github.com/emicklei/go-restful"
 	errors "github.com/tkeel-io/kit/errors"
 	result "github.com/tkeel-io/kit/result"
 	protojson "google.golang.org/protobuf/encoding/protojson"
 	anypb "google.golang.org/protobuf/types/known/anypb"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-
-	transportHTTP "github.com/tkeel-io/kit/transport/http"
+	http "net/http"
 )
+
+import transportHTTP "github.com/tkeel-io/kit/transport/http"
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the tkeel package it is being compiled against.
@@ -31,6 +30,9 @@ var (
 type OauthHTTPServer interface {
 	Authenticate(context.Context, *emptypb.Empty) (*AuthenticateResponse, error)
 	Authorize(context.Context, *AuthorizeRequest) (*AuthorizeResponse, error)
+	GetIdentityProvider(context.Context, *GetIdentityProviderRequest) (*GetIdentityProviderResponse, error)
+	IdentityProviderRegister(context.Context, *IdProviderRegisterRequest) (*IdProviderRegisterResponse, error)
+	IdentityProviderTemplate(context.Context, *IdProviderTemplateRequest) (*IdProviderTemplateResponse, error)
 	OIDCRegister(context.Context, *OIDCRegisterRequest) (*OIDCRegisterResponse, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error)
 	Token(context.Context, *TokenRequest) (*TokenResponse, error)
@@ -118,6 +120,189 @@ func (h *OauthHTTPHandler) Authorize(req *go_restful.Request, resp *go_restful.R
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
 	out, err := h.srv.Authorize(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *OauthHTTPHandler) GetIdentityProvider(req *go_restful.Request, resp *go_restful.Response) {
+	in := GetIdentityProviderRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.GetIdentityProvider(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *OauthHTTPHandler) IdentityProviderRegister(req *go_restful.Request, resp *go_restful.Response) {
+	in := IdProviderRegisterRequest{}
+	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.IdentityProviderRegister(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *OauthHTTPHandler) IdentityProviderTemplate(req *go_restful.Request, resp *go_restful.Response) {
+	in := IdProviderTemplateRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.IdentityProviderTemplate(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -498,4 +683,10 @@ func RegisterOauthHTTPServer(container *go_restful.Container, srv OauthHTTPServe
 		To(handler.OIDCRegister))
 	ws.Route(ws.POST("/oauth/token/revoke").
 		To(handler.TokenRevoke))
+	ws.Route(ws.GET("/oauth/id-provider/template").
+		To(handler.IdentityProviderTemplate))
+	ws.Route(ws.POST("/oauth/id-provider/register/{tenant_id}").
+		To(handler.IdentityProviderRegister))
+	ws.Route(ws.GET("/oauth/id-provider/{tenant_id}").
+		To(handler.GetIdentityProvider))
 }

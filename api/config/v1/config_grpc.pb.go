@@ -4,7 +4,6 @@ package v1
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -21,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ConfigClient interface {
 	GetDeploymentConfig(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetDeploymentConfigResponse, error)
+	GetPlatformConfig(ctx context.Context, in *GetPlatformConfigRequest, opts ...grpc.CallOption) (*GetPlatformConfigResponse, error)
+	SetPlatformExtraConfig(ctx context.Context, in *SetPlatformExtraConfigRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type configClient struct {
@@ -40,11 +41,31 @@ func (c *configClient) GetDeploymentConfig(ctx context.Context, in *emptypb.Empt
 	return out, nil
 }
 
+func (c *configClient) GetPlatformConfig(ctx context.Context, in *GetPlatformConfigRequest, opts ...grpc.CallOption) (*GetPlatformConfigResponse, error) {
+	out := new(GetPlatformConfigResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.config.v1.Config/GetPlatformConfig", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *configClient) SetPlatformExtraConfig(ctx context.Context, in *SetPlatformExtraConfigRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.config.v1.Config/SetPlatformExtraConfig", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ConfigServer is the server API for Config service.
 // All implementations must embed UnimplementedConfigServer
 // for forward compatibility
 type ConfigServer interface {
 	GetDeploymentConfig(context.Context, *emptypb.Empty) (*GetDeploymentConfigResponse, error)
+	GetPlatformConfig(context.Context, *GetPlatformConfigRequest) (*GetPlatformConfigResponse, error)
+	SetPlatformExtraConfig(context.Context, *SetPlatformExtraConfigRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedConfigServer()
 }
 
@@ -54,6 +75,12 @@ type UnimplementedConfigServer struct {
 
 func (UnimplementedConfigServer) GetDeploymentConfig(context.Context, *emptypb.Empty) (*GetDeploymentConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentConfig not implemented")
+}
+func (UnimplementedConfigServer) GetPlatformConfig(context.Context, *GetPlatformConfigRequest) (*GetPlatformConfigResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPlatformConfig not implemented")
+}
+func (UnimplementedConfigServer) SetPlatformExtraConfig(context.Context, *SetPlatformExtraConfigRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetPlatformExtraConfig not implemented")
 }
 func (UnimplementedConfigServer) mustEmbedUnimplementedConfigServer() {}
 
@@ -86,6 +113,42 @@ func _Config_GetDeploymentConfig_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Config_GetPlatformConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPlatformConfigRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ConfigServer).GetPlatformConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.config.v1.Config/GetPlatformConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ConfigServer).GetPlatformConfig(ctx, req.(*GetPlatformConfigRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Config_SetPlatformExtraConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetPlatformExtraConfigRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ConfigServer).SetPlatformExtraConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.config.v1.Config/SetPlatformExtraConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ConfigServer).SetPlatformExtraConfig(ctx, req.(*SetPlatformExtraConfigRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Config_ServiceDesc is the grpc.ServiceDesc for Config service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -96,6 +159,14 @@ var Config_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDeploymentConfig",
 			Handler:    _Config_GetDeploymentConfig_Handler,
+		},
+		{
+			MethodName: "GetPlatformConfig",
+			Handler:    _Config_GetPlatformConfig_Handler,
+		},
+		{
+			MethodName: "SetPlatformExtraConfig",
+			Handler:    _Config_SetPlatformExtraConfig_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

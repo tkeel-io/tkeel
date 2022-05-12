@@ -58,6 +58,8 @@ const (
 
 	KeyPermissionSet = "permission_set"
 
+	KeyPlatExtraConfig = "platform_extra"
+
 	AllowedPermissionAction = "_tkeel_allow"
 
 	_allowedPluginAccessName = " 允许访问"
@@ -124,7 +126,7 @@ type Plugin struct {
 	Status                  openapi_v1.PluginStatus         `json:"status,omitempty"`                    // plugin state.
 	EnableTenantes          []*EnableTenant                 `json:"enable_tenantes,omitempty"`           // plugin active tenantes.
 	DisableManualActivation bool                            `json:"disable_manual_activation,omitempty"` // plugin disable manual activation.
-	Profile                 []*openapi_v1.ProfileItem       `json:"profile,omitempty"`                   // plugin profile.
+	Profiles                []*ProfileItem                  `json:"profiles,omitempty"`                  // plugin profile.
 }
 
 func (p *Plugin) String() string {
@@ -167,7 +169,9 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.Secret = secret
 	p.DisableManualActivation = resp.DisableManualActivation
 	p.RegisterTimestamp = time.Now().Unix()
-	p.Profile = resp.Profile
+	profiles := []*ProfileItem{}
+	json.Unmarshal(resp.Profiles, &profiles)
+	p.Profiles = profiles
 }
 
 func (p *Plugin) Clone() *Plugin {
@@ -228,6 +232,12 @@ type PluginRoute struct {
 	Version           string                  `json:"version,omitempty"`            // model version.
 }
 
+type ProfileItem struct {
+	Key         string      `json:"key"`
+	Description string      `json:"description"`
+	Default     interface{} `json:"default"`
+}
+
 func (pr *PluginRoute) String() string {
 	b, err := json.Marshal(pr)
 	if err != nil {
@@ -258,6 +268,9 @@ func NewPluginRoute(resp *openapi_v1.IdentifyResponse) *PluginRoute {
 		ImplementedPlugin: func() []string {
 			ret := make([]string, 0, len(resp.ImplementedPlugin))
 			for _, v := range resp.ImplementedPlugin {
+				if v.Plugin == nil {
+					continue
+				}
 				ret = append(ret, v.Plugin.Id)
 			}
 			return ret
@@ -606,6 +619,6 @@ type Role struct {
 }
 
 type PluginProfile struct {
-	PluginID string                    `json:"plugin_id"`
-	Profile  []*openapi_v1.ProfileItem `json:"profile"`
+	PluginID string         `json:"plugin_id"`
+	Profiles []*ProfileItem `json:"profiles"`
 }

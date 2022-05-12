@@ -13,12 +13,15 @@ const _ = errors.SupportPackageIsVersion1
 
 var configErrUnknown *errors.TError
 var configErrInternalError *errors.TError
+var configErrNotAdminPortal *errors.TError
 
 func init() {
 	configErrUnknown = errors.New(int(codes.Unknown), "io.tkeel.rudder.api.config.v1.CONFIG_ERR_UNKNOWN", "未知类型")
 	errors.Register(configErrUnknown)
 	configErrInternalError = errors.New(int(codes.Internal), "io.tkeel.rudder.api.config.v1.CONFIG_ERR_INTERNAL_ERROR", "请求后端内部错误")
 	errors.Register(configErrInternalError)
+	configErrNotAdminPortal = errors.New(int(codes.PermissionDenied), "io.tkeel.rudder.api.config.v1.CONFIG_ERR_NOT_ADMIN_PORTAL", "非管理平台")
+	errors.Register(configErrNotAdminPortal)
 }
 
 func ConfigErrUnknown() errors.Error {
@@ -27,4 +30,8 @@ func ConfigErrUnknown() errors.Error {
 
 func ConfigErrInternalError() errors.Error {
 	return configErrInternalError
+}
+
+func ConfigErrNotAdminPortal() errors.Error {
+	return configErrNotAdminPortal
 }

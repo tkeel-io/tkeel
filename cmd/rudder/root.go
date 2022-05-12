@@ -25,6 +25,7 @@ import (
 	config_v1 "github.com/tkeel-io/tkeel/api/config/v1"
 	entity_token_v1 "github.com/tkeel-io/tkeel/api/entity/v1"
 	entry_v1 "github.com/tkeel-io/tkeel/api/entry/v1"
+	metrics_v1 "github.com/tkeel-io/tkeel/api/metrics/v1"
 	oauth2_v1 "github.com/tkeel-io/tkeel/api/oauth2/v1"
 	plugin_v1 "github.com/tkeel-io/tkeel/api/plugin/v1"
 	profile_v1 "github.com/tkeel-io/tkeel/api/profile/v1"
@@ -86,6 +87,7 @@ var rootCmd = &cobra.Command{
 		}
 		conf.Init()
 		httpSrv := server.NewHTTPServer(conf.HTTPAddr)
+		httpSrv.Container.EnableContentEncoding(false)
 		grpcSrv := server.NewGRPCServer(conf.GRPCAddr)
 
 		rudderApp = app.New("rudder", &log.Conf{
@@ -166,7 +168,8 @@ var rootCmd = &cobra.Command{
 			// init repo hub.
 			hub.Init(conf.Tkeel.WatchInterval, riOp,
 				func(connectInfo *repository.Info,
-					args ...interface{}) (repository.Repository, error) {
+					args ...interface{},
+				) (repository.Repository, error) {
 					if len(args) != 2 {
 						return nil, errors.New("invalid arguments")
 					}
@@ -216,7 +219,7 @@ var rootCmd = &cobra.Command{
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), entriesSrvV1)
 
 			// tenant service.
-			tenantSrv := service.NewTenantService(gormdb, tenantPluginOp, rbacOp)
+			tenantSrv := service.NewTenantService(gormdb, tenantPluginOp, rbacOp, daprGRPCClient, conf.Dapr.PrivateStateName)
 			tenant_v1.RegisterTenantHTTPServer(httpSrv.Container, tenantSrv)
 			tenant_v1.RegisterTenantServer(grpcSrv.GetServe(), tenantSrv)
 			// oauth server.
@@ -246,10 +249,13 @@ var rootCmd = &cobra.Command{
 			authentication_v1.RegisterAuthenticationServer(grpcSrv.GetServe(), authenticationSrv)
 
 			// config service.
-			configSrv := service.NewConfigService(k8sClient)
+			configSrv := service.NewConfigService(k8sClient, kvOp)
 			config_v1.RegisterConfigHTTPServer(httpSrv.Container, configSrv)
 			config_v1.RegisterConfigServer(grpcSrv.GetServe(), configSrv)
 
+			// metrics service.
+			mertricsSrv := service.NewMetricsService()
+			metrics_v1.RegisterMetricsHTTPServer(httpSrv.Container, mertricsSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

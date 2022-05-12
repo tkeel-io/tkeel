@@ -31,4 +31,7 @@ enum Error {
   // @msg=请求后端内部错误
   // @code=INTERNAL
   CONFIG_ERR_INTERNAL_ERROR = 1;
+  // @msg=非管理平台
+  // @code=PERMISSION_DENIED
+  CONFIG_ERR_NOT_ADMIN_PORTAL = 2;
 }
