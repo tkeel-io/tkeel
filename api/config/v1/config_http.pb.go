@@ -292,8 +292,8 @@ func RegisterConfigHTTPServer(container *go_restful.Container, srv ConfigHTTPSer
 		To(handler.GetDeploymentConfig))
 	ws.Route(ws.GET("/config/platform").
 		To(handler.GetPlatformConfig))
-	ws.Route(ws.DELETE("/config/platform").
+	ws.Route(ws.DELETE("/config/platform/update").
 		To(handler.DelPlatformConfig))
-	ws.Route(ws.POST("/config/platform").
+	ws.Route(ws.POST("/config/platform/update").
 		To(handler.SetPlatformExtraConfig))
 }

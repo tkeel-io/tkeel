@@ -84,7 +84,7 @@ service Config {
   rpc DelPlatformConfig(PlatformConfigRequest)
       returns (google.protobuf.Value) {
     option (google.api.http) = {
-      delete : "/config/platform"
+      delete : "/config/platform/update"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "删除 platform config 接口"
@@ -111,7 +111,7 @@ service Config {
   rpc SetPlatformExtraConfig(SetPlatformExtraConfigRequest)
       returns (google.protobuf.Value) {
     option (google.api.http) = {
-      post : "/config/platform"
+      post : "/config/platform/update"
       body : "extra"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
