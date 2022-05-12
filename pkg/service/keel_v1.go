@@ -15,6 +15,7 @@ package service
 
 import (
 	"context"
+	"github.com/tkeel-io/tkeel/pkg/model/metrics"
 	"io"
 	"net/http"
 	"net/url"
@@ -101,6 +102,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 func (s *KeelServiceV1) ProxyPlugin(
 	resp http.ResponseWriter, req *http.Request,
 ) error {
+
 	sess, ok := getSession(req.Context())
 	if !ok {
 		writeResult(resp, http.StatusInternalServerError, "internal error")
@@ -130,6 +132,7 @@ func (s *KeelServiceV1) ProxyPlugin(
 		QueryValue: req.URL.Query(),
 		Body:       bodyByte,
 	})
+	metrics.CollectorTKApiRequest.WithLabelValues(sess.User.Tenant, sess.Dst.ID, ).Inc()
 	if err != nil {
 		writeResult(resp, http.StatusBadRequest, err.Error())
 		return errors.Wrap(err, "plugin client call")

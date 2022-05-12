@@ -184,34 +184,34 @@ func (s *TenantService) ListTenant(ctx context.Context, req *pb.ListTenantReques
 	resp.PageSize = req.GetPageSize()
 	resp.PageNum = req.GetPageNum()
 	resp.Tenants = make([]*pb.TenantDetail, len(tenants))
-	for i, v := range tenants {
+	for i, t := range tenants {
 		userDao := &model.User{}
-		detail := &pb.TenantDetail{TenantId: v.ID, Title: v.Title, Remark: v.Remark, CreatedAt: v.CreatedAt.UnixMilli()}
+		detail := &pb.TenantDetail{TenantId: t.ID, Title: t.Title, Remark: t.Remark, CreatedAt: t.CreatedAt.UnixMilli()}
 		detail.AuthType = "internal"
-		items, _ := s.DaprClient.GetState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(v.ID))
+		items, _ := s.DaprClient.GetState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(t.ID))
 		if items != nil {
 			if items.Value != nil {
 				detail.AuthType = "external"
 			}
 		}
-		numUser, err := userDao.CountInTenant(s.DB, v.ID)
+		numUser, err := userDao.CountInTenant(s.DB, t.ID)
 		if err != nil {
 			log.Error(err)
 			return nil, pb.ErrListTenant()
 		}
 		roleDao := &model.Role{}
-		roleTotal, roles, err := roleDao.List(s.DB, map[string]interface{}{"name": t_model.TkeelTenantAdminRole, "tenant_id": v.ID}, nil, "")
+		roleTotal, roles, err := roleDao.List(s.DB, map[string]interface{}{"name": t_model.TkeelTenantAdminRole, "tenant_id": t.ID}, nil, "")
 		if err != nil || roleTotal != 1 {
 			log.Error(err)
 			return nil, pb.ErrInternalStore()
 		}
-		userIds, err := s.RBACOp.GetUsersForRole(roles[0].ID, v.ID)
+		userIds, err := s.RBACOp.GetUsersForRole(roles[0].ID, t.ID)
 		if err != nil {
 			log.Error(err)
 		}
 		admins := []*pb.TenantAdmin{}
-		for _, v := range userIds {
-			userNum, user, _ := userDao.QueryByCondition(s.DB, map[string]interface{}{"id": v}, nil, "")
+		for _, uid := range userIds {
+			userNum, user, _ := userDao.QueryByCondition(s.DB, map[string]interface{}{"id": uid, "tenant_id": t.ID}, nil, "")
 			if userNum == 1 {
 				admin := &pb.TenantAdmin{Username: user[0].UserName}
 				admins = append(admins, admin)

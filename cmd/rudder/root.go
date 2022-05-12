@@ -41,10 +41,12 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/hub"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/kv"
+	"github.com/tkeel-io/tkeel/pkg/model/metrics"
 	"github.com/tkeel-io/tkeel/pkg/model/plgprofile"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/prepo"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
+
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/repository/helm"
 	"github.com/tkeel-io/tkeel/pkg/server"
@@ -254,7 +256,7 @@ var rootCmd = &cobra.Command{
 			config_v1.RegisterConfigServer(grpcSrv.GetServe(), configSrv)
 
 			// metrics service.
-			mertricsSrv := service.NewMetricsService()
+			mertricsSrv := service.NewMetricsService(metrics.CollectorTKApiRequest, metrics.CollectorTKApiRequestDuration)
 			metrics_v1.RegisterMetricsHTTPServer(httpSrv.Container, mertricsSrv)
 		}
 	},

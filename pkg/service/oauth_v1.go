@@ -110,16 +110,16 @@ func (s *OauthService) Authorize(ctx context.Context, req *pb.AuthorizeRequest) 
 
 // nolint
 func (s *OauthService) Token(ctx context.Context, req *pb.TokenRequest) (*pb.TokenResponse, error) {
-	provider, err := idprovider.GetIdentityProvider(req.GetTenantId())
-	if err != nil {
+	provider, providerErr := idprovider.GetIdentityProvider(req.GetTenantId())
+	if providerErr != nil {
 		item, _ := s.DaprClient.GetState(ctx, s.DaprStore, KeyOfTenantIdentityProvider(req.GetTenantId()))
 		if item != nil {
 			if item.Value != nil {
 				ProviderRegister(ctx, item.Value)
 			}
 		}
-		provider, err = idprovider.GetIdentityProvider(req.GetTenantId())
-		if err != nil {
+		provider, providerErr = idprovider.GetIdentityProvider(req.GetTenantId())
+		if providerErr != nil {
 			gt, tgr, err := s.ValidationTokenRequest(req)
 			if err != nil {
 				return nil, err
@@ -282,7 +282,7 @@ func (s *OauthService) ValidationTokenRequest(r *pb.TokenRequest) (oauth2v4.Gran
 		user, err := model.AuthenticateUser(s.UserDB, r.GetTenantId(),
 			r.GetUsername(), r.GetPassword())
 		if err != nil {
-			return "", nil, pb.OauthErrInvalidResetPwd()
+			return "", nil, pb.OauthErrInvalidUserOrPwd()
 		}
 		tgr.UserID = user.ID
 	case oauth2v4.Refreshing:
