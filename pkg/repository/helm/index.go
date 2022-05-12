@@ -34,6 +34,7 @@ import (
 )
 
 var _getter getter.Getter
+const LatestVersion = "latest"
 
 func init() {
 	g, err := getter.NewHTTPGetter()
@@ -111,12 +112,15 @@ func NewIndex(url, repoName string) (*Index, error) {
 		if len(ref) == 0 {
 			continue
 		}
+		versionMap, ok := index.charts[name]
+		if !ok {
+			versionMap = make(map[string]*repo.ChartVersion)
+			index.charts[name] = versionMap
+		}
+		if len(ref) > 0 {
+			versionMap[LatestVersion] = ref[0]
+		}
 		for _, rr := range ref {
-			versionMap, ok := index.charts[name]
-			if !ok {
-				versionMap = make(map[string]*repo.ChartVersion)
-				index.charts[name] = versionMap
-			}
 			versionMap[rr.Version] = rr
 		}
 	}
@@ -157,8 +161,8 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 		if match != nil &&
 			match.Capture.Index == 0 &&
 			match.Capture.Length == len(chartName) {
-			for _, ch := range vMap {
-				if version == "" || version == ch.Version {
+			for v, ch := range vMap {
+				if version == "" && v != LatestVersion || version == v {
 					if _, ok := ch.Metadata.Annotations[tKeelPluginEnableKey]; ok {
 						res := PluginRes{
 							Name:        ch.Name,
