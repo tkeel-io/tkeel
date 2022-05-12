@@ -117,7 +117,6 @@ func NewIndex(url, repoName string) (*Index, error) {
 				versionMap = make(map[string]*repo.ChartVersion)
 				index.charts[name] = versionMap
 			}
-			rr.URLs = AbsoluteURL(url, rr.URLs)
 			versionMap[rr.Version] = rr
 		}
 	}
@@ -239,6 +238,7 @@ func getIndex(url string, g getter.Getter) (*repo.IndexFile, error) {
 	}
 	for name, cvs := range i.Entries {
 		for idx := len(cvs) - 1; idx >= 0; idx-- {
+			cvs[idx].URLs = AbsoluteURL(url, cvs[idx].URLs)
 			if cvs[idx].APIVersion == "" {
 				cvs[idx].APIVersion = chart.APIVersionV1
 			}
