@@ -117,7 +117,7 @@ func NewIndex(url, repoName string) (*Index, error) {
 				versionMap = make(map[string]*repo.ChartVersion)
 				index.charts[name] = versionMap
 			}
-			rr.URLs = AbsoluteUrl(url, rr.URLs)
+			rr.URLs = AbsoluteURL(url, rr.URLs)
 			versionMap[rr.Version] = rr
 		}
 	}
@@ -255,8 +255,8 @@ func getIndex(url string, g getter.Getter) (*repo.IndexFile, error) {
 	return i, nil
 }
 
-func AbsoluteUrl(address string, urls []string) []string {
-	res := make([]string, len(urls))
+func AbsoluteURL(address string, urls []string) []string {
+	res := make([]string, 0)
 	if strings.HasSuffix(address, "index.yaml") {
 		address = strings.Replace(address, "index.yaml", "", 1)
 	}
