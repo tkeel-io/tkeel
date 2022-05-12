@@ -34,6 +34,7 @@ import (
 )
 
 var _getter getter.Getter
+
 const LatestVersion = "latest"
 
 func init() {
