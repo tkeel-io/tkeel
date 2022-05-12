@@ -114,7 +114,7 @@ func (s *ConfigService) SetPlatformExtraConfig(ctx context.Context, req *pb.SetP
 	//	log.Error("error not admin portal")
 	//	return nil, pb.ConfigErrNotAdminPortal()
 	//}
-	path := req.Key
+	path := req.Path
 	value, err := NewCollectValue(req.Extra)
 	if err != nil {
 		log.Errorf("error new collect value: %s", err)
