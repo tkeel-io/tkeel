@@ -104,16 +104,16 @@ func (s *ConfigService) DelPlatformConfig(ctx context.Context, req *pb.PlatformC
 }
 
 func (s *ConfigService) SetPlatformExtraConfig(ctx context.Context, req *pb.SetPlatformExtraConfigRequest) (*structpb.Value, error) {
-	u, err := util.GetUser(ctx)
-	if err != nil {
-		log.Errorf("error get user: %s", err)
-		return nil, pb.ConfigErrInternalError()
-	}
-	if u.Tenant != model.TKeelTenant ||
-		u.User != model.TKeelUser {
-		log.Error("error not admin portal")
-		return nil, pb.ConfigErrNotAdminPortal()
-	}
+	//u, err := util.GetUser(ctx)
+	//if err != nil {
+	//	log.Errorf("error get user: %s", err)
+	//	return nil, pb.ConfigErrInternalError()
+	//}
+	//if u.Tenant != model.TKeelTenant ||
+	//	u.User != model.TKeelUser {
+	//	log.Error("error not admin portal")
+	//	return nil, pb.ConfigErrNotAdminPortal()
+	//}
 	path := req.Key
 	value, err := NewCollectValue(req.Extra)
 	if err != nil {
