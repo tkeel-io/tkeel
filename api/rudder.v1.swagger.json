@@ -150,6 +150,15 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "key",
+            "description": "key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "tags": [
           "config"
         ]
@@ -4503,6 +4512,10 @@
     "v1SetPlatformExtraConfigRequest": {
       "type": "object",
       "properties": {
+        "key": {
+          "type": "string",
+          "description": "key"
+        },
         "extra": {
           "type": "string",
           "format": "byte",
