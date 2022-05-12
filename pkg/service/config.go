@@ -138,9 +138,6 @@ func (s *ConfigService) getExtraData(ctx context.Context, key string) (*tdtl.Col
 	if err != nil {
 		return nil, ver, errors.Wrap(err, "init rudder admin password")
 	}
-	if ver == "" {
-		return nil, ver, nil
-	}
 	return tdtl.New(values), ver, nil
 }
 
