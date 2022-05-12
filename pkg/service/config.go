@@ -13,7 +13,6 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/client/kubernetes"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/kv"
-	"github.com/tkeel-io/tkeel/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -77,16 +76,16 @@ func (s *ConfigService) GetPlatformConfig(ctx context.Context, req *pb.PlatformC
 }
 
 func (s *ConfigService) DelPlatformConfig(ctx context.Context, req *pb.PlatformConfigRequest) (*structpb.Value, error) {
-	u, err := util.GetUser(ctx)
-	if err != nil {
-		log.Errorf("error get user: %s", err)
-		return nil, pb.ConfigErrInternalError()
-	}
-	if u.Tenant != model.TKeelTenant ||
-		u.User != model.TKeelUser {
-		log.Error("error not admin portal")
-		return nil, pb.ConfigErrNotAdminPortal()
-	}
+	//u, err := util.GetUser(ctx)
+	//if err != nil {
+	//	log.Errorf("error get user: %s", err)
+	//	return nil, pb.ConfigErrInternalError()
+	//}
+	//if u.Tenant != model.TKeelTenant ||
+	//	u.User != model.TKeelUser {
+	//	log.Error("error not admin portal")
+	//	return nil, pb.ConfigErrNotAdminPortal()
+	//}
 	key := req.Key
 	path := req.Path
 	extData, ver, err := s.getExtraData(ctx, key)
