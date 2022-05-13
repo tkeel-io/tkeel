@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/tdtl"
@@ -11,6 +12,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/client/kubernetes"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/kv"
+	"github.com/tkeel-io/tkeel/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -75,16 +77,16 @@ func (s *ConfigService) GetPlatformConfig(ctx context.Context, req *pb.PlatformC
 }
 
 func (s *ConfigService) DelPlatformConfig(ctx context.Context, req *pb.PlatformConfigRequest) (*structpb.Value, error) {
-	//u, err := util.GetUser(ctx)
-	//if err != nil {
-	//	log.Errorf("error get user: %s", err)
-	//	return nil, pb.ConfigErrInternalError()
-	//}
-	//if u.Tenant != model.TKeelTenant ||
-	//	u.User != model.TKeelUser {
-	//	log.Error("error not admin portal")
-	//	return nil, pb.ConfigErrNotAdminPortal()
-	//}
+	u, err := util.GetUser(ctx)
+	if err != nil {
+		log.Errorf("error get user: %s", err)
+		return nil, pb.ConfigErrInternalError()
+	}
+	if u.Tenant != model.TKeelTenant ||
+		u.User != model.TKeelUser {
+		log.Error("error not admin portal")
+		return nil, pb.ConfigErrNotAdminPortal()
+	}
 	key := req.Key
 	path := req.Path
 	extData, ver, err := s.getExtraData(ctx, key)
@@ -102,16 +104,16 @@ func (s *ConfigService) DelPlatformConfig(ctx context.Context, req *pb.PlatformC
 }
 
 func (s *ConfigService) SetPlatformExtraConfig(ctx context.Context, req *pb.SetPlatformExtraConfigRequest) (*structpb.Value, error) {
-	//u, err := util.GetUser(ctx)
-	//if err != nil {
-	//	log.Errorf("error get user: %s", err)
-	//	return nil, pb.ConfigErrInternalError()
-	//}
-	//if u.Tenant != model.TKeelTenant ||
-	//	u.User != model.TKeelUser {
-	//	log.Error("error not admin portal")
-	//	return nil, pb.ConfigErrNotAdminPortal()
-	//}
+	u, err := util.GetUser(ctx)
+	if err != nil {
+		log.Errorf("error get user: %s", err)
+		return nil, pb.ConfigErrInternalError()
+	}
+	if u.Tenant != model.TKeelTenant ||
+		u.User != model.TKeelUser {
+		log.Error("error not admin portal")
+		return nil, pb.ConfigErrNotAdminPortal()
+	}
 	key := req.Key
 	path := req.Path
 	value, err := NewCollectValue(req.Extra)
@@ -150,7 +152,7 @@ func (s *ConfigService) setExtraData(ctx context.Context, key string, value tdtl
 func NewCollectValue(val *structpb.Value) (*tdtl.Collect, error) {
 	byt, err := json.Marshal(val)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("fail to NewCollectValue with %w", err)
 	}
 	return tdtl.New(byt), nil
 }
