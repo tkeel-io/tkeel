@@ -4,15 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/tkeel-io/tdtl"
-	"google.golang.org/protobuf/types/known/structpb"
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/tdtl"
 	pb "github.com/tkeel-io/tkeel/api/config/v1"
 	"github.com/tkeel-io/tkeel/pkg/client/kubernetes"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/kv"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 type ConfigService struct {
@@ -70,7 +70,7 @@ func (s *ConfigService) GetPlatformConfig(ctx context.Context, req *pb.PlatformC
 		log.Errorf("error get extra data: %s", err)
 		return nil, pb.ConfigErrInternalError()
 	}
-	ret :=extData.Get(path)
+	ret := extData.Get(path)
 	return NewStructValue(ret), nil
 }
 
@@ -112,19 +112,20 @@ func (s *ConfigService) SetPlatformExtraConfig(ctx context.Context, req *pb.SetP
 	//	log.Error("error not admin portal")
 	//	return nil, pb.ConfigErrNotAdminPortal()
 	//}
+	key := req.Key
 	path := req.Path
 	value, err := NewCollectValue(req.Extra)
 	if err != nil {
 		log.Errorf("error new collect value: %s", err)
 		return nil, pb.ConfigErrInternalError()
 	}
-	extData, ver, err := s.getExtraData(ctx, path)
+	extData, ver, err := s.getExtraData(ctx, key)
 	if err != nil {
 		return nil, fmt.Errorf("get old extra data error:%w", err)
 	}
 
 	extData.Set(path, value)
-	if err = s.setExtraData(ctx, req.Key, extData, ver); err != nil {
+	if err = s.setExtraData(ctx, key, extData, ver); err != nil {
 		log.Errorf("error set extra data: %s", err)
 		return nil, pb.ConfigErrInternalError()
 	}
