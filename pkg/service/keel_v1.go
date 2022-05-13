@@ -41,6 +41,7 @@ import (
 const (
 	_securityComponent = "rudder"
 	_authenticate      = "/v1/authenticate"
+	_contextStartTime  = "startTime"
 )
 
 var _contextSessionKey = struct{}{}
@@ -86,6 +87,12 @@ func writeResult(resp http.ResponseWriter, code int, msg string) {
 
 func (s *KeelServiceV1) Filter() restful.FilterFunction {
 	return func(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+		if req.Request.URL.Path == "/metrics" && req.Request.Method == "GET" {
+			chain.ProcessFilter(req, resp)
+			return
+		}
+		// kapi_request_duration
+		start := time.Now()
 		ctx, cancel := context.WithTimeout(req.Request.Context(), s.timeout)
 		defer cancel()
 		sess, code, err := s.authenticate(ctx, req.Request)
@@ -95,6 +102,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			return
 		}
 		req.Request = req.Request.WithContext(withSession(ctx, sess))
+		req.Request = req.Request.WithContext(withStartTime(ctx, start))
 		chain.ProcessFilter(req, resp)
 	}
 }
@@ -132,7 +140,11 @@ func (s *KeelServiceV1) ProxyPlugin(
 		QueryValue: req.URL.Query(),
 		Body:       bodyByte,
 	})
-	metrics.CollectorTKApiRequest.WithLabelValues(sess.User.Tenant, sess.Dst.ID, ).Inc()
+	// kapi_request_duration
+	start, ok := getStartTime(req.Context())
+	obserV := time.Since(start).Seconds()
+	metrics.CollectorTKApiRequestDurations.WithLabelValues(sess.User.Tenant, sess.Dst.ID).Observe(obserV)
+	metrics.CollectorTKApiRequest.WithLabelValues(sess.User.Tenant, sess.Dst.ID, dstResp.Status).Inc()
 	if err != nil {
 		writeResult(resp, http.StatusBadRequest, err.Error())
 		return errors.Wrap(err, "plugin client call")
@@ -204,7 +216,14 @@ func (s *KeelServiceV1) callAuthorization(ctx context.Context, req *http.Request
 func withSession(ctx context.Context, sess *session) context.Context {
 	return context.WithValue(ctx, _contextSessionKey, sess)
 }
+func withStartTime(ctx context.Context, t time.Time) context.Context {
+	return context.WithValue(ctx, _contextStartTime, t)
+}
 
+func getStartTime(ctx context.Context) (time.Time, bool) {
+	t, ok := ctx.Value(_contextStartTime).(time.Time)
+	return t, ok
+}
 func getSession(ctx context.Context) (*session, bool) {
 	src, ok := ctx.Value(_contextSessionKey).(*session)
 	if !ok {

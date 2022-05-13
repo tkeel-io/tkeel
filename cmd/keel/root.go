@@ -56,7 +56,6 @@ var rootCmd = &cobra.Command{
 		}
 		conf.Init()
 		httpSrv := server.NewHTTPServer(conf.HTTPAddr)
-		httpSrv.Container.EnableContentEncoding(false)
 		grpcSrv := server.NewGRPCServer(conf.GRPCAddr)
 
 		keelApp = app.New("keel", &log.Conf{
@@ -74,7 +73,7 @@ var rootCmd = &cobra.Command{
 			keel_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, proxySrvV1)
 
 			// metrics service.
-			mertricsSrv := service.NewMetricsService(metrics.CollectorTKApiRequest, metrics.CollectorTKApiRequestDuration)
+			mertricsSrv := service.NewMetricsService(metrics.CollectorTKApiRequest, metrics.CollectorTKApiRequestDurations)
 			metrics_v1.RegisterMetricsHTTPServer(httpSrv.Container, mertricsSrv)
 		}
 	},
