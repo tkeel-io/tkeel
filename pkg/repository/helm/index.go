@@ -17,6 +17,8 @@ limitations under the License.
 package helm
 
 import (
+	"net/url"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -32,6 +34,8 @@ import (
 )
 
 var _getter getter.Getter
+
+const LatestVersion = "latest"
 
 func init() {
 	g, err := getter.NewHTTPGetter()
@@ -109,12 +113,15 @@ func NewIndex(url, repoName string) (*Index, error) {
 		if len(ref) == 0 {
 			continue
 		}
+		versionMap, ok := index.charts[name]
+		if !ok {
+			versionMap = make(map[string]*repo.ChartVersion)
+			index.charts[name] = versionMap
+		}
+		if len(ref) > 0 {
+			versionMap[LatestVersion] = ref[0]
+		}
 		for _, rr := range ref {
-			versionMap, ok := index.charts[name]
-			if !ok {
-				versionMap = make(map[string]*repo.ChartVersion)
-				index.charts[name] = versionMap
-			}
 			versionMap[rr.Version] = rr
 		}
 	}
@@ -155,8 +162,8 @@ func (r *Index) Search(word string, version string) (PluginResList, error) {
 		if match != nil &&
 			match.Capture.Index == 0 &&
 			match.Capture.Length == len(chartName) {
-			for _, ch := range vMap {
-				if version == "" || version == ch.Version {
+			for v, ch := range vMap {
+				if version == "" && v != LatestVersion || version == v {
 					if _, ok := ch.Metadata.Annotations[tKeelPluginEnableKey]; ok {
 						res := PluginRes{
 							Name:        ch.Name,
@@ -236,6 +243,7 @@ func getIndex(url string, g getter.Getter) (*repo.IndexFile, error) {
 	}
 	for name, cvs := range i.Entries {
 		for idx := len(cvs) - 1; idx >= 0; idx-- {
+			cvs[idx].URLs = AbsoluteURL(url, cvs[idx].URLs)
 			if cvs[idx].APIVersion == "" {
 				cvs[idx].APIVersion = chart.APIVersionV1
 			}
@@ -250,4 +258,29 @@ func getIndex(url string, g getter.Getter) (*repo.IndexFile, error) {
 		return nil, repo.ErrNoAPIVersion
 	}
 	return i, nil
+}
+
+func AbsoluteURL(address string, urls []string) []string {
+	res := make([]string, 0)
+	if strings.HasSuffix(address, "index.yaml") {
+		address = strings.Replace(address, "index.yaml", "", 1)
+	}
+	uri, err := url.Parse(address)
+	if err != nil {
+		return urls
+	}
+	for _, u := range urls {
+		if !strings.HasPrefix(u, "http") {
+			if strings.HasPrefix(u, "/") {
+				uri.Path = u
+				res = append(res, uri.String())
+			} else {
+				uri.Path = filepath.Join(filepath.Clean(uri.Path), u)
+				res = append(res, uri.String())
+			}
+		} else {
+			res = append(res, u)
+		}
+	}
+	return res
 }

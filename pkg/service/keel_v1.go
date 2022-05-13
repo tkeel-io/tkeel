@@ -15,13 +15,11 @@ package service
 
 import (
 	"context"
-	"github.com/tkeel-io/tkeel/pkg/model/metrics"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/pkg/errors"
 
 	t_errors "github.com/tkeel-io/kit/errors"
 	pb "github.com/tkeel-io/tkeel/api/authentication/v1"
@@ -29,13 +27,15 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/tkeel-io/tkeel/pkg/model/metrics"
+
+	"github.com/emicklei/go-restful"
+	"github.com/pkg/errors"
+	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/kit/result"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
-
-	"github.com/emicklei/go-restful"
-	"github.com/tkeel-io/kit/log"
-	"github.com/tkeel-io/kit/result"
 )
 
 const (
@@ -92,7 +92,6 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			return
 		}
 		// kapi_request_duration
-		start := time.Now()
 		ctx, cancel := context.WithTimeout(req.Request.Context(), s.timeout)
 		defer cancel()
 		sess, code, err := s.authenticate(ctx, req.Request)
@@ -102,7 +101,6 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			return
 		}
 		req.Request = req.Request.WithContext(withSession(ctx, sess))
-		req.Request = req.Request.WithContext(withStartTime(ctx, start))
 		chain.ProcessFilter(req, resp)
 	}
 }
@@ -110,7 +108,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 func (s *KeelServiceV1) ProxyPlugin(
 	resp http.ResponseWriter, req *http.Request,
 ) error {
-
+	start := time.Now()
 	sess, ok := getSession(req.Context())
 	if !ok {
 		writeResult(resp, http.StatusInternalServerError, "internal error")
@@ -141,10 +139,9 @@ func (s *KeelServiceV1) ProxyPlugin(
 		Body:       bodyByte,
 	})
 	// kapi_request_duration
-	start, ok := getStartTime(req.Context())
 	obserV := time.Since(start).Seconds()
 	metrics.CollectorTKApiRequestDurations.WithLabelValues(sess.User.Tenant, sess.Dst.ID).Observe(obserV)
-	metrics.CollectorTKApiRequest.WithLabelValues(sess.User.Tenant, sess.Dst.ID, dstResp.Status).Inc()
+	metrics.CollectorTKApiRequest.WithLabelValues(sess.User.Tenant, sess.Dst.ID, fmt.Sprintf("%d", dstResp.StatusCode)).Inc()
 	if err != nil {
 		writeResult(resp, http.StatusBadRequest, err.Error())
 		return errors.Wrap(err, "plugin client call")
@@ -161,6 +158,7 @@ func (s *KeelServiceV1) authenticate(ctx context.Context, req *http.Request) (*s
 	if err != nil {
 		return nil, code, errors.Wrap(err, "call authentication")
 	}
+	log.Debugf("out, code = s.callAuthorization(ctx, req)\n out: %v; code: %v", out, code)
 	if out.Code != t_errors.Success.Reason {
 		return nil, code, errors.Errorf("error call authentication: %s", out.Msg)
 	}
@@ -216,14 +214,7 @@ func (s *KeelServiceV1) callAuthorization(ctx context.Context, req *http.Request
 func withSession(ctx context.Context, sess *session) context.Context {
 	return context.WithValue(ctx, _contextSessionKey, sess)
 }
-func withStartTime(ctx context.Context, t time.Time) context.Context {
-	return context.WithValue(ctx, _contextStartTime, t)
-}
 
-func getStartTime(ctx context.Context) (time.Time, bool) {
-	t, ok := ctx.Value(_contextStartTime).(time.Time)
-	return t, ok
-}
 func getSession(ctx context.Context) (*session, bool) {
 	src, ok := ctx.Value(_contextSessionKey).(*session)
 	if !ok {

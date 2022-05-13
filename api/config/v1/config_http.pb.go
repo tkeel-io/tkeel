@@ -12,6 +12,7 @@ import (
 	protojson "google.golang.org/protobuf/encoding/protojson"
 	anypb "google.golang.org/protobuf/types/known/anypb"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	http "net/http"
 )
 
@@ -28,9 +29,10 @@ var (
 )
 
 type ConfigHTTPServer interface {
+	DelPlatformConfig(context.Context, *PlatformConfigRequest) (*structpb.Value, error)
 	GetDeploymentConfig(context.Context, *emptypb.Empty) (*GetDeploymentConfigResponse, error)
-	GetPlatformConfig(context.Context, *GetPlatformConfigRequest) (*GetPlatformConfigResponse, error)
-	SetPlatformExtraConfig(context.Context, *SetPlatformExtraConfigRequest) (*emptypb.Empty, error)
+	GetPlatformConfig(context.Context, *PlatformConfigRequest) (*structpb.Value, error)
+	SetPlatformExtraConfig(context.Context, *SetPlatformExtraConfigRequest) (*structpb.Value, error)
 }
 
 type ConfigHTTPHandler struct {
@@ -39,6 +41,62 @@ type ConfigHTTPHandler struct {
 
 func newConfigHTTPHandler(s ConfigHTTPServer) *ConfigHTTPHandler {
 	return &ConfigHTTPHandler{srv: s}
+}
+
+func (h *ConfigHTTPHandler) DelPlatformConfig(req *go_restful.Request, resp *go_restful.Response) {
+	in := PlatformConfigRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.DelPlatformConfig(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
 }
 
 func (h *ConfigHTTPHandler) GetDeploymentConfig(req *go_restful.Request, resp *go_restful.Response) {
@@ -98,7 +156,7 @@ func (h *ConfigHTTPHandler) GetDeploymentConfig(req *go_restful.Request, resp *g
 }
 
 func (h *ConfigHTTPHandler) GetPlatformConfig(req *go_restful.Request, resp *go_restful.Response) {
-	in := GetPlatformConfigRequest{}
+	in := PlatformConfigRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
@@ -155,7 +213,12 @@ func (h *ConfigHTTPHandler) GetPlatformConfig(req *go_restful.Request, resp *go_
 
 func (h *ConfigHTTPHandler) SetPlatformExtraConfig(req *go_restful.Request, resp *go_restful.Response) {
 	in := SetPlatformExtraConfigRequest{}
-	if err := transportHTTP.GetBody(req, &in); err != nil {
+	if err := transportHTTP.GetBody(req, &in.Extra); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
 		return
@@ -229,6 +292,8 @@ func RegisterConfigHTTPServer(container *go_restful.Container, srv ConfigHTTPSer
 		To(handler.GetDeploymentConfig))
 	ws.Route(ws.GET("/config/platform").
 		To(handler.GetPlatformConfig))
+	ws.Route(ws.DELETE("/config/platform/update").
+		To(handler.DelPlatformConfig))
 	ws.Route(ws.POST("/config/platform/update").
 		To(handler.SetPlatformExtraConfig))
 }

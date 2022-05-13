@@ -132,7 +132,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1GetPlatformConfigResponse"
+              "type": "object"
             }
           },
           "400": {
@@ -157,6 +157,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "path",
+            "description": "path",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -165,6 +172,51 @@
       }
     },
     "/config/platform/update": {
+      "delete": {
+        "summary": "删除 platform config 接口",
+        "operationId": "DelPlatformConfig",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "400": {
+            "description": "INVALID_TENANT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "key",
+            "description": "key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "path",
+            "description": "path",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "config"
+        ]
+      },
       "post": {
         "summary": "设置 platform config extra 数据接口",
         "operationId": "SetPlatformExtraConfig",
@@ -172,7 +224,7 @@
           "200": {
             "description": "OK",
             "schema": {
-              "properties": {}
+              "type": "object"
             }
           },
           "400": {
@@ -193,11 +245,27 @@
         "parameters": [
           {
             "name": "body",
+            "description": "extra",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1SetPlatformExtraConfigRequest"
+              "type": "object",
+              "description": "extra"
             }
+          },
+          {
+            "name": "key",
+            "description": "key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "path",
+            "description": "path",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -3244,6 +3312,14 @@
       },
       "additionalProperties": {}
     },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
     "rpcStatus": {
       "type": "object",
       "properties": {
@@ -3588,16 +3664,6 @@
         "config": {
           "type": "string",
           "format": "byte"
-        }
-      }
-    },
-    "v1GetPlatformConfigResponse": {
-      "type": "object",
-      "properties": {
-        "extra": {
-          "type": "string",
-          "format": "byte",
-          "description": "extra"
         }
       }
     },
@@ -4506,20 +4572,6 @@
         "uneditable": {
           "type": "boolean",
           "description": "role uneditable"
-        }
-      }
-    },
-    "v1SetPlatformExtraConfigRequest": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string",
-          "description": "key"
-        },
-        "extra": {
-          "type": "string",
-          "format": "byte",
-          "description": "extra"
         }
       }
     },
