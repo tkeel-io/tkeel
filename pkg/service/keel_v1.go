@@ -146,6 +146,7 @@ func (s *KeelServiceV1) authenticate(ctx context.Context, req *http.Request) (*s
 	if err != nil {
 		return nil, code, errors.Wrap(err, "call authentication")
 	}
+	log.Debugf("out, code = s.callAuthorization(ctx, req)\n out: %v; code: %v", out, code)
 	if out.Code != t_errors.Success.Reason {
 		return nil, code, errors.Errorf("error call authentication: %s", out.Msg)
 	}
