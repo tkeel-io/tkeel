@@ -7,7 +7,8 @@ daprConfig: rudder
 replicaCount: 1
 nodePort: 30777
 image:
-  repository: tkeelio/rudder
+  registry: harbor.wuxs.vip:30003
+  repository: tkeel-io/rudder
 #  tag: 0.4.1
   pullPolicy: Always
 

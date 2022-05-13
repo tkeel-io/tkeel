@@ -9,7 +9,8 @@ middleware:
 replicaCount: 1
 nodePort: 30707
 image:
-  repository: tkeelio/keel
+  registry: harbor.wuxs.vip:30003
+  repository: tkeel-io/keel
   # tag: 0.4.1
   pullPolicy: Always
 
