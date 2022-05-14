@@ -1,0 +1,245 @@
+pipeline {
+  agent {
+    node {
+      label 'python'
+    }
+  }
+    parameters {
+        string(name:'PROD',defaultValue: 'no',description:'是否')
+
+        string(name:'REGISTRY',defaultValue: 'harbor.wuxs.vip:30003',description:'组织')
+        string(name:'REPOSITORY',defaultValue: 'tkeel-io',description:'仓库')
+
+        string(name:'DOCKER_IMAGE_TAG',defaultValue: '0.1.0',description:'镜像版本')
+        string(name:'HELM_CHART_VERSION',defaultValue: '0.1.0',description:'插件版本')
+
+    }
+
+    environment {
+        /*
+        应用变量
+        */
+        APP_NAME = 'tkeel'
+        
+        /*
+        凭证信息
+        */
+        PRIVATE_REPO_CREDENTIAL_ID = 'harbor'
+        KUBECONFIG_CREDENTIAL_ID = 'kubeconfig'
+
+        /*
+        配置,从凭证中读取
+        */
+        PRIVATE_REPO_CONFIG = 'private-repo'
+        PLUGIN_CONFIG = 'tkeel-plugin-config'
+    }
+
+    stages {
+        stage ('checkout scm') {
+            steps {
+                checkout(scm)
+            }
+        }
+
+        stage('get config'){
+            /*
+            从凭证中读取配置
+            */
+            steps {
+                container ('python'){
+                    withCredentials([usernamePassword(credentialsId: "$PRIVATE_REPO_CONFIG", usernameVariable: 'registry',passwordVariable: 'repository')]) {
+                        script {
+                            env.REGISTRY = registry
+                            env.REPOSITORY = repository
+                        }
+                    }
+
+                    withCredentials([usernamePassword(credentialsId: "$PRIVATE_REPO_CREDENTIAL_ID", usernameVariable: 'username',passwordVariable: 'password')]) {
+                        script {
+                            env.USERNAME = username
+                            env.PASSWORD = password
+                        }
+                    }
+
+                    withCredentials([usernamePassword(credentialsId: "$PLUGIN_CONFIG", usernameVariable: 'enable_config',passwordVariable: 'config')]) {
+                        script {
+                            env.TKEEL_PLUGIN_ENABLE_UPGRADE = enable_config
+                            env.TKEEL_PLUGIN_CONFIG = config
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('set env'){
+            environment {
+                COMMIT_ID = "${sh(script:'git rev-parse --short HEAD',returnStdout:true)}"
+                TIMESTAMP = "${sh(script:'date -d "+8 hour" "+%m.%d.%H%M%S"',returnStdout:true)}"
+            }
+            steps {
+                container ('python'){
+                    script {
+                        if (params.PROD == "yes"){
+                            /*
+                            重写 REGISTRY & REPOSITORY
+                            */
+                            env.REGISTRY = params.REGISTRY
+                            env.REPOSITORY = params.REPOSITORY
+                            env.DOCKER_IMAGE_TAG = params.DOCKER_IMAGE_TAG
+
+                            env.KEEL_DOCKER = env.REGISTRY + "/" + env.REPOSITORY + "/" + "keel"  + ":" + env.DOCKER_IMAGE_TAG
+                            env.RUDDER_DOCKER = env.REGISTRY + "/" + env.REPOSITORY + "/" + "rudder"  + ":" + env.DOCKER_IMAGE_TAG
+
+                            env.CHART = params.HELM_CHART_VERSION
+                            env.TKEEL_PLUGIN_ENABLE_UPGRADE = 'yes'
+                        }else{
+                            env.DOCKER_IMAGE_TAG = env.COMMIT_ID
+
+                            env.KEEL_DOCKER =  env.REGISTRY + "/" + env.REPOSITORY + "/" + "keel"  + ":" + env.DOCKER_IMAGE_TAG
+                            env.RUDDER_DOCKER =  env.REGISTRY + "/" + env.REPOSITORY + "/" + "rudder"  + ":" + env.DOCKER_IMAGE_TAG
+                            
+                            env.CHART = env.TIMESTAMP
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('edit chart'){
+            environment {
+                /*
+                chart 文件夹相对路径
+                */
+                KEEL_CHART__PATH = 'charts/keel'
+                RUDDER_CHART_PATH = 'charts/rudder'
+            }            
+            failFast true
+            parallel {
+                stage('keel') {
+                    steps {
+                        container ('python'){
+                            script{
+                                env.KEEL_REPOSITORY_VALUES = env.REGISTRY + "/" + env.REPOSITORY + "/" + "keel"
+                                sh 'python3 devops/scripts/kotb.py write $KEEL_CHART__PATH/values.yaml $KEEL_CHART__PATH/values.yaml $KEEL_REPOSITORY_VALUES'
+                            }
+                        }
+                    }
+                }
+                stage('rudder') {
+                    steps {
+                        container ('python'){
+                            script{
+                                env.RUDDER_REPOSITORY_VALUES = env.REGISTRY + "/" + env.REPOSITORY + "/" + "rudder"
+                                sh 'python3 devops/scripts/kotb.py write $RUDDER_CHART_PATH/values.yaml $RUDDER_CHART_PATH/values.yaml $RUDDER_REPOSITORY_VALUES'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('build & push'){
+            environment {
+                /*
+                helm 环境变量
+                */
+                HELM_EXPERIMENTAL_OCI=1
+
+                /*
+                dockerfile 文件相对路径
+                chart 文件夹相对路径
+                */
+                KEEL_CHART_PATH = 'charts/keel'
+                RUDDER_CHART_PATH = 'charts/rudder'
+                MD_CHART_PATH = 'charts/tkeel-middleware'
+                TPC_CHART_PATH = 'charts/tkeel-plugin-components'
+                KEEL_DOCKERFILES_PATH = 'docker/keel/Dockerfile'
+                RUDDER_DOCKERFILES_PATH = 'docker/keel/Dockerfile'
+            }
+            failFast true
+            parallel {
+                stage('keel') {
+                    steps {
+                        container ('python') {
+                        /*
+                        helm chart
+                        */
+                        sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
+                        sh 'helm3 package $KEEL_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
+                        sh 'helm3 cm-push keel-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
+
+                        /*
+                        docker image
+                        */
+                        sh 'docker login -u $USERNAME -p $PASSWORD https://$REGISTRY'
+                        sh 'docker build -f $KEEL_DOCKERFILES_PATH -t $KEEL_DOCKER .'
+                        sh 'docker push $KEEL_DOCKER'
+                        }
+                    }
+                }   
+                stage('rudder') {
+                    steps {
+                        container ('python') {
+                        /*
+                        helm chart
+                        */
+                        sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
+                        sh 'helm3 package $RUDDER_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
+                        sh 'helm3 cm-push rudder-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
+
+                        /*
+                        docker image
+                        */
+                        sh 'docker login -u $USERNAME -p $PASSWORD https://$REGISTRY'
+                        sh 'docker build -f $RUDDER_DOCKERFILES_PATH -t $RUDDER_DOCKER .'
+                        sh 'docker push $RUDDER_DOCKER'
+                        }
+                    }
+                }    
+
+                stage('tkeel-middleware') {
+                    steps {
+                        container ('python') {
+                        /*
+                        helm chart
+                        */
+                        sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
+                        sh 'helm3 package $MD_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
+                        sh 'helm3 cm-push tkeel-middleware-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
+                        }
+                    }
+                }  
+                stage('tkeel-plugin-components') {
+                    steps {
+                        container ('python') {
+                        /*
+                        helm chart
+                        */
+                        sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
+                        sh 'helm3 package $TPC_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
+                        sh 'helm3 cm-push tkeel-plugin-components-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
+                        }
+                    }
+                }               
+            }
+        }
+ 
+        stage('install or upgrade plugin') {
+            steps {
+                container ('python') {
+                    withCredentials([kubeconfigFile(credentialsId: env.KUBECONFIG_CREDENTIAL_ID,variable: 'KUBECONFIG')]) {
+                        script {                        
+                            if (env.TKEEL_PLUGIN_ENABLE_UPGRADE == 'yes'){
+                                sh 'tkeel admin login -p changeme'
+                                sh 'mv devops/config/$TKEEL_PLUGIN_CONFIG ~/.tkeel/config.yaml'
+                                sh 'tkeel upgrade --repo-url=https://$REGISTRY/chartrepo/$REPOSITORY --repo-name=$REPOSITORY  --rudder-version=$CHART --keel-version=$CHART'
+                            }else{
+                                sh 'echo do not install or upgrade'
+                            }
+                        }
+                    }                
+                }
+            }
+        }
+    }
+}
