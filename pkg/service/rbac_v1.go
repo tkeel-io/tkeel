@@ -12,6 +12,7 @@ import (
 	s_model "github.com/tkeel-io/security/model"
 	pb "github.com/tkeel-io/tkeel/api/rbac/v1"
 	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/tkeel-io/tkeel/pkg/model/metrics"
 	"github.com/tkeel-io/tkeel/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
@@ -76,6 +77,7 @@ func (s *RBACService) CreateRoles(ctx context.Context, req *pb.CreateRoleRequest
 		return nil, pb.ErrInternalStore()
 	}
 	rblist = util.NewRollbackStack()
+	metrics.CollectorRole.WithLabelValues(u.Tenant).Inc()
 	return &pb.CreateRoleResponse{
 		Role: &pb.Role{
 			Name:           newRole.Name,
@@ -169,6 +171,7 @@ func (s *RBACService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest)
 		log.Errorf("error delete role(%s): count(%d) is invalid", deleteRole, count)
 		return nil, pb.ErrInternalError()
 	}
+	metrics.CollectorRole.WithLabelValues(u.Tenant).Dec()
 	return &pb.DeleteRoleResponse{
 		Role: retPB,
 	}, nil

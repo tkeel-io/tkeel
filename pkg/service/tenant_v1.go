@@ -13,6 +13,7 @@ import (
 	"github.com/tkeel-io/security/utils"
 	pb "github.com/tkeel-io/tkeel/api/tenant/v1"
 	t_model "github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/tkeel-io/tkeel/pkg/model/metrics"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
 )
@@ -34,6 +35,7 @@ func NewTenantService(db *gorm.DB, tenantPluginOp rbac.TenantPluginMgr, rbacOp *
 		db.AutoMigrate(new(model.Tenant))
 		db.AutoMigrate(new(model.Role))
 	})
+	InitUserRoleCollector(db)
 	return &TenantService{DB: db, TenantPluginOp: tenantPluginOp, RBACOp: rbacOp, DaprClient: daprClient, DaprStore: daprStore}
 }
 
@@ -108,6 +110,7 @@ func (s *TenantService) CreateTenant(ctx context.Context, req *pb.CreateTenantRe
 	for _, v := range t_model.TKeelConsole {
 		s.TenantPluginOp.AddTenantPlugin(tenant.ID, v)
 	}
+	InitUserRoleCollector(s.DB)
 	return resp, nil
 }
 
@@ -297,6 +300,8 @@ func (s *TenantService) DeleteTenant(ctx context.Context, req *pb.DeleteTenantRe
 	for _, v := range s.TenantPluginOp.ListTenantPlugins(tenant.ID) {
 		s.TenantPluginOp.DeleteTenantPlugin(tenant.ID, v)
 	}
+	metrics.CollectorUser.DeleteLabelValues(tenant.ID)
+	metrics.CollectorRole.DeleteLabelValues(tenant.ID)
 	return resp, nil
 }
 
@@ -319,7 +324,7 @@ func (s *TenantService) CreateUser(ctx context.Context, req *pb.CreateUserReques
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
 	}
-
+	metrics.CollectorUser.WithLabelValues(user.TenantID).Inc()
 	if len(req.GetBody().GetRoles()) != 0 {
 		gpolicies := make([][]string, len(req.GetBody().GetRoles()))
 		for i, v := range req.GetBody().GetRoles() {
@@ -332,7 +337,7 @@ func (s *TenantService) CreateUser(ctx context.Context, req *pb.CreateUserReques
 			return nil, pb.ErrInternalError()
 		}
 	}
-
+	metrics.CollectorUser.WithLabelValues(req.GetTenantId()).Inc()
 	resp = &pb.CreateUserResponse{TenantId: user.TenantID, Username: user.UserName, UserId: user.ID, ResetKey: user.Password}
 	return resp, nil
 }
@@ -453,10 +458,12 @@ func (s *TenantService) DeleteUser(ctx context.Context, req *pb.DeleteUserReques
 		log.Error(err)
 		return nil, pb.ErrInternalStore()
 	}
+	metrics.CollectorUser.WithLabelValues(req.GetTenantId()).Sub(1.0)
 	if _, err = s.RBACOp.DeleteUser(req.GetUserId()); err != nil {
 		log.Errorf("error delete user(%s/%s) in rbac: %s", req.GetUserId(), req.GetTenantId(), err)
 		return nil, pb.ErrInternalError()
 	}
+	metrics.CollectorUser.WithLabelValues(req.GetTenantId()).Dec()
 	return &emptypb.Empty{}, nil
 }
 
@@ -521,4 +528,17 @@ func (s *TenantService) ResetPasswordKeyInfo(ctx context.Context, req *pb.RPKInf
 		Username: users[0].UserName,
 		TenantId: users[0].TenantID,
 	}, nil
+}
+
+func InitUserRoleCollector(db *gorm.DB) {
+	tenantDao := model.Tenant{}
+	_, tenants, _ := tenantDao.List(db, nil, nil, "")
+	for i := range tenants {
+		userDao := model.User{}
+		total, _, _ := userDao.QueryByCondition(db, map[string]interface{}{"tenant_id": tenants[i].ID}, nil, "")
+		metrics.CollectorUser.WithLabelValues(tenants[i].ID).Set(float64(total))
+		roleDao := model.Role{}
+		roleTotal, _, _ := roleDao.List(db, map[string]interface{}{"tenant_id": tenants[i].ID}, nil, "")
+		metrics.CollectorRole.WithLabelValues(tenants[i].ID).Set(float64(roleTotal))
+	}
 }

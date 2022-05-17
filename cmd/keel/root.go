@@ -17,8 +17,6 @@ package main
 
 import (
 	"context"
-	metrics_v1 "github.com/tkeel-io/tkeel/api/metrics/v1"
-	"github.com/tkeel-io/tkeel/pkg/model/metrics"
 	"os"
 	"os/signal"
 	"syscall"
@@ -26,9 +24,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
+	metrics_v1 "github.com/tkeel-io/tkeel/api/metrics/v1"
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
+	"github.com/tkeel-io/tkeel/pkg/model/metrics"
 	"github.com/tkeel-io/tkeel/pkg/server"
 	"github.com/tkeel-io/tkeel/pkg/service"
 	keel_v1 "github.com/tkeel-io/tkeel/pkg/service/keel/v1"
@@ -73,8 +73,8 @@ var rootCmd = &cobra.Command{
 			keel_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, proxySrvV1)
 
 			// metrics service.
-			mertricsSrv := service.NewMetricsService(metrics.CollectorTKApiRequest, metrics.CollectorTKApiRequestDurations)
-			metrics_v1.RegisterMetricsHTTPServer(httpSrv.Container, mertricsSrv)
+			metricsSrv := service.NewMetricsService(metrics.CollectorTKApiRequest, metrics.CollectorTKApiRequestDurations)
+			metrics_v1.RegisterMetricsHTTPServer(httpSrv.Container, metricsSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {

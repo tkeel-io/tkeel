@@ -41,7 +41,6 @@ import (
 const (
 	_securityComponent = "rudder"
 	_authenticate      = "/v1/authenticate"
-	_contextStartTime  = "startTime"
 )
 
 var _contextSessionKey = struct{}{}
@@ -91,7 +90,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 			chain.ProcessFilter(req, resp)
 			return
 		}
-		// kapi_request_duration
+		// kapi_request_duration.
 		ctx, cancel := context.WithTimeout(req.Request.Context(), s.timeout)
 		defer cancel()
 		sess, code, err := s.authenticate(ctx, req.Request)
@@ -138,7 +137,7 @@ func (s *KeelServiceV1) ProxyPlugin(
 		QueryValue: req.URL.Query(),
 		Body:       bodyByte,
 	})
-	// kapi_request_duration
+	// kapi_request_duration.
 	obserV := time.Since(start).Seconds()
 	metrics.CollectorTKApiRequestDurations.WithLabelValues(sess.User.Tenant, sess.Dst.ID).Observe(obserV)
 	metrics.CollectorTKApiRequest.WithLabelValues(sess.User.Tenant, sess.Dst.ID, fmt.Sprintf("%d", dstResp.StatusCode)).Inc()
