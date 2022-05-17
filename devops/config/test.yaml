@@ -1,0 +1,29 @@
+host:
+  admin: admin.tkeel-ci.io
+  tenant: tkeel-ci.io
+middleware:
+  cache:
+    customized: false
+    url: redis://:Biz0P8Xoup@tkeel-middleware-redis-master:6379/0
+  database:
+    customized: false
+    url: mysql://root:a3fks=ixmeb82a@tkeel-middleware-mysql:3306/tkeelauth
+  queue:
+    customized: false
+    url: kafka://tkeel-middleware-kafka-headless:9092
+  search:
+    customized: false
+    url: elasticsearch://admin:admin@tkeel-middleware-elasticsearch-master:9200
+  service_registry:
+    customized: false
+    url: etcd://tkeel-middleware-etcd:2379
+namespace: dapr-system
+plugins:
+- tkeel/console-portal-admin
+- tkeel/console-portal-tenant
+- tkeel/console-plugin-admin-plugins
+port: "30080"
+repo:
+  name: tkeel-io
+  url: https://harbor.wuxs.vip:30003/chartrepo/tkeel-io
+
