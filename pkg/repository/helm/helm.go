@@ -24,6 +24,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
+	pb "github.com/tkeel-io/tkeel/api/repo/v1"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	helmAction "helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -206,6 +207,15 @@ func (r *Repo) Get(name, version string) (repository.Installer, error) {
 	if len(resList) == 0 {
 		return nil, ErrNotFound
 	}
+	versionList := make([]*pb.VersionList, 0)
+	for _, r := range resList {
+		if r.Name == name {
+			versionList = append(versionList, &pb.VersionList{
+				Version:    r.Version,
+				CreateTime: uint64(r.ChartInfo.Created.Unix()),
+			})
+		}
+	}
 	res := resList[0]
 	// check cache chart.
 	chartFile := _repoDirName + "/" + r.info.Name + "/" + res.Name + "-" + res.Version + ".tgz"
@@ -249,6 +259,7 @@ func (r *Repo) Get(name, version string) (repository.Installer, error) {
 			}
 		}
 	}
+	brief.VersionList = versionList
 	i := NewHelmInstaller(brief.Name, ch, *brief, r.namespace, r.actionConfig)
 	return &i, nil
 }

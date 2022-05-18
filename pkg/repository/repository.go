@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 
 	"github.com/pkg/errors"
+	pb "github.com/tkeel-io/tkeel/api/repo/v1"
 )
 
 const (
@@ -67,6 +68,7 @@ type InstallerBrief struct {
 	Annotations     map[string]string `json:"annotations"`
 	CreateTimestamp int64             `json:"create_timestamp"`
 	Icon            string            `json:"icon"`
+	VersionList     []*pb.VersionList `json:"version_list"`
 }
 
 func (ib *InstallerBrief) String() string {
