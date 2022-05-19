@@ -3,6 +3,8 @@ kind: Ingress
 metadata:
   name: tkeel
   namespace: {{ .Release.Namespace | quote }}
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 2m
 spec:
   ingressClassName: nginx
   rules:
