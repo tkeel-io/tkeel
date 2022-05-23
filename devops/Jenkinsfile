@@ -91,14 +91,14 @@ pipeline {
                             env.RUDDER_DOCKER = env.REGISTRY + "/" + env.REPOSITORY + "/" + "rudder"  + ":" + env.DOCKER_IMAGE_TAG
 
                             env.CHART = params.HELM_CHART_VERSION
-                            env.TKEEL_PLUGIN_ENABLE_UPGRADE = 'yes'
+
                         }else{
                             env.DOCKER_IMAGE_TAG = env.COMMIT_ID
 
                             env.KEEL_DOCKER =  env.REGISTRY + "/" + env.REPOSITORY + "/" + "keel"  + ":" + env.DOCKER_IMAGE_TAG
                             env.RUDDER_DOCKER =  env.REGISTRY + "/" + env.REPOSITORY + "/" + "rudder"  + ":" + env.DOCKER_IMAGE_TAG
                             
-                            env.CHART = env.TIMESTAMP
+                            env.CHART = "${env.TIMESTAMP.trim()}-${env.BRANCH_NAME}"
                         }
                     }
                 }
@@ -126,101 +126,85 @@ pipeline {
             }
             failFast true
             parallel {
-                stage('keel') {
+                stage('build & push keel') {
                     steps {
                         container ('python') {
                             script{
-                                if (params.TKEEL_PLUGIN_ENABLE_UPGRADE == "no"){
-                                    sh 'echo do nothing'                            
-                                }else{
-                                    /*
-                                    edit chart
-                                    */
-                                    env.keel_value = env.REGISTRY + "/" + env.REPOSITORY + "/" + "keel"
-                                    sh 'python3 devops/scripts/kotb.py write $KEEL_CHART_PATH/values.yaml $KEEL_CHART_PATH/values.yaml $keel_value'
-                            
-                                    /*
-                                    helm chart
-                                    */
-                                    sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
-                                    sh 'helm3 package $KEEL_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
-                                    sh 'helm3 cm-push keel-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
+                                /*
+                                edit chart
+                                */
+                                env.keel_value = env.REGISTRY + "/" + env.REPOSITORY + "/" + "keel"
+                                sh 'python3 devops/scripts/kotb.py write $KEEL_CHART_PATH/values.yaml $KEEL_CHART_PATH/values.yaml $keel_value'
+                        
+                                /*
+                                helm chart
+                                */
+                                sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
+                                sh 'helm3 package $KEEL_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
+                                sh 'helm3 cm-push keel-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
 
-                                    /*
-                                    docker image
-                                    */
-                                    sh 'docker login -u $USERNAME -p $PASSWORD https://$REGISTRY'
-                                    sh 'docker build -f $KEEL_DOCKERFILES_PATH -t $KEEL_DOCKER .'
-                                    sh 'docker push $KEEL_DOCKER'
-                                }
+                                /*
+                                docker image
+                                */
+                                sh 'docker login -u $USERNAME -p $PASSWORD https://$REGISTRY'
+                                sh 'docker build -f $KEEL_DOCKERFILES_PATH -t $KEEL_DOCKER .'
+                                sh 'docker push $KEEL_DOCKER'
                             }
                         }
                     }
                 }   
-                stage('rudder') {
+                stage('build & push rudder') {
                     steps {
                         container ('python') {
                             script{
-                                if (params.TKEEL_PLUGIN_ENABLE_UPGRADE == "no"){
-                                    sh 'echo do nothing'                            
-                                }else{
-                                    /*
-                                    edit chart
-                                    */
-                                    env.rudder_value = env.REGISTRY + "/" + env.REPOSITORY + "/" + "rudder"
-                                    sh 'python3 devops/scripts/kotb.py write $RUDDER_CHART_PATH/values.yaml $RUDDER_CHART_PATH/values.yaml $rudder_value'
+                                /*
+                                edit chart
+                                */
+                                env.rudder_value = env.REGISTRY + "/" + env.REPOSITORY + "/" + "rudder"
+                                sh 'python3 devops/scripts/kotb.py write $RUDDER_CHART_PATH/values.yaml $RUDDER_CHART_PATH/values.yaml $rudder_value'
 
 
-                                    /*
-                                    helm chart
-                                    */
-                                    sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
-                                    sh 'helm3 package $RUDDER_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
-                                    sh 'helm3 cm-push rudder-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
+                                /*
+                                helm chart
+                                */
+                                sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
+                                sh 'helm3 package $RUDDER_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
+                                sh 'helm3 cm-push rudder-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
 
-                                    /*
-                                    docker image
-                                    */
-                                    sh 'docker login -u $USERNAME -p $PASSWORD https://$REGISTRY'
-                                    sh 'docker build -f $RUDDER_DOCKERFILES_PATH -t $RUDDER_DOCKER .'
-                                    sh 'docker push $RUDDER_DOCKER'
-                                }
+                                /*
+                                docker image
+                                */
+                                sh 'docker login -u $USERNAME -p $PASSWORD https://$REGISTRY'
+                                sh 'docker build -f $RUDDER_DOCKERFILES_PATH -t $RUDDER_DOCKER .'
+                                sh 'docker push $RUDDER_DOCKER'
                             }
                         }
                     }
                 }    
-                stage('tkeel-middleware') {
+                stage('build & push tkeel-middleware') {
                     steps {
                         container ('python') {
                             script{
-                                if(params.TKEEL_PLUGIN_ENABLE_UPGRADE == "no"){
-                                    sh 'echo do nothing'                            
-                                }else{
-                                    /*
-                                    helm chart
-                                    */
-                                    sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
-                                    sh 'helm3 package $MD_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
-                                    sh 'helm3 cm-push tkeel-middleware-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
-                                }
+                                /*
+                                helm chart
+                                */
+                                sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
+                                sh 'helm3 package $MD_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
+                                sh 'helm3 cm-push tkeel-middleware-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
                             }
                         }
                     }
                 }  
-                stage('tkeel-plugin-components') {
+                stage('build & push tkeel-plugin-components') {
                     steps {
                         container ('python') {
                             script{
-                                if(params.TKEEL_PLUGIN_ENABLE_UPGRADE == "no"){
-                                    sh 'echo do nothing'                            
-                                }else{
-                                    /*
-                                    helm chart
-                                    */
-                                    sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
-                                    sh 'helm3 package $TPC_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
-                                    sh 'helm3 cm-push tkeel-plugin-components-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
-                                }
+                                /*
+                                helm chart
+                                */
+                                sh 'helm3 registry login -u $USERNAME -p $PASSWORD $REGISTRY'
+                                sh 'helm3 package $TPC_CHART_PATH --version=$CHART --app-version=$DOCKER_IMAGE_TAG' 
+                                sh 'helm3 cm-push tkeel-plugin-components-*.tgz https://$REGISTRY/chartrepo/$REPOSITORY --username=$USERNAME --password=$PASSWORD'
                             }
                         }
                     }
@@ -233,7 +217,7 @@ pipeline {
                 container ('python') {
                     withCredentials([kubeconfigFile(credentialsId: env.KUBECONFIG_CREDENTIAL_ID,variable: 'KUBECONFIG')]) {
                         script {                        
-                            if (env.TKEEL_PLUGIN_ENABLE_UPGRADE == 'yes' || params.MANUAL_DEPLOY == "yes"){
+                            if (env.TKEEL_PLUGIN_ENABLE_UPGRADE == 'yes'){
                                 sh 'tkeel admin login -p changeme'
                                 sh 'mv devops/config/$TKEEL_PLUGIN_CONFIG ~/.tkeel/config.yaml'
                                 sh 'tkeel upgrade --repo-url=https://$REGISTRY/chartrepo/$REPOSITORY --repo-name=$REPOSITORY  --rudder-version=$CHART --keel-version=$CHART'
