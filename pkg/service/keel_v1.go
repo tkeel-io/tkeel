@@ -15,12 +15,11 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/pkg/errors"
 
 	t_errors "github.com/tkeel-io/kit/errors"
 	pb "github.com/tkeel-io/tkeel/api/authentication/v1"
@@ -28,13 +27,15 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
 	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/tkeel-io/tkeel/pkg/model/metrics"
+
+	"github.com/emicklei/go-restful"
+	"github.com/pkg/errors"
+	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/kit/result"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
-
-	"github.com/emicklei/go-restful"
-	"github.com/tkeel-io/kit/log"
-	"github.com/tkeel-io/kit/result"
 )
 
 const (
@@ -85,6 +86,11 @@ func writeResult(resp http.ResponseWriter, code int, msg string) {
 
 func (s *KeelServiceV1) Filter() restful.FilterFunction {
 	return func(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
+		if req.Request.URL.Path == "/metrics" && req.Request.Method == "GET" {
+			chain.ProcessFilter(req, resp)
+			return
+		}
+		// kapi_request_duration.
 		ctx, cancel := context.WithTimeout(req.Request.Context(), s.timeout)
 		defer cancel()
 		sess, code, err := s.authenticate(ctx, req.Request)
@@ -101,6 +107,7 @@ func (s *KeelServiceV1) Filter() restful.FilterFunction {
 func (s *KeelServiceV1) ProxyPlugin(
 	resp http.ResponseWriter, req *http.Request,
 ) error {
+	start := time.Now()
 	sess, ok := getSession(req.Context())
 	if !ok {
 		writeResult(resp, http.StatusInternalServerError, "internal error")
@@ -130,6 +137,10 @@ func (s *KeelServiceV1) ProxyPlugin(
 		QueryValue: req.URL.Query(),
 		Body:       bodyByte,
 	})
+	// kapi_request_duration.
+	obserV := time.Since(start).Seconds()
+	metrics.CollectorTKApiRequestDurations.WithLabelValues(sess.User.Tenant, sess.Dst.ID).Observe(obserV)
+	metrics.CollectorTKApiRequest.WithLabelValues(sess.User.Tenant, sess.Dst.ID, fmt.Sprintf("%d", dstResp.StatusCode)).Inc()
 	if err != nil {
 		writeResult(resp, http.StatusBadRequest, err.Error())
 		return errors.Wrap(err, "plugin client call")

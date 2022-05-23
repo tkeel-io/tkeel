@@ -24,9 +24,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tkeel-io/kit/app"
 	"github.com/tkeel-io/kit/log"
+	metrics_v1 "github.com/tkeel-io/tkeel/api/metrics/v1"
 	"github.com/tkeel-io/tkeel/cmd"
 	t_dapr "github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/config"
+	"github.com/tkeel-io/tkeel/pkg/model/metrics"
 	"github.com/tkeel-io/tkeel/pkg/server"
 	"github.com/tkeel-io/tkeel/pkg/service"
 	keel_v1 "github.com/tkeel-io/tkeel/pkg/service/keel/v1"
@@ -54,7 +56,6 @@ var rootCmd = &cobra.Command{
 		}
 		conf.Init()
 		httpSrv := server.NewHTTPServer(conf.HTTPAddr)
-		httpSrv.Container.EnableContentEncoding(false)
 		grpcSrv := server.NewGRPCServer(conf.GRPCAddr)
 
 		keelApp = app.New("keel", &log.Conf{
@@ -70,6 +71,10 @@ var rootCmd = &cobra.Command{
 			// proxy service.
 			proxySrvV1 := service.NewKeelServiceV1(conf, daprHTTPClient)
 			keel_v1.RegisterPluginProxyHTTPServer(context.TODO(), httpSrv.Container, proxySrvV1)
+
+			// metrics service.
+			metricsSrv := service.NewMetricsService(metrics.CollectorTKApiRequest, metrics.CollectorTKApiRequestDurations)
+			metrics_v1.RegisterMetricsHTTPServer(httpSrv.Container, metricsSrv)
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
