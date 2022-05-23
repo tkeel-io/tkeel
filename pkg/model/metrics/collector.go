@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	// metrics lable.
+	// metrics label.
 	MetricsLabelTenant = "tenant_id"
 	MetricsLabelCode   = "code"
 	MetricsLabelPath   = "path"
@@ -15,8 +15,8 @@ const (
 	MetricsNameTkapiRequestTotal           = "tkapi_request_total"
 	MetricsNameTkapiRequestDurationSeconds = "tkapi_request_duration_seconds"
 
-	MetricsNameUserTotal = "user_num"
-	MetricsNameRoleTotal = "role_num"
+	MetricsNameUserNum = "user_num"
+	MetricsNameRoleNum = "role_num"
 )
 
 var CollectorTKApiRequest = prometheus.NewCounterVec(
@@ -38,7 +38,7 @@ var CollectorTKApiRequestDurations = prometheus.NewHistogramVec(
 
 var CollectorUser = prometheus.NewGaugeVec(
 	prometheus.GaugeOpts{
-		Name: MetricsNameUserTotal,
+		Name: MetricsNameUserNum,
 		Help: "tkeel user num",
 	},
 	[]string{MetricsLabelTenant},
@@ -46,7 +46,7 @@ var CollectorUser = prometheus.NewGaugeVec(
 
 var CollectorRole = prometheus.NewGaugeVec(
 	prometheus.GaugeOpts{
-		Name: MetricsNameRoleTotal,
+		Name: MetricsNameRoleNum,
 		Help: "tkeel role num",
 	},
 	[]string{MetricsLabelTenant},
