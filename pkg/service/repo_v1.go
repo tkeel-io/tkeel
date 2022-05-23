@@ -143,34 +143,51 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 		sort.Sort(ibList)
 	}
 	installedNum := 0
-	tmp := make(iBriefList, 0, len(ibList))
+	tmp := make(map[string]*pb.InstallerObject)
+	allInstaller := make([]*pb.InstallerObject, 0)
 	for _, v := range ibList {
-		if v.State == repository.StateInstalled {
-			installedNum++
+		obj, ok := tmp[v.Name]
+		if ok {
+			obj.VersionList = append(obj.VersionList, &pb.VersionList{
+				Version:    v.Version,
+				CreateTime: uint64(v.CreateTimestamp),
+			})
+			if obj.State != pb.InstallerState_INSTALLED {
+				// do not install show the latest version.
+				obj.Version = v.Version
+			}
+			if v.State == repository.StateInstalled {
+				obj.State = pb.InstallerState_INSTALLED
+			}
+		} else {
+			obj = convertInstallerBrief2PB(v)
+			if v.State == repository.StateInstalled {
+				installedNum++
+				// installed show the installed version.
+				obj.State = pb.InstallerState_INSTALLED
+				obj.Version = v.Version
+			}
+			tmp[v.Name] = obj
 			if req.Installed {
-				tmp = append(tmp, v)
+				if v.State == repository.StateInstalled {
+					allInstaller = append(allInstaller, obj)
+				}
+			} else {
+				allInstaller = append(allInstaller, obj)
 			}
 		}
 	}
-	if req.Installed {
-		ibList = tmp
-	}
-	total := ibList.Len()
+	total := len(allInstaller)
 	start, end := getQueryItemsStartAndEnd(int(req.PageNum), int(req.PageSize), total)
 	log.Debugf("%d %d", start, end)
-	ibList = ibList[start:end]
+	allInstaller = allInstaller[start:end]
+
 	return &pb.ListRepoInstallerResponse{
-		Total:    int32(total),
-		PageNum:  req.PageNum,
-		PageSize: req.PageSize,
-		BriefInstallers: func() []*pb.InstallerObject {
-			ret := make([]*pb.InstallerObject, 0, len(ibList))
-			for _, v := range ibList {
-				ret = append(ret, convertInstallerBrief2PB(v))
-			}
-			return ret
-		}(),
-		InstalledNum: int32(installedNum),
+		Total:           int32(total),
+		PageNum:         req.PageNum,
+		PageSize:        req.PageSize,
+		BriefInstallers: allInstaller,
+		InstalledNum:    int32(installedNum),
 	}, nil
 }
 
@@ -202,6 +219,16 @@ func convertRepo2PB(r repository.Repository) *pb.RepoObject {
 	if r == nil {
 		return &pb.RepoObject{}
 	}
+	briefs, err := r.Search("*")
+	if err != nil {
+		return &pb.RepoObject{}
+	}
+	plugins := make(map[string]struct{})
+	for _, i := range briefs {
+		plugins[i.Name] = struct{}{}
+	}
+	total := len(plugins)
+
 	return &pb.RepoObject{
 		Name: r.Info().Name,
 		Url:  r.Info().URL,
@@ -221,7 +248,7 @@ func convertRepo2PB(r repository.Repository) *pb.RepoObject {
 			}
 			return ret
 		}(),
-		InstallerNum: int32(r.Len()),
+		InstallerNum: int32(total),
 	}
 }
 
@@ -256,6 +283,12 @@ func convertInstallerBrief2PB(ib *repository.InstallerBrief) *pb.InstallerObject
 		Desc:      ib.Desc,
 		Timestamp: uint64(ib.CreateTimestamp),
 		Icon:      ib.Icon,
+		VersionList: []*pb.VersionList{
+			{
+				Version:    ib.Version,
+				CreateTime: uint64(ib.CreateTimestamp),
+			},
+		},
 	}
 }
 
@@ -313,9 +346,10 @@ func convertInstaller2PB(i repository.Installer) *pb.InstallerObject {
 			}
 			return ret
 		}(),
-		Desc:      i.Brief().Desc,
-		Timestamp: uint64(ib.CreateTimestamp),
-		Icon:      ib.Icon,
+		Desc:        i.Brief().Desc,
+		Timestamp:   uint64(ib.CreateTimestamp),
+		Icon:        ib.Icon,
+		VersionList: ib.VersionList,
 	}
 }
 

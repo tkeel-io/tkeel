@@ -629,7 +629,7 @@ func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string, 
 			}
 		}
 	}()
-	retry := 10
+	retry := 30
 	log.Debugf("start register plugin(%s) retry: %d", pID, retry)
 	for {
 		select {
