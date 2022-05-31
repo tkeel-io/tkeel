@@ -146,6 +146,9 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 	tmp := make(map[string]*pb.InstallerObject)
 	allInstaller := make([]*pb.InstallerObject, 0)
 	for _, v := range ibList {
+		if v.State == repository.StateInstalled {
+			installedNum++
+		}
 		obj, ok := tmp[v.Name]
 		if ok {
 			obj.VersionList = append(obj.VersionList, &pb.VersionList{
@@ -165,9 +168,6 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 			}
 		} else {
 			obj = convertInstallerBrief2PB(v)
-			if v.State == repository.StateInstalled {
-				installedNum++
-			}
 			tmp[v.Name] = obj
 			if req.Installed {
 				if v.State == repository.StateInstalled {
