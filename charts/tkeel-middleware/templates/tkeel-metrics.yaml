@@ -4,7 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/vendor: kubesphere
   name: tkeel-metrics
-  namespace: keel-system
+  namespace: {{ $.Release.Namespace | quote }}
 spec:
   endpoints:
     - interval: 1m
@@ -14,4 +14,4 @@ spec:
       scrapeTimeout: 10s
   selector:
     matchLabels:
-      tkeel.io/prometheus: true
+      tkeel.io/prometheus: "true"
