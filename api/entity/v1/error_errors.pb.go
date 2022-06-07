@@ -16,6 +16,7 @@ var errInvalidArgument *errors.TError
 var errInternalStore *errors.TError
 var errInternalError *errors.TError
 var errResourceNotFound *errors.TError
+var errInvalidXTkeelAuthToken *errors.TError
 
 func init() {
 	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.entity.v1.ERR_UNKNOWN", "未知类型")
@@ -28,6 +29,8 @@ func init() {
 	errors.Register(errInternalError)
 	errResourceNotFound = errors.New(int(codes.Internal), "io.tkeel.security.api.entity.v1.ERR_RESOURCE_NOT_FOUND", "资源不存在")
 	errors.Register(errResourceNotFound)
+	errInvalidXTkeelAuthToken = errors.New(int(codes.Unauthenticated), "io.tkeel.security.api.entity.v1.ERR_INVALID_X_TKEEL_AUTH_TOKEN", "无效的x-tKeel-authtoken")
+	errors.Register(errInvalidXTkeelAuthToken)
 }
 
 func ErrUnknown() errors.Error {
@@ -48,4 +51,8 @@ func ErrInternalError() errors.Error {
 
 func ErrResourceNotFound() errors.Error {
 	return errResourceNotFound
+}
+
+func ErrInvalidXTkeelAuthToken() errors.Error {
+	return errInvalidXTkeelAuthToken
 }
