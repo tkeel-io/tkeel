@@ -69,6 +69,7 @@ func (s *EntityTokenService) TokenInfo(ctx context.Context, req *pb.TokenInfoReq
 		EntityType: entity.EntityType,
 		EntityId:   entity.EntityID,
 		Owner:      entity.Owner,
+		TenantId:   entity.TenantID,
 		ExpiredAt:  entity.ExpiredAt,
 		CreatedAt:  entity.CreatedAt,
 	}, nil
