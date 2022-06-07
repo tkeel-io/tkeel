@@ -146,27 +146,28 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 	tmp := make(map[string]*pb.InstallerObject)
 	allInstaller := make([]*pb.InstallerObject, 0)
 	for _, v := range ibList {
+		if v.State == repository.StateInstalled {
+			installedNum++
+		}
 		obj, ok := tmp[v.Name]
 		if ok {
 			obj.VersionList = append(obj.VersionList, &pb.VersionList{
 				Version:    v.Version,
 				CreateTime: uint64(v.CreateTimestamp),
 			})
-			if obj.State != pb.InstallerState_INSTALLED {
-				// do not install show the latest version.
-				obj.Version = v.Version
-			}
-			if v.State == repository.StateInstalled {
+			obj.Version = v.Version
+			switch v.State {
+			case repository.StateUninstall:
+				obj.State = pb.InstallerState_UNINSTALL
+			case repository.StateInstalled:
 				obj.State = pb.InstallerState_INSTALLED
+			case repository.StateSameNameInstalled:
+				obj.State = pb.InstallerState_SAME_NAME
+			default:
+				obj.State = pb.InstallerState_UNINSTALL
 			}
 		} else {
 			obj = convertInstallerBrief2PB(v)
-			if v.State == repository.StateInstalled {
-				installedNum++
-				// installed show the installed version.
-				obj.State = pb.InstallerState_INSTALLED
-				obj.Version = v.Version
-			}
 			tmp[v.Name] = obj
 			if req.Installed {
 				if v.State == repository.StateInstalled {

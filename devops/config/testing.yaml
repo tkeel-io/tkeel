@@ -24,6 +24,6 @@ plugins:
 - tkeel/console-plugin-admin-plugins
 port: "30080"
 repo:
-  name: tkeel-io
-  url: https://harbor.wuxs.vip:30003/chartrepo/tkeel-io
+  name: tkeel-io-dev
+  url: https://harbor.wuxs.vip:30003/chartrepo/tkeel-io-dev
 
