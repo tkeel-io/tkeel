@@ -33,11 +33,11 @@ type ProfileService struct {
 	pb.UnimplementedProfileServer
 	pluginOp    plugin.Operator
 	ProfileOp   plgprofile.ProfileOperator
-	daprHttpCli dapr.Client
+	daprHTTPCli dapr.Client
 }
 
 func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperator, daprHttp dapr.Client) *ProfileService {
-	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHttpCli: daprHttp}
+	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHttp}
 }
 
 func (s *ProfileService) GetTenantProfile(ctx context.Context, req *pb.GetTenantProfileRequest) (*pb.GetTenantProfileResponse, error) {
@@ -83,6 +83,8 @@ func (s *ProfileService) SetTenantPluginProfile(ctx context.Context, req *pb.Set
 				break
 			}
 		}
+	} else {
+
 	}
 
 	return &pb.SetTenantPluginProfileResponse{}, nil
