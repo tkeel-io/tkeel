@@ -155,6 +155,10 @@ func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.Authen
 				log.Errorf("error internal get user: %s", err)
 				return nil, pb.ErrInvalidXTkeelAuthToken()
 			}
+			user, errCheck := s.checkAuthorization(ctx, header)
+			if errCheck == nil {
+				sess.User = user
+			}
 			// set src tkeel depened.
 			if pluginIsTkeelComponent(pluginID) {
 				sess.Src.TKeelDepened = version.Version
