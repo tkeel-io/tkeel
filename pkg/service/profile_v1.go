@@ -83,6 +83,22 @@ func (s *ProfileService) SetTenantPluginProfile(ctx context.Context, req *pb.Set
 				break
 			}
 		}
+	} else {
+		bodyBytes, eMsa := json.Marshal(req)
+		if eMsa != nil {
+			log.Error(err)
+			return nil, pb.ErrUnknown()
+		}
+		res, eCall := s.daprHTTPCli.Call(ctx, &dapr.AppRequest{
+			ID:     modelPluginProfile.PluginID,
+			Method: "v1/tenant/enable",
+			Verb:   "POST",
+			Body:   bodyBytes,
+		})
+		if eCall != nil {
+			log.Error(err)
+		}
+		defer res.Body.Close()
 	}
 	return &pb.SetTenantPluginProfileResponse{}, nil
 }
