@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tkeel-metrics
+  namespace: {{ $.Release.Namespace | quote }}
+spec:
+  endpoints:
+    - interval: 1m
+      path: /metrics
+      port: http
+      scheme: http
+      scrapeTimeout: 10s
+    - interval: 1m
+      path: /metrics
+      port: http-metrics
+      scheme: http
+      scrapeTimeout: 10s
+  selector:
+    matchLabels:
+      tkeel.io/prometheus: 'true'
