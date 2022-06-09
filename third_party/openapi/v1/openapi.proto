@@ -118,7 +118,7 @@ message IdentifyResponse {
   repeated Permission permissions = 9; // plugins define permissions.
   bool disable_manual_activation =
       10; // plugins disable tenant manual activation.
-  bytes  profiles =11; // plugins controllable items eg:`[{  "key": "", "description": "","default": 0},{"key": "","description": "","default": "100:1;1000:60"}]`.
+  bytes  profiles =11; // plugins controllable items eg:`[{  "key": "", "description": "","value": 0},{"key": "","description": "","value": "100:1;1000:60"}]`.
 }
 
 /**

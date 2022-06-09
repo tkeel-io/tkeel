@@ -39,4 +39,7 @@ enum Error {
   // @msg=资源不存在
   // @code=INTERNAL
   ERR_RESOURCE_NOT_FOUND = 4;
+  // @msg=无效的x-tKeel-authtoken
+  // @code=UNAUTHENTICATED
+  ERR_INVALID_X_TKEEL_AUTH_TOKEN = 5;
 }

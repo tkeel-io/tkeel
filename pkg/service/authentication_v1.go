@@ -91,6 +91,7 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 		"/apis/security/v1/oauth(?!/pwd).*",
 		"/apis/security/v1/tenants/users/rpk/info",
 		"/apis/security/v1/tenants/exact",
+		"/apis/security/v1/tenants",
 		"/apis/rudder/v1/config/(deployment|platform)",
 		"/apis/\\w+/metrics",
 		"/metrics",
@@ -153,6 +154,10 @@ func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.Authen
 			if err != nil {
 				log.Errorf("error internal get user: %s", err)
 				return nil, pb.ErrInvalidXTkeelAuthToken()
+			}
+			user, errCheck := s.checkAuthorization(ctx, header)
+			if errCheck == nil {
+				sess.User = user
 			}
 			// set src tkeel depened.
 			if pluginIsTkeelComponent(pluginID) {

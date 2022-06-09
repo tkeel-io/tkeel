@@ -248,9 +248,9 @@ gen-proto:
 ################################################################################
 .PHONY: build-dev-container
 build-dev-container:
-	docker build -t tkeelio/rudder:$(DOCKER_TAG) -f docker/rudder/Dockerfile $(TKEEL_LINUX_AMD64_OUT_DIR)
+	docker build -t tkeelio/rudder:$(DOCKER_TAG) . -f docker/rudder/Dockerfile
 	docker push  tkeelio/rudder:$(DOCKER_TAG)
-	docker build -t tkeelio/keel:$(DOCKER_TAG) -f docker/keel/Dockerfile $(TKEEL_LINUX_AMD64_OUT_DIR)
+	docker build -t tkeelio/keel:$(DOCKER_TAG) . -f docker/keel/Dockerfile
 	docker push  tkeelio/keel:$(DOCKER_TAG)
 ifeq ($(DOCKER_TAG),latest)
 	docker tag tkeelio/rudder:$(DOCKER_TAG) tkeelio/rudder:dev

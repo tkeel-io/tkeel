@@ -235,7 +235,7 @@ type PluginRoute struct {
 type ProfileItem struct {
 	Key         string      `json:"key"`
 	Description string      `json:"description"`
-	Default     interface{} `json:"default"`
+	Value       interface{} `json:"value"`
 }
 
 func (pr *PluginRoute) String() string {

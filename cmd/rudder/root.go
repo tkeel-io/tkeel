@@ -106,6 +106,9 @@ var rootCmd = &cobra.Command{
 				log.Fatal("fatal new dapr client: %s", err)
 				os.Exit(-1)
 			}
+			// dapr http client.
+			daprHTTPClient := t_dapr.NewHTTPClient(conf.Dapr.HTTPPort)
+
 			openapiCli := openapi.NewDaprClient(conf.Dapr.HTTPPort)
 
 			// init k8s client.
@@ -240,7 +243,7 @@ var rootCmd = &cobra.Command{
 			rbac_v1.RegisterRBACServer(grpcSrv.GetServe(), rbacSrv)
 
 			// profile service.
-			ProfileSrv := service.NewProfileService(pOp, profileOp)
+			ProfileSrv := service.NewProfileService(pOp, profileOp, daprHTTPClient)
 			profile_v1.RegisterProfileHTTPServer(httpSrv.Container, ProfileSrv)
 			profile_v1.RegisterProfileServer(grpcSrv.GetServe(), ProfileSrv)
 

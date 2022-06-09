@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 
 	pb "github.com/tkeel-io/tkeel/api/entity/v1"
+	"github.com/tkeel-io/tkeel/pkg/util"
 
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/google/uuid"
@@ -30,11 +31,17 @@ func NewEntityTokenService(operator TokenOperator) *EntityTokenService {
 }
 
 func (s *EntityTokenService) CreateEntityToken(ctx context.Context, req *pb.CreateEntityTokenRequest) (*pb.CreateEntityTokenResponse, error) {
+	user, err := util.GetUser(ctx)
+	if err != nil {
+		log.Error(err)
+		return nil, pb.ErrInvalidXTkeelAuthToken()
+	}
 	now := time.Now()
 	entity := &EToken{
 		EntityID:   req.GetBody().GetEntityId(),
 		EntityType: req.GetBody().GetEntityType(),
 		Owner:      req.GetBody().GetOwner(),
+		TenantID:   user.Tenant,
 		CreatedAt:  now.Unix(),
 	}
 	if req.GetBody().GetExpiresIn() == 0 {
@@ -62,6 +69,7 @@ func (s *EntityTokenService) TokenInfo(ctx context.Context, req *pb.TokenInfoReq
 		EntityType: entity.EntityType,
 		EntityId:   entity.EntityID,
 		Owner:      entity.Owner,
+		TenantId:   entity.TenantID,
 		ExpiredAt:  entity.ExpiredAt,
 		CreatedAt:  entity.CreatedAt,
 	}, nil
@@ -146,6 +154,7 @@ type EToken struct {
 	EntityID   string `json:"entity_id"`
 	EntityType string `json:"entity_type"`
 	Owner      string `json:"owner"`
+	TenantID   string `json:"tenant_id"`
 	CreatedAt  int64  `json:"created_at"`
 	ExpiredAt  int64  `json:"expired_at"`
 }

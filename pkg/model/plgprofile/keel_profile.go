@@ -44,7 +44,7 @@ var (
 
 var KeelProfiles = &pb.TenantProfiles{PluginId: PLUGIN_ID_KEEL, Profiles: func() []byte {
 	profilesBytes, err := json.Marshal([]*model.ProfileItem{{Key: MAX_API_REQUEST_LIMIT_KEY,
-		Default: DEFAULT_MAX_API_LIMIT, Description: MAX_API_REQUEST_LIMIT_DESC}})
+		Value: DEFAULT_MAX_API_LIMIT, Description: MAX_API_REQUEST_LIMIT_DESC}})
 	if err != nil {
 		return []byte{}
 	}

@@ -122,6 +122,7 @@ message TokenInfoResponse {
   string entity_id = 1;
   string entity_type = 2;
   string owner = 3;
-  int64 created_at = 4;
-  int64 expired_at = 5;
+  string tenant_id=4;
+  int64 created_at = 5;
+  int64 expired_at = 6;
 }

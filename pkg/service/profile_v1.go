@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 
 	pb "github.com/tkeel-io/tkeel/api/profile/v1"
+	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/plgprofile"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
@@ -30,12 +31,13 @@ import (
 
 type ProfileService struct {
 	pb.UnimplementedProfileServer
-	pluginOp  plugin.Operator
-	ProfileOp plgprofile.ProfileOperator
+	pluginOp    plugin.Operator
+	ProfileOp   plgprofile.ProfileOperator
+	daprHTTPCli dapr.Client
 }
 
-func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperator) *ProfileService {
-	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp}
+func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperator, daprHTTP dapr.Client) *ProfileService {
+	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHTTP}
 }
 
 func (s *ProfileService) GetTenantProfile(ctx context.Context, req *pb.GetTenantProfileRequest) (*pb.GetTenantProfileResponse, error) {
@@ -75,14 +77,29 @@ func (s *ProfileService) SetTenantPluginProfile(ctx context.Context, req *pb.Set
 	if modelPluginProfile.PluginID == plgprofile.PLUGIN_ID_KEEL {
 		for i := range modelPluginProfile.Profiles {
 			if modelPluginProfile.Profiles[i].Key == plgprofile.MAX_API_REQUEST_LIMIT_KEY {
-				if limitVal, ok := modelPluginProfile.Profiles[i].Default.(float64); ok {
+				if limitVal, ok := modelPluginProfile.Profiles[i].Value.(float64); ok {
 					plgprofile.SetTenantAPILimit(req.GetTenantId(), int(limitVal))
 				}
 				break
 			}
 		}
+	} else {
+		bodyBytes, eMsa := json.Marshal(req)
+		if eMsa != nil {
+			log.Error(err)
+			return nil, pb.ErrUnknown()
+		}
+		res, eCall := s.daprHTTPCli.Call(ctx, &dapr.AppRequest{
+			ID:     modelPluginProfile.PluginID,
+			Method: "v1/tenant/enable",
+			Verb:   "POST",
+			Body:   bodyBytes,
+		})
+		if eCall != nil {
+			log.Error(err)
+		}
+		defer res.Body.Close()
 	}
-
 	return &pb.SetTenantPluginProfileResponse{}, nil
 }
 

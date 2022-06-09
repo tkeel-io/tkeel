@@ -3,11 +3,14 @@ kind: Service
 metadata:
   name: {{ include "rudder.name" . }}
   namespace: {{ .Release.Namespace | quote }}
+  labels:
+    tkeel.io/prometheus: 'true'
 spec:
   selector:
     app: {{ include "rudder.name" . }}
   ports:
     - protocol: TCP
+      name: http
       port: {{ .Values.httpPort }}
       targetPort: {{ .Values.httpPort }}
       nodePort: {{ .Values.nodePort }}
