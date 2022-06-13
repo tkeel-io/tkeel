@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tkeel-cluster-template
+data:
+  template: |
+    logger:
+      level: debug
+
+    server:
+      name: core
+      app_id: core
+      sources:
+        - kafka://tkeel-middleware-kafka:9092/core0/core
+    discovery:
+      endpoints:
+        - http://tkeel-middleware-etcd:2379
+
+    components:
+      store:
+        name: dapr
+        properties:
+          - key: store_name
+            value: core-state
+      etcd:
+        endpoints:
+          - http://tkeel-middleware-etcd:2379
+      time_series:
+        name: influxdb
+        properties:
+          - key: url
+            value: http://tkeel-core-influxdb:8086
+          - key: token
+            value: tr2zy29F1Tusl8bkBwOR
+          - key: org
+            value: tkeel
+          - key: bucket
+            value: core
+      rawdata:
+        name: clickhouse
+        properties:
+          - key: database
+            value: core
+          - key: urls
+            value:
+              - http://default:C1ickh0use@clickhouse-tkeel-core:8123
+          - key: table
+            value: event_data
+
+    dispatcher:
+      id: dispatcher
+      enabled: true
+      name: dispatcher
+      upstreams:
+        - dapr://localhost/core-pubsub/core-pub
+      downstreams:
+        - kafka://tkeel-middleware-kafka:9092/core0/core
