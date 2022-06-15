@@ -4443,7 +4443,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: controller:latest
+        image: tkeelio/tkeel-core-cluster:0.1.0
         livenessProbe:
           httpGet:
             path: /healthz
