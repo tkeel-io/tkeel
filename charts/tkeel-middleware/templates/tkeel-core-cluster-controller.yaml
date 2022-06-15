@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   labels:
     control-plane: controller-manager
-  name: cluster-operator-system
+  name: tkeel-core-cluster-system
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -11,20 +11,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
-  name: tkeelclusters.tkeel.io
+  name: tkeelcoreclusters.tkeel.io
 spec:
   group: tkeel.io
   names:
-    kind: TkeelCluster
-    listKind: TkeelClusterList
-    plural: tkeelclusters
-    singular: tkeelcluster
+    kind: TKeelCoreCluster
+    listKind: TKeelCoreClusterList
+    plural: tkeelcoreclusters
+    singular: tkeelcorecluster
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: TkeelCluster is the Schema for the tkeelclusters API
+        description: TKeelCoreCluster is the Schema for the tkeelcoreclusters API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -35,7 +35,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: TkeelClusterSpec defines the desired state of TkeelCluster
+            description: TKeelCoreClusterSpec defines the desired state of TKeelCoreCluster
             properties:
               nodes:
                 description: Nodes are the number of instances of core
@@ -4170,7 +4170,7 @@ spec:
             - template
             type: object
           status:
-            description: TkeelClusterStatus defines the observed state of TkeelCluster
+            description: TKeelCoreClusterStatus defines the observed state of TKeelCoreCluster
             properties:
               nodes:
                 description: Nodes is the number of Pods created by the StatefulSet controller.
@@ -4198,14 +4198,14 @@ status:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: cluster-operator-controller-manager
-  namespace: cluster-operator-system
+  name: tkeel-core-cluster-controller-manager
+  namespace: tkeel-core-cluster-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: cluster-operator-leader-election-role
-  namespace: cluster-operator-system
+  name: tkeel-core-cluster-leader-election-role
+  namespace: tkeel-core-cluster-system
 rules:
 - apiGroups:
   - ""
@@ -4243,7 +4243,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: cluster-operator-manager-role
+  name: tkeel-core-cluster-manager-role
 rules:
 - apiGroups:
   - apps
@@ -4272,7 +4272,7 @@ rules:
 - apiGroups:
   - tkeel.io
   resources:
-  - tkeelclusters
+  - tkeelcoreclusters
   verbs:
   - create
   - delete
@@ -4284,13 +4284,13 @@ rules:
 - apiGroups:
   - tkeel.io
   resources:
-  - tkeelclusters/finalizers
+  - tkeelcoreclusters/finalizers
   verbs:
   - update
 - apiGroups:
   - tkeel.io
   resources:
-  - tkeelclusters/status
+  - tkeelcoreclusters/status
   verbs:
   - get
   - patch
@@ -4299,7 +4299,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: cluster-operator-metrics-reader
+  name: tkeel-core-cluster-metrics-reader
 rules:
 - nonResourceURLs:
   - /metrics
@@ -4309,7 +4309,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: cluster-operator-proxy-role
+  name: tkeel-core-cluster-proxy-role
 rules:
 - apiGroups:
   - authentication.k8s.io
@@ -4327,42 +4327,42 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: cluster-operator-leader-election-rolebinding
-  namespace: cluster-operator-system
+  name: tkeel-core-cluster-leader-election-rolebinding
+  namespace: tkeel-core-cluster-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: cluster-operator-leader-election-role
+  name: tkeel-core-cluster-leader-election-role
 subjects:
 - kind: ServiceAccount
-  name: cluster-operator-controller-manager
-  namespace: cluster-operator-system
+  name: tkeel-core-cluster-controller-manager
+  namespace: tkeel-core-cluster-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: cluster-operator-manager-rolebinding
+  name: tkeel-core-cluster-manager-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-operator-manager-role
+  name: tkeel-core-cluster-manager-role
 subjects:
 - kind: ServiceAccount
-  name: cluster-operator-controller-manager
-  namespace: cluster-operator-system
+  name: tkeel-core-cluster-controller-manager
+  namespace: tkeel-core-cluster-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: cluster-operator-proxy-rolebinding
+  name: tkeel-core-cluster-proxy-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-operator-proxy-role
+  name: tkeel-core-cluster-proxy-role
 subjects:
 - kind: ServiceAccount
-  name: cluster-operator-controller-manager
-  namespace: cluster-operator-system
+  name: tkeel-core-cluster-controller-manager
+  namespace: tkeel-core-cluster-system
 ---
 apiVersion: v1
 data:
@@ -4377,19 +4377,19 @@ data:
       port: 9443
     leaderElection:
       leaderElect: true
-      resourceName: d92d5e4e.tkeel.io
+      resourceName: faa19253.tkeel.io
 kind: ConfigMap
 metadata:
-  name: cluster-operator-manager-config
-  namespace: cluster-operator-system
+  name: tkeel-core-cluster-manager-config
+  namespace: tkeel-core-cluster-system
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     control-plane: controller-manager
-  name: cluster-operator-controller-manager-metrics-service
-  namespace: cluster-operator-system
+  name: tkeel-core-cluster-controller-manager-metrics-service
+  namespace: tkeel-core-cluster-system
 spec:
   ports:
   - name: https
@@ -4404,8 +4404,8 @@ kind: Deployment
 metadata:
   labels:
     control-plane: controller-manager
-  name: cluster-operator-controller-manager
-  namespace: cluster-operator-system
+  name: tkeel-core-cluster-controller-manager
+  namespace: tkeel-core-cluster-system
 spec:
   replicas: 1
   selector:
@@ -4443,7 +4443,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: tkeelio/tkeel-cluster:0.1.0
+        image: controller:latest
         livenessProbe:
           httpGet:
             path: /healthz
@@ -4468,5 +4468,5 @@ spec:
           allowPrivilegeEscalation: false
       securityContext:
         runAsNonRoot: true
-      serviceAccountName: cluster-operator-controller-manager
+      serviceAccountName: tkeel-core-cluster-controller-manager
       terminationGracePeriodSeconds: 10

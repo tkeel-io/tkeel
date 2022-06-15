@@ -4,20 +4,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.8.0
   creationTimestamp: null
-  name: tkeelclusters.tkeel.io
+  name: tkeelcoreclusters.tkeel.io
 spec:
   group: tkeel.io
   names:
-    kind: TkeelCluster
-    listKind: TkeelClusterList
-    plural: tkeelclusters
-    singular: tkeelcluster
+    kind: TKeelCoreCluster
+    listKind: TKeelCoreClusterList
+    plural: tkeelcoreclusters
+    singular: tkeelcorecluster
   scope: Namespaced
   versions:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: TkeelCluster is the Schema for the tkeelclusters API
+        description: TKeelCoreCluster is the Schema for the tkeelcoreclusters API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -28,7 +28,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: TkeelClusterSpec defines the desired state of TkeelCluster
+            description: TKeelCoreClusterSpec defines the desired state of TKeelCoreCluster
             properties:
               nodes:
                 description: Nodes are the number of instances of core
@@ -4163,7 +4163,7 @@ spec:
             - template
             type: object
           status:
-            description: TkeelClusterStatus defines the observed state of TkeelCluster
+            description: TKeelCoreClusterStatus defines the observed state of TKeelCoreCluster
             properties:
               nodes:
                 description: Nodes is the number of Pods created by the StatefulSet controller.
