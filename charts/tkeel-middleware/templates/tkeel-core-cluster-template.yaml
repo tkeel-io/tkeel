@@ -26,16 +26,15 @@ data:
         endpoints:
           - http://tkeel-middleware-etcd:2379
       time_series:
-        name: influxdb
+        name: clickhouse
         properties:
-          - key: url
-            value: http://tkeel-core-influxdb:8086
-          - key: token
-            value: tr2zy29F1Tusl8bkBwOR
-          - key: org
-            value: tkeel
-          - key: bucket
+          - key: database
             value: core
+          - key: urls
+            value:
+              - clickhouse://default:C1ickh0use@clickhouse-tkeel-core:9000
+          - key: table
+            value: timeseries
       rawdata:
         name: clickhouse
         properties:
@@ -43,7 +42,7 @@ data:
             value: core
           - key: urls
             value:
-              - http://default:C1ickh0use@clickhouse-tkeel-core:8123
+              - clickhouse://default:C1ickh0use@clickhouse-tkeel-core:9000
           - key: table
             value: event_data
 
