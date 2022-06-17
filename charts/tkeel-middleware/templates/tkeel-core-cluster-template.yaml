@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tkeel-core-cluster-template
+data:
+  template: |
+    logger:
+      level: debug
+
+    server:
+      name: core
+      app_id: core
+      sources:
+        - kafka://tkeel-middleware-kafka:9092/core0/core
+    discovery:
+      endpoints:
+        - http://tkeel-middleware-etcd:2379
+
+    components:
+      store:
+        name: dapr
+        properties:
+          - key: store_name
+            value: core-state
+      etcd:
+        endpoints:
+          - http://tkeel-middleware-etcd:2379
+      time_series:
+        name: clickhouse
+        properties:
+          - key: database
+            value: core
+          - key: urls
+            value:
+              - clickhouse://default:C1ickh0use@clickhouse-tkeel-core:9000
+          - key: table
+            value: timeseries
+      rawdata:
+        name: clickhouse
+        properties:
+          - key: database
+            value: core
+          - key: urls
+            value:
+              - clickhouse://default:C1ickh0use@clickhouse-tkeel-core:9000
+          - key: table
+            value: event_data
+
+    dispatcher:
+      id: dispatcher
+      enabled: true
+      name: dispatcher
+      upstreams:
+        - dapr://localhost/core-pubsub/core-pub
+      downstreams:
+        - kafka://tkeel-middleware-kafka:9092/core0/core
