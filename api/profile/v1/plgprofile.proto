@@ -27,7 +27,7 @@ service Profile {
       get : "/profile"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "get tenant profile"
+      summary : "获取平台租户配置"
       operation_id : "GetTenantProfile"
       tags : "profile"
       responses : [ {
@@ -43,7 +43,7 @@ service Profile {
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "set tenant profile"
+      summary : "设置平台租户配置"
       operation_id : "SetTenantProfile"
       tags : "profile"
       responses : [ {

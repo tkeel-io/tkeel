@@ -34,9 +34,9 @@ service EntityToken {
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "create a entity token"
+      summary : "创建实体Token"
       operation_id : "CreateEntityToken"
-      tags : "[Security] EntityToken"
+      tags : "EntityToken"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -48,9 +48,9 @@ service EntityToken {
       get : "/entity/info/{token}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "get a entity token info"
+      summary : "获取实体Token原信息"
       operation_id : "EntityTokenInfo"
-      tags : "[Security] EntityToken"
+      tags : "EntityToken"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -62,9 +62,9 @@ service EntityToken {
       delete : "/entity/token/{token}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "delete a entity token"
+      summary : "注销实体Token"
       operation_id : "DeleteEntityToken"
-      tags : "[Security] EntityToken"
+      tags : "EntityToken"
       responses : [ {
         key : "200"
         value : {description : "OK"}

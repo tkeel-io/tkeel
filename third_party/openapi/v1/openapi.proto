@@ -91,8 +91,8 @@ message Permission {
   string name = 2; // permission name.
   message Dependence {
     string path =
-        1; // dependence path,The path format is plugin ID</parent permission
-    // ID>/authority ID.The content in <> is variable.
+        1;  // dependence path,The path format is plugin ID/authority ID.
+            // The plugin ID is parent permission ID.
     string desc = 2; // dependencs desc.
   }
   repeated Dependence dependences = 3; // dependences permission.
