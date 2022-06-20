@@ -1583,6 +1583,8 @@ github.com/tidwall/tinyqueue v0.0.0-20180302190814-1e39f5511563/go.mod h1:mLqSmt
 github.com/tkeel-io/kit v0.0.0-20211223050802-7dfccfe43fdb/go.mod h1:FYeTM+tqf/tdrf2HxUX2wdAAHQM8ggN4+IbZv4b6+wU=
 github.com/tkeel-io/kit v0.0.0-20220510140206-b9dd376369ee h1:oahAmTkiF9NY4kNwLauED/BzWmWf0RlYGyQCr5/OP4I=
 github.com/tkeel-io/kit v0.0.0-20220510140206-b9dd376369ee/go.mod h1:hTI3tXXqyXfc+eE1wjv1D1dEO4TgArDbaaKKl7RTCZI=
+github.com/tkeel-io/kit v0.0.0-20220522082406-248e4772e711 h1:sjomik8MznWAiB938kJ5l71w6MUwu9D17v0gt2KOUsY=
+github.com/tkeel-io/kit v0.0.0-20220522082406-248e4772e711/go.mod h1:hTI3tXXqyXfc+eE1wjv1D1dEO4TgArDbaaKKl7RTCZI=
 github.com/tkeel-io/security v0.0.0-20220412090936-aea9ec1f08c1 h1:KV54iFbPcLebiYQX+njnFThbWokh8cxz0WZWTsIbeDQ=
 github.com/tkeel-io/security v0.0.0-20220412090936-aea9ec1f08c1/go.mod h1:dkGcpl1qEFguUnUVM0l8FBLSe1OHuw3CXfmO5z+Kcbg=
 github.com/tkeel-io/tdtl v0.1.4 h1:9DDKRJ2lueTP+0Ij9aCr6ztGuTlfrQv7j76JxXgldGk=

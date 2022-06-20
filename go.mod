@@ -21,7 +21,7 @@ require (
 	github.com/prometheus/client_golang v1.11.0
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
-	github.com/tkeel-io/kit v0.0.0-20220510140206-b9dd376369ee
+	github.com/tkeel-io/kit v0.0.0-20220522082406-248e4772e711
 	github.com/tkeel-io/security v0.0.0-20220412090936-aea9ec1f08c1
 	github.com/tkeel-io/tdtl v0.1.4
 	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220424073125-8edc0200490f
