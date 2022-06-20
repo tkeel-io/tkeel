@@ -33,7 +33,7 @@ service RBAC {
       body : "role"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "create role in tenant "
+      summary : "创建角色"
       operation_id : "CreateRole"
       tags : "RBAC"
       responses : [ {
@@ -48,7 +48,7 @@ service RBAC {
       get : "/rbac/roles"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "list role in tenant "
+      summary : "角色列表"
       operation_id : "ListRole"
       tags : "RBAC"
       responses : [ {
@@ -63,7 +63,7 @@ service RBAC {
       get : "/rbac/roles/{id}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "Get role in tenant "
+      summary : "获取角色详情"
       operation_id : "GetRole"
       tags : "RBAC"
       responses : [ {
@@ -78,7 +78,7 @@ service RBAC {
       delete : "/rbac/roles/{id}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "delete role in tenant "
+      summary : "删除角色"
       operation_id : "DeleteRole"
       tags : "RBAC"
       responses : [ {
@@ -94,7 +94,7 @@ service RBAC {
       body : "role"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "update role in tenant "
+      summary : "修改角色信息"
       operation_id : "UpdateRole"
       tags : "RBAC"
       responses : [ {
@@ -111,7 +111,7 @@ service RBAC {
       body : "role_id_list"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "create binding to bind user_id with roles"
+      summary : "全量更新用户角色"
       operation_id : "UpdateUserRoleBinding"
       tags : "RBAC"
       responses : [ {
@@ -128,7 +128,7 @@ service RBAC {
       body : "users"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "create binding to bind role_id with user_id"
+      summary : "为用户添加角色"
       operation_id : "CreateRoleBinding"
       tags : "RBAC"
       responses : [ {
@@ -144,7 +144,7 @@ service RBAC {
       delete : "/rbac/roles/{role_id}/users/{user_id}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "delete binding of the bind role_name with user_id"
+      summary : "删除用户角色"
       operation_id : "DeleteRoleBinding"
       tags : "RBAC"
       responses : [ {
@@ -159,7 +159,7 @@ service RBAC {
       get : "/rbac/permissions"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "list permissions "
+      summary : "权限列表"
       operation_id : "ListPermissions"
       tags : "RBAC"
       responses : [ {
@@ -176,7 +176,7 @@ service RBAC {
       body : "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "check role has the permission"
+      summary : "权限校验"
       operation_id : "CheckRolePermission"
       tags : "RBAC"
       responses : [ {
@@ -191,7 +191,7 @@ service RBAC {
       body : "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "TM add policy"
+      summary : "TM add policy 测试专用"
       operation_id : "TMAddPolicy"
       tags : "RBAC"
       responses : [ {
@@ -206,7 +206,7 @@ service RBAC {
       body : "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "TM delete policy"
+      summary : "TM delete policy 测试专用"
       operation_id : "TMDeletePolicy"
       tags : "RBAC"
       responses : [ {
@@ -221,7 +221,7 @@ service RBAC {
       body : "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "TM add policy"
+      summary : "TM add policy 测试专用"
       operation_id : "TMAddRoleBinding"
       tags : "RBAC"
       responses : [ {
@@ -237,7 +237,7 @@ service RBAC {
       body : "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "TM delete policy"
+      summary : "TM delete policy 测试专用"
       operation_id : "TMDeleteRoleBinding"
       tags : "RBAC"
       responses : [ {

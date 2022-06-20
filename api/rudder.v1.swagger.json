@@ -48,7 +48,7 @@
   "paths": {
     "/authenticate": {
       "get": {
-        "summary": "tkeel authenticate with header Authorization",
+        "summary": "Authorization 认证",
         "operationId": "Authenticate",
         "responses": {
           "200": {
@@ -275,7 +275,7 @@
     },
     "/entity/info/{token}": {
       "get": {
-        "summary": "get a entity token info",
+        "summary": "获取实体Token原信息",
         "operationId": "EntityTokenInfo",
         "responses": {
           "200": {
@@ -301,13 +301,13 @@
           }
         ],
         "tags": [
-          "[Security] EntityToken"
+          "EntityToken"
         ]
       }
     },
     "/entity/token": {
       "post": {
-        "summary": "create a entity token",
+        "summary": "创建实体Token",
         "operationId": "CreateEntityToken",
         "responses": {
           "200": {
@@ -336,13 +336,13 @@
           }
         ],
         "tags": [
-          "[Security] EntityToken"
+          "EntityToken"
         ]
       }
     },
     "/entity/token/{token}": {
       "delete": {
-        "summary": "delete a entity token",
+        "summary": "注销实体Token",
         "operationId": "DeleteEntityToken",
         "responses": {
           "200": {
@@ -368,7 +368,7 @@
           }
         ],
         "tags": [
-          "[Security] EntityToken"
+          "EntityToken"
         ]
       }
     },
@@ -405,7 +405,7 @@
     },
     "/oauth/authenticate": {
       "get": {
-        "summary": "oauth authenticate with header Authorization",
+        "summary": "获取 access_token 认证信息",
         "operationId": "OauthAuthenticate",
         "responses": {
           "200": {
@@ -422,13 +422,13 @@
           }
         },
         "tags": [
-          "[Security] OAuth"
+          "OAuth"
         ]
       }
     },
     "/oauth/id-provider/register/{tenant_id}": {
       "post": {
-        "summary": "identity provider register",
+        "summary": "外部认证注册",
         "operationId": "IdentityProviderRegister",
         "responses": {
           "200": {
@@ -461,13 +461,13 @@
           }
         ],
         "tags": [
-          "[Security] OAuth"
+          "OAuth"
         ]
       }
     },
     "/oauth/id-provider/template": {
       "get": {
-        "summary": "identity provider config template",
+        "summary": "获取外部身份认证配置模板",
         "operationId": "IdentityProviderTemplate",
         "responses": {
           "200": {
@@ -492,13 +492,13 @@
           }
         ],
         "tags": [
-          "[Security] OAuth"
+          "OAuth"
         ]
       }
     },
     "/oauth/id-provider/{tenant_id}": {
       "get": {
-        "summary": "get identity provider",
+        "summary": "获取租户外部认证配置",
         "operationId": "GetIdentityProvider",
         "responses": {
           "200": {
@@ -523,13 +523,13 @@
           }
         ],
         "tags": [
-          "[Security] OAuth"
+          "OAuth"
         ]
       }
     },
     "/oauth/oidc/register": {
       "post": {
-        "summary": "oauth OIDC provider register",
+        "summary": "注册 OIDC 外部身份认证方",
         "operationId": "OIDCRegister",
         "responses": {
           "200": {
@@ -556,13 +556,13 @@
           }
         ],
         "tags": [
-          "[Security] OAuth"
+          "OAuth"
         ]
       }
     },
     "/oauth/pwd": {
       "put": {
-        "summary": "oauth update user password",
+        "summary": "修改密码",
         "operationId": "UpdatePassword",
         "responses": {
           "200": {
@@ -589,13 +589,13 @@
           }
         ],
         "tags": [
-          "[Security] OAuth"
+          "OAuth"
         ]
       }
     },
     "/oauth/rspwd": {
       "post": {
-        "summary": "oauth reset user password",
+        "summary": "重置密码",
         "operationId": "ResetPassword",
         "responses": {
           "200": {
@@ -622,13 +622,13 @@
           }
         ],
         "tags": [
-          "[Security] OAuth"
+          "OAuth"
         ]
       }
     },
     "/oauth/token/revoke": {
       "post": {
-        "summary": "oauth token revoke with refresh token",
+        "summary": "注销 access_token",
         "operationId": "TokenRevoke",
         "responses": {
           "200": {
@@ -655,13 +655,13 @@
           }
         ],
         "tags": [
-          "[Security] OAuth"
+          "OAuth"
         ]
       }
     },
     "/oauth/{tenant_id}/authorize": {
       "get": {
-        "summary": "oauth authorize code with username and password",
+        "summary": "获取授权码",
         "operationId": "OauthAuthorize",
         "responses": {
           "200": {
@@ -722,13 +722,13 @@
           }
         ],
         "tags": [
-          "[Security] OAuth"
+          "OAuth"
         ]
       }
     },
     "/oauth/{tenant_id}/token": {
       "get": {
-        "summary": "oauth token with code or password",
+        "summary": "获取API access_token",
         "operationId": "OauthToken",
         "responses": {
           "200": {
@@ -803,7 +803,7 @@
           }
         ],
         "tags": [
-          "[Security] OAuth"
+          "OAuth"
         ]
       }
     },
@@ -1453,7 +1453,7 @@
     },
     "/profile": {
       "get": {
-        "summary": "get tenant profile",
+        "summary": "获取平台租户配置",
         "operationId": "GetTenantProfile",
         "responses": {
           "200": {
@@ -1482,7 +1482,7 @@
         ]
       },
       "post": {
-        "summary": "set tenant profile",
+        "summary": "设置平台租户配置",
         "operationId": "SetTenantProfile",
         "responses": {
           "200": {
@@ -1521,7 +1521,7 @@
     },
     "/rbac/permissions": {
       "get": {
-        "summary": "list permissions ",
+        "summary": "权限列表",
         "operationId": "ListPermissions",
         "responses": {
           "200": {
@@ -1560,7 +1560,7 @@
     },
     "/rbac/permissions/check": {
       "post": {
-        "summary": "check role has the permission",
+        "summary": "权限校验",
         "operationId": "CheckRolePermission",
         "responses": {
           "200": {
@@ -1593,7 +1593,7 @@
     },
     "/rbac/roles": {
       "get": {
-        "summary": "list role in tenant ",
+        "summary": "角色列表",
         "operationId": "ListRole",
         "responses": {
           "200": {
@@ -1660,7 +1660,7 @@
         ]
       },
       "post": {
-        "summary": "create role in tenant ",
+        "summary": "创建角色",
         "operationId": "CreateRole",
         "responses": {
           "200": {
@@ -1695,7 +1695,7 @@
     },
     "/rbac/roles/{id}": {
       "get": {
-        "summary": "Get role in tenant ",
+        "summary": "获取角色详情",
         "operationId": "GetRole",
         "responses": {
           "200": {
@@ -1725,7 +1725,7 @@
         ]
       },
       "delete": {
-        "summary": "delete role in tenant ",
+        "summary": "删除角色",
         "operationId": "DeleteRole",
         "responses": {
           "200": {
@@ -1755,7 +1755,7 @@
         ]
       },
       "put": {
-        "summary": "update role in tenant ",
+        "summary": "修改角色信息",
         "operationId": "UpdateRole",
         "responses": {
           "200": {
@@ -1797,7 +1797,7 @@
     },
     "/rbac/roles/{role_id}/users": {
       "post": {
-        "summary": "create binding to bind role_id with user_id",
+        "summary": "为用户添加角色",
         "operationId": "CreateRoleBinding",
         "responses": {
           "200": {
@@ -1839,7 +1839,7 @@
     },
     "/rbac/roles/{role_id}/users/{user_id}": {
       "delete": {
-        "summary": "delete binding of the bind role_name with user_id",
+        "summary": "删除用户角色",
         "operationId": "DeleteRoleBinding",
         "responses": {
           "200": {
@@ -1878,7 +1878,7 @@
     },
     "/rbac/users/{user_id}/roles": {
       "put": {
-        "summary": "create binding to bind user_id with roles",
+        "summary": "全量更新用户角色",
         "operationId": "UpdateUserRoleBinding",
         "responses": {
           "200": {
@@ -2270,7 +2270,7 @@
     },
     "/tenants": {
       "get": {
-        "summary": "tenant list",
+        "summary": "获取租户列表",
         "operationId": "ListTenant",
         "responses": {
           "200": {
@@ -2321,11 +2321,11 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       },
       "post": {
-        "summary": "create a tenant",
+        "summary": "创建租户",
         "operationId": "CreateTenant",
         "responses": {
           "200": {
@@ -2366,13 +2366,13 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       }
     },
     "/tenants/exact": {
       "get": {
-        "summary": "tenant exact search",
+        "summary": "租户认证方式查询",
         "operationId": "TenantByExactSearch",
         "responses": {
           "200": {
@@ -2403,13 +2403,13 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       }
     },
     "/tenants/plugins/permissible": {
       "get": {
-        "summary": "permissible tenant plugin",
+        "summary": "租户插件权限校验",
         "operationId": "PermissibleTenantPlugin",
         "responses": {
           "200": {
@@ -2440,13 +2440,13 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       }
     },
     "/tenants/users/rpk/info": {
       "post": {
-        "summary": "get reset user password key info",
+        "summary": "获取重置密码密钥信息",
         "operationId": "ResetPasswordKeyInfo",
         "responses": {
           "200": {
@@ -2473,13 +2473,13 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       }
     },
     "/tenants/{tenant_id}": {
       "get": {
-        "summary": "get a tenant",
+        "summary": "获取租户详情",
         "operationId": "GetTenant",
         "responses": {
           "200": {
@@ -2505,11 +2505,11 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       },
       "delete": {
-        "summary": "delete a tenant",
+        "summary": "删除租户",
         "operationId": "DeleteTenant",
         "responses": {
           "200": {
@@ -2535,11 +2535,11 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       },
       "put": {
-        "summary": "tenant update",
+        "summary": "修改租户信息",
         "operationId": "UpdateTenant",
         "responses": {
           "200": {
@@ -2572,13 +2572,13 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       }
     },
     "/tenants/{tenant_id}/plugins": {
       "get": {
-        "summary": "list tenant plugin",
+        "summary": "租户插件列表",
         "operationId": "ListTenantPlugin",
         "responses": {
           "200": {
@@ -2603,11 +2603,11 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       },
       "post": {
-        "summary": "add a plugin",
+        "summary": "租户启用插件",
         "operationId": "AddPlugin",
         "responses": {
           "200": {
@@ -2640,13 +2640,13 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       }
     },
     "/tenants/{tenant_id}/plugins/{plugin_id}": {
       "delete": {
-        "summary": "delete tenant plugin",
+        "summary": "停用租户插件",
         "operationId": "DeleteTenantPlugin",
         "responses": {
           "200": {
@@ -2677,13 +2677,13 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       }
     },
     "/tenants/{tenant_id}/users": {
       "get": {
-        "summary": "list users",
+        "summary": "查询用户列表",
         "operationId": "ListUser",
         "responses": {
           "200": {
@@ -2740,11 +2740,11 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       },
       "post": {
-        "summary": "create a  user at tenant",
+        "summary": "创建用户",
         "operationId": "CreateUser",
         "responses": {
           "200": {
@@ -2780,13 +2780,13 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       }
     },
     "/tenants/{tenant_id}/users/{user_id}": {
       "get": {
-        "summary": "get a  user",
+        "summary": "获取用户信息",
         "operationId": "GetUser",
         "responses": {
           "200": {
@@ -2817,11 +2817,11 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       },
       "delete": {
-        "summary": "delete a user",
+        "summary": "删除用户",
         "operationId": "DeleteUser",
         "responses": {
           "200": {
@@ -2852,11 +2852,11 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       },
       "put": {
-        "summary": "update user",
+        "summary": "修改用户信息",
         "operationId": "UpdateUser",
         "responses": {
           "200": {
@@ -2895,13 +2895,13 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       }
     },
     "/tenants/{tenant_id}/users/{user_id}/rpk": {
       "get": {
-        "summary": "get reset user password key ",
+        "summary": "获取重置密码密钥",
         "operationId": "GetResetPasswordKey",
         "responses": {
           "200": {
@@ -2932,13 +2932,13 @@
           }
         ],
         "tags": [
-          "[Security] Tenant"
+          "Tenant"
         ]
       }
     },
     "/tkeel-manager/rbac/binding": {
       "post": {
-        "summary": "TM add policy",
+        "summary": "TM add policy 测试专用",
         "operationId": "TMAddRoleBinding",
         "responses": {
           "200": {
@@ -2971,7 +2971,7 @@
     },
     "/tkeel-manager/rbac/binding/delete": {
       "post": {
-        "summary": "TM delete policy",
+        "summary": "TM delete policy 测试专用",
         "operationId": "TMDeleteRoleBinding",
         "responses": {
           "200": {
@@ -3004,7 +3004,7 @@
     },
     "/tkeel-manager/rbac/policy": {
       "post": {
-        "summary": "TM add policy",
+        "summary": "TM add policy 测试专用",
         "operationId": "TMAddPolicy",
         "responses": {
           "200": {
@@ -3037,7 +3037,7 @@
     },
     "/tkeel-manager/rbac/policy/delete": {
       "post": {
-        "summary": "TM delete policy",
+        "summary": "TM delete policy 测试专用",
         "operationId": "TMDeletePolicy",
         "responses": {
           "200": {
@@ -3177,7 +3177,7 @@
         },
         "desc": {
           "type": "string",
-          "description": "ID\u003e/authority ID.The content in \u003c\u003e is variable."
+          "description": "The plugin ID is parent permission ID."
         }
       }
     },

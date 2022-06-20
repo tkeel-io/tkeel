@@ -35,9 +35,9 @@ service Tenant {
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "create a tenant"
+      summary : "创建租户"
       operation_id : "CreateTenant"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [
         {
           key : "200"
@@ -65,9 +65,9 @@ service Tenant {
       get : "/tenants/{tenant_id}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "get a tenant"
+      summary : "获取租户详情"
       operation_id : "GetTenant"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -81,9 +81,9 @@ service Tenant {
       get : "/tenants"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "tenant list"
+      summary : "获取租户列表"
       operation_id : "ListTenant"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -97,9 +97,9 @@ service Tenant {
       get : "/tenants/exact"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "tenant exact search"
+      summary : "租户认证方式查询"
       operation_id : "TenantByExactSearch"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -115,9 +115,9 @@ service Tenant {
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "tenant update"
+      summary : "修改租户信息"
       operation_id : "UpdateTenant"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -131,9 +131,9 @@ service Tenant {
       delete : "/tenants/{tenant_id}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "delete a tenant"
+      summary : "删除租户"
       operation_id : "DeleteTenant"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -148,9 +148,9 @@ service Tenant {
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "create a  user at tenant"
+      summary : "创建用户"
       operation_id : "CreateUser"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -164,9 +164,9 @@ service Tenant {
       get : "/tenants/{tenant_id}/users/{user_id}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "get a  user"
+      summary : "获取用户信息"
       operation_id : "GetUser"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -181,9 +181,9 @@ service Tenant {
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "list users"
+      summary : "查询用户列表"
       operation_id : "ListUser"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -198,9 +198,9 @@ service Tenant {
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "delete a user"
+      summary : "删除用户"
       operation_id : "DeleteUser"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -216,9 +216,9 @@ service Tenant {
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "update user"
+      summary : "修改用户信息"
       operation_id : "UpdateUser"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -236,9 +236,9 @@ service Tenant {
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "add a plugin"
+      summary : "租户启用插件"
       operation_id : "AddPlugin"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -254,9 +254,9 @@ service Tenant {
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "list tenant plugin"
+      summary : "租户插件列表"
       operation_id : "ListTenantPlugin"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -272,9 +272,9 @@ service Tenant {
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "delete tenant plugin"
+      summary : "停用租户插件"
       operation_id : "DeleteTenantPlugin"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -289,9 +289,9 @@ service Tenant {
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "permissible tenant plugin"
+      summary : "租户插件权限校验"
       operation_id : "PermissibleTenantPlugin"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -306,9 +306,9 @@ service Tenant {
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "get reset user password key "
+      summary : "获取重置密码密钥"
       operation_id : "GetResetPasswordKey"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -324,9 +324,9 @@ service Tenant {
     };
 
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "get reset user password key info"
+      summary : "获取重置密码密钥信息"
       operation_id : "ResetPasswordKeyInfo"
-      tags : "[Security] Tenant"
+      tags : "Tenant"
       responses : [ {
         key : "200"
         value : {description : "OK"}

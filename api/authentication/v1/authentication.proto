@@ -30,7 +30,7 @@ service authentication {
       get : "/authenticate"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "tkeel authenticate with header Authorization"
+      summary : "Authorization 认证"
       operation_id : "Authenticate"
       tags : "authentication"
       responses : [
