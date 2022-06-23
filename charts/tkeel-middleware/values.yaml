@@ -7,6 +7,10 @@ redis:
   fullnameOverride: tkeel-middleware-redis
   auth:
     password: Biz0P8Xoup
+    
+kafka:
+  persistence:
+    size: 100Gi
 
 mysql:
   fullnameOverride: tkeel-middleware-mysql
