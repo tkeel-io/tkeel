@@ -76,11 +76,11 @@ message GetTenantProfileDataRequest{
 }
 
 message GetTenantProfileDataResponse{
-  map<string ,string> profiles =1;
+  map<string ,int64> profiles =1;
 
 }
 message TenantProfiles {
-  map<string ,string> profiles = 1;
+  map<string ,int64> profiles = 1;
 }
 
 message SetTenantPluginProfileRequest {
@@ -96,17 +96,22 @@ message GetProfileSchemaRequest {
   string profile =1;
 }
 message GetProfileSchemaResponse{
-  map <string, ProfileSchema >  profiles = 1;
+  Schema schema =1;
+}
+
+message Schema {
+    string type =1;
+  map <string, ProfileSchema >  properties = 2;
 }
 
 message ProfileSchema {
   string type = 1 ;
   string title = 2 ;
   string description =3 ;
-  string default = 4 ;
-  string multipleOf = 5 ;
-  string minimum = 6 ;
-  string maximum = 7 ;
+  int64 default = 4 ;
+  int64 multipleOf = 5 ;
+  int64 minimum = 6 ;
+  int64 maximum = 7 ;
 }
 
  message TenantEnableRequest {

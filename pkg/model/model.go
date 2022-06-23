@@ -232,14 +232,15 @@ type PluginRoute struct {
 	Version           string                  `json:"version,omitempty"`            // model version.
 }
 
+// nolint
 type ProfileSchema struct {
 	Type        string `json:"type"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
-	Default     string `json:"default"`
-	MultipleOf  string `json:"multipleOf"`
-	Minimum     string `json:"minimum"`
-	Maximum     string `json:"maximum"`
+	Default     int64  `json:"default"`
+	MultipleOf  int64  `json:"multipleOf"`
+	Minimum     int64  `json:"minimum"`
+	Maximum     int64  `json:"maximum"`
 }
 
 func (pr *PluginRoute) String() string {

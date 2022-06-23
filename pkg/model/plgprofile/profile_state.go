@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	dapr "github.com/dapr/go-sdk/client"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -48,6 +49,7 @@ type ProfileStateStore struct {
 	daprClient dapr.Client
 }
 
+// nolint
 func (store *ProfileStateStore) GetProfilePlugin(ctx context.Context, profile string) (plugin string, err error) {
 	items, err := store.daprClient.GetState(ctx, store.storeName, profilePluginKey(profile))
 	if err != nil {
@@ -57,16 +59,18 @@ func (store *ProfileStateStore) GetProfilePlugin(ctx context.Context, profile st
 	return string(items.Value), nil
 }
 
+// nolint
 func (store *ProfileStateStore) SetProfilePlugin(ctx context.Context, profile string, plugin string) error {
 	return store.daprClient.SaveState(ctx, store.storeName, profilePluginKey(profile), []byte(plugin))
 }
 
-func (store *ProfileStateStore) GetTenantProfileData(ctx context.Context, tenantID string) (data map[string]string, err error) {
+// nolint
+func (store *ProfileStateStore) GetTenantProfileData(ctx context.Context, tenantID string) (data map[string]int64, err error) {
 	items, err := store.daprClient.GetState(ctx, store.storeName, profileDataKeyWithTenant(tenantID))
 	if err != nil {
 		return nil, err
 	}
-	data = make(map[string]string)
+	data = make(map[string]int64)
 	err = json.Unmarshal(items.Value, &data)
 	if err != nil {
 		return nil, err
@@ -74,12 +78,17 @@ func (store *ProfileStateStore) GetTenantProfileData(ctx context.Context, tenant
 	return data, nil
 }
 
-func (store *ProfileStateStore) SetTenantProfileData(ctx context.Context, tenantID string, profileData map[string]string) error {
+// nolint
+func (store *ProfileStateStore) SetTenantProfileData(ctx context.Context, tenantID string, profileData map[string]int64) error {
 	data, err := json.Marshal(profileData)
 	if err != nil {
 		return err
 	}
-	return store.daprClient.SaveState(ctx, store.storeName, profilePluginKey(tenantID), data)
+	err = store.daprClient.SaveState(ctx, store.storeName, profilePluginKey(tenantID), data)
+	if err != nil {
+		return errors.Wrapf(err, "SaveState")
+	}
+	return nil
 }
 
 var _ ProfileOperator = new(ProfileStateStore)

@@ -3311,16 +3311,20 @@
           "type": "string"
         },
         "default": {
-          "type": "string"
+          "type": "string",
+          "format": "int64"
         },
         "multipleOf": {
-          "type": "string"
+          "type": "string",
+          "format": "int64"
         },
         "minimum": {
-          "type": "string"
+          "type": "string",
+          "format": "int64"
         },
         "maximum": {
-          "type": "string"
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -3363,6 +3367,20 @@
         }
       },
       "description": "plugin define permission."
+    },
+    "profilev1Schema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/apiprofilev1ProfileSchema"
+          }
+        }
+      }
     },
     "protobufAny": {
       "type": "object",
@@ -3740,11 +3758,8 @@
     "v1GetProfileSchemaResponse": {
       "type": "object",
       "properties": {
-        "profiles": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/apiprofilev1ProfileSchema"
-          }
+        "schema": {
+          "$ref": "#/definitions/profilev1Schema"
         }
       }
     },
@@ -3792,7 +3807,8 @@
         "profiles": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "type": "string",
+            "format": "int64"
           }
         }
       }
@@ -4794,7 +4810,8 @@
         "profiles": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "type": "string",
+            "format": "int64"
           }
         }
       }

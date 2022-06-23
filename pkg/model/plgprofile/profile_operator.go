@@ -21,8 +21,8 @@ import (
 )
 
 type ProfileOperator interface {
-	GetTenantProfileData(ctx context.Context, tenantID string) (data map[string]string, err error)
-	SetTenantProfileData(ctx context.Context, tenantID string, profileData map[string]string) error
+	GetTenantProfileData(ctx context.Context, tenantID string) (data map[string]int64, err error)
+	SetTenantProfileData(ctx context.Context, tenantID string, profileData map[string]int64) error
 	SetProfilePlugin(ctx context.Context, profile string, plugin string) error
 	GetProfilePlugin(ctx context.Context, profile string) (plugin string, err error)
 }

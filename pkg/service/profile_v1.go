@@ -45,9 +45,9 @@ func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetPr
 		log.Error(err)
 		return nil, pb.ErrPluginList()
 	}
-	// ProfileOp set profileKey:plugin
+	// ProfileOp set profileKey:plugin.
 	for _, plg := range plugins {
-		for k, _ := range plg.Profiles {
+		for k := range plg.Profiles {
 			s.ProfileOp.SetProfilePlugin(ctx, k, plg.ID)
 		}
 	}
@@ -58,13 +58,15 @@ func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetPr
 			profiles[k] = modelProfileSchema2pbProfile(prf)
 		}
 	}
-	// keel profile
+	// keel profile.
 	for keelP, keelV := range plgprofile.KeelProfiles {
 		profiles[keelP] = modelProfileSchema2pbProfile(keelV)
 	}
 
-	return &pb.GetProfileSchemaResponse{Profiles: profiles}, nil
-
+	return &pb.GetProfileSchemaResponse{Schema: &pb.Schema{
+		Type:       "object",
+		Properties: profiles,
+	}}, nil
 }
 
 func (s *ProfileService) GetTenantProfileData(ctx context.Context, request *pb.GetTenantProfileDataRequest) (*pb.GetTenantProfileDataResponse, error) {
@@ -76,15 +78,16 @@ func (s *ProfileService) GetTenantProfileData(ctx context.Context, request *pb.G
 	return &pb.GetTenantProfileDataResponse{Profiles: data}, nil
 }
 
+// nolint
 func (s *ProfileService) SetTenantProfileData(ctx context.Context, request *pb.SetTenantPluginProfileRequest) (*pb.SetTenantPluginProfileResponse, error) {
-	// set profile data
+	// set profile data.
 	err := s.ProfileOp.SetTenantProfileData(ctx, request.GetTenantId(), request.GetBody().GetProfiles())
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrUnknown()
 	}
 	//  call plugin
-	pluginProfiles := make(map[string]map[string]string)
+	pluginProfiles := make(map[string]map[string]int64)
 	for k, v := range request.GetBody().GetProfiles() {
 		plg, _ := s.ProfileOp.GetProfilePlugin(ctx, k)
 		if plg != "" && plg != plgprofile.PLUGIN_ID_KEEL {
