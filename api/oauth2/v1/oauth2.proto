@@ -163,11 +163,11 @@ service Oauth2 {
 message IssuePluginTokenRequest {
   string client_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id(dapr app id)"
+        description : "插件ID dapr应用ID"
       } ];
   string client_secret = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin secret"
+        description : "插件密钥"
       } ];
 }
 
@@ -193,20 +193,20 @@ message IssueTokenResponse {
 message AddPluginWhiteListRequest {
   string plugin_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id(dapr app id)"
+        description : "插件ID dapr应用ID"
       } ];
 }
 
 message IssueAdminTokenRequest {
   string password = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "admin password"
+        description : "密码"
       } ];
 }
 
 message UpdateAdminPasswordRequest {
   string new_password = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "new admin password"
+        description : "新密码"
       } ];
 }

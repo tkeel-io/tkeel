@@ -126,7 +126,7 @@ type Plugin struct {
 	Status                  openapi_v1.PluginStatus         `json:"status,omitempty"`                    // plugin state.
 	EnableTenantes          []*EnableTenant                 `json:"enable_tenantes,omitempty"`           // plugin active tenantes.
 	DisableManualActivation bool                            `json:"disable_manual_activation,omitempty"` // plugin disable manual activation.
-	Profiles                []*ProfileItem                  `json:"profiles,omitempty"`                  // plugin profile.
+	Profiles                map[string]ProfileSchema        `json:"profiles,omitempty"`                  // plugin profile.
 }
 
 func (p *Plugin) String() string {
@@ -169,7 +169,7 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.Secret = secret
 	p.DisableManualActivation = resp.DisableManualActivation
 	p.RegisterTimestamp = time.Now().Unix()
-	profiles := []*ProfileItem{}
+	profiles := make(map[string]ProfileSchema)
 	json.Unmarshal(resp.Profiles, &profiles)
 	p.Profiles = profiles
 }
@@ -232,10 +232,14 @@ type PluginRoute struct {
 	Version           string                  `json:"version,omitempty"`            // model version.
 }
 
-type ProfileItem struct {
-	Key         string      `json:"key"`
-	Description string      `json:"description"`
-	Value       interface{} `json:"value"`
+type ProfileSchema struct {
+	Type        string `json:"type"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Default     string `json:"default"`
+	MultipleOf  string `json:"multipleOf"`
+	Minimum     string `json:"minimum"`
+	Maximum     string `json:"maximum"`
 }
 
 func (pr *PluginRoute) String() string {
@@ -619,6 +623,8 @@ type Role struct {
 }
 
 type PluginProfile struct {
-	PluginID string         `json:"plugin_id"`
-	Profiles []*ProfileItem `json:"profiles"`
+	PluginID string                   `json:"plugin_id"`
+	Profiles map[string]ProfileSchema `json:"profiles"`
 }
+
+type ProfileSchemas map[string]ProfileSchema

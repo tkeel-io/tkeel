@@ -339,7 +339,7 @@ service Tenant {
 message CreateTenantRequest {
   TenantCreateBody body = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "create tenant body params"
+      description : "租户信息"
     },
     (google.api.field_behavior) = REQUIRED
   ];
@@ -348,37 +348,37 @@ message CreateTenantRequest {
 message TenantCreateBody {
   string title = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant title"
+      description : "租户空间名称"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string remark = 2 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant remark"
+      description : "租户备注信息"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
   string tenant_id = 3 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant id"
+      description : "租户 id"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
   TenantAdmin admin = 4 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "set tenant admin"
+      description : "租户管理员"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
   string auth_type = 5 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "set tenant auth type: internal | external"
+      description : "租户认证类型: internal | external"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
   string id_provider_type = 6 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "external auth type : OIDC | LDAP | SMAL"
+      description : "外部认证协议类型: OIDC | LDAP | SMAL"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
@@ -387,13 +387,13 @@ message TenantCreateBody {
 message TenantAdmin {
   string username = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : " Tenant Admin username "
+      description : "username"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string password = 2 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : " Tenant Admin password "
+      description : "password "
     },
     (google.api.field_behavior) = REQUIRED
   ];
@@ -403,56 +403,56 @@ message TenantAdmin {
 message CreateTenantResponse {
   string tenant_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "created tenant id"
+        description : "租户ID"
       } ];
   string tenant_title = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "created tenant title"
+        description : "租户空间名称"
       } ];
   string admin_username = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "created tenant admin username"
+        description : "租户管理员 username"
       } ];
   string reset_key =4
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : " tenant admin password reset key"
+    description : " 租户管理员 password"
   } ];
 }
 
 message GetTenantRequest {
   string tenant_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant id"
+        description : "租户ID"
       } ];
 }
 message GetTenantResponse {
   string tenant_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant id"
+        description : "租户ID"
       } ];
   string title = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant title"
+        description : "租户空间名称"
       } ];
   string remark = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant remark"
+        description : "租户备注"
       } ];
   int64 created_at = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant remark"
+        description : "创建时间"
       } ];
   int32 num_user = 5
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "user number in tenant"
+    description : "租户用户数"
   } ];
   repeated TenantAdmin admins = 6
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "admins in tenant"
+    description : "租户管理员"
   } ];
   string auth_type = 7
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "auth type : internal / external"
+    description : "认证类型 : internal / external"
   } ];
 }
 message ListTenantRequest {
@@ -469,7 +469,7 @@ message ListTenantResponse {
   int32 page_size = 3;
   repeated TenantDetail tenants = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenants"
+        description : "租户列表"
       } ];
 }
 
@@ -485,35 +485,35 @@ message ExactTenantResponse {
 message TenantDetail {
   string tenant_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant id"
+        description : "租户ID"
       } ];
   string title = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant id"
+        description : "租户名称"
       } ];
   string remark = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant remark"
+        description : "租户备注"
       } ];
   int32 num_user = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "user number in tenant"
+        description : "租户用户数"
       } ];
   int64 created_at =5
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "user number in tenant"
+    description : "创建时间"
   } ];
   repeated string roles =6
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "user roles in tenant"
+    description : "角色列表"
   } ];
   repeated TenantAdmin admins = 7
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "admins in tenant"
+    description : "管理员"
   } ];
   string auth_type = 8
   [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "auth type : internal / external"
+    description : "认证类型 : internal / external"
   } ];
 }
 
@@ -533,7 +533,7 @@ message UpdateTenantResponse{
 message DeleteTenantRequest {
   string tenant_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant id"
+        description : "租户ID"
       } ];
 }
 
@@ -541,13 +541,13 @@ message DeleteTenantRequest {
 message CreateUserRequest {
   string tenant_id = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant id"
+      description : "租户ID"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   CreateUserBody body = 2 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "create user body params"
+      description : "用户信息"
     },
     (google.api.field_behavior) = REQUIRED
   ];
@@ -556,26 +556,26 @@ message CreateUserRequest {
 message CreateUserBody {
   string username = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "user name"
+      description : "用户名"
     },
     (google.api.field_behavior) = REQUIRED
   ];
 
   string password = 2 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "user password"
+      description : "密码"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   repeated string roles = 3 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "user roles"
+      description : "角色列表"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
   string nick_name =4[
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "user nick name"
+      description : "昵称"
     },
     (google.api.field_behavior) = OPTIONAL
   ];

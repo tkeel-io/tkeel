@@ -28,8 +28,9 @@ var (
 )
 
 type ProfileHTTPServer interface {
-	GetTenantProfile(context.Context, *GetTenantProfileRequest) (*GetTenantProfileResponse, error)
-	SetTenantPluginProfile(context.Context, *SetTenantPluginProfileRequest) (*SetTenantPluginProfileResponse, error)
+	GetProfileSchema(context.Context, *GetProfileSchemaRequest) (*GetProfileSchemaResponse, error)
+	GetTenantProfileData(context.Context, *GetTenantProfileDataRequest) (*GetTenantProfileDataResponse, error)
+	SetTenantProfileData(context.Context, *SetTenantPluginProfileRequest) (*SetTenantPluginProfileResponse, error)
 }
 
 type ProfileHTTPHandler struct {
@@ -40,8 +41,8 @@ func newProfileHTTPHandler(s ProfileHTTPServer) *ProfileHTTPHandler {
 	return &ProfileHTTPHandler{srv: s}
 }
 
-func (h *ProfileHTTPHandler) GetTenantProfile(req *go_restful.Request, resp *go_restful.Response) {
-	in := GetTenantProfileRequest{}
+func (h *ProfileHTTPHandler) GetProfileSchema(req *go_restful.Request, resp *go_restful.Response) {
+	in := GetProfileSchemaRequest{}
 	if err := transportHTTP.GetQuery(req, &in); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
 			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
@@ -50,7 +51,7 @@ func (h *ProfileHTTPHandler) GetTenantProfile(req *go_restful.Request, resp *go_
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.GetTenantProfile(ctx, &in)
+	out, err := h.srv.GetProfileSchema(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -96,7 +97,63 @@ func (h *ProfileHTTPHandler) GetTenantProfile(req *go_restful.Request, resp *go_
 	}
 }
 
-func (h *ProfileHTTPHandler) SetTenantPluginProfile(req *go_restful.Request, resp *go_restful.Response) {
+func (h *ProfileHTTPHandler) GetTenantProfileData(req *go_restful.Request, resp *go_restful.Response) {
+	in := GetTenantProfileDataRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.GetTenantProfileData(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *ProfileHTTPHandler) SetTenantProfileData(req *go_restful.Request, resp *go_restful.Response) {
 	in := SetTenantPluginProfileRequest{}
 	if err := transportHTTP.GetBody(req, &in.Body); err != nil {
 		resp.WriteHeaderAndJson(http.StatusBadRequest,
@@ -111,7 +168,7 @@ func (h *ProfileHTTPHandler) SetTenantPluginProfile(req *go_restful.Request, res
 
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
-	out, err := h.srv.SetTenantPluginProfile(ctx, &in)
+	out, err := h.srv.SetTenantProfileData(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -173,8 +230,10 @@ func RegisterProfileHTTPServer(container *go_restful.Container, srv ProfileHTTPS
 	}
 
 	handler := newProfileHTTPHandler(srv)
-	ws.Route(ws.GET("/profile").
-		To(handler.GetTenantProfile))
-	ws.Route(ws.POST("/profile").
-		To(handler.SetTenantPluginProfile))
+	ws.Route(ws.GET("/profile/schema").
+		To(handler.GetProfileSchema))
+	ws.Route(ws.GET("/profile/data").
+		To(handler.GetTenantProfileData))
+	ws.Route(ws.POST("/profile/data").
+		To(handler.SetTenantProfileData))
 }

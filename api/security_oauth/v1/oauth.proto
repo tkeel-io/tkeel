@@ -190,31 +190,31 @@ service Oauth {
 message AuthorizeRequest {
   string tenant_id = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenantID path param"
+      description : "租户ID"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string response_type = 2 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "authorize response type, this must 'code',query param"
+      description : "授权返回类型: code (授权码)"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string username = 3 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "username query param"
+      description : "username"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string password = 4 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "password query param"
+      description : "password"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string redirect_uri = 5 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "redirect uri with code"
+      description : "授权码 重定向地址"
     },
     (google.api.field_behavior) = REQUIRED
   ];
@@ -231,52 +231,51 @@ message AuthorizeResponse { string code = 1; }
 message TokenRequest {
   string tenant_id = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "tenant_id path param"
+      description : "租户ID"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string grant_type = 2 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "grant_type 'authorize_code','password', query param"
+      description : "授权方式，支持: authorize_code password"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string code = 3 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "code with authorize response,query param"
+      description : "授权码"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
   string redirect_uri = 4 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "redirect_uri while grant_type is code,query param"
+      description : "授权码重定向地址"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
   string username = 5 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "username while grant_type is password ,query param"
+      description : "username"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
   string password = 6 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "password while grant_type is password,query param"
+      description : "password"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
 
   string refresh_token = 7 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "refresh token while grant_type is refresh_token,query "
-                    "param"
+      description : "refresh token"
     },
     (google.api.field_behavior) = OPTIONAL
   ];
   bool disable_redirect = 8 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "auto redirect if auto_redirect = true"
-          "param"
+      description : "禁用成功获取 Token 后的重定向行为"
+
     },
     (google.api.field_behavior) = OPTIONAL
   ];

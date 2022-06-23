@@ -18,12 +18,11 @@ package plgprofile
 
 import (
 	"context"
-
-	"github.com/tkeel-io/tkeel/pkg/model"
 )
 
 type ProfileOperator interface {
-	GetTenantProfile(ctx context.Context, tenantID string) ([]*model.PluginProfile, error)
-	SetTenantProfile(ctx context.Context, tenantID string, profile []*model.PluginProfile) error
-	SetTenantPluginProfile(ctx context.Context, tenantID string, profile *model.PluginProfile) error
+	GetTenantProfileData(ctx context.Context, tenantID string) (data map[string]string, err error)
+	SetTenantProfileData(ctx context.Context, tenantID string, profileData map[string]string) error
+	SetProfilePlugin(ctx context.Context, profile string, plugin string) error
+	GetProfilePlugin(ctx context.Context, profile string) (plugin string, err error)
 }

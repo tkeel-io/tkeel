@@ -18,8 +18,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProfileClient interface {
-	GetTenantProfile(ctx context.Context, in *GetTenantProfileRequest, opts ...grpc.CallOption) (*GetTenantProfileResponse, error)
-	SetTenantPluginProfile(ctx context.Context, in *SetTenantPluginProfileRequest, opts ...grpc.CallOption) (*SetTenantPluginProfileResponse, error)
+	// profile schema
+	GetProfileSchema(ctx context.Context, in *GetProfileSchemaRequest, opts ...grpc.CallOption) (*GetProfileSchemaResponse, error)
+	// profile data
+	GetTenantProfileData(ctx context.Context, in *GetTenantProfileDataRequest, opts ...grpc.CallOption) (*GetTenantProfileDataResponse, error)
+	SetTenantProfileData(ctx context.Context, in *SetTenantPluginProfileRequest, opts ...grpc.CallOption) (*SetTenantPluginProfileResponse, error)
 }
 
 type profileClient struct {
@@ -30,18 +33,27 @@ func NewProfileClient(cc grpc.ClientConnInterface) ProfileClient {
 	return &profileClient{cc}
 }
 
-func (c *profileClient) GetTenantProfile(ctx context.Context, in *GetTenantProfileRequest, opts ...grpc.CallOption) (*GetTenantProfileResponse, error) {
-	out := new(GetTenantProfileResponse)
-	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.profile.v1.Profile/GetTenantProfile", in, out, opts...)
+func (c *profileClient) GetProfileSchema(ctx context.Context, in *GetProfileSchemaRequest, opts ...grpc.CallOption) (*GetProfileSchemaResponse, error) {
+	out := new(GetProfileSchemaResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.profile.v1.Profile/GetProfileSchema", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *profileClient) SetTenantPluginProfile(ctx context.Context, in *SetTenantPluginProfileRequest, opts ...grpc.CallOption) (*SetTenantPluginProfileResponse, error) {
+func (c *profileClient) GetTenantProfileData(ctx context.Context, in *GetTenantProfileDataRequest, opts ...grpc.CallOption) (*GetTenantProfileDataResponse, error) {
+	out := new(GetTenantProfileDataResponse)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.profile.v1.Profile/GetTenantProfileData", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *profileClient) SetTenantProfileData(ctx context.Context, in *SetTenantPluginProfileRequest, opts ...grpc.CallOption) (*SetTenantPluginProfileResponse, error) {
 	out := new(SetTenantPluginProfileResponse)
-	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.profile.v1.Profile/SetTenantPluginProfile", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.profile.v1.Profile/SetTenantProfileData", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +64,11 @@ func (c *profileClient) SetTenantPluginProfile(ctx context.Context, in *SetTenan
 // All implementations must embed UnimplementedProfileServer
 // for forward compatibility
 type ProfileServer interface {
-	GetTenantProfile(context.Context, *GetTenantProfileRequest) (*GetTenantProfileResponse, error)
-	SetTenantPluginProfile(context.Context, *SetTenantPluginProfileRequest) (*SetTenantPluginProfileResponse, error)
+	// profile schema
+	GetProfileSchema(context.Context, *GetProfileSchemaRequest) (*GetProfileSchemaResponse, error)
+	// profile data
+	GetTenantProfileData(context.Context, *GetTenantProfileDataRequest) (*GetTenantProfileDataResponse, error)
+	SetTenantProfileData(context.Context, *SetTenantPluginProfileRequest) (*SetTenantPluginProfileResponse, error)
 	mustEmbedUnimplementedProfileServer()
 }
 
@@ -61,11 +76,14 @@ type ProfileServer interface {
 type UnimplementedProfileServer struct {
 }
 
-func (UnimplementedProfileServer) GetTenantProfile(context.Context, *GetTenantProfileRequest) (*GetTenantProfileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTenantProfile not implemented")
+func (UnimplementedProfileServer) GetProfileSchema(context.Context, *GetProfileSchemaRequest) (*GetProfileSchemaResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfileSchema not implemented")
 }
-func (UnimplementedProfileServer) SetTenantPluginProfile(context.Context, *SetTenantPluginProfileRequest) (*SetTenantPluginProfileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetTenantPluginProfile not implemented")
+func (UnimplementedProfileServer) GetTenantProfileData(context.Context, *GetTenantProfileDataRequest) (*GetTenantProfileDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTenantProfileData not implemented")
+}
+func (UnimplementedProfileServer) SetTenantProfileData(context.Context, *SetTenantPluginProfileRequest) (*SetTenantPluginProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetTenantProfileData not implemented")
 }
 func (UnimplementedProfileServer) mustEmbedUnimplementedProfileServer() {}
 
@@ -80,38 +98,56 @@ func RegisterProfileServer(s grpc.ServiceRegistrar, srv ProfileServer) {
 	s.RegisterService(&Profile_ServiceDesc, srv)
 }
 
-func _Profile_GetTenantProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetTenantProfileRequest)
+func _Profile_GetProfileSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProfileSchemaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ProfileServer).GetTenantProfile(ctx, in)
+		return srv.(ProfileServer).GetProfileSchema(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/io.tkeel.rudder.api.profile.v1.Profile/GetTenantProfile",
+		FullMethod: "/io.tkeel.rudder.api.profile.v1.Profile/GetProfileSchema",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProfileServer).GetTenantProfile(ctx, req.(*GetTenantProfileRequest))
+		return srv.(ProfileServer).GetProfileSchema(ctx, req.(*GetProfileSchemaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Profile_SetTenantPluginProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Profile_GetTenantProfileData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTenantProfileDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfileServer).GetTenantProfileData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.profile.v1.Profile/GetTenantProfileData",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfileServer).GetTenantProfileData(ctx, req.(*GetTenantProfileDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Profile_SetTenantProfileData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SetTenantPluginProfileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ProfileServer).SetTenantPluginProfile(ctx, in)
+		return srv.(ProfileServer).SetTenantProfileData(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/io.tkeel.rudder.api.profile.v1.Profile/SetTenantPluginProfile",
+		FullMethod: "/io.tkeel.rudder.api.profile.v1.Profile/SetTenantProfileData",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ProfileServer).SetTenantPluginProfile(ctx, req.(*SetTenantPluginProfileRequest))
+		return srv.(ProfileServer).SetTenantProfileData(ctx, req.(*SetTenantPluginProfileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -124,12 +160,16 @@ var Profile_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ProfileServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetTenantProfile",
-			Handler:    _Profile_GetTenantProfile_Handler,
+			MethodName: "GetProfileSchema",
+			Handler:    _Profile_GetProfileSchema_Handler,
 		},
 		{
-			MethodName: "SetTenantPluginProfile",
-			Handler:    _Profile_SetTenantPluginProfile_Handler,
+			MethodName: "GetTenantProfileData",
+			Handler:    _Profile_GetTenantProfileData_Handler,
+		},
+		{
+			MethodName: "SetTenantProfileData",
+			Handler:    _Profile_SetTenantProfileData_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

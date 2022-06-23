@@ -22,13 +22,29 @@ option go_package = "github.com/tkeel-io/tkeel/api/profile/v1;v1";
 
 
 service Profile {
-  rpc GetTenantProfile(GetTenantProfileRequest)returns(GetTenantProfileResponse){
+  // profile schema
+  rpc GetProfileSchema(GetProfileSchemaRequest)returns(GetProfileSchemaResponse){
     option (google.api.http) = {
-      get : "/profile"
+      get : "/profile/schema"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "获取平台租户配置schema"
+      operation_id : "GetProfileSchema"
+      tags : "profile"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
+  // profile data
+  rpc GetTenantProfileData(GetTenantProfileDataRequest)returns(GetTenantProfileDataResponse){
+    option (google.api.http) = {
+      get : "/profile/data"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "获取平台租户配置"
-      operation_id : "GetTenantProfile"
+      operation_id : "GetTenantProfileData"
       tags : "profile"
       responses : [ {
         key : "200"
@@ -37,14 +53,14 @@ service Profile {
     };
   }
 
-  rpc SetTenantPluginProfile(SetTenantPluginProfileRequest)returns(SetTenantPluginProfileResponse){
+  rpc SetTenantProfileData(SetTenantPluginProfileRequest)returns(SetTenantPluginProfileResponse){
     option (google.api.http) = {
-      post : "/profile"
+      post : "/profile/data"
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "设置平台租户配置"
-      operation_id : "SetTenantProfile"
+      operation_id : "SetTenantProfileData"
       tags : "profile"
       responses : [ {
         key : "200"
@@ -54,23 +70,46 @@ service Profile {
   };
 }
 
-message GetTenantProfileRequest {
+
+message GetTenantProfileDataRequest{
   string tenant_id = 1;
 }
-message GetTenantProfileResponse {
-  repeated TenantProfiles tenant_profiles = 1;
+
+message GetTenantProfileDataResponse{
+  map<string ,string> profiles =1;
+
 }
 message TenantProfiles {
-  string plugin_id = 1;
-  bytes profiles = 2;
+  map<string ,string> profiles = 1;
 }
 
 message SetTenantPluginProfileRequest {
   string tenant_id = 1;
-  TenantProfiles body = 3;
+  TenantProfiles body = 2;
 }
 
 message SetTenantPluginProfileResponse {
 
 }
 
+message GetProfileSchemaRequest {
+  string profile =1;
+}
+message GetProfileSchemaResponse{
+  map <string, ProfileSchema >  profiles = 1;
+}
+
+message ProfileSchema {
+  string type = 1 ;
+  string title = 2 ;
+  string description =3 ;
+  string default = 4 ;
+  string multipleOf = 5 ;
+  string minimum = 6 ;
+  string maximum = 7 ;
+}
+
+ message TenantEnableRequest {
+string tenant_id = 1; // unique tenant id.
+    bytes extra = 2;      // extra data
+    }

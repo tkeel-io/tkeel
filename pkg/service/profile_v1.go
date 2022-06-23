@@ -20,13 +20,12 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/tkeel-io/kit/log"
 	pb "github.com/tkeel-io/tkeel/api/profile/v1"
 	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/plgprofile"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
-
-	"github.com/tkeel-io/kit/log"
 )
 
 type ProfileService struct {
@@ -40,60 +39,67 @@ func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperat
 	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHTTP}
 }
 
-func (s *ProfileService) GetTenantProfile(ctx context.Context, req *pb.GetTenantProfileRequest) (*pb.GetTenantProfileResponse, error) {
-	var plugins []*model.Plugin
-	profiles, err := s.ProfileOp.GetTenantProfile(ctx, req.GetTenantId())
-	if profiles == nil {
-		if err != nil {
-			log.Error(err)
-		}
-		plugins, err = s.pluginOp.List(ctx)
-		if err != nil {
-			log.Error("plugin operator list: ", err)
-			return nil, pb.ErrPluginList()
-		}
-		return &pb.GetTenantProfileResponse{TenantProfiles: plugin2pbProfile(plugins)}, nil
-	}
-	plugins, err = s.pluginOp.List(ctx)
+func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetProfileSchemaRequest) (*pb.GetProfileSchemaResponse, error) {
+	plugins, err := s.pluginOp.List(ctx)
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrPluginList()
 	}
-	profiles = comboProfiles(profiles, plugins)
-	return &pb.GetTenantProfileResponse{TenantProfiles: modelProfile2pbProfile(profiles)}, nil
+	// ProfileOp set profileKey:plugin
+	for _, plg := range plugins {
+		for k, _ := range plg.Profiles {
+			s.ProfileOp.SetProfilePlugin(ctx, k, plg.ID)
+		}
+	}
+
+	profiles := make(map[string]*pb.ProfileSchema)
+	for _, plg := range plugins {
+		for k, prf := range plg.Profiles {
+			profiles[k] = modelProfileSchema2pbProfile(prf)
+		}
+	}
+	// keel profile
+	for keelP, keelV := range plgprofile.KeelProfiles {
+		profiles[keelP] = modelProfileSchema2pbProfile(keelV)
+	}
+
+	return &pb.GetProfileSchemaResponse{Profiles: profiles}, nil
+
 }
 
-func (s *ProfileService) SetTenantPluginProfile(ctx context.Context, req *pb.SetTenantPluginProfileRequest) (*pb.SetTenantPluginProfileResponse, error) {
-	if req.GetTenantId() == "" {
+func (s *ProfileService) GetTenantProfileData(ctx context.Context, request *pb.GetTenantProfileDataRequest) (*pb.GetTenantProfileDataResponse, error) {
+	data, err := s.ProfileOp.GetTenantProfileData(ctx, request.GetTenantId())
+	if err != nil {
+		log.Error(err)
 		return nil, pb.ErrInvalidArgument()
 	}
-	modelPluginProfile := pbPlgProfile2model(req.GetBody())
-	err := s.ProfileOp.SetTenantPluginProfile(ctx, req.GetTenantId(), modelPluginProfile)
+	return &pb.GetTenantProfileDataResponse{Profiles: data}, nil
+}
+
+func (s *ProfileService) SetTenantProfileData(ctx context.Context, request *pb.SetTenantPluginProfileRequest) (*pb.SetTenantPluginProfileResponse, error) {
+	// set profile data
+	err := s.ProfileOp.SetTenantProfileData(ctx, request.GetTenantId(), request.GetBody().GetProfiles())
 	if err != nil {
 		log.Error(err)
 		return nil, pb.ErrUnknown()
 	}
-
-	if modelPluginProfile.PluginID == plgprofile.PLUGIN_ID_KEEL {
-		for i := range modelPluginProfile.Profiles {
-			if modelPluginProfile.Profiles[i].Key == plgprofile.MAX_API_REQUEST_LIMIT_KEY {
-				if limitVal, ok := modelPluginProfile.Profiles[i].Value.(float64); ok {
-					plgprofile.SetTenantAPILimit(req.GetTenantId(), int(limitVal))
-				}
-				break
-			}
+	//  call plugin
+	pluginProfiles := make(map[string]map[string]string)
+	for k, v := range request.GetBody().GetProfiles() {
+		plg, _ := s.ProfileOp.GetProfilePlugin(ctx, k)
+		if plg != "" && plg != plgprofile.PLUGIN_ID_KEEL {
+			pluginProfiles[plg][k] = v
 		}
-	} else {
-		bodyBytes, eMsa := json.Marshal(req)
-		if eMsa != nil {
-			log.Error(err)
-			return nil, pb.ErrUnknown()
-		}
+	}
+	for plg, profiles := range pluginProfiles {
+		extrData := map[string]interface{}{"type": "SetProfile", "profiles": profiles}
+		extrDataBytes, _ := json.Marshal(extrData)
+		req, _ := json.Marshal(pb.TenantEnableRequest{TenantId: request.GetTenantId(), Extra: extrDataBytes})
 		res, eCall := s.daprHTTPCli.Call(ctx, &dapr.AppRequest{
-			ID:     modelPluginProfile.PluginID,
+			ID:     plg,
 			Method: "v1/tenant/enable",
 			Verb:   "POST",
-			Body:   bodyBytes,
+			Body:   req,
 		})
 		if eCall != nil {
 			log.Error(err)
@@ -103,67 +109,12 @@ func (s *ProfileService) SetTenantPluginProfile(ctx context.Context, req *pb.Set
 	return &pb.SetTenantPluginProfileResponse{}, nil
 }
 
-func (s *ProfileService) IsAPIRequestExceededLimit(ctx context.Context, tenantID string) bool {
-	plgprofile.OnTenantAPIRequest(tenantID, s.ProfileOp)
-	return plgprofile.ISExceededAPILimit(tenantID)
-}
-
-func plugin2pbProfile(plugins []*model.Plugin) []*pb.TenantProfiles {
-	pbProfiles := make([]*pb.TenantProfiles, 0)
-	for i := range plugins {
-		if plugins[i].Profiles == nil {
-			continue
-		}
-		profileBytes, err := json.Marshal(plugins[i].Profiles)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		profile := &pb.TenantProfiles{PluginId: plugins[i].ID, Profiles: profileBytes}
-		pbProfiles = append(pbProfiles, profile)
-	}
-	pbProfiles = append(pbProfiles, plgprofile.KeelProfiles)
-	return pbProfiles
-}
-
-func modelProfile2pbProfile(profiles []*model.PluginProfile) []*pb.TenantProfiles {
-	pbProfiles := make([]*pb.TenantProfiles, 0)
-	for i := range profiles {
-		if profiles[i].Profiles == nil {
-			continue
-		}
-		profileBytes, err := json.Marshal(profiles[i].Profiles)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		profile := &pb.TenantProfiles{PluginId: profiles[i].PluginID, Profiles: profileBytes}
-		pbProfiles = append(pbProfiles, profile)
-	}
-	return pbProfiles
-}
-
-func pbPlgProfile2model(profiles *pb.TenantProfiles) *model.PluginProfile {
-	profilesItems := []*model.ProfileItem{}
-	err := json.Unmarshal(profiles.Profiles, &profilesItems)
-	if err != nil {
-		log.Error(err)
-	}
-	profile := &model.PluginProfile{PluginID: profiles.PluginId, Profiles: profilesItems}
-	return profile
-}
-
-func comboProfiles(profiles []*model.PluginProfile, plugins []*model.Plugin) []*model.PluginProfile {
-	newProfiles := make([]*model.PluginProfile, 0, 1)
-	for pluginIndex := range plugins {
-		for profilesIndex := range profiles {
-			if plugins[pluginIndex].ID == profiles[profilesIndex].PluginID {
-				break
-			}
-		}
-		newProfiles = append(newProfiles, &model.PluginProfile{PluginID: plugins[pluginIndex].ID,
-			Profiles: plugins[pluginIndex].Profiles})
-	}
-	profiles = append(profiles, newProfiles...)
-	return profiles
+func modelProfileSchema2pbProfile(schema model.ProfileSchema) *pb.ProfileSchema {
+	return &pb.ProfileSchema{Title: schema.Title,
+		Type:        schema.Type,
+		Default:     schema.Default,
+		Description: schema.Description,
+		MultipleOf:  schema.MultipleOf,
+		Maximum:     schema.Maximum,
+		Minimum:     schema.Minimum}
 }
