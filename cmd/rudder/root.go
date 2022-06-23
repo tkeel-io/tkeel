@@ -46,6 +46,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/prepo"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
+	"github.com/tkeel-io/tkeel/pkg/register"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/repository/helm"
 	"github.com/tkeel-io/tkeel/pkg/server"
@@ -90,6 +91,8 @@ var rootCmd = &cobra.Command{
 		httpSrv := server.NewHTTPServer(conf.HTTPAddr)
 		httpSrv.Container.EnableContentEncoding(false)
 		grpcSrv := server.NewGRPCServer(conf.GRPCAddr)
+		register.Init()
+		go register.Instance().Run()
 
 		rudderApp = app.New("rudder", &log.Conf{
 			App:    "rudder",
