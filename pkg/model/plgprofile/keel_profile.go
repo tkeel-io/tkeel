@@ -17,9 +17,10 @@ limitations under the License.
 package plgprofile
 
 import (
-	"github.com/tkeel-io/tkeel/pkg/model"
 	"math"
 	"sync"
+
+	"github.com/tkeel-io/tkeel/pkg/model"
 )
 
 const (
@@ -40,7 +41,7 @@ var (
 )
 
 var KeelProfiles = map[string]model.ProfileSchema{
-	MAX_API_REQUEST_LIMIT_KEY: {Type: "number", Title: MAX_API_REQUEST_LIMIT_TITLE, Description: "api请求最大次数,0 表示无限制", Default: "0", MultipleOf: "1"},
+	MAX_API_REQUEST_LIMIT_KEY: {Type: "number", Title: MAX_API_REQUEST_LIMIT_TITLE, Description: "api请求最大次数,0 表示无限制", Default: 0, MultipleOf: 1},
 }
 
 func OnTenantAPIRequest(tenantID string, store ProfileOperator) int {
