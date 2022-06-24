@@ -202,13 +202,13 @@ message AuthorizeRequest {
   ];
   string username = 3 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "username"
+      description : "用户名 username"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string password = 4 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "password"
+      description : "密码 password"
     },
     (google.api.field_behavior) = REQUIRED
   ];
@@ -273,9 +273,9 @@ message TokenRequest {
     (google.api.field_behavior) = OPTIONAL
   ];
   bool disable_redirect = 8 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+    {
       description : "禁用成功获取 Token 后的重定向行为"
-
     },
     (google.api.field_behavior) = OPTIONAL
   ];
@@ -305,8 +305,18 @@ message ResetPasswordRequest {
 }
 
 message ResetPasswordBody {
-  string new_password =1;
-  string reset_key =2;
+  string new_password =1[
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+    {
+      description : "新密码"
+    }
+  ];
+  string reset_key =2[
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+    {
+      description : "重置密码密钥"
+    }
+  ];
 }
 
 
@@ -348,7 +358,12 @@ message TokenRevokeRequest {
   TokenRevokeBody body =1;
 }
 message TokenRevokeBody {
-  string refresh_token =1;
+  string refresh_token =1[
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+    {
+      description : "刷新Token refreshToken"
+    }
+  ];
 }
 
 message TokenRevokeResponse {
@@ -361,8 +376,18 @@ message UpdatePasswordRequest {
 }
 
 message UpdatePasswordBody {
- string new_password =1;
- string refresh_token =2;
+ string new_password =1[
+   (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+   {
+     description : "新密码"
+   }
+ ];
+ string refresh_token =2[
+   (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+   {
+     description : "刷新 token"
+   }
+ ];
 }
 
 message UpdatePasswordResponse {
@@ -371,7 +396,12 @@ message UpdatePasswordResponse {
 
 // IdentityProviderConfig request.
 message IdProviderTemplateRequest {
-  string type = 1;
+  string type = 1[
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+    {
+      description : "协议类型"
+    }
+  ];
 }
 // IdentityProviderConfig response.
 message IdProviderTemplateResponse {
@@ -381,13 +411,28 @@ message IdProviderTemplateResponse {
 
 // IdentityProviderConfig request.
 message IdProviderRegisterRequest {
-  string tenant_id =1;
+  string tenant_id =1[
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+    {
+      description : "租户ID"
+    }
+  ];
   IdProviderRegisterRequestBody body = 2;
 }
 // IdentityProviderConfig request.
 message IdProviderRegisterRequestBody {
-  string type = 1;
-  bytes config =2;
+  string type = 1[
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+    {
+      description : "协议类型"
+    }
+  ];
+  bytes config =2[
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+    {
+      description : "配置 base64"
+    }
+  ];
 }
 // IdentityProviderConfig request.
 message IdProviderRegisterResponse {
@@ -396,7 +441,12 @@ message IdProviderRegisterResponse {
 
 // IdentityProviderConfig request.
 message GetIdentityProviderRequest {
-  string tenant_id =1;
+  string tenant_id =1[
+    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) =
+    {
+      description : "租户ID"
+    }
+  ];
 }
 message GetIdentityProviderResponse {
   string type = 1;

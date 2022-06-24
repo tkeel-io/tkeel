@@ -65,12 +65,12 @@ func (store *ProfileStateStore) SetProfilePlugin(ctx context.Context, profile st
 }
 
 // nolint
-func (store *ProfileStateStore) GetTenantProfileData(ctx context.Context, tenantID string) (data map[string]int64, err error) {
+func (store *ProfileStateStore) GetTenantProfileData(ctx context.Context, tenantID string) (data map[string]int32, err error) {
 	items, err := store.daprClient.GetState(ctx, store.storeName, profileDataKeyWithTenant(tenantID))
 	if err != nil {
 		return nil, err
 	}
-	data = make(map[string]int64)
+	data = make(map[string]int32)
 	err = json.Unmarshal(items.Value, &data)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (store *ProfileStateStore) GetTenantProfileData(ctx context.Context, tenant
 }
 
 // nolint
-func (store *ProfileStateStore) SetTenantProfileData(ctx context.Context, tenantID string, profileData map[string]int64) error {
+func (store *ProfileStateStore) SetTenantProfileData(ctx context.Context, tenantID string, profileData map[string]int32) error {
 	data, err := json.Marshal(profileData)
 	if err != nil {
 		return err

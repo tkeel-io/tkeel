@@ -447,6 +447,7 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -486,6 +487,7 @@
         "parameters": [
           {
             "name": "type",
+            "description": "协议类型",
             "in": "query",
             "required": false,
             "type": "string"
@@ -517,6 +519,7 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -694,14 +697,14 @@
           },
           {
             "name": "username",
-            "description": "username",
+            "description": "用户名 username",
             "in": "query",
             "required": true,
             "type": "string"
           },
           {
             "name": "password",
-            "description": "password",
+            "description": "密码 password",
             "in": "query",
             "required": true,
             "type": "string"
@@ -1472,8 +1475,9 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "query",
-            "required": false,
+            "required": true,
             "type": "string"
           }
         ],
@@ -1509,8 +1513,9 @@
           },
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "query",
-            "required": false,
+            "required": true,
             "type": "string"
           }
         ],
@@ -1540,6 +1545,7 @@
         "parameters": [
           {
             "name": "profile",
+            "description": "配置 key",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2320,6 +2326,7 @@
         "parameters": [
           {
             "name": "page_num",
+            "description": "页 page",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -2327,6 +2334,7 @@
           },
           {
             "name": "page_size",
+            "description": "页大小 page_siza",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -2334,18 +2342,21 @@
           },
           {
             "name": "order_by",
+            "description": "排序",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "is_descending",
+            "description": "倒序",
             "in": "query",
             "required": false,
             "type": "boolean"
           },
           {
             "name": "key_words",
+            "description": "查询关键字",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2422,12 +2433,14 @@
         "parameters": [
           {
             "name": "title",
+            "description": "租户名称",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2459,12 +2472,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "plugin_id",
+            "description": "插件ID",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2589,6 +2604,7 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2628,6 +2644,7 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2657,6 +2674,7 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2696,12 +2714,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "plugin_id",
+            "description": "插件ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2733,12 +2753,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "page_num",
+            "description": "页 page",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -2746,6 +2768,7 @@
           },
           {
             "name": "page_size",
+            "description": "页大小 page_size",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -2753,18 +2776,21 @@
           },
           {
             "name": "order_by",
+            "description": "排序字段",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "is_descending",
+            "description": "是否倒序",
             "in": "query",
             "required": false,
             "type": "boolean"
           },
           {
             "name": "key_words",
+            "description": "查询关键字",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2836,12 +2862,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "user_id",
+            "description": "用户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2871,12 +2899,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "user_id",
+            "description": "用户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2906,12 +2936,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "user_id",
+            "description": "用户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2951,12 +2983,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "user_id",
+            "description": "用户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -3311,20 +3345,20 @@
           "type": "string"
         },
         "default": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "multipleOf": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "minimum": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "maximum": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -3372,15 +3406,46 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "string",
+          "description": "配置 scheme type，参考json schema(https://json-schema.org)",
+          "required": [
+            "type"
+          ]
         },
         "properties": {
           "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/apiprofilev1ProfileSchema"
-          }
+          },
+          "description": "配置 scheme properties，参考json schema(https://json-schema.org)",
+          "required": [
+            "properties"
+          ]
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "配置 scheme required，参考json schema (https://json-schema.org)",
+          "required": [
+            "required"
+          ]
+        },
+        "additionalProperties": {
+          "type": "boolean",
+          "description": "配置 scheme additionalProperties，参考json schema (https://json-schema.org)",
+          "required": [
+            "additionalProperties"
+          ]
         }
-      }
+      },
+      "required": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties"
+      ]
     },
     "protobufAny": {
       "type": "object",
@@ -3430,7 +3495,8 @@
       "type": "object",
       "properties": {
         "plugin_id": {
-          "type": "string"
+          "type": "string",
+          "description": "插件ID"
         }
       }
     },
@@ -3807,9 +3873,10 @@
         "profiles": {
           "type": "object",
           "additionalProperties": {
-            "type": "string",
-            "format": "int64"
-          }
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "租户配置"
         }
       }
     },
@@ -3881,11 +3948,13 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "string",
+          "description": "协议类型"
         },
         "config": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "description": "配置 base64"
         }
       },
       "description": "IdentityProviderConfig request."
@@ -4539,7 +4608,8 @@
       "type": "object",
       "properties": {
         "reset_key": {
-          "type": "string"
+          "type": "string",
+          "description": "重置密码密钥"
         }
       }
     },
@@ -4611,10 +4681,12 @@
       "type": "object",
       "properties": {
         "new_password": {
-          "type": "string"
+          "type": "string",
+          "description": "新密码"
         },
         "reset_key": {
-          "type": "string"
+          "type": "string",
+          "description": "重置密码密钥"
         }
       }
     },
@@ -4706,14 +4778,14 @@
       "properties": {
         "username": {
           "type": "string",
-          "description": "username",
+          "description": "用户名 username",
           "required": [
             "username"
           ]
         },
         "password": {
           "type": "string",
-          "description": "password ",
+          "description": "密码 password ",
           "required": [
             "password"
           ]
@@ -4810,9 +4882,10 @@
         "profiles": {
           "type": "object",
           "additionalProperties": {
-            "type": "string",
-            "format": "int64"
-          }
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "租户配置 k:v"
         }
       }
     },
@@ -4906,7 +4979,8 @@
       "type": "object",
       "properties": {
         "refresh_token": {
-          "type": "string"
+          "type": "string",
+          "description": "刷新Token refreshToken"
         }
       }
     },
@@ -4943,10 +5017,12 @@
       "type": "object",
       "properties": {
         "new_password": {
-          "type": "string"
+          "type": "string",
+          "description": "新密码"
         },
         "refresh_token": {
-          "type": "string"
+          "type": "string",
+          "description": "刷新 token"
         }
       }
     },
@@ -4971,10 +5047,12 @@
       "type": "object",
       "properties": {
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "租户空间名称"
         },
         "remark": {
-          "type": "string"
+          "type": "string",
+          "description": "租户备注信息"
         }
       }
     },
@@ -4985,13 +5063,15 @@
       "type": "object",
       "properties": {
         "nick_name": {
-          "type": "string"
+          "type": "string",
+          "description": "用户昵称"
         },
         "roles": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "角色ID列表"
         }
       }
     },

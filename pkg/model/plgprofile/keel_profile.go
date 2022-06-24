@@ -40,8 +40,8 @@ var (
 	tenantAPILimit = sync.Map{}
 )
 
-var KeelProfiles = map[string]model.ProfileSchema{
-	MAX_API_REQUEST_LIMIT_KEY: {Type: "number", Title: MAX_API_REQUEST_LIMIT_TITLE, Description: "api请求最大次数,0 表示无限制", Default: 0, MultipleOf: 1},
+var KeelProfiles = map[string]*model.ProfileSchema{
+	MAX_API_REQUEST_LIMIT_KEY: {Type: "number", Title: MAX_API_REQUEST_LIMIT_TITLE, Description: "api请求最大次数,0 表示无限制", Default: 0, MultipleOf: 1, Maximum: DEFAULT_MAX_API_LIMIT, Minimum: 1},
 }
 
 func OnTenantAPIRequest(tenantID string, store ProfileOperator) int {

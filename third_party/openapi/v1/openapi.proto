@@ -187,8 +187,8 @@ message ProfileSchema {
   string type = 1 ;
   string title = 2 ;
   string description =3 ;
-  string default = 4 ;
-  string multipleOf = 5 ;
-  string minimum = 6 ;
-  string maximum = 7 ;
+  int32 default = 4 ;
+  int32 multipleOf = 5 ;
+  int32 minimum = 6 ;
+  int32 maximum = 7 ;
 }

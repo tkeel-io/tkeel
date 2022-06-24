@@ -23,6 +23,7 @@ import (
 	"github.com/tkeel-io/kit/log"
 	pb "github.com/tkeel-io/tkeel/api/profile/v1"
 	"github.com/tkeel-io/tkeel/pkg/client/dapr"
+	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/plgprofile"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
@@ -30,13 +31,14 @@ import (
 
 type ProfileService struct {
 	pb.UnimplementedProfileServer
-	pluginOp    plugin.Operator
-	ProfileOp   plgprofile.ProfileOperator
-	daprHTTPCli dapr.Client
+	pluginOp      plugin.Operator
+	ProfileOp     plgprofile.ProfileOperator
+	daprHTTPCli   dapr.Client
+	openapiClient openapi.Client
 }
 
-func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperator, daprHTTP dapr.Client) *ProfileService {
-	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHTTP}
+func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperator, daprHTTP dapr.Client, openapiClient openapi.Client) *ProfileService {
+	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHTTP, openapiClient: openapiClient}
 }
 
 func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetProfileSchemaRequest) (*pb.GetProfileSchemaResponse, error) {
@@ -45,27 +47,34 @@ func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetPr
 		log.Error(err)
 		return nil, pb.ErrPluginList()
 	}
+	profiles := make(map[string]*pb.ProfileSchema)
+	required := make([]string, 0)
 	// ProfileOp set profileKey:plugin.
 	for _, plg := range plugins {
-		for k := range plg.Profiles {
+		// call identify.
+		identify, errIdf := s.openapiClient.Identify(ctx, plg.ID)
+		if errIdf != nil {
+			log.Error(errIdf)
+			continue
+		}
+		for k, prf := range identify.Profiles {
 			s.ProfileOp.SetProfilePlugin(ctx, k, plg.ID)
+			profiles[k] = &pb.ProfileSchema{Title: prf.Title, Type: prf.Type, Default: prf.Default, Description: prf.Description, MultipleOf: prf.MultipleOf, Maximum: prf.Maximum, Minimum: prf.Minimum}
+			required = append(required, k)
 		}
 	}
 
-	profiles := make(map[string]*pb.ProfileSchema)
-	for _, plg := range plugins {
-		for k, prf := range plg.Profiles {
-			profiles[k] = modelProfileSchema2pbProfile(prf)
-		}
-	}
 	// keel profile.
 	for keelP, keelV := range plgprofile.KeelProfiles {
 		profiles[keelP] = modelProfileSchema2pbProfile(keelV)
+		required = append(required, keelP)
 	}
 
 	return &pb.GetProfileSchemaResponse{Schema: &pb.Schema{
-		Type:       "object",
-		Properties: profiles,
+		Type:                 "object",
+		Properties:           profiles,
+		Required:             required,
+		AdditionalProperties: false,
 	}}, nil
 }
 
@@ -87,7 +96,7 @@ func (s *ProfileService) SetTenantProfileData(ctx context.Context, request *pb.S
 		return nil, pb.ErrUnknown()
 	}
 	//  call plugin
-	pluginProfiles := make(map[string]map[string]int64)
+	pluginProfiles := make(map[string]map[string]int32)
 	for k, v := range request.GetBody().GetProfiles() {
 		plg, _ := s.ProfileOp.GetProfilePlugin(ctx, k)
 		if plg != "" && plg != plgprofile.PLUGIN_ID_KEEL {
@@ -112,7 +121,7 @@ func (s *ProfileService) SetTenantProfileData(ctx context.Context, request *pb.S
 	return &pb.SetTenantPluginProfileResponse{}, nil
 }
 
-func modelProfileSchema2pbProfile(schema model.ProfileSchema) *pb.ProfileSchema {
+func modelProfileSchema2pbProfile(schema *model.ProfileSchema) *pb.ProfileSchema {
 	return &pb.ProfileSchema{Title: schema.Title,
 		Type:        schema.Type,
 		Default:     schema.Default,

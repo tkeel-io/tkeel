@@ -126,7 +126,7 @@ type Plugin struct {
 	Status                  openapi_v1.PluginStatus         `json:"status,omitempty"`                    // plugin state.
 	EnableTenantes          []*EnableTenant                 `json:"enable_tenantes,omitempty"`           // plugin active tenantes.
 	DisableManualActivation bool                            `json:"disable_manual_activation,omitempty"` // plugin disable manual activation.
-	Profiles                map[string]ProfileSchema        `json:"profiles,omitempty"`                  // plugin profile.
+	Profiles                interface{}                     `json:"profiles,omitempty"`                  // plugin profile.
 }
 
 func (p *Plugin) String() string {
@@ -169,9 +169,7 @@ func (p *Plugin) Register(resp *openapi_v1.IdentifyResponse, secret string) {
 	p.Secret = secret
 	p.DisableManualActivation = resp.DisableManualActivation
 	p.RegisterTimestamp = time.Now().Unix()
-	profiles := make(map[string]ProfileSchema)
-	json.Unmarshal(resp.Profiles, &profiles)
-	p.Profiles = profiles
+	p.Profiles = &resp.Profiles
 }
 
 func (p *Plugin) Clone() *Plugin {
@@ -237,10 +235,10 @@ type ProfileSchema struct {
 	Type        string `json:"type"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
-	Default     int64  `json:"default"`
-	MultipleOf  int64  `json:"multipleOf"`
-	Minimum     int64  `json:"minimum"`
-	Maximum     int64  `json:"maximum"`
+	Default     int32  `json:"default"`
+	MultipleOf  int32  `json:"multipleOf"`
+	Minimum     int32  `json:"minimum"`
+	Maximum     int32  `json:"maximum"`
 }
 
 func (pr *PluginRoute) String() string {
