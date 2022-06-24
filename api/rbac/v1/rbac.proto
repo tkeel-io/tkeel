@@ -193,7 +193,7 @@ service RBAC {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "TM add policy 测试专用"
       operation_id : "TMAddPolicy"
-      tags : "RBAC"
+      tags: ["RBAC","Internal"]
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -208,7 +208,7 @@ service RBAC {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "TM delete policy 测试专用"
       operation_id : "TMDeletePolicy"
-      tags : "RBAC"
+      tags: ["RBAC","Internal"]
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -223,7 +223,7 @@ service RBAC {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "TM add policy 测试专用"
       operation_id : "TMAddRoleBinding"
-      tags : "RBAC"
+      tags: ["RBAC","Internal"]
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -239,7 +239,7 @@ service RBAC {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "TM delete policy 测试专用"
       operation_id : "TMDeleteRoleBinding"
-      tags : "RBAC"
+      tags: ["RBAC","Internal"]
       responses : [ {
         key : "200"
         value : {description : "OK"}
@@ -263,227 +263,227 @@ message TMRoleBindingRequest {
 message Permission {
   string path = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "permission path"
+        description : "权限路径"
       } ];
   openapi.v1.Permission permission = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "permission"
+        description : "权限"
       } ];
 }
 
 message Role {
   string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role id"
+        description : "角色 id"
       } ]; // tenant role name.
   string name = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role name"
+        description : "角色名称"
       } ]; // tenant role name.
   string desc = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "role desc"
+        description : "角色描述"
       } ];
   int32 bind_num = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "role bind user number"
+        description : "绑定数量"
       } ];
   uint64 upsert_timestamp = 5
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "role upsert timestamp"
+        description : "时间戳"
       } ];
   repeated Permission permission_list = 6
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "permission path list"
+        description : "权限列表"
       } ];
   bool uneditable = 7
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "role uneditable"
+        description : "可编辑"
       } ];
 }
 
 message CreateRoleRequest {
   Role role = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role"
+        description : "角色"
       } ];
 }
 
 message CreateRoleResponse {
   Role role = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role"
+        description : "角色"
       } ];
 }
 
 message GetRoleRequest {
   string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role id"
+        description : "角色ID"
       } ];
 }
 
 message GetRoleResponse {
   Role role = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role"
+        description : "角色"
       } ];
 }
 
 message DeleteRoleRequest {
   string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role id"
+        description : "角色ID"
       } ];
 }
 
 message DeleteRoleResponse {
   Role role = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role"
+        description : "角色"
       } ];
 }
 
 message UpdateRoleRequest {
   string id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role id"
+        description : "角色ID"
       } ];
   Role role = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role"
+        description : "角色"
       } ];
 }
 
 message UpdateRoleResponse {
   Role role = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role"
+        description : "角色"
       } ];
 }
 
 message ListRolesRequest {
   int32 page_num = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page number"
+        description : "页数"
       } ];
   int32 page_size = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page size"
+        description : "每页大小"
       } ];
   string order_by = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query items order by field"
+        description : "排序"
       } ];
   bool is_descending = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query items inverted sort"
+        description : "排序顺序"
       } ];
   string key_words = 5
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query items key"
+        description : "关键字"
       } ];
   string tenant_id = 10
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant id, default is current tenant"
+        description : "租户ID"
       } ];
 }
 
 message ListRolesResponse {
   int32 page_num = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page number"
+        description : "页数"
       } ];
   int32 page_size = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page size"
+        description : "页大小"
       } ];
   int32 total = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query item total"
+        description : "总数"
       } ];
   repeated Role roles = 10
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "roles"
+        description : "角色列表"
       } ];
   string tenant_id = 11
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant id, default is current tenant"
+        description : "租户ID"
       } ];
 }
 
 message CreateRoleBindingRequest {
   string role_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "bind role name"
+        description : "角色ID"
       } ];
   message UserList {
     repeated string id = 1
         [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "bind user id"
+          description : "用户ID"
         } ];
   }
   UserList users = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "bind user id"
+        description : "用户列表"
       } ];
 }
 
 message DeleteRoleBindingRequest {
   string role_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "bind role id"
+        description : "角色ID"
       } ];
   string user_id = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "bind user id"
+        description : "用户ID"
       } ];
 }
 
 message ListPermissionRequest {
   string key_words = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "permission name search words"
+        description : "关键字"
       } ]; // permission name search words.
   string role = 10
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant role name,default is current role"
+        description : "角色"
       } ]; // tenant role name.
 }
 message ListPermissionResponse {
   repeated Permission permissions = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "role permissions"
+        description : "权限"
       } ];
 }
 
 message CheckRolePermissionRequest {
   string path = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "permission path"
+        description : "权限"
       } ];
 }
 
 message CheckRolePermissionResponse {
   bool allowed = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "permission allowed"
+        description : "是否允许"
       } ];
 }
 
 message UpdateUserRoleBindingRequest {
   string user_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "binding user id"
+        description : "用户ID"
       } ];
   message RoleIDList {
     repeated string roles = 1
         [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "binding roles"
+          description : "角色列表"
         } ];
   }
   RoleIDList role_id_list = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "binding role id list"
+        description : "绑定列表"
       } ];
 }

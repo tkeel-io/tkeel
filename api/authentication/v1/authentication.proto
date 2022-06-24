@@ -30,7 +30,7 @@ service authentication {
       get : "/authenticate"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "Authorization 认证"
+      summary : "Authorization 网关认证"
       operation_id : "Authenticate"
       tags : "authentication"
       responses : [
@@ -55,7 +55,7 @@ service authentication {
 message AuthenticateRequest {
   string path = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "url path"
+        description : "路径"
       } ];
   string verb = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
@@ -67,22 +67,22 @@ message AuthenticateRequest {
 message AuthenticateResponse {
   string user_id = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "user id"
+        description : "用户ID"
       } ];
   string tenant_id = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant id"
+        description : "租户ID"
       } ];
   string role = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "role"
+        description : "角色"
       } ];
   string destination = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "dst plugin id"
+        description : "调用插件ID"
       } ];
   string method = 5
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "dst plugin method"
+        description : "调用插件Method"
       } ];
 }

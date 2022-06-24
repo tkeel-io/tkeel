@@ -76,25 +76,25 @@ service EntityToken {
 message TokenRequestBody {
   string entity_type = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "entity type  body params"
+      description : "实体类型"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string entity_id = 2 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "entity id  body params"
+      description : "实体ID"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   string owner = 3 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "entity owner  body params"
+      description : "实体归属者"
     },
     (google.api.field_behavior) = REQUIRED
   ];
   int64 expires_in = 4 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "entity token expires in  body params"
+      description : "过期时间"
     },
     (google.api.field_behavior) = REQUIRED
   ];
@@ -103,7 +103,7 @@ message TokenRequestBody {
 message CreateEntityTokenRequest {
   TokenRequestBody body = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "create entity token  body params"
+      description : "实体信息"
     },
     (google.api.field_behavior) = REQUIRED
   ];
@@ -113,7 +113,7 @@ message CreateEntityTokenResponse { string token = 1; }
 message TokenInfoRequest {
   string token = 1 [
     (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "entity token  path params"
+      description : "实体Token"
     },
     (google.api.field_behavior) = REQUIRED
   ];

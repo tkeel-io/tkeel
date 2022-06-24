@@ -24,7 +24,7 @@ require (
 	github.com/tkeel-io/kit v0.0.0-20220522082406-248e4772e711
 	github.com/tkeel-io/security v0.0.0-20220412090936-aea9ec1f08c1
 	github.com/tkeel-io/tdtl v0.1.4
-	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220424073125-8edc0200490f
+	github.com/tkeel-io/tkeel-interface/openapi v0.0.0-20220624023618-32db91cf0860
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 	google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3
 	google.golang.org/grpc v1.46.0

@@ -16,19 +16,36 @@ syntax = "proto3";
 package io.tkeel.rudder.api.profile.v1;
 
 import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/profile/v1;v1";
 
 
 service Profile {
-  rpc GetTenantProfile(GetTenantProfileRequest)returns(GetTenantProfileResponse){
+  // profile schema
+  rpc GetProfileSchema(GetProfileSchemaRequest)returns(GetProfileSchemaResponse){
     option (google.api.http) = {
-      get : "/profile"
+      get : "/profile/schema"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary : "获取平台租户配置schema"
+      operation_id : "GetProfileSchema"
+      tags : "profile"
+      responses : [ {
+        key : "200"
+        value : {description : "OK"}
+      } ]
+    };
+  }
+  // profile data
+  rpc GetTenantProfileData(GetTenantProfileDataRequest)returns(GetTenantProfileDataResponse){
+    option (google.api.http) = {
+      get : "/profile/data"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "获取平台租户配置"
-      operation_id : "GetTenantProfile"
+      operation_id : "GetTenantProfileData"
       tags : "profile"
       responses : [ {
         key : "200"
@@ -37,14 +54,14 @@ service Profile {
     };
   }
 
-  rpc SetTenantPluginProfile(SetTenantPluginProfileRequest)returns(SetTenantPluginProfileResponse){
+  rpc SetTenantProfileData(SetTenantPluginProfileRequest)returns(SetTenantPluginProfileResponse){
     option (google.api.http) = {
-      post : "/profile"
+      post : "/profile/data"
       body : "body"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary : "设置平台租户配置"
-      operation_id : "SetTenantProfile"
+      operation_id : "SetTenantProfileData"
       tags : "profile"
       responses : [ {
         key : "200"
@@ -54,23 +71,80 @@ service Profile {
   };
 }
 
-message GetTenantProfileRequest {
-  string tenant_id = 1;
+
+message GetTenantProfileDataRequest{
+  string tenant_id = 1
+    [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "租户ID"
+    },
+      (google.api.field_behavior) = REQUIRED];
 }
-message GetTenantProfileResponse {
-  repeated TenantProfiles tenant_profiles = 1;
+
+message GetTenantProfileDataResponse{
+  map<string ,int32> profiles =1    [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户配置"
+  } ];
+
 }
 message TenantProfiles {
-  string plugin_id = 1;
-  bytes profiles = 2;
+  map<string ,int32> profiles = 1    [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户配置 k:v"
+  } ];
 }
 
 message SetTenantPluginProfileRequest {
-  string tenant_id = 1;
-  TenantProfiles body = 3;
+  string tenant_id = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+  description : "租户ID"
+      },
+    (google.api.field_behavior) = REQUIRED];
+  TenantProfiles body = 2;
 }
 
 message SetTenantPluginProfileResponse {
 
 }
 
+message GetProfileSchemaRequest {
+  string profile =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "配置 key"},
+      (google.api.field_behavior) = OPTIONAL
+   ];
+}
+message GetProfileSchemaResponse{
+  Schema schema =1;
+}
+
+message Schema {
+  string type = 1[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "配置 scheme type，参考json schema(https://json-schema.org)"},
+    (google.api.field_behavior) = REQUIRED
+
+  ];
+  map <string, ProfileSchema >  properties = 2[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "配置 scheme properties，参考json schema(https://json-schema.org)"},
+    (google.api.field_behavior) = REQUIRED
+  ];
+  repeated string required = 3[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "配置 scheme required，参考json schema (https://json-schema.org)"},
+    (google.api.field_behavior) = REQUIRED
+  ];
+  bool additionalProperties = 4[(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "配置 scheme additionalProperties，参考json schema (https://json-schema.org)"},
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message ProfileSchema {
+  string type = 1 ;
+  string title = 2 ;
+  string description =3 ;
+  int32 default = 4 ;
+  int32 multipleOf = 5 ;
+  int32 minimum = 6 ;
+  int32 maximum = 7 ;
+}
+
+ message TenantEnableRequest {
+  string tenant_id = 1; // unique tenant id.
+    bytes extra = 2;      // extra data
+}

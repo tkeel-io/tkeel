@@ -22,18 +22,26 @@ import (
 	"fmt"
 
 	dapr "github.com/dapr/go-sdk/client"
-	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/pkg/errors"
 )
 
 const (
-	PRIFXITENANTPROFILE = "tkeel:tenant:profile:"
+	PRIFXITENANTPROFILEDATA = "tkeel:tenant:%s:profile:data"
+	PRIFIXPROFILEPLUGIN     = "tkeel:profile:%s:plugin"
 )
 
-func profileKeyWithTenant(tenantID string) string {
+func profileDataKeyWithTenant(tenantID string) string {
 	if tenantID == "" {
 		tenantID = "_all"
 	}
-	return PRIFXITENANTPROFILE + tenantID
+	return fmt.Sprintf(PRIFXITENANTPROFILEDATA, tenantID)
+}
+
+func profilePluginKey(profile string) string {
+	if profile == "" {
+		profile = "default"
+	}
+	return fmt.Sprintf(PRIFIXPROFILEPLUGIN, profile)
 }
 
 type ProfileStateStore struct {
@@ -41,66 +49,54 @@ type ProfileStateStore struct {
 	daprClient dapr.Client
 }
 
+// nolint
+func (store *ProfileStateStore) GetProfilePlugin(ctx context.Context, profile string) (plugin string, err error) {
+	items, err := store.daprClient.GetState(ctx, store.storeName, profilePluginKey(profile))
+	if err != nil {
+		return "", err
+	}
+
+	return string(items.Value), nil
+}
+
+// nolint
+func (store *ProfileStateStore) SetProfilePlugin(ctx context.Context, profile string, plugin string) error {
+	return store.daprClient.SaveState(ctx, store.storeName, profilePluginKey(profile), []byte(plugin))
+}
+
+// nolint
+func (store *ProfileStateStore) GetTenantProfileData(ctx context.Context, tenantID string) (data map[string]int32, err error) {
+	items, err := store.daprClient.GetState(ctx, store.storeName, profileDataKeyWithTenant(tenantID))
+	if err != nil {
+		return nil, err
+	}
+	data = make(map[string]int32)
+	err = json.Unmarshal(items.Value, &data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+// nolint
+func (store *ProfileStateStore) SetTenantProfileData(ctx context.Context, tenantID string, profileData map[string]int32) error {
+	data, err := json.Marshal(profileData)
+	if err != nil {
+		return err
+	}
+	err = store.daprClient.SaveState(ctx, store.storeName, profilePluginKey(tenantID), data)
+	if err != nil {
+		return errors.Wrapf(err, "SaveState")
+	}
+	return nil
+}
+
+var _ ProfileOperator = new(ProfileStateStore)
+
 // dapr state store.
 func NewProfileStateStore(storeName string, c dapr.Client) *ProfileStateStore {
 	return &ProfileStateStore{
 		storeName:  storeName,
 		daprClient: c,
 	}
-}
-
-func (store *ProfileStateStore) GetTenantProfile(ctx context.Context, tenantID string) ([]*model.PluginProfile, error) {
-	profiles := make([]*model.PluginProfile, 0)
-	item, err := store.daprClient.GetState(ctx, store.storeName, profileKeyWithTenant(tenantID))
-	if err != nil {
-		return nil, fmt.Errorf("get state %w", err)
-	}
-	if err = json.Unmarshal(item.Value, &profiles); err != nil {
-		return nil, fmt.Errorf("%w", err)
-	}
-	return profiles, nil
-}
-
-func (store *ProfileStateStore) SetTenantProfile(ctx context.Context, tenantID string, profile []*model.PluginProfile) error {
-	items, err := json.Marshal(profile)
-	if err != nil {
-		return fmt.Errorf("set profile %w", err)
-	}
-	err = store.daprClient.SaveState(ctx, store.storeName, profileKeyWithTenant(tenantID), items)
-	if err != nil {
-		return fmt.Errorf("set profile %w", err)
-	}
-	return nil
-}
-func (store *ProfileStateStore) SetTenantPluginProfile(ctx context.Context, tenantID string, profile *model.PluginProfile) error {
-	profiles := make([]*model.PluginProfile, 0)
-	item, err := store.daprClient.GetState(ctx, store.storeName, profileKeyWithTenant(tenantID))
-	if err != nil {
-		return fmt.Errorf("get state %w", err)
-	}
-	if item.Value != nil {
-		json.Unmarshal(item.Value, &profiles)
-	}
-
-	var update bool
-	for i := range profiles {
-		if profiles[i].PluginID == profile.PluginID {
-			profiles[i] = profile
-			update = true
-			break
-		}
-	}
-	if !update {
-		profiles = append(profiles, profile)
-	}
-
-	items, err := json.Marshal(profiles)
-	if err != nil {
-		return fmt.Errorf("set profile %w", err)
-	}
-	err = store.daprClient.SaveState(ctx, store.storeName, profileKeyWithTenant(tenantID), items)
-	if err != nil {
-		return fmt.Errorf("set profile %w", err)
-	}
-	return nil
 }

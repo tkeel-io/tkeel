@@ -308,11 +308,11 @@ service Plugin {
 message RegisterAddons {
   string addons = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "addons name"
+        description : "扩展点 名字"
       } ]; // addons name.
   string upstream = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "upstream path"
+        description : "上游路径"
       } ]; // upstream path.
 }
 
@@ -327,49 +327,49 @@ enum ConfigurationType {
 message Installer {
   string name = 1
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "installer name"
+        description : "安装名字"
       } ];
   string version = 2
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "installer version"
+        description : "安装版本"
       } ];
   string repo = 3
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "repository name"
+        description : "仓库名字"
       } ];
   string icon = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "installer icon"
+        description : "安装图标"
       } ];
   string desc = 5
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "installer desc"
+        description : "安装描述"
       } ];
   bytes configuration = 6
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "installer configuration data"
+        description : "安装配置"
       } ];
   ConfigurationType type = 7
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "configuration type"
+        description : "配置类型"
       } ];
   message maintainer {
     string name = 1
         [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "maintainer name"
+          description : "作者名字"
         } ];
     string email = 2
         [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "maintainer email"
+          description : "作者邮箱"
         } ];
     string url = 3
         [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "maintainer url"
+          description : "作者地址"
         } ];
   }
   repeated maintainer maintainers = 8
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "installer maintainers"
+        description : "作者列表"
       } ];
 }
 

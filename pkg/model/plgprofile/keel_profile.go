@@ -17,11 +17,9 @@ limitations under the License.
 package plgprofile
 
 import (
-	"encoding/json"
 	"math"
 	"sync"
 
-	pb "github.com/tkeel-io/tkeel/api/profile/v1"
 	"github.com/tkeel-io/tkeel/pkg/model"
 )
 
@@ -30,9 +28,9 @@ const (
 	PLUGIN_ID_KEEL = "keel"
 	// api limit.
 	//nolint
-	MAX_API_REQUEST_LIMIT_KEY = "max_api_request_limit"
+	MAX_API_REQUEST_LIMIT_KEY = "keel_api_request_limit"
 	//nolint
-	MAX_API_REQUEST_LIMIT_DESC = "接口请求次数最大限制"
+	MAX_API_REQUEST_LIMIT_TITLE = "接口请求次数最大限制"
 	//nolint
 	DEFAULT_MAX_API_LIMIT = math.MaxInt32
 )
@@ -42,14 +40,9 @@ var (
 	tenantAPILimit = sync.Map{}
 )
 
-var KeelProfiles = &pb.TenantProfiles{PluginId: PLUGIN_ID_KEEL, Profiles: func() []byte {
-	profilesBytes, err := json.Marshal([]*model.ProfileItem{{Key: MAX_API_REQUEST_LIMIT_KEY,
-		Value: DEFAULT_MAX_API_LIMIT, Description: MAX_API_REQUEST_LIMIT_DESC}})
-	if err != nil {
-		return []byte{}
-	}
-	return profilesBytes
-}()}
+var KeelProfiles = map[string]*model.ProfileSchema{
+	MAX_API_REQUEST_LIMIT_KEY: {Type: "number", Title: MAX_API_REQUEST_LIMIT_TITLE, Description: "api请求最大次数,0 表示无限制", Default: 0, MultipleOf: 1, Maximum: DEFAULT_MAX_API_LIMIT, Minimum: 1},
+}
 
 func OnTenantAPIRequest(tenantID string, store ProfileOperator) int {
 	cur, _ := tenantAPICount.Load(tenantID)

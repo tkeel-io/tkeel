@@ -48,7 +48,7 @@
   "paths": {
     "/authenticate": {
       "get": {
-        "summary": "Authorization 认证",
+        "summary": "Authorization 网关认证",
         "operationId": "Authenticate",
         "responses": {
           "200": {
@@ -75,7 +75,7 @@
         "parameters": [
           {
             "name": "path",
-            "description": "url path",
+            "description": "路径",
             "in": "query",
             "required": false,
             "type": "string"
@@ -294,7 +294,7 @@
         "parameters": [
           {
             "name": "token",
-            "description": "entity token  path params",
+            "description": "实体Token",
             "in": "path",
             "required": true,
             "type": "string"
@@ -326,12 +326,12 @@
         "parameters": [
           {
             "name": "body",
-            "description": "create entity token  body params",
+            "description": "实体信息",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/v1TokenRequestBody",
-              "description": "create entity token  body params"
+              "description": "实体信息"
             }
           }
         ],
@@ -361,7 +361,7 @@
         "parameters": [
           {
             "name": "token",
-            "description": "entity token  path params",
+            "description": "实体Token",
             "in": "path",
             "required": true,
             "type": "string"
@@ -447,6 +447,7 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -486,6 +487,7 @@
         "parameters": [
           {
             "name": "type",
+            "description": "协议类型",
             "in": "query",
             "required": false,
             "type": "string"
@@ -517,6 +519,7 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -680,35 +683,35 @@
         "parameters": [
           {
             "name": "tenant_id",
-            "description": "tenantID path param",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "response_type",
-            "description": "authorize response type, this must 'code',query param",
+            "description": "授权返回类型: code (授权码)",
             "in": "query",
             "required": true,
             "type": "string"
           },
           {
             "name": "username",
-            "description": "username query param",
+            "description": "用户名 username",
             "in": "query",
             "required": true,
             "type": "string"
           },
           {
             "name": "password",
-            "description": "password query param",
+            "description": "密码 password",
             "in": "query",
             "required": true,
             "type": "string"
           },
           {
             "name": "redirect_uri",
-            "description": "redirect uri with code",
+            "description": "授权码 重定向地址",
             "in": "query",
             "required": true,
             "type": "string"
@@ -747,56 +750,56 @@
         "parameters": [
           {
             "name": "tenant_id",
-            "description": "tenant_id path param",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "grant_type",
-            "description": "grant_type 'authorize_code','password', query param",
+            "description": "授权方式，支持: authorize_code password",
             "in": "query",
             "required": true,
             "type": "string"
           },
           {
             "name": "code",
-            "description": "code with authorize response,query param",
+            "description": "授权码",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "redirect_uri",
-            "description": "redirect_uri while grant_type is code,query param",
+            "description": "授权码重定向地址",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "username",
-            "description": "username while grant_type is password ,query param",
+            "description": "username",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "password",
-            "description": "password while grant_type is password,query param",
+            "description": "password",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "refresh_token",
-            "description": "refresh token while grant_type is refresh_token,query param",
+            "description": "refresh token",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "disable_redirect",
-            "description": "auto redirect if auto_redirect = trueparam",
+            "description": "禁用成功获取 Token 后的重定向行为",
             "in": "query",
             "required": false,
             "type": "boolean"
@@ -836,7 +839,7 @@
         "parameters": [
           {
             "name": "password",
-            "description": "admin password",
+            "description": "密码",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1451,15 +1454,15 @@
         ]
       }
     },
-    "/profile": {
+    "/profile/data": {
       "get": {
         "summary": "获取平台租户配置",
-        "operationId": "GetTenantProfile",
+        "operationId": "GetTenantProfileData",
         "responses": {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/v1GetTenantProfileResponse"
+              "$ref": "#/definitions/v1GetTenantProfileDataResponse"
             }
           },
           "default": {
@@ -1472,8 +1475,9 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "query",
-            "required": false,
+            "required": true,
             "type": "string"
           }
         ],
@@ -1483,7 +1487,7 @@
       },
       "post": {
         "summary": "设置平台租户配置",
-        "operationId": "SetTenantProfile",
+        "operationId": "SetTenantProfileData",
         "responses": {
           "200": {
             "description": "OK",
@@ -1509,6 +1513,39 @@
           },
           {
             "name": "tenant_id",
+            "description": "租户ID",
+            "in": "query",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "profile"
+        ]
+      }
+    },
+    "/profile/schema": {
+      "get": {
+        "summary": "获取平台租户配置schema",
+        "operationId": "GetProfileSchema",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/v1GetProfileSchemaResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "profile",
+            "description": "配置 key",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1540,14 +1577,14 @@
         "parameters": [
           {
             "name": "key_words",
-            "description": "permission name search words",
+            "description": "关键字",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "role",
-            "description": "tenant role name,default is current role",
+            "description": "角色",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1612,7 +1649,7 @@
         "parameters": [
           {
             "name": "page_num",
-            "description": "query page number",
+            "description": "页数",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -1620,7 +1657,7 @@
           },
           {
             "name": "page_size",
-            "description": "query page size",
+            "description": "每页大小",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -1628,28 +1665,28 @@
           },
           {
             "name": "order_by",
-            "description": "query items order by field",
+            "description": "排序",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "is_descending",
-            "description": "query items inverted sort",
+            "description": "排序顺序",
             "in": "query",
             "required": false,
             "type": "boolean"
           },
           {
             "name": "key_words",
-            "description": "query items key",
+            "description": "关键字",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "tenant_id",
-            "description": "tenant id, default is current tenant",
+            "description": "租户ID",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1679,12 +1716,12 @@
         "parameters": [
           {
             "name": "body",
-            "description": "tenant role",
+            "description": "角色",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/v1Role",
-              "description": "tenant role"
+              "description": "角色"
             }
           }
         ],
@@ -1714,7 +1751,7 @@
         "parameters": [
           {
             "name": "id",
-            "description": "tenant role id",
+            "description": "角色ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1744,7 +1781,7 @@
         "parameters": [
           {
             "name": "id",
-            "description": "tenant role id",
+            "description": "角色ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1774,19 +1811,19 @@
         "parameters": [
           {
             "name": "id",
-            "description": "tenant role id",
+            "description": "角色ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "body",
-            "description": "tenant role",
+            "description": "角色",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/v1Role",
-              "description": "tenant role"
+              "description": "角色"
             }
           }
         ],
@@ -1816,19 +1853,19 @@
         "parameters": [
           {
             "name": "role_id",
-            "description": "bind role name",
+            "description": "角色ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "body",
-            "description": "bind user id",
+            "description": "用户列表",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/CreateRoleBindingRequestUserList",
-              "description": "bind user id"
+              "description": "用户列表"
             }
           }
         ],
@@ -1858,14 +1895,14 @@
         "parameters": [
           {
             "name": "role_id",
-            "description": "bind role id",
+            "description": "角色ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "user_id",
-            "description": "bind user id",
+            "description": "用户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1897,19 +1934,19 @@
         "parameters": [
           {
             "name": "user_id",
-            "description": "binding user id",
+            "description": "用户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "body",
-            "description": "binding role id list",
+            "description": "绑定列表",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/UpdateUserRoleBindingRequestRoleIDList",
-              "description": "binding role id list"
+              "description": "绑定列表"
             }
           }
         ],
@@ -2289,6 +2326,7 @@
         "parameters": [
           {
             "name": "page_num",
+            "description": "页 page",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -2296,6 +2334,7 @@
           },
           {
             "name": "page_size",
+            "description": "页大小 page_siza",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -2303,18 +2342,21 @@
           },
           {
             "name": "order_by",
+            "description": "排序",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "is_descending",
+            "description": "倒序",
             "in": "query",
             "required": false,
             "type": "boolean"
           },
           {
             "name": "key_words",
+            "description": "查询关键字",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2356,12 +2398,12 @@
         "parameters": [
           {
             "name": "body",
-            "description": "create tenant body params",
+            "description": "租户信息",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/v1TenantCreateBody",
-              "description": "create tenant body params"
+              "description": "租户信息"
             }
           }
         ],
@@ -2391,12 +2433,14 @@
         "parameters": [
           {
             "name": "title",
+            "description": "租户名称",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2428,12 +2472,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "plugin_id",
+            "description": "插件ID",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2498,7 +2544,7 @@
         "parameters": [
           {
             "name": "tenant_id",
-            "description": "tenant id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2528,7 +2574,7 @@
         "parameters": [
           {
             "name": "tenant_id",
-            "description": "tenant id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2558,6 +2604,7 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2597,6 +2644,7 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2626,6 +2674,7 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2665,12 +2714,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "plugin_id",
+            "description": "插件ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2702,12 +2753,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "page_num",
+            "description": "页 page",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -2715,6 +2768,7 @@
           },
           {
             "name": "page_size",
+            "description": "页大小 page_size",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -2722,18 +2776,21 @@
           },
           {
             "name": "order_by",
+            "description": "排序字段",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "is_descending",
+            "description": "是否倒序",
             "in": "query",
             "required": false,
             "type": "boolean"
           },
           {
             "name": "key_words",
+            "description": "查询关键字",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2763,19 +2820,19 @@
         "parameters": [
           {
             "name": "tenant_id",
-            "description": "tenant id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "body",
-            "description": "create user body params",
+            "description": "用户信息",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/v1CreateUserBody",
-              "description": "create user body params"
+              "description": "用户信息"
             }
           }
         ],
@@ -2805,12 +2862,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "user_id",
+            "description": "用户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2840,12 +2899,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "user_id",
+            "description": "用户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2875,12 +2936,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "user_id",
+            "description": "用户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2920,12 +2983,14 @@
         "parameters": [
           {
             "name": "tenant_id",
+            "description": "租户ID",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "user_id",
+            "description": "用户ID",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2965,7 +3030,8 @@
           }
         ],
         "tags": [
-          "RBAC"
+          "RBAC",
+          "Internal"
         ]
       }
     },
@@ -2998,7 +3064,8 @@
           }
         ],
         "tags": [
-          "RBAC"
+          "RBAC",
+          "Internal"
         ]
       }
     },
@@ -3031,7 +3098,8 @@
           }
         ],
         "tags": [
-          "RBAC"
+          "RBAC",
+          "Internal"
         ]
       }
     },
@@ -3064,7 +3132,8 @@
           }
         ],
         "tags": [
-          "RBAC"
+          "RBAC",
+          "Internal"
         ]
       }
     },
@@ -3165,7 +3234,7 @@
           "items": {
             "type": "string"
           },
-          "description": "bind user id"
+          "description": "用户ID"
         }
       }
     },
@@ -3203,7 +3272,7 @@
           "items": {
             "type": "string"
           },
-          "description": "binding roles"
+          "description": "角色列表"
         }
       }
     },
@@ -3212,23 +3281,23 @@
       "properties": {
         "user_id": {
           "type": "string",
-          "description": "user id"
+          "description": "用户ID"
         },
         "tenant_id": {
           "type": "string",
-          "description": "tenant id"
+          "description": "租户ID"
         },
         "role": {
           "type": "string",
-          "description": "role"
+          "description": "角色"
         },
         "destination": {
           "type": "string",
-          "description": "dst plugin id"
+          "description": "调用插件ID"
         },
         "method": {
           "type": "string",
-          "description": "dst plugin method"
+          "description": "调用插件Method"
         }
       },
       "title": "认证返回值"
@@ -3263,16 +3332,46 @@
         }
       }
     },
+    "apiprofilev1ProfileSchema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "default": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "multipleOf": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "minimum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "maximum": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "apirbacv1Permission": {
       "type": "object",
       "properties": {
         "path": {
           "type": "string",
-          "description": "permission path"
+          "description": "权限路径"
         },
         "permission": {
           "$ref": "#/definitions/openapiv1Permission",
-          "description": "permission"
+          "description": "权限"
         }
       }
     },
@@ -3302,6 +3401,51 @@
         }
       },
       "description": "plugin define permission."
+    },
+    "profilev1Schema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "配置 scheme type，参考json schema(https://json-schema.org)",
+          "required": [
+            "type"
+          ]
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/apiprofilev1ProfileSchema"
+          },
+          "description": "配置 scheme properties，参考json schema(https://json-schema.org)",
+          "required": [
+            "properties"
+          ]
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "配置 scheme required，参考json schema (https://json-schema.org)",
+          "required": [
+            "required"
+          ]
+        },
+        "additionalProperties": {
+          "type": "boolean",
+          "description": "配置 scheme additionalProperties，参考json schema (https://json-schema.org)",
+          "required": [
+            "additionalProperties"
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "properties",
+        "required",
+        "additionalProperties"
+      ]
     },
     "protobufAny": {
       "type": "object",
@@ -3343,7 +3487,7 @@
       "properties": {
         "plugin_id": {
           "type": "string",
-          "description": "plugin id(dapr app id)"
+          "description": "插件ID dapr应用ID"
         }
       }
     },
@@ -3351,7 +3495,8 @@
       "type": "object",
       "properties": {
         "plugin_id": {
-          "type": "string"
+          "type": "string",
+          "description": "插件ID"
         }
       }
     },
@@ -3400,7 +3545,7 @@
       "properties": {
         "path": {
           "type": "string",
-          "description": "permission path"
+          "description": "权限"
         }
       }
     },
@@ -3409,7 +3554,7 @@
       "properties": {
         "allowed": {
           "type": "boolean",
-          "description": "permission allowed"
+          "description": "是否允许"
         }
       }
     },
@@ -3473,7 +3618,7 @@
       "properties": {
         "role": {
           "$ref": "#/definitions/v1Role",
-          "description": "tenant role"
+          "description": "角色"
         }
       }
     },
@@ -3482,19 +3627,19 @@
       "properties": {
         "tenant_id": {
           "type": "string",
-          "description": "created tenant id"
+          "description": "租户ID"
         },
         "tenant_title": {
           "type": "string",
-          "description": "created tenant title"
+          "description": "租户空间名称"
         },
         "admin_username": {
           "type": "string",
-          "description": "created tenant admin username"
+          "description": "租户管理员 username"
         },
         "reset_key": {
           "type": "string",
-          "description": " tenant admin password reset key"
+          "description": " 租户管理员 password"
         }
       },
       "title": "The response message containing the greetings"
@@ -3504,14 +3649,14 @@
       "properties": {
         "username": {
           "type": "string",
-          "description": "user name",
+          "description": "用户名",
           "required": [
             "username"
           ]
         },
         "password": {
           "type": "string",
-          "description": "user password",
+          "description": "密码",
           "required": [
             "password"
           ]
@@ -3521,11 +3666,11 @@
           "items": {
             "type": "string"
           },
-          "description": "user roles"
+          "description": "角色列表"
         },
         "nick_name": {
           "type": "string",
-          "description": "user nick name"
+          "description": "昵称"
         }
       },
       "required": [
@@ -3565,7 +3710,7 @@
       "properties": {
         "role": {
           "$ref": "#/definitions/v1Role",
-          "description": "tenant role"
+          "description": "角色"
         }
       }
     },
@@ -3627,19 +3772,19 @@
       "properties": {
         "admin_host": {
           "type": "string",
-          "description": "admin_host"
+          "description": "管理端域名"
         },
         "tenant_host": {
           "type": "string",
-          "description": "tenant_host"
+          "description": "租户端域名"
         },
         "port": {
           "type": "string",
-          "description": "host port"
+          "description": "端口"
         },
         "docs_addr": {
           "type": "string",
-          "description": "docs host"
+          "description": "文档地址"
         }
       }
     },
@@ -3673,6 +3818,14 @@
         "plugin": {
           "$ref": "#/definitions/v1PluginObject",
           "description": "plugin object"
+        }
+      }
+    },
+    "v1GetProfileSchemaResponse": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/definitions/profilev1Schema"
         }
       }
     },
@@ -3710,18 +3863,20 @@
       "properties": {
         "role": {
           "$ref": "#/definitions/v1Role",
-          "description": "tenant role"
+          "description": "角色"
         }
       }
     },
-    "v1GetTenantProfileResponse": {
+    "v1GetTenantProfileDataResponse": {
       "type": "object",
       "properties": {
-        "tenant_profiles": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/v1TenantProfiles"
-          }
+        "profiles": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "租户配置"
         }
       }
     },
@@ -3730,36 +3885,36 @@
       "properties": {
         "tenant_id": {
           "type": "string",
-          "description": "tenant id"
+          "description": "租户ID"
         },
         "title": {
           "type": "string",
-          "description": "tenant title"
+          "description": "租户空间名称"
         },
         "remark": {
           "type": "string",
-          "description": "tenant remark"
+          "description": "租户备注"
         },
         "created_at": {
           "type": "string",
           "format": "int64",
-          "description": "tenant remark"
+          "description": "创建时间"
         },
         "num_user": {
           "type": "integer",
           "format": "int32",
-          "description": "user number in tenant"
+          "description": "租户用户数"
         },
         "admins": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1TenantAdmin"
           },
-          "description": "admins in tenant"
+          "description": "租户管理员"
         },
         "auth_type": {
           "type": "string",
-          "description": "auth type : internal / external"
+          "description": "认证类型 : internal / external"
         }
       }
     },
@@ -3793,11 +3948,13 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "string",
+          "description": "协议类型"
         },
         "config": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "description": "配置 base64"
         }
       },
       "description": "IdentityProviderConfig request."
@@ -3862,39 +4019,39 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "installer name"
+          "description": "安装名字"
         },
         "version": {
           "type": "string",
-          "description": "installer version"
+          "description": "安装版本"
         },
         "repo": {
           "type": "string",
-          "description": "repository name"
+          "description": "仓库名字"
         },
         "icon": {
           "type": "string",
-          "description": "installer icon"
+          "description": "安装图标"
         },
         "desc": {
           "type": "string",
-          "description": "installer desc"
+          "description": "安装描述"
         },
         "configuration": {
           "type": "string",
           "format": "byte",
-          "description": "installer configuration data"
+          "description": "安装配置"
         },
         "type": {
           "$ref": "#/definitions/v1ConfigurationType",
-          "description": "configuration type"
+          "description": "配置类型"
         },
         "maintainers": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1Installermaintainer"
           },
-          "description": "installer maintainers"
+          "description": "作者列表"
         }
       },
       "description": "*\nInstaller."
@@ -3993,15 +4150,15 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "maintainer name"
+          "description": "作者名字"
         },
         "email": {
           "type": "string",
-          "description": "maintainer email"
+          "description": "作者邮箱"
         },
         "url": {
           "type": "string",
-          "description": "maintainer url"
+          "description": "作者地址"
         }
       }
     },
@@ -4010,11 +4167,11 @@
       "properties": {
         "client_id": {
           "type": "string",
-          "description": "plugin id(dapr app id)"
+          "description": "插件ID dapr应用ID"
         },
         "client_secret": {
           "type": "string",
-          "description": "plugin secret"
+          "description": "插件密钥"
         }
       }
     },
@@ -4107,7 +4264,7 @@
           "items": {
             "$ref": "#/definitions/apirbacv1Permission"
           },
-          "description": "role permissions"
+          "description": "权限"
         }
       }
     },
@@ -4193,28 +4350,28 @@
         "page_num": {
           "type": "integer",
           "format": "int32",
-          "description": "query page number"
+          "description": "页数"
         },
         "page_size": {
           "type": "integer",
           "format": "int32",
-          "description": "query page size"
+          "description": "页大小"
         },
         "total": {
           "type": "integer",
           "format": "int32",
-          "description": "query item total"
+          "description": "总数"
         },
         "roles": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1Role"
           },
-          "description": "roles"
+          "description": "角色列表"
         },
         "tenant_id": {
           "type": "string",
-          "description": "tenant id, default is current tenant"
+          "description": "租户ID"
         }
       }
     },
@@ -4249,7 +4406,7 @@
           "items": {
             "$ref": "#/definitions/v1TenantDetail"
           },
-          "description": "tenants"
+          "description": "租户列表"
         }
       }
     },
@@ -4451,7 +4608,8 @@
       "type": "object",
       "properties": {
         "reset_key": {
-          "type": "string"
+          "type": "string",
+          "description": "重置密码密钥"
         }
       }
     },
@@ -4477,11 +4635,11 @@
       "properties": {
         "addons": {
           "type": "string",
-          "description": "addons name"
+          "description": "扩展点 名字"
         },
         "upstream": {
           "type": "string",
-          "description": "upstream path"
+          "description": "上游路径"
         }
       },
       "description": "*\nRegister Addons."
@@ -4523,10 +4681,12 @@
       "type": "object",
       "properties": {
         "new_password": {
-          "type": "string"
+          "type": "string",
+          "description": "新密码"
         },
         "reset_key": {
-          "type": "string"
+          "type": "string",
+          "description": "重置密码密钥"
         }
       }
     },
@@ -4549,36 +4709,36 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "tenant role id"
+          "description": "角色 id"
         },
         "name": {
           "type": "string",
-          "description": "tenant role name"
+          "description": "角色名称"
         },
         "desc": {
           "type": "string",
-          "description": "role desc"
+          "description": "角色描述"
         },
         "bind_num": {
           "type": "integer",
           "format": "int32",
-          "description": "role bind user number"
+          "description": "绑定数量"
         },
         "upsert_timestamp": {
           "type": "string",
           "format": "uint64",
-          "description": "role upsert timestamp"
+          "description": "时间戳"
         },
         "permission_list": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/apirbacv1Permission"
           },
-          "description": "permission path list"
+          "description": "权限列表"
         },
         "uneditable": {
           "type": "boolean",
-          "description": "role uneditable"
+          "description": "可编辑"
         }
       }
     },
@@ -4618,14 +4778,14 @@
       "properties": {
         "username": {
           "type": "string",
-          "description": " Tenant Admin username ",
+          "description": "用户名 username",
           "required": [
             "username"
           ]
         },
         "password": {
           "type": "string",
-          "description": " Tenant Admin password ",
+          "description": "密码 password ",
           "required": [
             "password"
           ]
@@ -4641,30 +4801,30 @@
       "properties": {
         "title": {
           "type": "string",
-          "description": "tenant title",
+          "description": "租户空间名称",
           "required": [
             "title"
           ]
         },
         "remark": {
           "type": "string",
-          "description": "tenant remark"
+          "description": "租户备注信息"
         },
         "tenant_id": {
           "type": "string",
-          "description": "tenant id"
+          "description": "租户 id"
         },
         "admin": {
           "$ref": "#/definitions/v1TenantAdmin",
-          "description": "set tenant admin"
+          "description": "租户管理员"
         },
         "auth_type": {
           "type": "string",
-          "description": "set tenant auth type: internal | external"
+          "description": "租户认证类型: internal | external"
         },
         "id_provider_type": {
           "type": "string",
-          "description": "external auth type : OIDC | LDAP | SMAL"
+          "description": "外部认证协议类型: OIDC | LDAP | SMAL"
         }
       },
       "required": [
@@ -4676,55 +4836,56 @@
       "properties": {
         "tenant_id": {
           "type": "string",
-          "description": "tenant id"
+          "description": "租户ID"
         },
         "title": {
           "type": "string",
-          "description": "tenant id"
+          "description": "租户名称"
         },
         "remark": {
           "type": "string",
-          "description": "tenant remark"
+          "description": "租户备注"
         },
         "num_user": {
           "type": "integer",
           "format": "int32",
-          "description": "user number in tenant"
+          "description": "租户用户数"
         },
         "created_at": {
           "type": "string",
           "format": "int64",
-          "description": "user number in tenant"
+          "description": "创建时间"
         },
         "roles": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "user roles in tenant"
+          "description": "角色列表"
         },
         "admins": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1TenantAdmin"
           },
-          "description": "admins in tenant"
+          "description": "管理员"
         },
         "auth_type": {
           "type": "string",
-          "description": "auth type : internal / external"
+          "description": "认证类型 : internal / external"
         }
       }
     },
     "v1TenantProfiles": {
       "type": "object",
       "properties": {
-        "plugin_id": {
-          "type": "string"
-        },
         "profiles": {
-          "type": "string",
-          "format": "byte"
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "description": "租户配置 k:v"
         }
       }
     },
@@ -4758,21 +4919,21 @@
       "properties": {
         "entity_type": {
           "type": "string",
-          "description": "entity type  body params",
+          "description": "实体类型",
           "required": [
             "entity_type"
           ]
         },
         "entity_id": {
           "type": "string",
-          "description": "entity id  body params",
+          "description": "实体ID",
           "required": [
             "entity_id"
           ]
         },
         "owner": {
           "type": "string",
-          "description": "entity owner  body params",
+          "description": "实体归属者",
           "required": [
             "owner"
           ]
@@ -4780,7 +4941,7 @@
         "expires_in": {
           "type": "string",
           "format": "int64",
-          "description": "entity token expires in  body params",
+          "description": "过期时间",
           "required": [
             "expires_in"
           ]
@@ -4818,7 +4979,8 @@
       "type": "object",
       "properties": {
         "refresh_token": {
-          "type": "string"
+          "type": "string",
+          "description": "刷新Token refreshToken"
         }
       }
     },
@@ -4847,7 +5009,7 @@
       "properties": {
         "new_password": {
           "type": "string",
-          "description": "new admin password"
+          "description": "新密码"
         }
       }
     },
@@ -4855,10 +5017,12 @@
       "type": "object",
       "properties": {
         "new_password": {
-          "type": "string"
+          "type": "string",
+          "description": "新密码"
         },
         "refresh_token": {
-          "type": "string"
+          "type": "string",
+          "description": "刷新 token"
         }
       }
     },
@@ -4875,7 +5039,7 @@
       "properties": {
         "role": {
           "$ref": "#/definitions/v1Role",
-          "description": "tenant role"
+          "description": "角色"
         }
       }
     },
@@ -4883,10 +5047,12 @@
       "type": "object",
       "properties": {
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "租户空间名称"
         },
         "remark": {
-          "type": "string"
+          "type": "string",
+          "description": "租户备注信息"
         }
       }
     },
@@ -4897,13 +5063,15 @@
       "type": "object",
       "properties": {
         "nick_name": {
-          "type": "string"
+          "type": "string",
+          "description": "用户昵称"
         },
         "roles": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "角色ID列表"
         }
       }
     },

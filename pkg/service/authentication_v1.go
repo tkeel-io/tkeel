@@ -18,7 +18,6 @@ import (
 	"github.com/tkeel-io/security/authz/rbac"
 	s_model "github.com/tkeel-io/security/model"
 	pb "github.com/tkeel-io/tkeel/api/authentication/v1"
-	"github.com/tkeel-io/tkeel/pkg/client"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
 	keel_v1 "github.com/tkeel-io/tkeel/pkg/service/keel/v1"
@@ -182,9 +181,7 @@ func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.Authen
 			return nil, pb.ErrInternalError()
 		}
 	}
-	if sess.User != nil && s.profileOp.IsAPIRequestExceededLimit(ctx, sess.User.Tenant) {
-		return nil, client.ErrAPIRequestLimited
-	}
+
 	log.Debugf("session: %s", sess)
 	return convertSession2PB(sess), nil
 }

@@ -140,19 +140,19 @@ service Config {
 message GetDeploymentConfigResponse {
   string admin_host = 1
   [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "admin_host"
+    description : "管理端域名"
   }];
   string tenant_host = 2
   [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "tenant_host"
+    description : "租户端域名"
   }];
   string port = 3
   [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "host port"
+    description : "端口"
   }];
   string docs_addr = 4
   [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-    description : "docs host"
+    description : "文档地址"
   }];
 }
 
