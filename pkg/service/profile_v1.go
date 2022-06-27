@@ -19,6 +19,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"sync"
 
 	"github.com/tkeel-io/kit/log"
 	pb "github.com/tkeel-io/tkeel/api/profile/v1"
@@ -31,14 +32,15 @@ import (
 
 type ProfileService struct {
 	pb.UnimplementedProfileServer
-	pluginOp      plugin.Operator
-	ProfileOp     plgprofile.ProfileOperator
-	daprHTTPCli   dapr.Client
-	openapiClient openapi.Client
+	pluginOp       plugin.Operator
+	ProfileOp      plgprofile.ProfileOperator
+	daprHTTPCli    dapr.Client
+	openapiClient  openapi.Client
+	defaultProfile map[string]int32
 }
 
 func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperator, daprHTTP dapr.Client, openapiClient openapi.Client) *ProfileService {
-	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHTTP, openapiClient: openapiClient}
+	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHTTP, openapiClient: openapiClient, defaultProfile: make(map[string]int32)}
 }
 
 func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetProfileSchemaRequest) (*pb.GetProfileSchemaResponse, error) {
@@ -60,6 +62,7 @@ func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetPr
 		for k, prf := range identify.Profiles {
 			s.ProfileOp.SetProfilePlugin(ctx, k, plg.ID)
 			profiles[k] = &pb.ProfileSchema{Title: prf.Title, Type: prf.Type, Default: prf.Default, Description: prf.Description, MultipleOf: prf.MultipleOf, Maximum: prf.Maximum, Minimum: prf.Minimum}
+			s.defaultProfile[k] = prf.Default
 			required = append(required, k)
 		}
 	}
@@ -67,6 +70,7 @@ func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetPr
 	// keel profile.
 	for keelP, keelV := range plgprofile.KeelProfiles {
 		profiles[keelP] = modelProfileSchema2pbProfile(keelV)
+		s.defaultProfile[keelP] = keelV.Default
 		required = append(required, keelP)
 	}
 
@@ -79,10 +83,9 @@ func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetPr
 }
 
 func (s *ProfileService) GetTenantProfileData(ctx context.Context, request *pb.GetTenantProfileDataRequest) (*pb.GetTenantProfileDataResponse, error) {
-	data, err := s.ProfileOp.GetTenantProfileData(ctx, request.GetTenantId())
-	if err != nil {
-		log.Error(err)
-		return nil, pb.ErrInvalidArgument()
+	data, _ := s.ProfileOp.GetTenantProfileData(ctx, request.GetTenantId())
+	if data == nil {
+		data = s.defaultProfile
 	}
 	return &pb.GetTenantProfileDataResponse{Profiles: data}, nil
 }
@@ -100,24 +103,33 @@ func (s *ProfileService) SetTenantProfileData(ctx context.Context, request *pb.S
 	for k, v := range request.GetBody().GetProfiles() {
 		plg, _ := s.ProfileOp.GetProfilePlugin(ctx, k)
 		if plg != "" && plg != plgprofile.PLUGIN_ID_KEEL {
+			if pluginProfiles[plg] == nil {
+				pluginProfiles[plg] = make(map[string]int32)
+			}
 			pluginProfiles[plg][k] = v
 		}
 	}
+	var wg sync.WaitGroup
 	for plg, profiles := range pluginProfiles {
-		extrData := map[string]interface{}{"type": "SetProfile", "profiles": profiles}
-		extrDataBytes, _ := json.Marshal(extrData)
-		req, _ := json.Marshal(pb.TenantEnableRequest{TenantId: request.GetTenantId(), Extra: extrDataBytes})
-		res, eCall := s.daprHTTPCli.Call(ctx, &dapr.AppRequest{
-			ID:     plg,
-			Method: "v1/tenant/enable",
-			Verb:   "POST",
-			Body:   req,
-		})
-		if eCall != nil {
-			log.Error(err)
-		}
-		defer res.Body.Close()
+		wg.Add(1)
+		go func(plugin string, profile map[string]int32) {
+			extrData := map[string]interface{}{"type": "SetProfile", "profiles": profile}
+			extrDataBytes, _ := json.Marshal(extrData)
+			req, _ := json.Marshal(pb.TenantEnableRequest{TenantId: request.GetTenantId(), Extra: extrDataBytes})
+			res, eCall := s.daprHTTPCli.Call(ctx, &dapr.AppRequest{
+				ID:     plugin,
+				Method: "v1/tenant/enable",
+				Verb:   "POST",
+				Body:   req,
+			})
+			if eCall != nil {
+				log.Error(err)
+			}
+			defer res.Body.Close()
+			wg.Done()
+		}(plg, profiles)
 	}
+	wg.Wait()
 	return &pb.SetTenantPluginProfileResponse{}, nil
 }
 

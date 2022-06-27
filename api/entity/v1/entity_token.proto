@@ -119,10 +119,22 @@ message TokenInfoRequest {
   ];
 }
 message TokenInfoResponse {
-  string entity_id = 1;
-  string entity_type = 2;
-  string owner = 3;
-  string tenant_id=4;
-  int64 created_at = 5;
-  int64 expired_at = 6;
+  string entity_id = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string entity_type = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string owner = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string tenant_id=4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  int64 created_at = 5[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  int64 expired_at = 6[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }

@@ -24,14 +24,14 @@ import (
 )
 
 const (
-	//nolint
+	// nolint
 	PLUGIN_ID_KEEL = "keel"
 	// api limit.
-	//nolint
+	// nolint
 	MAX_API_REQUEST_LIMIT_KEY = "keel_api_request_limit"
-	//nolint
+	// nolint
 	MAX_API_REQUEST_LIMIT_TITLE = "接口请求次数最大限制"
-	//nolint
+	// nolint
 	DEFAULT_MAX_API_LIMIT = math.MaxInt32
 )
 
@@ -41,7 +41,7 @@ var (
 )
 
 var KeelProfiles = map[string]*model.ProfileSchema{
-	MAX_API_REQUEST_LIMIT_KEY: {Type: "number", Title: MAX_API_REQUEST_LIMIT_TITLE, Description: "api请求最大次数,0 表示无限制", Default: 0, MultipleOf: 1, Maximum: DEFAULT_MAX_API_LIMIT, Minimum: 1},
+	MAX_API_REQUEST_LIMIT_KEY: {Type: "number", Title: MAX_API_REQUEST_LIMIT_TITLE, Description: "api请求最大次数,0 表示无限制", Default: 0, MultipleOf: 1, Maximum: DEFAULT_MAX_API_LIMIT, Minimum: 0},
 }
 
 func OnTenantAPIRequest(tenantID string, store ProfileOperator) int {
