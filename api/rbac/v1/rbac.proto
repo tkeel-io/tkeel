@@ -249,15 +249,27 @@ service RBAC {
 }
 
 message TMPolicyRequest {
-  string role = 1;
-  string tenant = 2;
-  string permission = 3;
+  string role = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string tenant = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string permission = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message TMRoleBindingRequest {
-  string user = 1;
-  string role = 2;
-  string tenant = 3;
+  string user = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string role = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string tenant = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message Permission {

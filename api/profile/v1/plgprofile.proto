@@ -135,13 +135,27 @@ message Schema {
 }
 
 message ProfileSchema {
-  string type = 1 ;
-  string title = 2 ;
-  string description =3 ;
-  int32 default = 4 ;
-  int32 multipleOf = 5 ;
-  int32 minimum = 6 ;
-  int32 maximum = 7 ;
+  string type = 1 [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string title = 2 [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string description =3 [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  int32 default = 4 [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  int32 multipleOf = 5 [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  int32 minimum = 6 [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  int32 maximum = 7 [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
  message TenantEnableRequest {

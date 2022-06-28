@@ -84,7 +84,7 @@ func (store *ProfileStateStore) SetTenantProfileData(ctx context.Context, tenant
 	if err != nil {
 		return err
 	}
-	err = store.daprClient.SaveState(ctx, store.storeName, profilePluginKey(tenantID), data)
+	err = store.daprClient.SaveState(ctx, store.storeName, profileDataKeyWithTenant(tenantID), data)
 	if err != nil {
 		return errors.Wrapf(err, "SaveState")
 	}

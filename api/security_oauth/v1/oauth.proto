@@ -226,7 +226,9 @@ message AuthorizeRequest {
   ];
 }
 
-message AuthorizeResponse { string code = 1; }
+message AuthorizeResponse { string code = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+  description : "-"
+} ]; }
 
 message TokenRequest {
   string tenant_id = 1 [
@@ -282,22 +284,48 @@ message TokenRequest {
 }
 
 message TokenResponse {
-  string access_token = 1;
-  string refresh_token = 2;
-  int64 expires_in = 3;
-  string token_type = 4;
-  string redirect_url =5;
+  string access_token = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string refresh_token = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  int64 expires_in = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string token_type = 4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string redirect_url =5[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message AuthenticateResponse {
-  int64 expires_in = 1;
-  string user_id = 2;
-  string username = 3;
-  string external_id = 4;
-  string nick_name = 5;
-  string avatar = 6;
-  string tenant_id = 7;
-  string auth_type =8;
+  int64 expires_in = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string user_id = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string username = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string external_id = 4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string nick_name = 5[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string avatar = 6[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string tenant_id = 7[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string auth_type =8[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message ResetPasswordRequest {
@@ -321,41 +349,83 @@ message ResetPasswordBody {
 
 
 message ResetPasswordResponse {
-  string tenant_id =1;
-  bool has_reset =2;
-  string username =3;
+  string tenant_id =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  bool has_reset =2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string username =3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message OIDCRegisterRequest {
   OIDCRegisterBody body = 1;
 }
 message OIDCRegisterBody {
-  string issuer =1;
-  string client_id =2;
-  string client_secret =3;
-  string redirect_url =4;
-  repeated string scopes =5;
-  bool get_user_info =6;
-  bool insecure_skip_verify =7;
-  string email_key =8;
-  string preferred_username_key =9;
-  OIDCEndpoint endpoint =10;
-  string tenant_id =11;
+  string issuer =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string client_id =2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string client_secret =3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string redirect_url =4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  repeated string scopes =5[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  bool get_user_info =6[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  bool insecure_skip_verify =7[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string email_key =8[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string preferred_username_key =9[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  OIDCEndpoint endpoint =10[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  string tenant_id =11[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 message OIDCEndpoint {
-    string auth_url =1;
-    string token_url=2;
-    string user_info_url=3;
-    string jwksurl =4;
-    string end_session_url =5;
+    string auth_url =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "-"
+    } ];
+    string token_url=2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "-"
+    } ];
+    string user_info_url=3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "-"
+    } ];
+    string jwksurl =4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "-"
+    } ];
+    string end_session_url =5[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "-"
+    } ];
 }
 
 message OIDCRegisterResponse {
-  bool ok =1;
+  bool ok =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message TokenRevokeRequest {
-  TokenRevokeBody body =1;
+  TokenRevokeBody body =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 message TokenRevokeBody {
   string refresh_token =1[
@@ -367,8 +437,12 @@ message TokenRevokeBody {
 }
 
 message TokenRevokeResponse {
-  string tenant_id=1;
-  bool revoked =2;
+  string tenant_id=1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
+  bool revoked =2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message UpdatePasswordRequest {
@@ -391,7 +465,9 @@ message UpdatePasswordBody {
 }
 
 message UpdatePasswordResponse {
-  string tenant_id =1;
+  string tenant_id =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户ID"
+  } ];
 }
 
 // IdentityProviderConfig request.
@@ -405,7 +481,9 @@ message IdProviderTemplateRequest {
 }
 // IdentityProviderConfig response.
 message IdProviderTemplateResponse {
-  bytes config = 1;
+  bytes config = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "配置"
+  } ];
 }
 
 
@@ -436,7 +514,9 @@ message IdProviderRegisterRequestBody {
 }
 // IdentityProviderConfig request.
 message IdProviderRegisterResponse {
-  bool registered = 1;
+  bool registered = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "注册成功"
+  } ];
 }
 
 // IdentityProviderConfig request.
@@ -449,6 +529,10 @@ message GetIdentityProviderRequest {
   ];
 }
 message GetIdentityProviderResponse {
-  string type = 1;
-  bytes config = 2;
+  string type = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "类型"
+  } ];
+  bytes config = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "配置"
+  } ];
 }

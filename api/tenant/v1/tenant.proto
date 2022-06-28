@@ -474,9 +474,15 @@ message ListTenantRequest {
 }
 
 message ListTenantResponse {
-  int32 total = 1;
-  int32 page_num = 2;
-  int32 page_size = 3;
+  int32 total = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "总数"
+  } ];
+  int32 page_num = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "页"
+  } ];
+  int32 page_size = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "页大小"
+  } ];
   repeated TenantDetail tenants = 4
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description : "租户列表"
@@ -492,9 +498,15 @@ message ExactTenantRequest {
   } ];
 }
 message ExactTenantResponse {
-  string tenant_id =1;
-  string title =2;
-  string auth_type =3;
+  string tenant_id =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户ID"
+  } ];
+  string title =2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户空间名"
+  } ];
+  string auth_type =3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "认证类型"
+  } ];
 }
 message TenantDetail {
   string tenant_id = 1
@@ -602,11 +614,19 @@ message CreateUserBody {
 }
 
 message CreateUserResponse {
-  string tenant_id = 1;
-  string user_id = 2;
-  string username = 3;
+  string tenant_id = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户ID"
+  } ];
+  string user_id = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户ID"
+  } ];
+  string username = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户名"
+  } ];
   // reset password key
-  string reset_key =4;
+  string reset_key =4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "重置密码密钥"
+  } ];
 }
 
 message GetUserRequest {
@@ -619,13 +639,27 @@ message GetUserRequest {
 }
 
 message GetUserResponse {
-  string tenant_id = 1;
-  string user_id = 2;
-  string external_id = 3;
-  string username = 4;
-  string email = 5;
-  string nick_name = 6;
-  string avatar = 7;
+  string tenant_id = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户ID"
+  } ];
+  string user_id = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户ID"
+  } ];
+  string external_id = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户外部ID"
+  } ];
+  string username = 4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户名"
+  } ];
+  string email = 5[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "邮箱"
+  } ];
+  string nick_name = 6[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "昵称"
+  } ];
+  string avatar = 7[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "头像"
+  } ];
 }
 
 message ListUserRequest {
@@ -650,26 +684,56 @@ message ListUserRequest {
 }
 
 message ListUserResponse {
-  int32 total = 1;
-  int32 page_num = 2;
-  int32 page_size = 3;
-  repeated UserListData users = 4;
+  int32 total = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "总数"
+  } ];
+  int32 page_num = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "页"
+  } ];
+  int32 page_size = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "大小"
+  } ];
+  repeated UserListData users = 4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户列表"
+  } ];
 }
 
 message UserListData {
-  string tenant_id = 1;
-  string user_id = 2;
-  string external_id = 3;
-  string username = 4;
-  string email = 5;
-  string nick_name = 6;
-  string avatar = 7;
-  int64 created_at =8;
-  repeated UserRole roles=9;
+  string tenant_id = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户ID"
+  } ];
+  string user_id = 2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户ID"
+  } ];
+  string external_id = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户外部ID"
+  } ];
+  string username = 4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户名"
+  } ];
+  string email = 5[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "邮箱"
+  } ];
+  string nick_name = 6[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "昵称"
+  } ];
+  string avatar = 7[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "头像"
+  } ];
+  int64 created_at =8[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "创建时间"
+  } ];
+  repeated UserRole roles=9[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "角色列表"
+  } ];
 }
 message UserRole {
-  string id = 1;
-  string name =2;
+  string id = 1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "角色ID"
+  } ];
+  string name =2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "角色名"
+  } ];
 }
 
 message DeleteUserRequest {
@@ -737,7 +801,9 @@ message UpdateUserBody {
 }
 
 message UpdateUserResponse {
-  bool ok =1;
+  bool ok =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "更新成功"
+  } ];
 }
 
 message GetResetPasswordKeyRequest {
@@ -750,11 +816,21 @@ message GetResetPasswordKeyRequest {
 }
 
 message GetResetPasswordKeyResponse {
-  string tenant_id =1;
-  string user_id =2;
-  string username = 3;
-  string nick_name =4;
-  string reset_key = 5;
+  string tenant_id =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户ID"
+  } ];
+  string user_id =2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户ID"
+  } ];
+  string username = 3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户名"
+  } ];
+  string nick_name =4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "昵称"
+  } ];
+  string reset_key = 5[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "密钥"
+  } ];
 }
 
 message RPKInfoRequest {
@@ -768,8 +844,16 @@ message RPKInfoBody {
 }
 
 message RPKInfoResponse {
-  string user_id =1;
-  string username =2;
-  string nick_name =3;
-  string tenant_id =4;
+  string user_id =1[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户ID"
+  } ];
+  string username =2[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "用户名"
+  } ];
+  string nick_name =3[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "昵称"
+  } ];
+  string tenant_id =4[ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "租户ID"
+  } ];
 }

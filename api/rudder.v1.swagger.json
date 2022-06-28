@@ -650,10 +650,12 @@
         "parameters": [
           {
             "name": "body",
+            "description": "-",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1TokenRevokeBody"
+              "$ref": "#/definitions/v1TokenRevokeBody",
+              "description": "-"
             }
           }
         ],
@@ -1037,7 +1039,7 @@
         "parameters": [
           {
             "name": "page_num",
-            "description": "query page number",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -1045,7 +1047,7 @@
           },
           {
             "name": "page_size",
-            "description": "query page size",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -1053,28 +1055,28 @@
           },
           {
             "name": "order_by",
-            "description": "query items order by field",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "is_descending",
-            "description": "query items inverted sort",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "boolean"
           },
           {
             "name": "key_words",
-            "description": "query items key",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "display_all_plugin",
-            "description": "return all plugin",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "boolean"
@@ -1118,7 +1120,7 @@
         "parameters": [
           {
             "name": "id",
-            "description": "plugin id",
+            "description": "-",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1160,7 +1162,7 @@
         "parameters": [
           {
             "name": "id",
-            "description": "plugin id",
+            "description": "-",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1206,19 +1208,19 @@
         "parameters": [
           {
             "name": "id",
-            "description": "install plugin id",
+            "description": "-",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "body",
-            "description": "installer info",
+            "description": "-",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/v1Installer",
-              "description": "installer info"
+              "description": "-"
             }
           }
         ],
@@ -1262,19 +1264,19 @@
         "parameters": [
           {
             "name": "id",
-            "description": "upgrade plugin id",
+            "description": "-",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "body",
-            "description": "installer info",
+            "description": "-",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/v1Installer",
-              "description": "installer info"
+              "description": "-"
             }
           }
         ],
@@ -1312,14 +1314,14 @@
         "parameters": [
           {
             "name": "id",
-            "description": "plugin id",
+            "description": "-",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "page_num",
-            "description": "query page number",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -1327,7 +1329,7 @@
           },
           {
             "name": "page_size",
-            "description": "query page size",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -1335,21 +1337,21 @@
           },
           {
             "name": "order_by",
-            "description": "query items order by field",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "is_descending",
-            "description": "query items inverted sort",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "boolean"
           },
           {
             "name": "key_words",
-            "description": "query items key",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1387,14 +1389,14 @@
         "parameters": [
           {
             "name": "id",
-            "description": "plugin id",
+            "description": "-",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "extra",
-            "description": "extra data",
+            "description": "-",
             "in": "query",
             "required": false,
             "type": "string",
@@ -1433,19 +1435,19 @@
         "parameters": [
           {
             "name": "id",
-            "description": "plugin id",
+            "description": "-",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
             "name": "body",
-            "description": "extra data",
+            "description": "-",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/TenantEnableRequestEnableExtraData",
-              "description": "extra data"
+              "description": "-"
             }
           }
         ],
@@ -3255,12 +3257,12 @@
       "properties": {
         "desc": {
           "type": "string",
-          "description": "extra data"
+          "description": "-"
         },
         "extra": {
           "type": "string",
           "format": "byte",
-          "description": "extra data"
+          "description": "-"
         }
       }
     },
@@ -3307,28 +3309,36 @@
       "properties": {
         "expires_in": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "-"
         },
         "user_id": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "username": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "external_id": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "nick_name": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "avatar": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "auth_type": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         }
       }
     },
@@ -3336,29 +3346,36 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "default": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "-"
         },
         "multipleOf": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "-"
         },
         "minimum": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "-"
         },
         "maximum": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "-"
         }
       }
     },
@@ -3524,7 +3541,8 @@
       "type": "object",
       "properties": {
         "code": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         }
       }
     },
@@ -3682,16 +3700,20 @@
       "type": "object",
       "properties": {
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "租户ID"
         },
         "user_id": {
-          "type": "string"
+          "type": "string",
+          "description": "用户ID"
         },
         "username": {
-          "type": "string"
+          "type": "string",
+          "description": "用户名"
         },
         "reset_key": {
           "type": "string",
+          "description": "重置密码密钥",
           "title": "reset password key"
         }
       }
@@ -3727,29 +3749,29 @@
       "properties": {
         "title": {
           "type": "string",
-          "description": "enable tenant title"
+          "description": "-"
         },
         "remark": {
           "type": "string",
-          "description": "enable tenant remark"
+          "description": "-"
         },
         "tenant_id": {
           "type": "string",
-          "description": "enable tenant id"
+          "description": "-"
         },
         "operator_id": {
           "type": "string",
-          "description": "operator user id"
+          "description": "-"
         },
         "enable_timestamp": {
           "type": "string",
           "format": "int64",
-          "description": "enable timestamp"
+          "description": "-"
         },
         "user_num": {
           "type": "integer",
           "format": "int32",
-          "description": "enable tenant user number"
+          "description": "-"
         }
       }
     },
@@ -3757,13 +3779,16 @@
       "type": "object",
       "properties": {
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "租户ID"
         },
         "title": {
-          "type": "string"
+          "type": "string",
+          "description": "租户空间名"
         },
         "auth_type": {
-          "type": "string"
+          "type": "string",
+          "description": "认证类型"
         }
       }
     },
@@ -3804,11 +3829,13 @@
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": "string",
+          "description": "类型"
         },
         "config": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "description": "配置"
         }
       }
     },
@@ -3817,7 +3844,7 @@
       "properties": {
         "plugin": {
           "$ref": "#/definitions/v1PluginObject",
-          "description": "plugin object"
+          "description": "-"
         }
       }
     },
@@ -3842,19 +3869,24 @@
       "type": "object",
       "properties": {
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "租户ID"
         },
         "user_id": {
-          "type": "string"
+          "type": "string",
+          "description": "用户ID"
         },
         "username": {
-          "type": "string"
+          "type": "string",
+          "description": "用户名"
         },
         "nick_name": {
-          "type": "string"
+          "type": "string",
+          "description": "昵称"
         },
         "reset_key": {
-          "type": "string"
+          "type": "string",
+          "description": "密钥"
         }
       }
     },
@@ -3922,25 +3954,32 @@
       "type": "object",
       "properties": {
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "租户ID"
         },
         "user_id": {
-          "type": "string"
+          "type": "string",
+          "description": "用户ID"
         },
         "external_id": {
-          "type": "string"
+          "type": "string",
+          "description": "用户外部ID"
         },
         "username": {
-          "type": "string"
+          "type": "string",
+          "description": "用户名"
         },
         "email": {
-          "type": "string"
+          "type": "string",
+          "description": "邮箱"
         },
         "nick_name": {
-          "type": "string"
+          "type": "string",
+          "description": "昵称"
         },
         "avatar": {
-          "type": "string"
+          "type": "string",
+          "description": "头像"
         }
       }
     },
@@ -3963,7 +4002,8 @@
       "type": "object",
       "properties": {
         "registered": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "注册成功"
         }
       },
       "description": "IdentityProviderConfig request."
@@ -3973,7 +4013,8 @@
       "properties": {
         "config": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "description": "配置"
         }
       },
       "description": "IdentityProviderConfig response."
@@ -4010,7 +4051,7 @@
       "properties": {
         "plugin": {
           "$ref": "#/definitions/v1PluginObject",
-          "description": "plugin object"
+          "description": "-"
         }
       }
     },
@@ -4235,24 +4276,24 @@
         "total": {
           "type": "integer",
           "format": "int32",
-          "description": "total items"
+          "description": "-"
         },
         "page_num": {
           "type": "integer",
           "format": "int32",
-          "description": "query page number"
+          "description": "-"
         },
         "page_size": {
           "type": "integer",
           "format": "int32",
-          "description": "query page size"
+          "description": "-"
         },
         "tenants": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1EnabledTenant"
           },
-          "description": "plugin enable tenants list"
+          "description": "-"
         }
       }
     },
@@ -4274,29 +4315,29 @@
         "total": {
           "type": "integer",
           "format": "int32",
-          "description": "total items"
+          "description": "-"
         },
         "page_num": {
           "type": "integer",
           "format": "int32",
-          "description": "query page number"
+          "description": "-"
         },
         "page_size": {
           "type": "integer",
           "format": "int32",
-          "description": "query page size"
+          "description": "-"
         },
         "plugin_list": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1PluginBrief"
           },
-          "description": "plugin object list"
+          "description": "-"
         },
         "enable_num": {
           "type": "integer",
           "format": "int32",
-          "description": "enable plugin number"
+          "description": "-"
         }
       }
     },
@@ -4391,15 +4432,18 @@
       "properties": {
         "total": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "总数"
         },
         "page_num": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "页"
         },
         "page_size": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "页大小"
         },
         "tenants": {
           "type": "array",
@@ -4415,21 +4459,25 @@
       "properties": {
         "total": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "总数"
         },
         "page_num": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "页"
         },
         "page_size": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "description": "大小"
         },
         "users": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1UserListData"
-          }
+          },
+          "description": "用户列表"
         }
       }
     },
@@ -4437,19 +4485,24 @@
       "type": "object",
       "properties": {
         "auth_url": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "token_url": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "user_info_url": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "jwksurl": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "end_session_url": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         }
       }
     },
@@ -4457,40 +4510,51 @@
       "type": "object",
       "properties": {
         "issuer": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "client_id": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "client_secret": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "redirect_url": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "scopes": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "description": "-"
         },
         "get_user_info": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "-"
         },
         "insecure_skip_verify": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "-"
         },
         "email_key": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "preferred_username_key": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "endpoint": {
-          "$ref": "#/definitions/v1OIDCEndpoint"
+          "$ref": "#/definitions/v1OIDCEndpoint",
+          "description": "-"
         },
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         }
       }
     },
@@ -4498,7 +4562,8 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "-"
         }
       }
     },
@@ -4507,32 +4572,32 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "plugin id"
+          "description": "-"
         },
         "version": {
           "type": "string",
-          "description": "plugin version"
+          "description": "-"
         },
         "register_timestamp": {
           "type": "string",
           "format": "int64",
-          "description": "register timestamp"
+          "description": "-"
         },
         "tkeel_version": {
           "type": "string",
-          "description": "plugin depend tkeel version"
+          "description": "-"
         },
         "installer_brief": {
           "$ref": "#/definitions/v1Installer",
-          "description": "brief installer info only has name,verison,repo_name and installed field."
+          "description": "-"
         },
         "tenant_enable": {
           "type": "boolean",
-          "description": "tenant enable"
+          "description": "-"
         },
         "status": {
           "$ref": "#/definitions/v1PluginStatus",
-          "description": "register plugin status"
+          "description": "-"
         }
       }
     },
@@ -4541,46 +4606,46 @@
       "properties": {
         "plugin": {
           "$ref": "#/definitions/v1PluginBrief",
-          "description": "plugin brief info"
+          "description": "-"
         },
         "addons_point": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1AddonsPoint"
           },
-          "description": "plugin declares addons"
+          "description": "-"
         },
         "implemented_plugin": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1ImplementedPlugin"
           },
-          "description": "plugin implemented plugin list"
+          "description": "-"
         },
         "secret": {
           "type": "string",
-          "description": "plugin registered secret"
+          "description": "-"
         },
         "enable_tenantes": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1EnabledTenant"
           },
-          "description": "enable tenant's id list"
+          "description": "-"
         },
         "register_addons": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1RegisterAddons"
           },
-          "description": "register addons router"
+          "description": "-"
         },
         "console_entries": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1ConsoleEntry"
           },
-          "description": "plugin console entries"
+          "description": "-"
         }
       },
       "description": "*\nplugin object."
@@ -4617,16 +4682,20 @@
       "type": "object",
       "properties": {
         "user_id": {
-          "type": "string"
+          "type": "string",
+          "description": "租户ID"
         },
         "username": {
-          "type": "string"
+          "type": "string",
+          "description": "用户名"
         },
         "nick_name": {
-          "type": "string"
+          "type": "string",
+          "description": "昵称"
         },
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "租户ID"
         }
       }
     },
@@ -4694,13 +4763,16 @@
       "type": "object",
       "properties": {
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "has_reset": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "-"
         },
         "username": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         }
       }
     },
@@ -4749,13 +4821,16 @@
       "type": "object",
       "properties": {
         "role": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "tenant": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "permission": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         }
       }
     },
@@ -4763,13 +4838,16 @@
       "type": "object",
       "properties": {
         "user": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "role": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "tenant": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         }
       }
     },
@@ -4893,24 +4971,30 @@
       "type": "object",
       "properties": {
         "entity_id": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "entity_type": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "owner": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "created_at": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "-"
         },
         "expired_at": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "-"
         }
       }
     },
@@ -4958,20 +5042,25 @@
       "type": "object",
       "properties": {
         "access_token": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "refresh_token": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "expires_in": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "-"
         },
         "token_type": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "redirect_url": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         }
       }
     },
@@ -4988,10 +5077,12 @@
       "type": "object",
       "properties": {
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "-"
         },
         "revoked": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "-"
         }
       }
     },
@@ -5000,7 +5091,7 @@
       "properties": {
         "plugin": {
           "$ref": "#/definitions/v1PluginObject",
-          "description": "plugin object"
+          "description": "-"
         }
       }
     },
@@ -5030,7 +5121,8 @@
       "type": "object",
       "properties": {
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "租户ID"
         }
       }
     },
@@ -5079,7 +5171,8 @@
       "type": "object",
       "properties": {
         "ok": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "更新成功"
         }
       }
     },
@@ -5088,7 +5181,7 @@
       "properties": {
         "plugin": {
           "$ref": "#/definitions/v1PluginObject",
-          "description": "plugin object"
+          "description": "-"
         }
       }
     },
@@ -5096,35 +5189,44 @@
       "type": "object",
       "properties": {
         "tenant_id": {
-          "type": "string"
+          "type": "string",
+          "description": "租户ID"
         },
         "user_id": {
-          "type": "string"
+          "type": "string",
+          "description": "用户ID"
         },
         "external_id": {
-          "type": "string"
+          "type": "string",
+          "description": "用户外部ID"
         },
         "username": {
-          "type": "string"
+          "type": "string",
+          "description": "用户名"
         },
         "email": {
-          "type": "string"
+          "type": "string",
+          "description": "邮箱"
         },
         "nick_name": {
-          "type": "string"
+          "type": "string",
+          "description": "昵称"
         },
         "avatar": {
-          "type": "string"
+          "type": "string",
+          "description": "头像"
         },
         "created_at": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "创建时间"
         },
         "roles": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/v1UserRole"
-          }
+          },
+          "description": "角色列表"
         }
       }
     },
@@ -5132,10 +5234,12 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "角色ID"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "description": "角色名"
         }
       }
     },

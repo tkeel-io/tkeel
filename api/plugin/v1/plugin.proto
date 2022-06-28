@@ -379,63 +379,60 @@ message Installer {
 
 message EnabledTenant {
   string title = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "enable tenant title"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   string remark = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "enable tenant remark"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   string tenant_id = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "enable tenant id"
-      } ]; // enable tenant id.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // enable tenant id.
   string operator_id = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "operator user id"
-      } ]; // operator user id.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];// operator user id.
   int64 enable_timestamp = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "enable timestamp"
-      } ]; // enable timestamp.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // enable timestamp.
   int32 user_num = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "enable tenant user number"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 // plugin brief
 
 message PluginBrief {
   string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id"
-      } ]; // plugin id.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // plugin id.
   string version = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin version"
-      } ]; // plugin version
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // plugin version
   int64 register_timestamp = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "register timestamp"
-      } ]; // register timestamp.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // register timestamp.
   string tkeel_version = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin depend tkeel version"
-      } ]; // plugin depend tkeel version.
-  Installer installer_brief = 5 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "brief installer info only has name,verison,repo_name and "
-                    "installed field."
-    }
-  ]; // register plugin status
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // plugin depend tkeel version.
+  Installer installer_brief = 5       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // register plugin status
   bool tenant_enable = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "tenant enable"
-      } ]; // tenant enable.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // tenant enable.
   openapi.v1.PluginStatus status = 7
       [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "register plugin status"
+        description : "-"
       } ]; // register plugin status.
 }
 
@@ -444,225 +441,225 @@ message PluginBrief {
  **/
 message PluginObject {
   PluginBrief plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin brief info"
-      } ]; // plugin brief info.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // plugin brief info.
   repeated openapi.v1.AddonsPoint addons_point = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin declares addons"
-      } ]; // plugin declares addons.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // plugin declares addons.
   repeated openapi.v1.ImplementedPlugin implemented_plugin = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin implemented plugin list"
-      } ]; // plugin implemented plugin list.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // plugin implemented plugin list.
   string secret = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin registered secret"
-      } ]; // plugin registered secret.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // plugin registered secret.
   repeated EnabledTenant enable_tenantes = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "enable tenant's id list"
-      } ]; // enable tenant's id list.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ]; // enable tenant's id list.
   repeated RegisterAddons register_addons = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "register addons router"
-      } ]; // register addons router.
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];// register addons router.
   repeated openapi.v1.ConsoleEntry console_entries = 7
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin console entries"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message InstallPluginRequest {
   string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "install plugin id"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   Installer installer = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "installer info"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message InstallPluginResponse {
   PluginObject plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin object"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message UpgradePluginRequest {
   string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "upgrade plugin id"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   Installer installer = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "installer info"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message UpgradePluginResponse {
   PluginObject plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin object"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message UninstallPluginRequest {
   string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 message UninstallPluginResponse {
   PluginObject plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin object"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message GetPluginRequest {
   string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 message GetPluginResponse {
   PluginObject plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin object"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message ListPluginRequest {
   int32 page_num = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page number"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   int32 page_size = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page size"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   string order_by = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query items order by field"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   bool is_descending = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query items inverted sort"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   string key_words = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query items key"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   bool display_all_plugin = 10
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "return all plugin"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message ListPluginResponse {
   int32 total = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "total items"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   int32 page_num = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page number"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   int32 page_size = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page size"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   repeated PluginBrief plugin_list = 10
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin object list"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   int32 enable_num = 11
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "enable plugin number"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message TenantEnableRequest {
   string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   message EnableExtraData {
     string desc = 1
-        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "extra data"
-        } ];
+    [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "-"
+    } ];
     bytes extra = 2
-        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "extra data"
-        } ];
+    [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+      description : "-"
+    } ];
   }
   EnableExtraData extra = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "extra data"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message TenantDisableRequest {
   string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   bytes extra = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "extra data"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message ListEnabledTenantsRequest {
   int32 page_num = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page number"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   int32 page_size = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page size"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   string order_by = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query items order by field"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   bool is_descending = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query items inverted sort"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   string key_words = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query items key"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   string id = 10
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin id"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
 message ListEnabledTenantsResponse {
   int32 total = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "total items"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   int32 page_num = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page number"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   int32 page_size = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "query page size"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
   repeated EnabledTenant tenants = 10
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "plugin enable tenants list"
-      } ];
+  [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+    description : "-"
+  } ];
 }
 
-message TMUpdatePluginIdentifyRequest { string id = 1; }
+message TMUpdatePluginIdentifyRequest { string id = 1}
 
 message TMRegisterPluginRequest { string id = 1; }
