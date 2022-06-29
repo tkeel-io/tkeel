@@ -3216,6 +3216,117 @@
           "Plugin"
         ]
       }
+    },
+    "/tm/plugins/{plugin_id}/tenants/{tenant_id}": {
+      "delete": {
+        "summary": "插件租户停用接口",
+        "operationId": "TenantDisable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "plugin_id",
+            "description": "插件ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenant_id",
+            "description": "租户ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "extra",
+            "description": "扩展数据",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      },
+      "post": {
+        "summary": "插件租户停用接口",
+        "operationId": "TenantDisable",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "INVALID_ARGUMENT",
+            "schema": {}
+          },
+          "500": {
+            "description": "INTERNAL_ERROR",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "plugin_id",
+            "description": "插件ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenant_id",
+            "description": "租户ID",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "扩展数据",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "byte",
+              "description": "扩展数据"
+            }
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ]
+      }
     }
   },
   "definitions": {
