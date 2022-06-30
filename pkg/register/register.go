@@ -24,14 +24,16 @@ type PluginInfo struct {
 }
 
 type PluginRegistry struct {
-	Plugins map[string]*PluginInfo
 	sync.RWMutex
+	Plugins map[string]*PluginInfo
+	stopCh  chan struct{}
 }
 
 func Init() {
 	once.Do(func() {
 		_pluginRegistry = &PluginRegistry{
 			Plugins: make(map[string]*PluginInfo),
+			stopCh:  make(chan struct{}),
 		}
 	})
 }
@@ -41,6 +43,8 @@ func Instance() *PluginRegistry {
 }
 
 func (pr *PluginRegistry) Register(pluginID string, isUpgrade bool, callback func() bool) {
+	pr.Lock()
+	defer pr.Unlock()
 	log.Debugf("register new plugin: %s, upgrade: %v", pluginID, isUpgrade)
 	if plugin, ok := pr.Plugins[pluginID]; ok {
 		if isUpgrade {
@@ -67,9 +71,7 @@ func (pr *PluginRegistry) Run() {
 		panic(err)
 	}
 
-	stopCh := make(chan struct{})
-	defer close(stopCh)
-	sharedInformers := informers.NewSharedInformerFactory(clientset, time.Minute)
+	sharedInformers := informers.NewSharedInformerFactoryWithOptions(clientset, time.Minute, informers.WithNamespace(""))
 
 	deployInformer := sharedInformers.Apps().V1().Deployments().Informer()
 	deployInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -99,7 +101,7 @@ func (pr *PluginRegistry) Run() {
 		},
 		DeleteFunc: func(obj interface{}) {},
 	})
-	go deployInformer.Run(stopCh)
+	go deployInformer.Run(pr.stopCh)
 
 	statefulInformer := sharedInformers.Apps().V1().StatefulSets().Informer()
 	statefulInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
@@ -129,5 +131,9 @@ func (pr *PluginRegistry) Run() {
 		},
 		DeleteFunc: func(obj interface{}) {},
 	})
-	go statefulInformer.Run(stopCh)
+	go statefulInformer.Run(pr.stopCh)
+}
+
+func (pr *PluginRegistry) Stop() {
+	close(pr.stopCh)
 }
