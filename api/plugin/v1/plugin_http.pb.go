@@ -33,6 +33,8 @@ type PluginHTTPServer interface {
 	ListEnabledTenants(context.Context, *ListEnabledTenantsRequest) (*ListEnabledTenantsResponse, error)
 	ListPlugin(context.Context, *ListPluginRequest) (*ListPluginResponse, error)
 	TMRegisterPlugin(context.Context, *TMRegisterPluginRequest) (*emptypb.Empty, error)
+	TMTenantDisable(context.Context, *TMTenantDisableRequest) (*emptypb.Empty, error)
+	TMTenantEnable(context.Context, *TMTenantEnableRequest) (*emptypb.Empty, error)
 	TMUpdatePluginIdentify(context.Context, *TMUpdatePluginIdentifyRequest) (*emptypb.Empty, error)
 	TenantDisable(context.Context, *TenantDisableRequest) (*emptypb.Empty, error)
 	TenantEnable(context.Context, *TenantEnableRequest) (*emptypb.Empty, error)
@@ -303,6 +305,133 @@ func (h *PluginHTTPHandler) TMRegisterPlugin(req *go_restful.Request, resp *go_r
 	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
 
 	out, err := h.srv.TMRegisterPlugin(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *PluginHTTPHandler) TMTenantDisable(req *go_restful.Request, resp *go_restful.Response) {
+	in := TMTenantDisableRequest{}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.TMTenantDisable(ctx, &in)
+	if err != nil {
+		tErr := errors.FromError(err)
+		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
+		if httpCode == http.StatusMovedPermanently {
+			resp.Header().Set("Location", tErr.Message)
+		}
+		resp.WriteHeaderAndJson(httpCode,
+			result.Set(tErr.Reason, tErr.Message, out), "application/json")
+		return
+	}
+	anyOut, err := anypb.New(out)
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	outB, err := protojson.MarshalOptions{
+		UseProtoNames:   true,
+		EmitUnpopulated: true,
+	}.Marshal(&result.Http{
+		Code: errors.Success.Reason,
+		Msg:  "",
+		Data: anyOut,
+	})
+	if err != nil {
+		resp.WriteHeaderAndJson(http.StatusInternalServerError,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	resp.AddHeader(go_restful.HEADER_ContentType, "application/json")
+
+	var remain int
+	for {
+		outB = outB[remain:]
+		remain, err = resp.Write(outB)
+		if err != nil {
+			return
+		}
+		if remain == 0 {
+			break
+		}
+	}
+}
+
+func (h *PluginHTTPHandler) TMTenantEnable(req *go_restful.Request, resp *go_restful.Response) {
+	in := TMTenantEnableRequest{}
+	if err := transportHTTP.GetBody(req, &in.Extra); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetQuery(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+	if err := transportHTTP.GetPathValue(req, &in); err != nil {
+		resp.WriteHeaderAndJson(http.StatusBadRequest,
+			result.Set(errors.InternalError.Reason, err.Error(), nil), "application/json")
+		return
+	}
+
+	ctx := transportHTTP.ContextWithHeader(req.Request.Context(), req.Request.Header)
+
+	out, err := h.srv.TMTenantEnable(ctx, &in)
 	if err != nil {
 		tErr := errors.FromError(err)
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
@@ -694,4 +823,8 @@ func RegisterPluginHTTPServer(container *go_restful.Container, srv PluginHTTPSer
 		To(handler.TMUpdatePluginIdentify))
 	ws.Route(ws.GET("/tm/plugins/register").
 		To(handler.TMRegisterPlugin))
+	ws.Route(ws.POST("/tm/plugins/{plugin_id}/tenants/{tenant_id}").
+		To(handler.TMTenantEnable))
+	ws.Route(ws.DELETE("/tm/plugins/{plugin_id}/tenants/{tenant_id}").
+		To(handler.TMTenantDisable))
 }

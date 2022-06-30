@@ -204,23 +204,23 @@ service Repo {
 message RepoObject {
     string name = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo name"
+        description: "名称"
     }];
     string url = 2
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo url"
+        description: "地址"
     }];
     map<string, bytes> metadata = 3
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer metadata"
+        description: "元数据"
     }];
     map<string, string> annotations = 4
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo annotations"
+        description: "注解"
     }];
     int32 installer_num = 5
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer num"
+        description: "安装包数量"
     }];
 }
 
@@ -238,233 +238,233 @@ message VersionList {
 message InstallerObject {
     string name = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer name"
+        description: "名称"
     }];
     string version = 2
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer version"
+        description: "版本"
     }];
     string repo = 3
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer repo"
+        description: "仓库"
     }];
     map<string, bytes> metadata = 4
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer metadata"
+        description: "元数据"
     }];
     map<string, string> annotations = 5
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer metadata"
+        description: "注解"
     }];
     message maintainer {
         string name = 1
         [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-            description: "maintainer name"
+            description: "名称"
         }];
         string email = 2
         [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-            description: "maintainer email"
+            description: "邮箱"
         }];
         string url = 3
         [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-            description: "maintainer url"
+            description: "地址"
         }];
     }
     repeated maintainer maintainers = 6
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer maintainers"
+        description: "维护者"
     }];
     InstallerState state = 7
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer state"
+        description: "状态"
     }];
     string desc = 8
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer desc"
+        description: "描述"
     }];
     uint64 timestamp = 9
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "last change chart timestamp"
+        description: "更新时间"
     }];
     string icon = 10
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer icon url"
+        description: "图标"
     }];
     repeated VersionList version_list = 11
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer version list"
+        description: "版本列表"
     }];
 }
 
 message CreateRepoRequest {
     string name = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo name"
+        description: "仓库名称"
     }];
     message RepoUrl {
         string url = 1
         [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-            description: "repo url"
+            description: "仓库地址"
         }];
     }
     RepoUrl url = 2
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo url"
+        description: "仓库地址信息"
     }];
 }
 
 message CreateRepoResponse {
     RepoObject repo = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo"
+        description: "仓库"
     }];
 }
 
 message DeleteRepoRequest {
     string name = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo name"
+        description: "仓库名称"
     }];
 }
 
 message DeleteRepoResponse {
     RepoObject repo = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo"
+        description: "仓库"
     }];
 }
 
 message ListRepoResponse {
     repeated RepoObject repos = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo list"
+        description: "仓库列表"
     }];
 }
 
 message ListAllRepoInstallerRequest {
     int32 page_num = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query page number"
+        description: "页码"
     }];
     int32 page_size = 2
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query page size"
+        description: "每页数量"
     }];
     string order_by = 3
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query items order by field"
+        description: "排序字段"
     }];
     bool is_descending = 4
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query items inverted sort"
+        description: "是否倒序"
     }];
     string key_words = 5
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query items key"
+        description: "搜素关键字"
     }];
     bool installed = 10
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installed option"
+        description: "是否安装"
     }];
 }
 
 message ListAllRepoInstallerResponse {
     int32 total = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "total items"
+        description: "总数量"
     }];
     int32 page_num = 2
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query page number"
+        description: "页码"
     }];
     int32 page_size = 3
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query page size"
+        description: "每页数量"
     }];
     repeated InstallerObject brief_installers = 10
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "brief installer info list,only has name and version"
+        description: "安装包简要信息"
     }];
     int32 installed_num = 11
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installed installer number"
+        description: "已安装数量"
     }];
 }
 
 message ListRepoInstallerRequest {
     int32 page_num = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query page number"
+        description: "页码"
     }];
     int32 page_size = 2
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query page size"
+        description: "每页数量"
     }];
     string order_by = 3
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query items order by field"
+        description: "排序字段"
     }];
     bool is_descending = 4
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query items inverted sort"
+        description: "是否倒序"
     }];
     string key_words = 5
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query items key"
+        description: "搜索关键字"
     }];
 
     string repo = 10
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo name"
+        description: "仓库名称"
     }];
     bool installed = 11
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installed option"
+        description: "是否安装"
     }];
 }
 
 message ListRepoInstallerResponse {
     int32 total = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "total items"
+        description: "总数量"
     }];
     int32 page_num = 2
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query page number"
+        description: "页码"
     }];
     int32 page_size = 3
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "query page size"
+        description: "每页数量"
     }];
     repeated InstallerObject brief_installers = 10
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "brief installer info list,only has name and version"
+        description: "安装包简要信息"
     }];
     int32 installed_num = 11
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installed installer number"
+        description: "安装包数量"
     }];
 }
 
 message GetRepoInstallerRequest {
     string repo = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "repo name"
+        description: "仓库名称"
     }];
     string installer_name = 2
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer name"
+        description: "安装包名称"
     }];
     string installer_version = 3
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer version"
+        description: "安装包版本"
     }];
 }
 
 message GetRepoInstallerResponse {
     InstallerObject installer = 1
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "installer"
+        description: "安装包"
     }];
 ;
 }
