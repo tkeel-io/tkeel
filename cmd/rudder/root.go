@@ -258,7 +258,7 @@ var rootCmd = &cobra.Command{
 			config_v1.RegisterConfigServer(grpcSrv.GetServe(), configSrv)
 
 			// metrics service.
-			metricsSrv := service.NewMetricsService(metrics.CollectorUser, metrics.CollectorRole)
+			metricsSrv := service.NewMetricsService(metrics.CollectorUser, metrics.CollectorRole, metrics.CollectorTKeelProfiles)
 			metrics_v1.RegisterMetricsHTTPServer(httpSrv.Container, metricsSrv)
 		}
 	},

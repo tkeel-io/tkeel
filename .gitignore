@@ -23,8 +23,8 @@ test_report_unit.json
 golint
 
 # Compiled product
-docker/keel/keel
-docker/rudder/rudder
+dist/linux_amd64/keel/keel
+dist/linux_amd64/rudder/rudder
 build*
 
 # win
