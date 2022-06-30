@@ -19,7 +19,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"gorm.io/gorm"
 	"sync"
 
 	"github.com/tkeel-io/kit/log"
@@ -30,6 +29,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/model/metrics"
 	"github.com/tkeel-io/tkeel/pkg/model/plgprofile"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
+	"gorm.io/gorm"
 )
 
 type ProfileService struct {
