@@ -10,7 +10,7 @@ FROM golang:1.17 AS builder
 COPY . /src
 WORKDIR /src
 
-RUN GOPROXY=https://goproxy.cn make release
+RUN GOPROXY=https://goproxy.cn,direct make release
 
 FROM alpine:3.13
 
