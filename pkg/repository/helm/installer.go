@@ -171,14 +171,10 @@ func (h Installer) Install(ops ...*repository.Option) error {
 	if h.chart.Metadata.Deprecated {
 		log.Warn("This chart is deprecated")
 	}
-	// Add inject dependencies.
-	dependencyChart, err := loadComponentChart()
+	err = InjectConfig(h.chart, h.id, _componentSecret)
 	if err != nil {
-		log.Error(err)
-		return errors.Wrap(err, "load component chart err")
+		return err
 	}
-	failInjector(dependencyChart, h.id, _componentSecret)
-	h.chart.AddDependency(dependencyChart)
 	// inject dapr annotation.
 	render, err := h.inject()
 	if err != nil {
@@ -217,14 +213,10 @@ func (h Installer) Upgrade(ops ...*repository.Option) error {
 	if h.chart.Metadata.Deprecated {
 		log.Warn("This chart is deprecated")
 	}
-	// Add inject dependencies.
-	dependencyChart, err := loadComponentChart()
+	err = InjectConfig(h.chart, h.id, _componentSecret)
 	if err != nil {
-		log.Error(err)
-		return errors.Wrap(err, "load component chart err")
+		return err
 	}
-	failInjector(dependencyChart, h.id, _componentSecret)
-	h.chart.AddDependency(dependencyChart)
 	// inject dapr annotation.
 	render, err := h.inject()
 	if err != nil {
@@ -317,4 +309,17 @@ func checkIfInstallable(ch *chart.Chart) error {
 func failInjector(injector *chart.Chart, pluginName string, secret string) {
 	injector.Values["pluginID"] = pluginName
 	injector.Values["secret"] = secret
+}
+
+func InjectConfig(root *chart.Chart, name, secret string) error {
+	root.Values["pluginID"] = name
+	root.Values["secret"] = secret
+	root.Values["rudderPort"] = 31234
+	root.Templates = append(root.Templates, &chart.File{Name: "templates/plugin_config.yaml", Data: []byte(PluginConfig)})
+	root.Templates = append(root.Templates, &chart.File{Name: "templates/plugin_oauth2.yaml", Data: []byte(PluginOAuth2)})
+	err := root.Validate()
+	if err != nil {
+		return err
+	}
+	return nil
 }
