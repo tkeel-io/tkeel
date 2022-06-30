@@ -10,13 +10,15 @@ const (
 	MetricsLabelCode   = "code"
 	MetricsLabelPath   = "path"
 	MetricsLabelPlugin = "plugin"
+	MetricsLabelKey    = "key"
 
 	// metrics name.
 	MetricsNameTkapiRequestTotal           = "tkapi_request_total"
 	MetricsNameTkapiRequestDurationSeconds = "tkapi_request_duration_seconds"
 
-	MetricsNameUserNum = "user_num"
-	MetricsNameRoleNum = "role_num"
+	MetricsNameUserNum       = "user_num"
+	MetricsNameRoleNum       = "role_num"
+	MetricsNameTKeelProfiles = "tkeel_profiles"
 )
 
 var CollectorTKApiRequest = prometheus.NewCounterVec(
@@ -50,4 +52,12 @@ var CollectorRole = prometheus.NewGaugeVec(
 		Help: "tkeel role num",
 	},
 	[]string{MetricsLabelTenant},
+)
+
+var CollectorTKeelProfiles = prometheus.NewGaugeVec(
+	prometheus.GaugeOpts{
+		Name: MetricsNameTKeelProfiles,
+		Help: "tkeel profiles",
+	},
+	[]string{MetricsLabelTenant, MetricsLabelKey},
 )

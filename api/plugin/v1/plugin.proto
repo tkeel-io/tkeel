@@ -660,6 +660,6 @@ message ListEnabledTenantsResponse {
   } ];
 }
 
-message TMUpdatePluginIdentifyRequest { string id = 1}
+message TMUpdatePluginIdentifyRequest { string id = 1;}
 
 message TMRegisterPluginRequest { string id = 1; }

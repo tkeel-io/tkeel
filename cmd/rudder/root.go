@@ -243,7 +243,7 @@ var rootCmd = &cobra.Command{
 			rbac_v1.RegisterRBACServer(grpcSrv.GetServe(), rbacSrv)
 
 			// profile service.
-			ProfileSrv := service.NewProfileService(pOp, profileOp, daprHTTPClient, openapiCli)
+			ProfileSrv := service.NewProfileService(pOp, profileOp, daprHTTPClient, openapiCli, gormdb)
 			profile_v1.RegisterProfileHTTPServer(httpSrv.Container, ProfileSrv)
 			profile_v1.RegisterProfileServer(grpcSrv.GetServe(), ProfileSrv)
 

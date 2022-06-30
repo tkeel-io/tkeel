@@ -19,6 +19,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"gorm.io/gorm"
 	"sync"
 
 	"github.com/tkeel-io/kit/log"
@@ -26,6 +27,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
 	"github.com/tkeel-io/tkeel/pkg/model"
+	"github.com/tkeel-io/tkeel/pkg/model/metrics"
 	"github.com/tkeel-io/tkeel/pkg/model/plgprofile"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 )
@@ -37,10 +39,11 @@ type ProfileService struct {
 	daprHTTPCli    dapr.Client
 	openapiClient  openapi.Client
 	defaultProfile map[string]int32
+	tenantDB       *gorm.DB
 }
 
-func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperator, daprHTTP dapr.Client, openapiClient openapi.Client) *ProfileService {
-	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHTTP, openapiClient: openapiClient, defaultProfile: make(map[string]int32)}
+func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperator, daprHTTP dapr.Client, openapiClient openapi.Client, tenantDB *gorm.DB) *ProfileService {
+	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHTTP, openapiClient: openapiClient, defaultProfile: make(map[string]int32), tenantDB: tenantDB}
 }
 
 func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetProfileSchemaRequest) (*pb.GetProfileSchemaResponse, error) {
@@ -87,6 +90,9 @@ func (s *ProfileService) GetTenantProfileData(ctx context.Context, request *pb.G
 	if data == nil {
 		data = s.defaultProfile
 	}
+	for k, v := range data {
+		metrics.CollectorTKeelProfiles.WithLabelValues(request.GetTenantId(), k).Set(float64(v))
+	}
 	return &pb.GetTenantProfileDataResponse{Profiles: data}, nil
 }
 
@@ -124,6 +130,9 @@ func (s *ProfileService) SetTenantProfileData(ctx context.Context, request *pb.S
 			})
 			if eCall != nil {
 				log.Error(err)
+			}
+			for pk, pv := range profile {
+				metrics.CollectorTKeelProfiles.WithLabelValues(request.GetTenantId(), pk).Set(float64(pv))
 			}
 			defer res.Body.Close()
 			wg.Done()
