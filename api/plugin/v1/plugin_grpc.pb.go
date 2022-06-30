@@ -29,6 +29,8 @@ type PluginClient interface {
 	ListEnabledTenants(ctx context.Context, in *ListEnabledTenantsRequest, opts ...grpc.CallOption) (*ListEnabledTenantsResponse, error)
 	TMUpdatePluginIdentify(ctx context.Context, in *TMUpdatePluginIdentifyRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	TMRegisterPlugin(ctx context.Context, in *TMRegisterPluginRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	TMTenantEnable(ctx context.Context, in *TMTenantEnableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	TMTenantDisable(ctx context.Context, in *TMTenantDisableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type pluginClient struct {
@@ -129,6 +131,24 @@ func (c *pluginClient) TMRegisterPlugin(ctx context.Context, in *TMRegisterPlugi
 	return out, nil
 }
 
+func (c *pluginClient) TMTenantEnable(ctx context.Context, in *TMTenantEnableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.plugin.v1.Plugin/TMTenantEnable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *pluginClient) TMTenantDisable(ctx context.Context, in *TMTenantDisableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/io.tkeel.rudder.api.plugin.v1.Plugin/TMTenantDisable", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PluginServer is the server API for Plugin service.
 // All implementations must embed UnimplementedPluginServer
 // for forward compatibility
@@ -143,6 +163,8 @@ type PluginServer interface {
 	ListEnabledTenants(context.Context, *ListEnabledTenantsRequest) (*ListEnabledTenantsResponse, error)
 	TMUpdatePluginIdentify(context.Context, *TMUpdatePluginIdentifyRequest) (*emptypb.Empty, error)
 	TMRegisterPlugin(context.Context, *TMRegisterPluginRequest) (*emptypb.Empty, error)
+	TMTenantEnable(context.Context, *TMTenantEnableRequest) (*emptypb.Empty, error)
+	TMTenantDisable(context.Context, *TMTenantDisableRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedPluginServer()
 }
 
@@ -179,6 +201,12 @@ func (UnimplementedPluginServer) TMUpdatePluginIdentify(context.Context, *TMUpda
 }
 func (UnimplementedPluginServer) TMRegisterPlugin(context.Context, *TMRegisterPluginRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TMRegisterPlugin not implemented")
+}
+func (UnimplementedPluginServer) TMTenantEnable(context.Context, *TMTenantEnableRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TMTenantEnable not implemented")
+}
+func (UnimplementedPluginServer) TMTenantDisable(context.Context, *TMTenantDisableRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TMTenantDisable not implemented")
 }
 func (UnimplementedPluginServer) mustEmbedUnimplementedPluginServer() {}
 
@@ -373,6 +401,42 @@ func _Plugin_TMRegisterPlugin_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Plugin_TMTenantEnable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TMTenantEnableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).TMTenantEnable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.plugin.v1.Plugin/TMTenantEnable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).TMTenantEnable(ctx, req.(*TMTenantEnableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Plugin_TMTenantDisable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TMTenantDisableRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PluginServer).TMTenantDisable(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/io.tkeel.rudder.api.plugin.v1.Plugin/TMTenantDisable",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PluginServer).TMTenantDisable(ctx, req.(*TMTenantDisableRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Plugin_ServiceDesc is the grpc.ServiceDesc for Plugin service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -419,6 +483,14 @@ var Plugin_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "TMRegisterPlugin",
 			Handler:    _Plugin_TMRegisterPlugin_Handler,
+		},
+		{
+			MethodName: "TMTenantEnable",
+			Handler:    _Plugin_TMTenantEnable_Handler,
+		},
+		{
+			MethodName: "TMTenantDisable",
+			Handler:    _Plugin_TMTenantDisable_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

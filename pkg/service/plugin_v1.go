@@ -434,6 +434,18 @@ func (s *PluginServiceV1) TenantEnable(ctx context.Context,
 	return &emptypb.Empty{}, nil
 }
 
+func (s *PluginServiceV1) TMTenantEnable(ctx context.Context,
+	req *pb.TMTenantEnableRequest,
+) (*emptypb.Empty, error) {
+	_, terr, err := s.tenantEnablePlugin(ctx, false, req.TenantId, model.TKeelUser, req.PluginId, req.Extra)
+	if err != nil {
+		log.Errorf("error tenant(%s) enable plugin(%s): %s", req.TenantId, model.TKeelUser, err)
+		return nil, terr
+	}
+	log.Debugf("tenant(%s) enable plugin(%s) succ.", req.TenantId, req.PluginId)
+	return &emptypb.Empty{}, nil
+}
+
 func (s *PluginServiceV1) TenantDisable(ctx context.Context,
 	req *pb.TenantDisableRequest,
 ) (*emptypb.Empty, error) {
@@ -473,6 +485,43 @@ func (s *PluginServiceV1) TenantDisable(ctx context.Context,
 	}
 	rbStack = util.NewRollbackStack()
 	log.Debugf("tenant(%s) disable plugin(%s) succ.", u.Tenant, req.Id)
+	return &emptypb.Empty{}, nil
+}
+
+func (s *PluginServiceV1) TMTenantDisable(ctx context.Context,
+	req *pb.TMTenantDisableRequest,
+) (*emptypb.Empty, error) {
+	rbStack := util.NewRollbackStack()
+	defer rbStack.Run()
+	p, err := s.pluginOp.Get(ctx, req.PluginId)
+	if err != nil {
+		log.Errorf("error get plugin route: %s", err)
+		return nil, pb.PluginErrInternalStore()
+	}
+
+	tmpP := p.Clone()
+	if p.TenantDisable(req.TenantId) {
+		// openapi tenant/disable.
+		rb, err := s.requestTenantDisable(ctx, req.PluginId, req.TenantId, req.Extra)
+		if err != nil {
+			log.Errorf("error request(%s) tenant(%s/%s) disable: %s",
+				req.PluginId, req.TenantId, string(req.Extra), err)
+			return nil, pb.PluginErrOpenapiDisableTenant()
+		}
+		rbStack = append(rbStack, rb)
+		// delete tenant plugin rbac.
+		if _, err = s.tenantPluginOp.DeleteTenantPlugin(req.TenantId, req.PluginId); err != nil {
+			log.Errorf("error delete tenant(%s) plugin(%s) rbac: %s", req.TenantId, p, err)
+			return nil, pb.PluginErrUnknown()
+		}
+		// plugin update.
+		if _, err = s.updatePlugin(ctx, tmpP, p); err != nil {
+			log.Errorf("error update tenant(%s) disable plugin(%s): %s", req.TenantId, p, err)
+			return nil, pb.PluginErrInternalStore()
+		}
+	}
+	rbStack = util.NewRollbackStack()
+	log.Debugf("tenant(%s) disable plugin(%s) succ.", req.TenantId, req.PluginId)
 	return &emptypb.Empty{}, nil
 }
 

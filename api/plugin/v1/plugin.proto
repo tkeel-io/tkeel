@@ -15,9 +15,9 @@ syntax = "proto3";
 
 package io.tkeel.rudder.api.plugin.v1;
 
-import "openapi/v1/openapi.proto";
-import "google/protobuf/empty.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "openapi/v1/openapi.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 option go_package = "github.com/tkeel-io/tkeel/api/plugin/v1;v1";
@@ -25,352 +25,406 @@ option java_multiple_files = true;
 option java_package = "io.tkeel.rudder.api.plugin.v1";
 
 service Plugin {
-  rpc InstallPlugin(InstallPluginRequest) returns (InstallPluginResponse) {
-    option (google.api.http) = {
-      post : "/plugins/{id}"
-      body : "installer"
+    rpc InstallPlugin(InstallPluginRequest) returns (InstallPluginResponse) {
+        option (google.api.http) = {
+            post: "/plugins/{id}"
+            body: "installer"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "安装插件接口"
+            operation_id: "InstallPlugin"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "SUCC"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "404"
+                    value: {description: "REPOSITORY_OR_INSTALLER_NOT_FOUND"}
+                },
+                {
+                    key: "409"
+                    value: {description: "ALREADY_EXISTS"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_STORE"}
+                }
+            ]
+        };
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "安装插件接口"
-      operation_id : "InstallPlugin"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "200"
-          value : {description : "SUCC"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "404"
-          value : {description : "REPOSITORY_OR_INSTALLER_NOT_FOUND"}
-        },
-        {
-          key : "409"
-          value : {description : "ALREADY_EXISTS"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_STORE"}
-        }
-      ]
-    };
-  };
 
-  rpc UpgradePlugin(UpgradePluginRequest) returns (UpgradePluginResponse) {
-    option (google.api.http) = {
-      put : "/plugins/{id}"
-      body : "installer"
+    rpc UpgradePlugin(UpgradePluginRequest) returns (UpgradePluginResponse) {
+        option (google.api.http) = {
+            put: "/plugins/{id}"
+            body: "installer"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "更新插件接口"
+            operation_id: "UpgradePlugin"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "SUCC"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "404"
+                    value: {description: "REPOSITORY_OR_INSTALLER_NOT_FOUND"}
+                },
+                {
+                    key: "409"
+                    value: {description: "ALREADY_EXISTS"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_STORE"}
+                }
+            ]
+        };
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "更新插件接口"
-      operation_id : "UpgradePlugin"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "200"
-          value : {description : "SUCC"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "404"
-          value : {description : "REPOSITORY_OR_INSTALLER_NOT_FOUND"}
-        },
-        {
-          key : "409"
-          value : {description : "ALREADY_EXISTS"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_STORE"}
-        }
-      ]
-    };
-  };
 
-  rpc UninstallPlugin(UninstallPluginRequest)
-      returns (UninstallPluginResponse) {
-    option (google.api.http) = {
-      delete : "/plugins/{id}"
+    rpc UninstallPlugin(UninstallPluginRequest)
+            returns (UninstallPluginResponse) {
+        option (google.api.http) = {
+            delete: "/plugins/{id}"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "卸载插件接口"
+            operation_id: "UninstallPlugin"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "OK"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "404"
+                    value: {description: "PLUGIN_NOT_FOUND"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_ERROR"}
+                }
+            ]
+        };
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "卸载插件接口"
-      operation_id : "UninstallPlugin"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "200"
-          value : {description : "OK"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "404"
-          value : {description : "PLUGIN_NOT_FOUND"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_ERROR"}
-        }
-      ]
-    };
-  };
 
-  rpc GetPlugin(GetPluginRequest) returns (GetPluginResponse) {
-    option (google.api.http) = {
-      get : "/plugins/{id}"
+    rpc GetPlugin(GetPluginRequest) returns (GetPluginResponse) {
+        option (google.api.http) = {
+            get: "/plugins/{id}"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "查询插件接口"
+            operation_id: "GetPlugin"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "OK"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "404"
+                    value: {description: "PLUGIN_NOT_FOUND"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_ERROR"}
+                }
+            ]
+        };
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "查询插件接口"
-      operation_id : "GetPlugin"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "200"
-          value : {description : "OK"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "404"
-          value : {description : "PLUGIN_NOT_FOUND"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_ERROR"}
-        }
-      ]
-    };
-  };
 
-  rpc ListPlugin(ListPluginRequest) returns (ListPluginResponse) {
-    option (google.api.http) = {
-      get : "/plugins"
+    rpc ListPlugin(ListPluginRequest) returns (ListPluginResponse) {
+        option (google.api.http) = {
+            get: "/plugins"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "获取插件列表接口"
+            operation_id: "ListPlugin"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "OK"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_ERROR"}
+                }
+            ]
+        };
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "获取插件列表接口"
-      operation_id : "ListPlugin"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "200"
-          value : {description : "OK"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_ERROR"}
-        }
-      ]
+
+    rpc TenantEnable(TenantEnableRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/plugins/{id}/tenants"
+            body: "extra"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "插件租户启用接口"
+            operation_id: "TenantEnable"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "OK"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_ERROR"}
+                }
+            ]
+        };
     };
-  };
-  rpc TenantEnable(TenantEnableRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      post : "/plugins/{id}/tenants"
-      body : "extra"
+
+    rpc TenantDisable(TenantDisableRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/plugins/{id}/tenants"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "插件租户停用接口"
+            operation_id: "TenantDisable"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "OK"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_ERROR"}
+                }
+            ]
+        };
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "插件租户启用接口"
-      operation_id : "TenantEnable"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "200"
-          value : {description : "OK"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_ERROR"}
-        }
-      ]
+
+    rpc ListEnabledTenants(ListEnabledTenantsRequest) returns (ListEnabledTenantsResponse) {
+        option (google.api.http) = {
+            get: "/plugins/{id}/tenants"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "获取插件绑定租户接口"
+            operation_id: "ListenableTenants"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "OK"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_ERROR"}
+                }
+            ]
+        };
     };
-  };
-  rpc TenantDisable(TenantDisableRequest) returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      delete : "/plugins/{id}/tenants"
+
+    rpc TMUpdatePluginIdentify(TMUpdatePluginIdentifyRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            get: "/tm/plugins/identify"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "获取插件绑定租户接口"
+            operation_id: "TMUpdatePluginIdentify"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "OK"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_ERROR"}
+                }
+            ]
+        };
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "插件租户停用接口"
-      operation_id : "TenantDisable"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "200"
-          value : {description : "OK"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_ERROR"}
-        }
-      ]
+
+    rpc TMRegisterPlugin(TMRegisterPluginRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            get: "/tm/plugins/register"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "手动注册插件接口"
+            operation_id: "TMRegisterPlugin"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "OK"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_ERROR"}
+                }
+            ]
+        };
     };
-  };
-  rpc ListEnabledTenants(ListEnabledTenantsRequest)
-      returns (ListEnabledTenantsResponse) {
-    option (google.api.http) = {
-      get : "/plugins/{id}/tenants"
+
+    rpc TMTenantEnable(TMTenantEnableRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/tm/plugins/{plugin_id}/tenants/{tenant_id}"
+            body: "extra"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "插件租户停用接口"
+            operation_id: "TenantDisable"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "OK"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_ERROR"}
+                }
+            ]
+        };
     };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "获取插件绑定租户接口"
-      operation_id : "ListenableTenants"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "200"
-          value : {description : "OK"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_ERROR"}
-        }
-      ]
+
+    rpc TMTenantDisable(TMTenantDisableRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/tm/plugins/{plugin_id}/tenants/{tenant_id}"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+            summary: "插件租户停用接口"
+            operation_id: "TenantDisable"
+            tags: "Plugin"
+            responses: [
+                {
+                    key: "200"
+                    value: {description: "OK"}
+                },
+                {
+                    key: "400"
+                    value: {description: "INVALID_ARGUMENT"}
+                },
+                {
+                    key: "500"
+                    value: {description: "INTERNAL_ERROR"}
+                }
+            ]
+        };
     };
-  };
-  rpc TMUpdatePluginIdentify(TMUpdatePluginIdentifyRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      get : "/tm/plugins/identify"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "获取插件绑定租户接口"
-      operation_id : "TMUpdatePluginIdentify"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "200"
-          value : {description : "OK"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_ERROR"}
-        }
-      ]
-    };
-  };
-  rpc TMRegisterPlugin(TMRegisterPluginRequest)
-      returns (google.protobuf.Empty) {
-    option (google.api.http) = {
-      get : "/tm/plugins/register"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      summary : "手动注册插件接口"
-      operation_id : "TMRegisterPlugin"
-      tags : "Plugin"
-      responses : [
-        {
-          key : "200"
-          value : {description : "OK"}
-        },
-        {
-          key : "400"
-          value : {description : "INVALID_ARGUMENT"}
-        },
-        {
-          key : "500"
-          value : {description : "INTERNAL_ERROR"}
-        }
-      ]
-    };
-  };
+
 }
 
 /**
  * Register Addons.
  **/
 message RegisterAddons {
-  string addons = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "扩展点名字"
-      } ]; // addons name.
-  string upstream = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "上游路径"
-      } ]; // upstream path.
+    string addons = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "扩展点名字"
+    }]; // addons name.
+    string upstream = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "上游路径"
+    }]; // upstream path.
 }
 
 enum ConfigurationType {
-  JSON = 0;
-  YAML = 1;
+    JSON = 0;
+    YAML = 1;
 }
 
 /**
  * Installer.
  **/
 message Installer {
-  string name = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "安装包名称"
-      } ];
-  string version = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "安装包版本"
-      } ];
-  string repo = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "仓库名称"
-      } ];
-  string icon = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "安装包图标"
-      } ];
-  string desc = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "安装包描述"
-      } ];
-  bytes configuration = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "安装配置"
-      } ];
-  ConfigurationType type = 7
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "配置类型"
-      } ];
-  message maintainer {
     string name = 1
-        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "维护者名称"
-        } ];
-    string email = 2
-        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "维护者邮箱"
-        } ];
-    string url = 3
-        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "维护者地址"
-        } ];
-  }
-  repeated maintainer maintainers = 8
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "维护者列表"
-      } ];
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "安装包名称"
+    }];
+    string version = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "安装包版本"
+    }];
+    string repo = 3
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "仓库名称"
+    }];
+    string icon = 4
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "安装包图标"
+    }];
+    string desc = 5
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "安装包描述"
+    }];
+    bytes configuration = 6
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "安装配置"
+    }];
+    ConfigurationType type = 7
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "配置类型"
+    }];
+    message maintainer {
+        string name = 1
+        [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "维护者名称"
+        }];
+        string email = 2
+        [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "维护者邮箱"
+        }];
+        string url = 3
+        [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "维护者地址"
+        }];
+    }
+    repeated maintainer maintainers = 8
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "维护者列表"
+    }];
 }
 
 /**
@@ -378,290 +432,319 @@ message Installer {
  **/
 
 message EnabledTenant {
-  string title = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "租户空间"
-      } ];
-  string remark = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "备注"
-      } ];
-  string tenant_id = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "租户ID"
-      } ]; // enable tenant id.
-  string operator_id = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "操作者ID"
-      } ]; // operator user id.
-  int64 enable_timestamp = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "启用时间"
-      } ]; // enable timestamp.
-  int32 user_num = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "用户数量"
-      } ];
+    string title = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "租户空间"
+    }];
+    string remark = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "备注"
+    }];
+    string tenant_id = 3
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "租户ID"
+    }]; // enable tenant id.
+    string operator_id = 4
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "操作者ID"
+    }]; // operator user id.
+    int64 enable_timestamp = 5
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "启用时间"
+    }]; // enable timestamp.
+    int32 user_num = 6
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "用户数量"
+    }];
 }
 
 // plugin brief
 
 message PluginBrief {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件ID"
-      } ];
-  string version = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件版本"
-      } ];
-  int64 register_timestamp = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "注册时间"
-      } ]; // register timestamp.
-  string tkeel_version = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "依赖的keel版本"
-      } ]; // plugin depend tkeel version.
-  Installer installer_brief = 5 [
-    (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-      description : "插件信息"
-    }
-  ]; // register plugin status
-  bool tenant_enable = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "是否启用"
-      } ]; // tenant enable.
-  openapi.v1.PluginStatus status = 7
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件状态"
-      } ]; // register plugin status.
+    string id = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件ID"
+    }];
+    string version = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件版本"
+    }];
+    int64 register_timestamp = 3
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "注册时间"
+    }]; // register timestamp.
+    string tkeel_version = 4
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "依赖的keel版本"
+    }]; // plugin depend tkeel version.
+    Installer installer_brief = 5 [
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "插件信息"
+        }
+    ]; // register plugin status
+    bool tenant_enable = 6
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "是否启用"
+    }]; // tenant enable.
+    openapi.v1.PluginStatus status = 7
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件状态"
+    }]; // register plugin status.
 }
 
 /**
  * plugin object.
  **/
 message PluginObject {
-  PluginBrief plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件简要信息"
-      } ]; // plugin brief info.
-  repeated openapi.v1.AddonsPoint addons_point = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "扩展点声明"
-      } ]; // plugin declares addons.
-  repeated openapi.v1.ImplementedPlugin implemented_plugin = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "实现该扩展点的插件列表"
-      } ]; // plugin implemented plugin list.
-  string secret = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件注册密钥"
-      } ]; // plugin registered secret.
-  repeated EnabledTenant enable_tenantes = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "启用租户列表"
-      } ]; // enable tenant's id list.
-  repeated RegisterAddons register_addons = 6
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "注册的扩展点路由"
-      } ]; // register addons router.
-  repeated openapi.v1.ConsoleEntry console_entries = 7
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件控制台菜单"
-      } ];
+    PluginBrief plugin = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件简要信息"
+    }]; // plugin brief info.
+    repeated openapi.v1.AddonsPoint addons_point = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "扩展点声明"
+    }]; // plugin declares addons.
+    repeated openapi.v1.ImplementedPlugin implemented_plugin = 3
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "实现该扩展点的插件列表"
+    }]; // plugin implemented plugin list.
+    string secret = 4
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件注册密钥"
+    }]; // plugin registered secret.
+    repeated EnabledTenant enable_tenantes = 5
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "启用租户列表"
+    }]; // enable tenant's id list.
+    repeated RegisterAddons register_addons = 6
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "注册的扩展点路由"
+    }]; // register addons router.
+    repeated openapi.v1.ConsoleEntry console_entries = 7
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件控制台菜单"
+    }];
 }
 
 message InstallPluginRequest {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件ID"
-      } ];
-  Installer installer = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件信息"
-      } ];
+    string id = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件ID"
+    }];
+    Installer installer = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件信息"
+    }];
 }
 
 message InstallPluginResponse {
-  PluginObject plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件信息"
-      } ];
+    PluginObject plugin = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件信息"
+    }];
 }
 
 message UpgradePluginRequest {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件ID"
-      } ];
-  Installer installer = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件信息"
-      } ];
+    string id = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件ID"
+    }];
+    Installer installer = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件信息"
+    }];
 }
 
 message UpgradePluginResponse {
-  PluginObject plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件信息"
-      } ];
+    PluginObject plugin = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件信息"
+    }];
 }
 
 message UninstallPluginRequest {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件ID"
-      } ];
+    string id = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件ID"
+    }];
 }
 message UninstallPluginResponse {
-  PluginObject plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件信息"
-      } ];
+    PluginObject plugin = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件信息"
+    }];
 }
 
 message GetPluginRequest {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件ID"
-      } ];
+    string id = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件ID"
+    }];
 }
 message GetPluginResponse {
-  PluginObject plugin = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件信息"
-      } ];
+    PluginObject plugin = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件信息"
+    }];
 }
 
 message ListPluginRequest {
-  int32 page_num = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "页码"
-      } ];
-  int32 page_size = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "每页数量"
-      } ];
-  string order_by = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "排序字段"
-      } ];
-  bool is_descending = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "是否倒序"
-      } ];
-  string key_words = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "搜索关键字"
-      } ];
-  bool display_all_plugin = 10
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "是否显示全部插件"
-      } ];
+    int32 page_num = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "页码"
+    }];
+    int32 page_size = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "每页数量"
+    }];
+    string order_by = 3
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "排序字段"
+    }];
+    bool is_descending = 4
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "是否倒序"
+    }];
+    string key_words = 5
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "搜索关键字"
+    }];
+    bool display_all_plugin = 10
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "是否显示全部插件"
+    }];
 }
 
 message ListPluginResponse {
-  int32 total = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "总数量"
-      } ];
-  int32 page_num = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "页码"
-      } ];
-  int32 page_size = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "每页数量"
-      } ];
-  repeated PluginBrief plugin_list = 10
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件列表"
-      } ];
-  int32 enable_num = 11
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "启用插件数量"
-      } ];
+    int32 total = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "总数量"
+    }];
+    int32 page_num = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "页码"
+    }];
+    int32 page_size = 3
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "每页数量"
+    }];
+    repeated PluginBrief plugin_list = 10
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件列表"
+    }];
+    int32 enable_num = 11
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "启用插件数量"
+    }];
 }
 
 message TenantEnableRequest {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件ID"
-      } ];
-  message EnableExtraData {
-    string desc = 1
-        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "扩展描述"
-        } ];
-    bytes extra = 2
-        [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-          description : "扩展数据"
-        } ];
-  }
-  EnableExtraData extra = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "扩展数据"
-      } ];
+    string id = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件ID"
+    }];
+    message EnableExtraData {
+        string desc = 1
+        [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "扩展描述"
+        }];
+        bytes extra = 2
+        [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            description: "扩展数据"
+        }];
+    }
+    EnableExtraData extra = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "扩展数据"
+    }];
+}
+
+message TMTenantEnableRequest {
+    string plugin_id = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件ID"
+    }];
+    string tenant_id = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "租户ID"
+    }];
+    bytes extra = 3
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "扩展数据"
+    }];
 }
 
 message TenantDisableRequest {
-  string id = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件ID"
-      } ];
-  bytes extra = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "扩展数据"
-      } ];
+    string id = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件ID"
+    }];
+    bytes extra = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "扩展数据"
+    }];
+}
+message TMTenantDisableRequest {
+    string plugin_id = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件ID"
+    }];
+    string tenant_id = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "租户ID"
+    }];
+    bytes extra = 3
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "扩展数据"
+    }];
 }
 
 message ListEnabledTenantsRequest {
-  int32 page_num = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "页码"
-      } ];
-  int32 page_size = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "每页数量"
-      } ];
-  string order_by = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "排序字段"
-      } ];
-  bool is_descending = 4
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "是否倒序"
-      } ];
-  string key_words = 5
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "搜索关键字"
-      } ];
-  string id = 10
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "插件ID"
-      } ];
+    int32 page_num = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "页码"
+    }];
+    int32 page_size = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "每页数量"
+    }];
+    string order_by = 3
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "排序字段"
+    }];
+    bool is_descending = 4
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "是否倒序"
+    }];
+    string key_words = 5
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "搜索关键字"
+    }];
+    string id = 10
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "插件ID"
+    }];
 }
 
 message ListEnabledTenantsResponse {
-  int32 total = 1
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "总数量"
-      } ];
-  int32 page_num = 2
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "页码"
-      } ];
-  int32 page_size = 3
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "每页数量"
-      } ];
-  repeated EnabledTenant tenants = 10
-      [ (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description : "启用插件的租户列表"
-      } ];
+    int32 total = 1
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "总数量"
+    }];
+    int32 page_num = 2
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "页码"
+    }];
+    int32 page_size = 3
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "每页数量"
+    }];
+    repeated EnabledTenant tenants = 10
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "启用插件的租户列表"
+    }];
 }
 
-message TMUpdatePluginIdentifyRequest { string id = 1; }
+message TMUpdatePluginIdentifyRequest {string id = 1;}
 
-message TMRegisterPluginRequest { string id = 1; }
+message TMRegisterPluginRequest {string id = 1;}
