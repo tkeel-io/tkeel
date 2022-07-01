@@ -48,8 +48,8 @@ func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperat
 	profileService.GetProfileSchema(context.TODO(), nil)
 	tenantDao := dbmodel.Tenant{}
 	_, tenants, _ := tenantDao.List(profileService.tenantDB, nil, nil, "")
-	for range tenants {
-		profileService.GetTenantProfileData(context.TODO(), nil)
+	for i := range tenants {
+		profileService.GetTenantProfileData(context.TODO(), &pb.GetTenantProfileDataRequest{TenantId: tenants[i].ID})
 	}
 	return profileService
 }
