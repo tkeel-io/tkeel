@@ -22,6 +22,7 @@ import (
 	"sync"
 
 	"github.com/tkeel-io/kit/log"
+	dbmodel "github.com/tkeel-io/security/model"
 	pb "github.com/tkeel-io/tkeel/api/profile/v1"
 	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/client/openapi"
@@ -43,7 +44,14 @@ type ProfileService struct {
 }
 
 func NewProfileService(plgOp plugin.Operator, profileOp plgprofile.ProfileOperator, daprHTTP dapr.Client, openapiClient openapi.Client, tenantDB *gorm.DB) *ProfileService {
-	return &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHTTP, openapiClient: openapiClient, defaultProfile: make(map[string]int32), tenantDB: tenantDB}
+	profileService := &ProfileService{pluginOp: plgOp, ProfileOp: profileOp, daprHTTPCli: daprHTTP, openapiClient: openapiClient, defaultProfile: make(map[string]int32), tenantDB: tenantDB}
+	profileService.GetProfileSchema(context.TODO(), nil)
+	tenantDao := dbmodel.Tenant{}
+	_, tenants, _ := tenantDao.List(profileService.tenantDB, nil, nil, "")
+	for range tenants {
+		profileService.GetTenantProfileData(context.TODO(), nil)
+	}
+	return profileService
 }
 
 func (s *ProfileService) GetProfileSchema(ctx context.Context, request *pb.GetProfileSchemaRequest) (*pb.GetProfileSchemaResponse, error) {
