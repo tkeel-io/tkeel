@@ -21,18 +21,13 @@ import (
 	"fmt"
 	"strings"
 
-	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/postrender"
-
-	"helm.sh/helm/v3/pkg/getter"
-	"helm.sh/helm/v3/pkg/repo"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
-	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 const (
@@ -171,14 +166,10 @@ func (h Installer) Install(ops ...*repository.Option) error {
 	if h.chart.Metadata.Deprecated {
 		log.Warn("This chart is deprecated")
 	}
-	// Add inject dependencies.
-	dependencyChart, err := loadComponentChart()
+	err = InjectConfig(h.chart, h.id, _componentSecret)
 	if err != nil {
-		log.Error(err)
-		return errors.Wrap(err, "load component chart err")
+		return err
 	}
-	failInjector(dependencyChart, h.id, _componentSecret)
-	h.chart.AddDependency(dependencyChart)
 	// inject dapr annotation.
 	render, err := h.inject()
 	if err != nil {
@@ -217,14 +208,10 @@ func (h Installer) Upgrade(ops ...*repository.Option) error {
 	if h.chart.Metadata.Deprecated {
 		log.Warn("This chart is deprecated")
 	}
-	// Add inject dependencies.
-	dependencyChart, err := loadComponentChart()
+	err = InjectConfig(h.chart, h.id, _componentSecret)
 	if err != nil {
-		log.Error(err)
-		return errors.Wrap(err, "load component chart err")
+		return err
 	}
-	failInjector(dependencyChart, h.id, _componentSecret)
-	h.chart.AddDependency(dependencyChart)
 	// inject dapr annotation.
 	render, err := h.inject()
 	if err != nil {
@@ -269,40 +256,6 @@ func (h *Installer) inject() (postrender.PostRenderer, error) {
 	return newKustomizeRender(deployment, h.id, appPort), nil
 }
 
-func loadComponentChart() (*chart.Chart, error) {
-	chartURL, err := repo.FindChartInRepoURL(_tkeelRepo, _componentChartName, "", "", "", "", getter.All(new(cli.EnvSettings)))
-	if err != nil {
-		return nil, errors.Wrap(err, "get component chart url err")
-	}
-
-	httpGetter, err := getter.NewHTTPGetter()
-	if err != nil {
-		return nil, errors.Wrap(err, "init http getter err")
-	}
-
-	buf, err := httpGetter.Get(chartURL)
-	if err != nil {
-		return nil, errors.Wrap(err, "HTTP GET component chart err")
-	}
-
-	c, err := loader.LoadArchive(buf)
-	if err != nil {
-		log.Warn("can't parse the file %q", chartURL, err)
-		return nil, errors.Wrap(err, "load helm chart failed")
-	}
-
-	if err = checkIfInstallable(c); err != nil {
-		log.Warn("uninstallable chart request")
-		return nil, err
-	}
-
-	if c.Metadata.Deprecated {
-		log.Warn("%q: This chart is deprecated", chartURL)
-	}
-
-	return c, nil
-}
-
 func checkIfInstallable(ch *chart.Chart) error {
 	if ch == nil {
 		return ErrNoChartInfoSet
@@ -314,7 +267,13 @@ func checkIfInstallable(ch *chart.Chart) error {
 	return errors.Errorf("%s charts are not installable", ch.Metadata.Type)
 }
 
-func failInjector(injector *chart.Chart, pluginName string, secret string) {
-	injector.Values["pluginID"] = pluginName
-	injector.Values["secret"] = secret
+func InjectConfig(root *chart.Chart, name, secret string) error {
+	root.Values["pluginID"] = name
+	root.Values["secret"] = secret
+	root.Values["rudderPort"] = 31234
+	root.Templates = append(root.Templates,
+		&chart.File{Name: "templates/plugin_config.yaml", Data: []byte(PluginConfig)},
+		&chart.File{Name: "templates/plugin_oauth2.yaml", Data: []byte(PluginOAuth2)},
+	)
+	return nil
 }

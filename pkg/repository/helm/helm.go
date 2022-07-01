@@ -57,12 +57,7 @@ const (
 	SQL       Driver = "sql"
 )
 
-const (
-	_componentChartName = "tkeel-plugin-components"
-)
-
 var (
-	_tkeelRepo                             = getEnvStr("TKEEL_REPO", "https://tkeel-io.github.io/helm-charts")
 	_                repository.Repository = &Repo{}
 	_componentSecret                       = "changeme"
 )
@@ -400,12 +395,4 @@ func initActionConfig(namespace string, driver Driver) (*helmAction.Configuratio
 		return nil, errors.Wrap(err, "helmAction configuration init err")
 	}
 	return config, nil
-}
-
-func getEnvStr(env string, defaultValue string) string {
-	v := os.Getenv(env)
-	if v == "" {
-		return defaultValue
-	}
-	return v
 }
