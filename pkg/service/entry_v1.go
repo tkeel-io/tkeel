@@ -2,7 +2,11 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"sort"
+	"strings"
+	"sync"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/golang/protobuf/proto"
@@ -13,6 +17,7 @@ import (
 	"github.com/tkeel-io/security/authz/rbac"
 	v1 "github.com/tkeel-io/tkeel-interface/openapi/v1"
 	pb "github.com/tkeel-io/tkeel/api/entry/v1"
+	"github.com/tkeel-io/tkeel/pkg/client/dapr"
 	"github.com/tkeel-io/tkeel/pkg/model"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -20,16 +25,34 @@ import (
 
 type EntryService struct {
 	pb.UnimplementedEntryServer
-	pOp    plugin.Operator
-	tpOp   rbac.TenantPluginMgr
-	rbacOp *casbin.SyncedEnforcer
+	pOp         plugin.Operator
+	tpOp        rbac.TenantPluginMgr
+	rbacOp      *casbin.SyncedEnforcer
+	daprHTTPCli dapr.Client
+}
+type IdentifyEntries struct {
+	Entries []Entry `json:"entries"`
+}
+type Entry struct {
+	ID            string         `json:"id"`
+	Name          string         `json:"name"`
+	Notifications []Notification `json:"notifications"`
+}
+type Notification struct {
+	APIPath string `json:"api_path"`
 }
 
-func NewEntryService(pOp plugin.Operator, tpOp rbac.TenantPluginMgr, rbacOp *casbin.SyncedEnforcer) *EntryService {
+type NotificationsItem struct {
+	Entry        Entry       `json:"entry"`
+	Notification interface{} `json:"notification"`
+}
+
+func NewEntryService(pOp plugin.Operator, tpOp rbac.TenantPluginMgr, rbacOp *casbin.SyncedEnforcer, daprHTTPCli dapr.Client) *EntryService {
 	return &EntryService{
-		pOp:    pOp,
-		tpOp:   tpOp,
-		rbacOp: rbacOp,
+		pOp:         pOp,
+		tpOp:        tpOp,
+		rbacOp:      rbacOp,
+		daprHTTPCli: daprHTTPCli,
 	}
 }
 
@@ -76,6 +99,70 @@ func (s *EntryService) GetEntries(ctx context.Context, req *emptypb.Empty) (*pb.
 	return &pb.GetEntriesResponse{
 		Entries: ret,
 	}, nil
+}
+
+func (s *EntryService) GetNotification(ctx context.Context, tenantID string) (interface{}, error) {
+	plugins := s.tpOp.ListTenantPlugins(tenantID)
+	notifications := make([]interface{}, 0)
+	wg := sync.WaitGroup{}
+	// 1. call console  identify & merge entry  api_path.
+	for _, v := range plugins {
+		if pluginIsConsole(v) {
+			wg.Add(1)
+			go func(pluginID string) {
+				res, _ := s.daprHTTPCli.Call(ctx, &dapr.AppRequest{
+					ID:     pluginID,
+					Method: "v1/identify",
+					Verb:   "GET",
+				})
+				resBytes, err := io.ReadAll(res.Body)
+				if err != nil {
+					log.Error(err)
+					wg.Done()
+					return
+				}
+				defer res.Body.Close()
+				idfEntries := IdentifyEntries{}
+				err = json.Unmarshal(resBytes, &idfEntries)
+				if err != nil {
+					log.Error(err)
+					wg.Done()
+					return
+				}
+				if idfEntries.Entries != nil {
+					for _, entry := range idfEntries.Entries {
+						if entry.Notifications != nil {
+							for _, notify := range entry.Notifications {
+								wg.Add(1)
+								go func(apiPath string) {
+									pID, route := pluginWithAPIPath(apiPath)
+									notifyres, nerr := s.daprHTTPCli.Call(ctx, &dapr.AppRequest{
+										ID:     pID,
+										Method: route,
+										Verb:   "GET",
+									})
+									if nerr != nil {
+										log.Error(err)
+										wg.Done()
+										return
+									}
+									resNotifyBytes, _ := io.ReadAll(notifyres.Body)
+									defer notifyres.Body.Close()
+									resM := make(map[string]interface{})
+									json.Unmarshal(resNotifyBytes, &resM)
+									notificationsItem := NotificationsItem{Notification: resM["data"], Entry: entry}
+									notifications = append(notifications, notificationsItem)
+									wg.Done()
+								}(notify.APIPath)
+							}
+						}
+					}
+				}
+			}(v)
+		}
+	}
+	wg.Wait()
+	return notifications, nil
 }
 
 func appendEntries(dst, src []*v1.ConsoleEntry, portal v1.ConsolePortal) []*v1.ConsoleEntry {
@@ -162,3 +249,11 @@ type entrySort []*v1.ConsoleEntry
 func (a entrySort) Len() int           { return len(a) }
 func (a entrySort) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a entrySort) Less(i, j int) bool { return a[i].Id < a[j].Id }
+
+func pluginWithAPIPath(apiPath string) (plugin, route string) {
+	s := strings.SplitN(apiPath, "/", 3)
+	if len(s) == 3 {
+		return s[1], s[2]
+	}
+	return
+}
