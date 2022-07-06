@@ -8,7 +8,7 @@ import (
 	"github.com/tkeel-io/kit/errors"
 	"github.com/tkeel-io/kit/log"
 	"github.com/tkeel-io/kit/result"
-	"github.com/tkeel-io/tkeel/pkg/util"
+	"github.com/tkeel-io/tkeel/pkg/model"
 )
 
 type NotificationHTTPServer interface {
@@ -31,7 +31,7 @@ func RegisterNotificationHTTPServer(container *go_restful.Container, srv Notific
 	}
 
 	handler := newNotificationHTTPHandler(srv)
-	ws.Route(ws.GET("/notification").
+	ws.Route(ws.GET("/notifications").
 		To(handler.GetNotification))
 }
 
@@ -44,9 +44,11 @@ type NotificationHTTPHandler struct {
 }
 
 func (n NotificationHTTPHandler) GetNotification(req *go_restful.Request, resp *go_restful.Response) {
-	user, err := util.GetUser(req.Request.Context())
-	if err != nil {
-		log.Error(err)
+	xTKAUth := req.Request.Header.Get(model.XtKeelAuthHeader)
+	user := new(model.User)
+	err := user.Base64Decode(xTKAUth)
+	log.Info(user)
+	if xTKAUth == "" || err != nil {
 		tErr := errors.FromError(EntryErrInvalidTenant())
 		httpCode := errors.GRPCToHTTPStatusCode(tErr.GRPCStatus().Code())
 		if httpCode == http.StatusMovedPermanently {
@@ -59,7 +61,8 @@ func (n NotificationHTTPHandler) GetNotification(req *go_restful.Request, resp *
 	notifications, _ := n.srv.GetNotification(req.Request.Context(), user.Tenant)
 	resultData := map[string]interface{}{"code": errors.Success.Reason,
 		"msg":  "",
-		"data": notifications}
+		"data": map[string]interface{}{"notifications": notifications},
+	}
 
 	resp.WriteHeaderAndJson(200, resultData, "application/json")
 }

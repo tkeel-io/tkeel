@@ -158,6 +158,7 @@ func (s *EntryService) GetNotification(ctx context.Context, tenantID string) (in
 						}
 					}
 				}
+				wg.Done()
 			}(v)
 		}
 	}
