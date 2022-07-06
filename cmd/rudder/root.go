@@ -218,9 +218,10 @@ var rootCmd = &cobra.Command{
 			repo.RegisterRepoHTTPServer(httpSrv.Container, repoSrv)
 			repo.RegisterRepoServer(grpcSrv.GetServe(), repoSrv)
 			// entries service.
-			entriesSrvV1 := service.NewEntryService(pOp, tenantPluginOp, rbacOp)
+			entriesSrvV1 := service.NewEntryService(pOp, tenantPluginOp, rbacOp, daprHTTPClient)
 			entry_v1.RegisterEntryHTTPServer(httpSrv.Container, entriesSrvV1)
 			entry_v1.RegisterEntryServer(grpcSrv.GetServe(), entriesSrvV1)
+			entry_v1.RegisterNotificationHTTPServer(httpSrv.Container, entriesSrvV1)
 
 			// tenant service.
 			tenantSrv := service.NewTenantService(gormdb, tenantPluginOp, rbacOp, daprGRPCClient, conf.Dapr.PrivateStateName)

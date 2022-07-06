@@ -61,3 +61,7 @@ func pluginIsTkeelDefaultConsole(pluginID string) bool {
 	}
 	return false
 }
+
+func pluginIsConsole(pluginID string) bool {
+	return strings.HasPrefix(pluginID, "console")
+}

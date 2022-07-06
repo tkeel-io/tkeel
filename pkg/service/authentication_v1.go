@@ -116,7 +116,7 @@ func NewAuthenticationService(m *manage.Manager, userDB *gorm.DB, conf *TokenCon
 	}
 }
 
-//nolint
+// nolint
 func (s *AuthenticationService) Authenticate(ctx context.Context, req *pb.AuthenticateRequest) (*pb.AuthenticateResponse, error) {
 	header := transport_http.HeaderFromContext(ctx)
 	sess := new(session)
@@ -348,11 +348,11 @@ func (s *AuthenticationService) checkAuthorization(ctx context.Context, header h
 	user := new(model.User)
 	tokenStr := strings.TrimPrefix(authorization, "Bearer ")
 	if !isManager {
-		token, err := s.m.LoadAccessToken(ctx, tokenStr)
-		if err != nil {
-			return nil, fmt.Errorf("error load access token(%s): %w", token, err)
+		tokenInfo, lerr := s.m.LoadAccessToken(ctx, tokenStr)
+		if lerr != nil {
+			return nil, fmt.Errorf("error load access token(%+v): %w", tokenInfo, err)
 		}
-		userID := token.GetUserID()
+		userID := tokenInfo.GetUserID()
 		var u *s_model.User
 		_, users, err := u.QueryByCondition(s.userDB, map[string]interface{}{"id": userID}, nil, "")
 		if err != nil || len(users) != 1 {
