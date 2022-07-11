@@ -43,6 +43,7 @@ type NotificationHTTPHandler struct {
 	srv NotificationHTTPServer
 }
 
+// nolint
 func (n NotificationHTTPHandler) GetNotification(req *go_restful.Request, resp *go_restful.Response) {
 	xTKAUth := req.Request.Header.Get(model.XtKeelAuthHeader)
 	user := new(model.User)
@@ -58,7 +59,8 @@ func (n NotificationHTTPHandler) GetNotification(req *go_restful.Request, resp *
 			result.Set(tErr.Reason, tErr.Message, nil), "application/json")
 		return
 	}
-	notifications, _ := n.srv.GetNotification(req.Request.Context(), user.Tenant)
+	notifCtx := context.WithValue(req.Request.Context(), 1, req.Request.Header)
+	notifications, _ := n.srv.GetNotification(notifCtx, user.Tenant)
 	resultData := map[string]interface{}{"code": errors.Success.Reason,
 		"msg":  "",
 		"data": map[string]interface{}{"notifications": notifications},

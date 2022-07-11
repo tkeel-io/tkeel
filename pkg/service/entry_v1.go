@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"net/http"
 	"sort"
 	"strings"
 	"sync"
@@ -136,10 +137,12 @@ func (s *EntryService) GetNotification(ctx context.Context, tenantID string) (in
 								wg.Add(1)
 								go func(apiPath string) {
 									pID, route := pluginWithAPIPath(apiPath)
+									header, _ := ctx.Value(1).(http.Header)
 									notifyres, nerr := s.daprHTTPCli.Call(ctx, &dapr.AppRequest{
 										ID:     pID,
 										Method: route,
 										Verb:   "GET",
+										Header: header,
 									})
 									if nerr != nil {
 										log.Error(err)
