@@ -11,7 +11,10 @@ redis:
 kafka:
   persistence:
     size: 100Gi
-
+  provisioning:
+    topics:
+    - name: core-pub
+      partitions: 12
 mysql:
   fullnameOverride: tkeel-middleware-mysql
   auth:
@@ -28,6 +31,11 @@ elasticsearch:
   fullnameOverride: tkeel-middleware-elasticsearch
   master:
     replicas: 1
+    heapSize: 512m
+    resources:
+      requests:
+        cpu: 100m
+        memory: 1Gi
   data:
     replicas: 1
   coordinating:
