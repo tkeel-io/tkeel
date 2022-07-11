@@ -12,6 +12,7 @@ kafka:
   persistence:
     size: 100Gi
   provisioning:
+    enabled: true
     topics:
     - name: core-pub
       partitions: 12
