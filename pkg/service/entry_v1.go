@@ -255,9 +255,9 @@ func (a entrySort) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a entrySort) Less(i, j int) bool { return a[i].Id < a[j].Id }
 
 func pluginWithAPIPath(apiPath string) (plugin, route string) {
-	s := strings.SplitN(apiPath, "/", 3)
-	if len(s) == 3 {
-		return s[1], s[2]
+	s := strings.SplitN(apiPath, "/", 4)
+	if len(s) == 4 {
+		return s[2], s[3]
 	}
 	return
 }
