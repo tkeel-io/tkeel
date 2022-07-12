@@ -37,6 +37,7 @@ type IdentifyEntries struct {
 type Entry struct {
 	ID            string         `json:"id"`
 	Name          string         `json:"name"`
+	Children      []Entry        `json:"children"`
 	Notifications []Notification `json:"notifications"`
 }
 type Notification struct {
@@ -130,6 +131,7 @@ func (s *EntryService) GetNotification(ctx context.Context, tenantID string) (in
 					wg.Done()
 					return
 				}
+				childrenEntrys := make([]Entry, 0)
 				if idfEntries.Entries != nil {
 					for _, entry := range idfEntries.Entries {
 						if entry.Notifications != nil {
@@ -158,6 +160,48 @@ func (s *EntryService) GetNotification(ctx context.Context, tenantID string) (in
 									wg.Done()
 								}(notify.APIPath)
 							}
+						}
+						for childI := range entry.Children {
+							childrenEntrys = append(childrenEntrys, entry.Children[childI])
+						}
+					}
+				}
+				for _, entry := range childrenEntrys {
+					if entry.Notifications != nil {
+						for _, notify := range entry.Notifications {
+							wg.Add(1)
+							go func(apiPath string) {
+								pID, route := pluginWithAPIPath(apiPath)
+								header, _ := ctx.Value(1).(http.Header)
+								notifyres, nerr := s.daprHTTPCli.Call(ctx, &dapr.AppRequest{
+									ID:     pID,
+									Method: route,
+									Verb:   "GET",
+									Header: header,
+								})
+								if nerr != nil {
+									log.Error(err)
+									wg.Done()
+									return
+								}
+								resNotifyBytes, _ := io.ReadAll(notifyres.Body)
+								defer notifyres.Body.Close()
+								resM := make(map[string]interface{})
+								json.Unmarshal(resNotifyBytes, &resM)
+								resData := make([]interface{}, 0)
+								resDataBytes, errMs := json.Marshal(resM["data"])
+								if errMs != nil {
+									log.Error(errMs)
+									wg.Done()
+									return
+								}
+								json.Unmarshal(resDataBytes, &resData)
+								for i := range resData {
+									notificationsItem := NotificationsItem{Notification: resData[i], Entry: entry}
+									notifications = append(notifications, notificationsItem)
+								}
+								wg.Done()
+							}(notify.APIPath)
 						}
 					}
 				}
@@ -255,9 +299,9 @@ func (a entrySort) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a entrySort) Less(i, j int) bool { return a[i].Id < a[j].Id }
 
 func pluginWithAPIPath(apiPath string) (plugin, route string) {
-	s := strings.SplitN(apiPath, "/", 3)
-	if len(s) == 3 {
-		return s[1], s[2]
+	s := strings.SplitN(apiPath, "/", 4)
+	if len(s) == 4 {
+		return s[2], s[3]
 	}
 	return
 }
