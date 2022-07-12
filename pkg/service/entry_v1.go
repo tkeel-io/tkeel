@@ -188,8 +188,18 @@ func (s *EntryService) GetNotification(ctx context.Context, tenantID string) (in
 								defer notifyres.Body.Close()
 								resM := make(map[string]interface{})
 								json.Unmarshal(resNotifyBytes, &resM)
-								notificationsItem := NotificationsItem{Notification: resM["data"], Entry: entry}
-								notifications = append(notifications, notificationsItem)
+								resData := make([]interface{}, 0)
+								resDataBytes, errMs := json.Marshal(resM["data"])
+								if errMs != nil {
+									log.Error(errMs)
+									wg.Done()
+									return
+								}
+								json.Unmarshal(resDataBytes, &resData)
+								for i := range resData {
+									notificationsItem := NotificationsItem{Notification: resData[i], Entry: entry}
+									notifications = append(notifications, notificationsItem)
+								}
 								wg.Done()
 							}(notify.APIPath)
 						}
