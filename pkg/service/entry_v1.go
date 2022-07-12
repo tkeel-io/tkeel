@@ -37,6 +37,7 @@ type IdentifyEntries struct {
 type Entry struct {
 	ID            string         `json:"id"`
 	Name          string         `json:"name"`
+	Children      []Entry        `json:"children"`
 	Notifications []Notification `json:"notifications"`
 }
 type Notification struct {
@@ -130,6 +131,7 @@ func (s *EntryService) GetNotification(ctx context.Context, tenantID string) (in
 					wg.Done()
 					return
 				}
+				childrenEntrys := make([]Entry, 0)
 				if idfEntries.Entries != nil {
 					for _, entry := range idfEntries.Entries {
 						if entry.Notifications != nil {
@@ -158,6 +160,38 @@ func (s *EntryService) GetNotification(ctx context.Context, tenantID string) (in
 									wg.Done()
 								}(notify.APIPath)
 							}
+						}
+						for childI := range entry.Children {
+							childrenEntrys = append(childrenEntrys, entry.Children[childI])
+						}
+					}
+				}
+				for _, entry := range childrenEntrys {
+					if entry.Notifications != nil {
+						for _, notify := range entry.Notifications {
+							wg.Add(1)
+							go func(apiPath string) {
+								pID, route := pluginWithAPIPath(apiPath)
+								header, _ := ctx.Value(1).(http.Header)
+								notifyres, nerr := s.daprHTTPCli.Call(ctx, &dapr.AppRequest{
+									ID:     pID,
+									Method: route,
+									Verb:   "GET",
+									Header: header,
+								})
+								if nerr != nil {
+									log.Error(err)
+									wg.Done()
+									return
+								}
+								resNotifyBytes, _ := io.ReadAll(notifyres.Body)
+								defer notifyres.Body.Close()
+								resM := make(map[string]interface{})
+								json.Unmarshal(resNotifyBytes, &resM)
+								notificationsItem := NotificationsItem{Notification: resM["data"], Entry: entry}
+								notifications = append(notifications, notificationsItem)
+								wg.Done()
+							}(notify.APIPath)
 						}
 					}
 				}
