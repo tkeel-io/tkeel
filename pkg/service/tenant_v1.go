@@ -263,6 +263,10 @@ func (s *TenantService) UpdateTenant(ctx context.Context, req *pb.UpdateTenantRe
 	tenantDao := &model.Tenant{}
 	where := map[string]interface{}{"id": req.GetTenantId()}
 	updates := map[string]interface{}{"title": req.GetBody().GetTitle(), "remark": req.GetBody().GetRemark()}
+	tenantDao.Title = req.GetBody().GetTitle()
+	if tenantDao.Existed(s.DB) {
+		return nil, pb.ErrTenantAlreadyExisted()
+	}
 	_, err := tenantDao.Update(s.DB, where, updates)
 	if err != nil {
 		log.Error(err)
@@ -322,7 +326,7 @@ func (s *TenantService) CreateUser(ctx context.Context, req *pb.CreateUserReques
 	err = user.Create(s.DB)
 	if err != nil {
 		log.Error(err)
-		return nil, pb.ErrInternalStore()
+		return nil, pb.ErrInvalidArgument()
 	}
 	metrics.CollectorUser.WithLabelValues(user.TenantID).Inc()
 	if len(req.GetBody().GetRoles()) != 0 {
@@ -520,7 +524,7 @@ func (s *TenantService) ResetPasswordKeyInfo(ctx context.Context, req *pb.RPKInf
 	total, users, err := user.QueryByCondition(s.DB, conditions, nil, "")
 	if err != nil || total != 1 {
 		log.Error(err)
-		return nil, pb.ErrInternalError()
+		return nil, pb.ErrInvalidResetkey()
 	}
 	return &pb.RPKInfoResponse{
 		NickName: users[0].NickName,
