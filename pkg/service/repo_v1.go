@@ -156,6 +156,7 @@ func (s *RepoService) ListRepoInstaller(ctx context.Context,
 				CreateTime: uint64(v.CreateTimestamp),
 			})
 			obj.Version = v.Version
+			obj.Desc = v.Desc
 			switch v.State {
 			case repository.StateUninstall:
 				obj.State = pb.InstallerState_UNINSTALL
