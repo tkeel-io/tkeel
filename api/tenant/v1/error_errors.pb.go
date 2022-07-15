@@ -23,6 +23,7 @@ var errResourceNotFound *errors.TError
 var errStoreCreatAdmin *errors.TError
 var errStoreCreatAdminRole *errors.TError
 var errTenantNotFound *errors.TError
+var errInvalidResetkey *errors.TError
 
 func init() {
 	errUnknown = errors.New(int(codes.Unknown), "io.tkeel.security.api.tenant.v1.ERR_UNKNOWN", "未知类型")
@@ -49,6 +50,8 @@ func init() {
 	errors.Register(errStoreCreatAdminRole)
 	errTenantNotFound = errors.New(int(codes.Internal), "io.tkeel.security.api.tenant.v1.ERR_TENANT_NOT_FOUND", "租户不存在")
 	errors.Register(errTenantNotFound)
+	errInvalidResetkey = errors.New(int(codes.InvalidArgument), "io.tkeel.security.api.tenant.v1.ERR_INVALID_RESETKEY", "无效的重置密码链接")
+	errors.Register(errInvalidResetkey)
 }
 
 func ErrUnknown() errors.Error {
@@ -97,4 +100,8 @@ func ErrStoreCreatAdminRole() errors.Error {
 
 func ErrTenantNotFound() errors.Error {
 	return errTenantNotFound
+}
+
+func ErrInvalidResetkey() errors.Error {
+	return errInvalidResetkey
 }

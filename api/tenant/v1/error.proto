@@ -60,4 +60,7 @@ enum Error {
   // @msg=租户不存在
   // @code=INTERNAL
   ERR_TENANT_NOT_FOUND = 11;
+  // @msg=无效的重置密码链接
+  // @code=INVALID_ARGUMENT
+  ERR_INVALID_RESETKEY = 12;
 }
