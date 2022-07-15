@@ -92,7 +92,7 @@ var rootCmd = &cobra.Command{
 		httpSrv.Container.EnableContentEncoding(false)
 		grpcSrv := server.NewGRPCServer(conf.GRPCAddr)
 		register.Init()
-		register.Instance().Run()
+		register.Instance().Run(conf.Tkeel.Namespace)
 
 		rudderApp = app.New("rudder", &log.Conf{
 			App:    "rudder",

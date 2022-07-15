@@ -63,7 +63,7 @@ func (pr *PluginRegistry) Register(pluginID string, isUpgrade bool, callback fun
 	}
 }
 
-func (pr *PluginRegistry) Run() {
+func (pr *PluginRegistry) Run(namespace string) {
 	log.Info("plugin registry is running")
 	config, err := rest.InClusterConfig()
 	clientset, err := kubernetes.NewForConfig(config)
@@ -71,7 +71,7 @@ func (pr *PluginRegistry) Run() {
 		panic(err)
 	}
 
-	sharedInformers := informers.NewSharedInformerFactoryWithOptions(clientset, time.Minute, informers.WithNamespace(""))
+	sharedInformers := informers.NewSharedInformerFactoryWithOptions(clientset, time.Minute, informers.WithNamespace(namespace))
 
 	deployInformer := sharedInformers.Apps().V1().Deployments().Informer()
 	deployInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
