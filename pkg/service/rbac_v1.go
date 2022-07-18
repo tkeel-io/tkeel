@@ -161,7 +161,6 @@ func (s *RBACService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest)
 		log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Id, u.Tenant, err)
 		return nil, pb.ErrInternalError()
 	}
-	// defer rbStack.Run()
 	count, err := deleteRole.Delete(s.db, nil)
 	if err != nil {
 		log.Errorf("error delete role(%s): %s", deleteRole, err)
