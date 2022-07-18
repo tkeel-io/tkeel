@@ -141,13 +141,10 @@ func (s *Oauth2ServiceV1) VerifyToken(ctx context.Context, empty *emptypb.Empty)
 }
 
 func (s *Oauth2ServiceV1) UpdateAdminPassword(ctx context.Context, req *pb.UpdateAdminPasswordRequest) (*emptypb.Empty, error) {
-	u, err := util.GetUser(ctx)
+	_, err := util.GetUser(ctx)
 	if err != nil {
 		log.Errorf("error get user: %s", err)
 		return nil, pb.Oauth2ErrUnknown()
-	}
-	if u.Tenant != model.TKeelTenant || u.User != model.TKeelUser {
-		return nil, pb.Oauth2ErrPermissionDenied()
 	}
 	if !checkPassword(req.NewPassword) {
 		return nil, pb.Oauth2ErrPasswordNotCompliant()
