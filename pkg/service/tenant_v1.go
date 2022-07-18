@@ -326,7 +326,7 @@ func (s *TenantService) CreateUser(ctx context.Context, req *pb.CreateUserReques
 	err = user.Create(s.DB)
 	if err != nil {
 		log.Error(err)
-		return nil, pb.ErrInvalidArgument()
+		return nil, pb.ErrAlreadyExistedUser()
 	}
 	metrics.CollectorUser.WithLabelValues(user.TenantID).Inc()
 	if len(req.GetBody().GetRoles()) != 0 {
