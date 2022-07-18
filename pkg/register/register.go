@@ -47,12 +47,8 @@ func (pr *PluginRegistry) Register(pluginID string, isUpgrade bool, callback fun
 	defer pr.Unlock()
 	log.Debugf("register new plugin: %s, upgrade: %v", pluginID, isUpgrade)
 	if plugin, ok := pr.Plugins[pluginID]; ok {
-		if isUpgrade {
-			plugin.Status = openapi_v1.PluginStatus_WAIT_RUNNING
-			plugin.Callback = callback
-		} else {
-
-		}
+		plugin.Status = openapi_v1.PluginStatus_WAIT_RUNNING
+		plugin.Callback = callback
 	} else {
 		pr.Plugins[pluginID] = &PluginInfo{
 			ID:        pluginID,
@@ -66,9 +62,14 @@ func (pr *PluginRegistry) Register(pluginID string, isUpgrade bool, callback fun
 func (pr *PluginRegistry) Run(namespace string) {
 	log.Info("plugin registry is running")
 	config, err := rest.InClusterConfig()
+	if err != nil {
+		log.Error("init cluster config error", err.Error())
+		return
+	}
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err)
+		log.Error("get client set error", err.Error())
+		return
 	}
 
 	sharedInformers := informers.NewSharedInformerFactoryWithOptions(clientset, time.Minute, informers.WithNamespace(namespace))
@@ -77,7 +78,10 @@ func (pr *PluginRegistry) Run(namespace string) {
 	deployInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {},
 		UpdateFunc: func(oldObj, newObj interface{}) {
-			oDep := newObj.(*apps_v1.Deployment)
+			oDep, ok := newObj.(*apps_v1.Deployment)
+			if !ok {
+				return
+			}
 			if oDep.Status.ReadyReplicas == oDep.Status.Replicas {
 				pr.Lock()
 				defer pr.Unlock()
@@ -107,7 +111,10 @@ func (pr *PluginRegistry) Run(namespace string) {
 	statefulInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {},
 		UpdateFunc: func(oldObj, newObj interface{}) {
-			oSta := newObj.(*apps_v1.StatefulSet)
+			oSta, ok := newObj.(*apps_v1.StatefulSet)
+			if !ok {
+				return
+			}
 			if oSta.Status.ReadyReplicas == oSta.Status.Replicas {
 				pr.Lock()
 				defer pr.Unlock()

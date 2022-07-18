@@ -240,7 +240,7 @@ func (s *PluginServiceV1) UpgradePlugin(ctx context.Context,
 		return nil, pb.PluginErrInternalStore()
 	}
 	rbStack = append(rbStack, rb)
-	register.Instance().Register(p.ID, false, func() bool {
+	register.Instance().Register(p.ID, true, func() bool {
 		actionCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
 		defer cancel()
 		return s.RegisterPluginAction(actionCtx, p.ID, false)
@@ -692,20 +692,6 @@ func (s *PluginServiceV1) registerPluginProcess(ctx context.Context, pID string,
 	}
 	if err = s.verifyPluginIdentity(ctx, resp, isUpgrade); err != nil {
 		return errors.Wrap(err, "register error register plugin")
-	}
-	return nil
-}
-
-func (s *PluginServiceV1) updatePluginStatus(ctx context.Context, pID string, status openapi_v1.PluginStatus) error {
-	// get plugin.
-	p, err := s.pluginOp.Get(ctx, pID)
-	if err != nil {
-		return errors.Wrapf(err, "get plugin")
-	}
-	// update plugin status.
-	p.Status = status
-	if err = s.pluginOp.Update(ctx, p); err != nil {
-		return errors.Wrapf(err, "update plugin")
 	}
 	return nil
 }
