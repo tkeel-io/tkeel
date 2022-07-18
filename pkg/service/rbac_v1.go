@@ -156,12 +156,12 @@ func (s *RBACService) DeleteRole(ctx context.Context, req *pb.DeleteRoleRequest)
 		return nil, pb.ErrNotAllowedEdit()
 	}
 	retPB := s.convertModelRole2PB(deleteRole, false)
-	rbStack, err := s.deleteRoleInTenant(req.Id, u.Tenant)
+	_, err = s.deleteRoleInTenant(req.Id, u.Tenant)
 	if err != nil {
 		log.Errorf("error deleteRoleInTenant(%s/%s): %s", req.Id, u.Tenant, err)
 		return nil, pb.ErrInternalError()
 	}
-	defer rbStack.Run()
+	// defer rbStack.Run()
 	count, err := deleteRole.Delete(s.db, nil)
 	if err != nil {
 		log.Errorf("error delete role(%s): %s", deleteRole, err)
