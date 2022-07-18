@@ -221,6 +221,10 @@ func (s *RBACService) UpdateRole(ctx context.Context, req *pb.UpdateRoleRequest)
 	rbStack = append(rbStack, rblist...)
 
 	if len(dbUpdateMap) != 0 {
+		roleDao := s_model.Role{}
+		if existed, _ := roleDao.IsExisted(s.db, map[string]interface{}{"name": req.GetRole().GetName(), "tenant_id": u.Tenant}); existed {
+			return nil, pb.ErrRoleHasBeenExsist()
+		}
 		count, err := updateRole.Update(s.db,
 			map[string]interface{}{"id": req.Id, "tenant_id": updateRole.TenantID},
 			dbUpdateMap)
