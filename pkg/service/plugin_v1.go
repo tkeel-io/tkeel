@@ -38,6 +38,7 @@ import (
 	"github.com/tkeel-io/tkeel/pkg/model/kv"
 	"github.com/tkeel-io/tkeel/pkg/model/plugin"
 	"github.com/tkeel-io/tkeel/pkg/model/proute"
+	"github.com/tkeel-io/tkeel/pkg/register"
 	"github.com/tkeel-io/tkeel/pkg/repository"
 	"github.com/tkeel-io/tkeel/pkg/repository/helm"
 	"github.com/tkeel-io/tkeel/pkg/util"
@@ -163,11 +164,11 @@ func (s *PluginServiceV1) InstallPlugin(ctx context.Context,
 		return nil, pb.PluginErrUnknown()
 	}
 	rbStack = util.NewRollbackStack()
-	go func() {
+	register.Instance().Register(newP.ID, false, func() bool {
 		actionCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
 		defer cancel()
-		s.registerPluginAction(actionCtx, newP.ID, false)
-	}()
+		return s.RegisterPluginAction(actionCtx, newP.ID, false)
+	})
 	log.Debugf("install plugin(%s) succ.", newP)
 	return &pb.InstallPluginResponse{
 		Plugin: util.ConvertModel2PluginObjectPb(newP, nil, model.TKeelTenant),
@@ -239,11 +240,11 @@ func (s *PluginServiceV1) UpgradePlugin(ctx context.Context,
 		return nil, pb.PluginErrInternalStore()
 	}
 	rbStack = append(rbStack, rb)
-	go func() {
+	register.Instance().Register(p.ID, true, func() bool {
 		actionCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
 		defer cancel()
-		s.registerPluginAction(actionCtx, p.ID, true)
-	}()
+		return s.RegisterPluginAction(actionCtx, p.ID, false)
+	})
 	log.Debugf("upgrade plugin(%s) succ.", p)
 	rbStack = util.NewRollbackStack()
 	return &pb.UpgradePluginResponse{
@@ -662,51 +663,22 @@ func (s *PluginServiceV1) updatePluginIdentify(ctx context.Context, pID string) 
 	return rb, nil
 }
 
-func (s *PluginServiceV1) registerPluginAction(ctx context.Context, pID string, isUpgrade bool) {
-	duration, err := time.ParseDuration(s.tkeelConf.WatchInterval)
+func (s *PluginServiceV1) RegisterPluginAction(ctx context.Context, pID string, isUpgrade bool) bool {
+	resp, err := s.queryStatus(ctx, pID)
 	if err != nil {
-		log.Errorf("register error parse watch interval: %s", err)
-		return
-	}
-
-	ticker := time.NewTicker(time.Millisecond * 1)
-	registrationfailed := true
-	defer func() {
-		if registrationfailed {
-			if err = s.updatePluginStatus(ctx, pID, openapi_v1.PluginStatus_ERR_REGISTER); err != nil {
-				log.Errorf("register update register error plugin: %s", err)
-			}
+		log.Warnf("register query plugin(%s) status: %s", pID, err)
+		return false
+	} else if resp.Status == openapi_v1.PluginStatus_RUNNING {
+		log.Debugf("register plugin(%s)", pID)
+		// get register plugin identify.
+		if err = s.registerPluginProcess(ctx, pID, isUpgrade); err != nil {
+			log.Errorf("error register(%s): %s", pID, err)
+			return false
 		}
-	}()
-	retry := 30
-	log.Debugf("start register plugin(%s) retry: %d", pID, retry)
-	for {
-		select {
-		case <-ticker.C:
-			resp, err := s.queryStatus(ctx, pID)
-			if err != nil {
-				log.Warnf("register query plugin(%s) status: %s retry: %d", pID, err, retry)
-				if retry == 0 {
-					return
-				}
-				retry--
-			} else if resp.Status == openapi_v1.PluginStatus_RUNNING {
-				log.Debugf("register plugin(%s)", pID)
-				// get register plugin identify.
-				if err = s.registerPluginProcess(ctx, pID, isUpgrade); err != nil {
-					log.Errorf("error register(%s): %s", pID, err)
-					return
-				}
-				registrationfailed = false
-				log.Debugf("register plugin(%s) ok", pID)
-				return
-			}
-			ticker.Reset(duration)
-		case <-ctx.Done():
-			log.Errorf("register plugin(%s) timeout", pID)
-			return
-		}
+		log.Debugf("register plugin(%s) ok", pID)
+		return true
 	}
+	return false
 }
 
 func (s *PluginServiceV1) registerPluginProcess(ctx context.Context, pID string, isUpgrade bool) error {
@@ -720,20 +692,6 @@ func (s *PluginServiceV1) registerPluginProcess(ctx context.Context, pID string,
 	}
 	if err = s.verifyPluginIdentity(ctx, resp, isUpgrade); err != nil {
 		return errors.Wrap(err, "register error register plugin")
-	}
-	return nil
-}
-
-func (s *PluginServiceV1) updatePluginStatus(ctx context.Context, pID string, status openapi_v1.PluginStatus) error {
-	// get plugin.
-	p, err := s.pluginOp.Get(ctx, pID)
-	if err != nil {
-		return errors.Wrapf(err, "get plugin")
-	}
-	// update plugin status.
-	p.Status = status
-	if err = s.pluginOp.Update(ctx, p); err != nil {
-		return errors.Wrapf(err, "update plugin")
 	}
 	return nil
 }
