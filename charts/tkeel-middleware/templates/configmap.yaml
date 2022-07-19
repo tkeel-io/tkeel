@@ -3,4 +3,33 @@ kind: ConfigMap
 metadata:
   name: tkeel-install-config
 data:
-  key: value
+  ADMIN_HOST: "admin.tkeel.io"
+  TENANT_HOST: "tkeel.io"
+  config: |
+    host:                  
+      admin: admin.tkeel.io
+      tenant: tkeel.io     
+    middleware:            
+      cache:               
+        customized: false  
+        url: redis://:Biz0P8Xoup@tkeel-middleware-redis-master:6379/0
+      database:
+        customized: false
+        url: mysql://root:a3fks=ixmeb82a@tkeel-middleware-mysql:3306/tkeelauth
+      queue:
+        customized: false
+        url: kafka://tkeel-middleware-kafka-headless:9092
+      search:
+        customized: false
+        url: elasticsearch://admin:admin@tkeel-middleware-elasticsearch-master:9200
+      service_registry:
+        customized: false
+        url: etcd://tkeel-middleware-etcd:2379
+    port: 30080
+    repo:
+      name: tkeel
+      url: https://tkeel-io.github.io/helm-charts
+    plugins:
+      - tkeel/console-portal-admin@latest
+      - tkeel/console-portal-tenant@latest
+      - tkeel/console-plugin-admin-plugins@latest
