@@ -116,6 +116,7 @@ var rootCmd = &cobra.Command{
 
 			// init k8s client.
 			k8sClient := kubernetes.NewClient(conf.DeploymentConfigmap, conf.Tkeel.Namespace)
+			helm.UpdatePullPolicy(k8sClient)
 
 			// init operator.
 			pOp := plugin.NewDaprStateOperator(conf.Dapr.PrivateStateName, daprGRPCClient)
