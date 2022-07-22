@@ -11,7 +11,7 @@ nodePort: 30707
 image:
   repository: tkeelio/keel
   # tag: 0.4.1
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 # keel debug mod
 debug: false

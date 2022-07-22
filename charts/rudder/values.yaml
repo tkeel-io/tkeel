@@ -9,7 +9,7 @@ nodePort: 30777
 image:
   repository: tkeelio/rudder
 #  tag: 0.4.1
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 # rudder debug mod
 debug: false
