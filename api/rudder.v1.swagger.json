@@ -4712,7 +4712,7 @@
         },
         "switchable": {
           "type": "boolean",
-          "description": "是否可以手动启用"
+          "description": "是否可以手动启用[true=allow,false=deny]"
         }
       }
     },

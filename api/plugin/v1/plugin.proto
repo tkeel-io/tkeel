@@ -492,7 +492,7 @@ message PluginBrief {
     }]; // register plugin status.
     bool switchable = 8
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
-        description: "是否可以手动启用"
+        description: "是否可以手动启用[true=allow,false=deny]"
     }]; // plugin status switchable. false is not allow manual enable, true is allow manual enable.
 }
 
