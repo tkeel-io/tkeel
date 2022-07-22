@@ -57,6 +57,14 @@ func ConvertModel2PluginBriefObjectPb(p *model.Plugin, tenantID string) *pb.Plug
 		Status: func() v1.PluginStatus {
 			return p.Status
 		}(),
+		Switchable: func() bool {
+			for _, v := range model.TKeelConsole {
+				if p.ID == v {
+					return false
+				}
+			}
+			return true
+		}(),
 	}
 }
 
