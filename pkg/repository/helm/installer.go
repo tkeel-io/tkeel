@@ -20,17 +20,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/tkeel-io/tkeel/pkg/client/kubernetes"
-	"gopkg.in/yaml.v3"
 	"strings"
-
-	"helm.sh/helm/v3/pkg/postrender"
 
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/tkeel/pkg/client/kubernetes"
 	"github.com/tkeel-io/tkeel/pkg/repository"
+	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/postrender"
 )
 
 const (
