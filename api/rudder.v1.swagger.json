@@ -4712,7 +4712,7 @@
         },
         "switchable": {
           "type": "boolean",
-          "description": "是否可以开关"
+          "description": "是否可以手动启用"
         }
       }
     },
