@@ -490,6 +490,10 @@ message PluginBrief {
     [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
         description: "插件状态"
     }]; // register plugin status.
+    bool switchable = 8
+    [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+        description: "是否可以手动启用"
+    }]; // plugin status switchable.
 }
 
 /**

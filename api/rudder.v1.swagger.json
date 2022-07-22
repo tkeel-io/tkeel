@@ -4709,6 +4709,10 @@
         "status": {
           "$ref": "#/definitions/v1PluginStatus",
           "description": "插件状态"
+        },
+        "switchable": {
+          "type": "boolean",
+          "description": "是否可以开关"
         }
       }
     },
