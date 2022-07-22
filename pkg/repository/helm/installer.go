@@ -78,6 +78,7 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 			for _, v := range ch.Raw {
 				if strings.HasPrefix(strings.ToLower(v.Name), ReadmeKey) {
 					a[ReadmeKey] = v.Data
+					continue
 				}
 				if v.Name == ValuesFileName {
 					temp := make(map[string]interface{})
@@ -90,14 +91,12 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 							}
 						}
 						data, err := yaml.Marshal(temp)
-						if err != nil {
-							a[repository.ConfigurationKey] = v.Data
-						} else {
-							a[repository.ConfigurationKey] = data
+						if err == nil {
+							v.Data = data
 						}
-					} else {
-						a[repository.ConfigurationKey] = v.Data
 					}
+					a[repository.ConfigurationKey] = v.Data
+					continue
 				}
 				if v.Name == ChartFileName {
 					a[ChartDescKey] = v.Data
