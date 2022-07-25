@@ -243,7 +243,7 @@ func (s *PluginServiceV1) UpgradePlugin(ctx context.Context,
 	register.Instance().Register(p.ID, true, func() bool {
 		actionCtx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
 		defer cancel()
-		return s.RegisterPluginAction(actionCtx, p.ID, false)
+		return s.RegisterPluginAction(actionCtx, p.ID, true)
 	})
 	log.Debugf("upgrade plugin(%s) succ.", p)
 	rbStack = util.NewRollbackStack()
