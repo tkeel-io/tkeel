@@ -17,17 +17,19 @@ limitations under the License.
 package helm
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 
-	"helm.sh/helm/v3/pkg/postrender"
-
 	"github.com/pkg/errors"
 	"github.com/tkeel-io/kit/log"
+	"github.com/tkeel-io/tkeel/pkg/client/kubernetes"
 	"github.com/tkeel-io/tkeel/pkg/repository"
+	"gopkg.in/yaml.v3"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/postrender"
 )
 
 const (
@@ -41,6 +43,16 @@ const (
 var SecretContext = "changeme"
 
 var _ repository.Installer = &Installer{}
+
+var PullPolicy = "IfNotPresent"
+
+func UpdatePullPolicy(k8s *kubernetes.Client) {
+	conf, err := k8s.GetDeploymentConfig(context.Background())
+	if err != nil {
+		return
+	}
+	PullPolicy = conf.ImagePolicy
+}
 
 type Installer struct {
 	chart       *chart.Chart
@@ -65,9 +77,25 @@ func NewHelmInstaller(id string, ch *chart.Chart, brief repository.InstallerBrie
 			for _, v := range ch.Raw {
 				if strings.HasPrefix(strings.ToLower(v.Name), ReadmeKey) {
 					a[ReadmeKey] = v.Data
+					continue
 				}
 				if v.Name == ValuesFileName {
+					temp := make(map[string]interface{})
+					err := yaml.Unmarshal(v.Data, &temp)
+					if err == nil {
+						if image, ok := temp["image"]; ok {
+							if m, ok := image.(map[string]interface{}); ok {
+								m["pullPolicy"] = PullPolicy
+								temp["image"] = m
+							}
+						}
+						data, err := yaml.Marshal(temp)
+						if err == nil {
+							v.Data = data
+						}
+					}
 					a[repository.ConfigurationKey] = v.Data
+					continue
 				}
 				if v.Name == ChartFileName {
 					a[ChartDescKey] = v.Data
