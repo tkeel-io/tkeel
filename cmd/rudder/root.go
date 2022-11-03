@@ -20,6 +20,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	authentication_v1 "github.com/tkeel-io/tkeel/api/authentication/v1"
 	config_v1 "github.com/tkeel-io/tkeel/api/config/v1"
@@ -156,6 +157,7 @@ var rootCmd = &cobra.Command{
 				log.Fatal("fatal new rbac operator", err)
 				os.Exit(-1)
 			}
+			rbacOp.StartAutoLoadPolicy(time.Millisecond * 5000)
 			tenantPluginOp := rbac.NewTenantPluginOperator(rbacOp)
 			m := manage.NewDefaultManager()
 			clientStore := store.NewClientStore()
