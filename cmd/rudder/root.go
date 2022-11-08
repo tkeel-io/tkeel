@@ -157,7 +157,7 @@ var rootCmd = &cobra.Command{
 				log.Fatal("fatal new rbac operator", err)
 				os.Exit(-1)
 			}
-			rbacOp.StartAutoLoadPolicy(time.Millisecond * 5000)
+			rbacOp.StartAutoLoadPolicy(time.Second * 30)
 			tenantPluginOp := rbac.NewTenantPluginOperator(rbacOp)
 			m := manage.NewDefaultManager()
 			clientStore := store.NewClientStore()
